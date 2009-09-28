@@ -74,43 +74,6 @@ let init_callback callback timeout =
   * this probably means that socket is already closed (e.g. on sigpipe) *)
 let try_close_out ch = try close_out ch with Sys_error _ -> ()
 
-  (** like Unix.establish_server, but shutdown sockets when receiving SIGTERM
-  and before exiting for an uncaught exception *)
-let my_establish_server server_fun sockaddr =
-  let suck = init_socket sockaddr in
-  while true do
-    let (s, caller) = nice_unix_accept suck in
-      (** "double fork" trick, see {!Unix.establish_server} implementation *)
-    match Unix.fork() with
-    | 0 ->  (* parent *)
-        (try
-          if Unix.fork () <> 0 then
-            exit 0;  (* The son exits, the grandson works *)
-          let inchan = Unix.in_channel_of_descr s in
-          let outchan = Unix.out_channel_of_descr s in
-          server_fun inchan outchan;
-          try_close_out outchan;  (* closes also inchan: socket is the same *)
-          exit 0
-        with e ->
-          shutdown_socket suck; (* clean up socket before exit *)
-          raise e)
-    | child when (child > 0) -> (* child *)
-        Unix.close s;
-        ignore (Unix.waitpid [] child) (* Reclaim the son *)
-    | _ (* < 0 *) ->
-        failwith "Can't fork"
-  done
-
-  (** tcp_server which forks a new process for each request *)
-let fork ~sockaddr ~timeout callback =
-  let timeout_callback signo =
-    if signo = Sys.sigalrm then
-      exit 2
-  in
-  my_establish_server
-    (wrap_callback_w_timeout ~callback ~timeout ~timeout_callback)
-    sockaddr
-
   (** tcp_server which doesn't fork, requests are server sequentially and in the
   same address space of the calling process *)
 let simple ~sockaddr ~timeout callback =
@@ -133,29 +96,6 @@ let simple ~sockaddr ~timeout callback =
     shutdown_socket suck;
     raise e
 
-  (** tcp_server which creates a new thread for each request to be served *)
-let thread ~sockaddr ~timeout callback =
-  let suck = init_socket sockaddr in
-  let callback = init_callback callback timeout in
-  let callback (i, o) =
-    (try
-      callback i o
-    with
-    | Timeout -> ()
-    | e ->
-        try_close_out o;
-        raise e);
-    try_close_out o
-  in
-  while true do
-    let (client, _) = nice_unix_accept suck in
-      (* client is now connected *)
-    let (inchan, outchan) =
-      (Unix.in_channel_of_descr client, Unix.out_channel_of_descr client)
-    in
-    Http_threaded_tcp_server.serve callback (inchan, outchan)
-  done
-
   (** @param server an Http_types.tcp_server
   * @return an Http_types.tcp_server which takes care of ignoring SIGPIPE during
   * server execution and restoring previous handler when (if ever) the server
@@ -167,6 +107,3 @@ let handle_sigpipe server =
     ignore (Sys.signal Sys.sigpipe old_sigpipe_behavior)
 
 let simple = handle_sigpipe simple
-let thread = handle_sigpipe thread
-let fork = handle_sigpipe fork
-

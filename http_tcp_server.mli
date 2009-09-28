@@ -26,14 +26,7 @@
   (** single process server *)
 val simple:         Http_types.tcp_server
 
-  (** multi threaded server *)
-val thread:         Http_types.tcp_server
-
-  (** multi process server *)
-val fork:           Http_types.tcp_server
-
 (** {2 low level functions} *)
 
   (** initialize a passive socket listening on given Unix.sockaddr *)
 val init_socket:    Unix.sockaddr -> Unix.file_descr
-

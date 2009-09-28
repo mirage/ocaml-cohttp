@@ -288,11 +288,6 @@ let chdir_to_document_root = function (* chdir to document root *)
   | Some dir -> Sys.chdir dir
   | None -> ()
 
-let server_of_mode = function
-  | `Single -> Http_tcp_server.simple
-  | `Fork   -> Http_tcp_server.fork
-  | `Thread -> Http_tcp_server.thread
-
   (* TODO what happens when a Quit exception is raised by a callback? Do other
   callbacks keep on living until the end or are them all killed immediatly?
   The right semantics should obviously be the first one *)
@@ -360,7 +355,7 @@ let main spec =
           raise exn)
   in
   try
-    (server_of_mode spec.mode) ~sockaddr ~timeout:spec.timeout daemon_callback 
+    Http_tcp_server.simple ~sockaddr ~timeout:spec.timeout daemon_callback 
   with Quit -> ()
 
 module Trivial =
