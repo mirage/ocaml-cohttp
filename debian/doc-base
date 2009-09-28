@@ -1,0 +1,12 @@
+Document: ocaml-http
+Title: OCaml HTTP API reference manual
+Author: Stefano Zacchiroli
+Abstract: API reference manual for OCaml HTTP, an Objective Caml library for writing HTTP servers
+Section: Apps/Programming
+
+Format: HTML
+Index: /usr/share/doc/libhttp-ocaml-dev/html/index.html
+Files: /usr/share/doc/libhttp-ocaml-dev/html/*
+
+Format: PostScript
+Files: /usr/share/doc/libhttp-ocaml-dev/ocaml-http.ps.gz

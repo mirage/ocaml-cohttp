@@ -1,0 +1,341 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Http_threaded_tcp_server.html">
+<link rel="next" href="Http_user_agent.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of class methods" rel=Appendix href="index_methods.html">
+<link title="Index of classes" rel=Appendix href="index_classes.html">
+<link title="Index of class types" rel=Appendix href="index_class_types.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Http_common" rel="Chapter" href="Http_common.html">
+<link title="Http_constants" rel="Chapter" href="Http_constants.html">
+<link title="Http_daemon" rel="Chapter" href="Http_daemon.html">
+<link title="Http_message" rel="Chapter" href="Http_message.html">
+<link title="Http_misc" rel="Chapter" href="Http_misc.html">
+<link title="Http_parser" rel="Chapter" href="Http_parser.html">
+<link title="Http_parser_sanity" rel="Chapter" href="Http_parser_sanity.html">
+<link title="Http_request" rel="Chapter" href="Http_request.html">
+<link title="Http_response" rel="Chapter" href="Http_response.html">
+<link title="Http_tcp_server" rel="Chapter" href="Http_tcp_server.html">
+<link title="Http_threaded_tcp_server" rel="Chapter" href="Http_threaded_tcp_server.html">
+<link title="Http_types" rel="Chapter" href="Http_types.html">
+<link title="Http_user_agent" rel="Chapter" href="Http_user_agent.html"><link title="Exceptions" rel="Section" href="#2_Exceptions">
+<link title="OO representation of HTTP messages" rel="Section" href="#2_OOrepresentationofHTTPmessages">
+<link title="Daemon specification" rel="Section" href="#2_Daemonspecification">
+<link title="OO representation of other HTTP entities" rel="Section" href="#2_OOrepresentationofotherHTTPentities">
+<title>Http_types</title>
+</head>
+<body>
+<div class="navbar"><a href="Http_threaded_tcp_server.html">Previous</a>
+&nbsp;<a href="index.html">Up</a>
+&nbsp;<a href="Http_user_agent.html">Next</a>
+</div>
+<center><h1>Module <a href="type_Http_types.html">Http_types</a></h1></center>
+<br>
+<pre><span class="keyword">module</span> Http_types: <code class="code">sig</code> <a href="Http_types.html">..</a> <code class="code">end</code></pre>Type definitions<br>
+<hr width="100%">
+<pre><span class="keyword">type</span> <a name="TYPEversion"></a><code class="type"></code>version = <code class="type">[ `HTTP_1_0 | `HTTP_1_1 ]</code> </pre>
+<div class="info">
+HTTP version, actually only 1.0 and 1.1 are supported. Note that
+  'supported' here means only 'accepted inside a HTTP request line', no
+  different behaviours are actually implemented depending on HTTP version<br>
+</div>
+
+<pre><span class="keyword">type</span> <a name="TYPEmeth"></a><code class="type"></code>meth = <code class="type">[ `GET | `POST ]</code> </pre>
+<div class="info">
+HTTP method, actually only GET and POST methods are supported<br>
+</div>
+
+<pre><span class="keyword">type</span> <a name="TYPEdaemon_mode"></a><code class="type"></code>daemon_mode = <code class="type">[ `Fork | `Single | `Thread ]</code> </pre>
+<div class="info">
+Daemon behaviour wrt request handling. `Single mode use a single process
+  to handle all requests, no request is served until a previous one has been
+  fully served. `Fork mode fork a new process for each request, the new process
+  will execute the callback function and then exit. `Thread mode create a new
+  thread for each request, the new thread will execute the callback function and
+  then exit, threads can communicate using standard OCaml Thread library.<br>
+</div>
+
+<pre><span class="keyword">type</span> <a name="TYPEtcp_server"></a><code class="type"></code>tcp_server = <code class="type">sockaddr:Unix.sockaddr -><br>       timeout:int option -><br>       (Pervasives.in_channel -> Pervasives.out_channel -> unit) -> unit</code> </pre>
+<div class="info">
+A TCP server is a function taking an address on which bind and listen for
+  connections, an optional timeout after which abort client connections and a
+  callback function which in turn takes an input and an output channel as
+  arguments. After receiving this argument a TCP server sits and waits for
+  connection, on each connection it apply the callback function to channels
+  connected to client.<br>
+</div>
+
+<pre><span class="keyword">type</span> <a name="TYPEauth_info"></a><code class="type"></code>auth_info = <code class="type">[ `Basic of string * string ]</code> </pre>
+<div class="info">
+authentication information<br>
+</div>
+
+<pre><span class="keyword">type</span> <a name="TYPEinformational_substatus"></a><code class="type"></code>informational_substatus = <code class="type">[ `Continue | `Switching_protocols ]</code> </pre>
+<div class="info">
+<b>See also</b> <i>RFC2616</i> informational HTTP status<br>
+</div>
+
+<pre><span class="keyword">type</span> <a name="TYPEsuccess_substatus"></a><code class="type"></code>success_substatus = <code class="type">[ `Accepted<br>       | `Created<br>       | `No_content<br>       | `Non_authoritative_information<br>       | `OK<br>       | `Partial_content<br>       | `Reset_content ]</code> </pre>
+<div class="info">
+<b>See also</b> <i>RFC2616</i> success HTTP status<br>
+</div>
+
+<pre><span class="keyword">type</span> <a name="TYPEredirection_substatus"></a><code class="type"></code>redirection_substatus = <code class="type">[ `Found<br>       | `Moved_permanently<br>       | `Multiple_choices<br>       | `Not_modified<br>       | `See_other<br>       | `Temporary_redirect<br>       | `Use_proxy ]</code> </pre>
+<div class="info">
+<b>See also</b> <i>RFC2616</i> redirection HTTP status<br>
+</div>
+
+<pre><span class="keyword">type</span> <a name="TYPEclient_error_substatus"></a><code class="type"></code>client_error_substatus = <code class="type">[ `Bad_request<br>       | `Conflict<br>       | `Expectation_failed<br>       | `Forbidden<br>       | `Gone<br>       | `Length_required<br>       | `Method_not_allowed<br>       | `Not_acceptable<br>       | `Not_found<br>       | `Payment_required<br>       | `Precondition_failed<br>       | `Proxy_authentication_required<br>       | `Request_URI_too_large<br>       | `Request_entity_too_large<br>       | `Request_time_out<br>       | `Requested_range_not_satisfiable<br>       | `Unauthorized<br>       | `Unsupported_media_type ]</code> </pre>
+<div class="info">
+<b>See also</b> <i>RFC2616</i> client error HTTP status<br>
+</div>
+
+<pre><span class="keyword">type</span> <a name="TYPEserver_error_substatus"></a><code class="type"></code>server_error_substatus = <code class="type">[ `Bad_gateway<br>       | `Gateway_time_out<br>       | `HTTP_version_not_supported<br>       | `Internal_server_error<br>       | `Not_implemented<br>       | `Service_unavailable ]</code> </pre>
+<div class="info">
+<b>See also</b> <i>RFC2616</i> server error HTTP status<br>
+</div>
+
+<pre><span class="keyword">type</span> <a name="TYPEinformational_status"></a><code class="type"></code>informational_status = <code class="type">[ `Informational of <a href="Http_types.html#TYPEinformational_substatus">informational_substatus</a> ]</code> </pre>
+
+<pre><span class="keyword">type</span> <a name="TYPEsuccess_status"></a><code class="type"></code>success_status = <code class="type">[ `Success of <a href="Http_types.html#TYPEsuccess_substatus">success_substatus</a> ]</code> </pre>
+
+<pre><span class="keyword">type</span> <a name="TYPEredirection_status"></a><code class="type"></code>redirection_status = <code class="type">[ `Redirection of <a href="Http_types.html#TYPEredirection_substatus">redirection_substatus</a> ]</code> </pre>
+
+<pre><span class="keyword">type</span> <a name="TYPEclient_error_status"></a><code class="type"></code>client_error_status = <code class="type">[ `Client_error of <a href="Http_types.html#TYPEclient_error_substatus">client_error_substatus</a> ]</code> </pre>
+
+<pre><span class="keyword">type</span> <a name="TYPEserver_error_status"></a><code class="type"></code>server_error_status = <code class="type">[ `Server_error of <a href="Http_types.html#TYPEserver_error_substatus">server_error_substatus</a> ]</code> </pre>
+
+<pre><span class="keyword">type</span> <a name="TYPEerror_status"></a><code class="type"></code>error_status = <code class="type">[ `Client_error of <a href="Http_types.html#TYPEclient_error_substatus">client_error_substatus</a><br>       | `Server_error of <a href="Http_types.html#TYPEserver_error_substatus">server_error_substatus</a> ]</code> </pre>
+
+<pre><span class="keyword">type</span> <a name="TYPEstatus"></a><code class="type"></code>status = <code class="type">[ `Client_error of <a href="Http_types.html#TYPEclient_error_substatus">client_error_substatus</a><br>       | `Informational of <a href="Http_types.html#TYPEinformational_substatus">informational_substatus</a><br>       | `Redirection of <a href="Http_types.html#TYPEredirection_substatus">redirection_substatus</a><br>       | `Server_error of <a href="Http_types.html#TYPEserver_error_substatus">server_error_substatus</a><br>       | `Success of <a href="Http_types.html#TYPEsuccess_substatus">success_substatus</a> ]</code> </pre>
+<div class="info">
+HTTP status<br>
+</div>
+
+<pre><span class="keyword">type</span> <a name="TYPEstatus_code"></a><code class="type"></code>status_code = <code class="type">[ `Code of int | `Status of <a href="Http_types.html#TYPEstatus">status</a> ]</code> </pre>
+
+<br><code><span class="keyword">type</span> <a name="TYPEfile_source"></a><code class="type"></code>file_source = </code><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span class="constructor">FileSrc</span> <span class="keyword">of</span> <code class="type">string</code></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" >filename</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code><span class="keyword">|</span></code></td>
+<td align="left" valign="top" >
+<code><span class="constructor">InChanSrc</span> <span class="keyword">of</span> <code class="type">Pervasives.in_channel</code></code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" >input channel</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr></table>
+
+<div class="info">
+File sources<br>
+</div>
+
+<br>
+<a name="2_Exceptions"></a>
+<h2>Exceptions</h2><br>
+<pre><span class="keyword">exception</span> <a name="EXCEPTIONInvalid_header"></a>Invalid_header <span class="keyword">of</span> <code class="type">string</code></pre>
+<div class="info">
+invalid header encountered<br>
+</div>
+<pre><span class="keyword">exception</span> <a name="EXCEPTIONInvalid_header_name"></a>Invalid_header_name <span class="keyword">of</span> <code class="type">string</code></pre>
+<div class="info">
+invalid header name encountered<br>
+</div>
+<pre><span class="keyword">exception</span> <a name="EXCEPTIONInvalid_header_value"></a>Invalid_header_value <span class="keyword">of</span> <code class="type">string</code></pre>
+<div class="info">
+invalid header value encountered<br>
+</div>
+<pre><span class="keyword">exception</span> <a name="EXCEPTIONInvalid_HTTP_version"></a>Invalid_HTTP_version <span class="keyword">of</span> <code class="type">string</code></pre>
+<div class="info">
+unsupported or invalid HTTP version encountered<br>
+</div>
+<pre><span class="keyword">exception</span> <a name="EXCEPTIONInvalid_HTTP_method"></a>Invalid_HTTP_method <span class="keyword">of</span> <code class="type">string</code></pre>
+<div class="info">
+unsupported or invalid HTTP method encountered<br>
+</div>
+<pre><span class="keyword">exception</span> <a name="EXCEPTIONInvalid_code"></a>Invalid_code <span class="keyword">of</span> <code class="type">int</code></pre>
+<div class="info">
+invalid HTTP status code integer representation encountered<br>
+</div>
+<pre><span class="keyword">exception</span> <a name="EXCEPTIONMalformed_URL"></a>Malformed_URL <span class="keyword">of</span> <code class="type">string</code></pre>
+<div class="info">
+invalid URL encountered<br>
+</div>
+<pre><span class="keyword">exception</span> <a name="EXCEPTIONMalformed_query"></a>Malformed_query <span class="keyword">of</span> <code class="type">string</code></pre>
+<div class="info">
+invalid query string encountered<br>
+</div>
+<pre><span class="keyword">exception</span> <a name="EXCEPTIONMalformed_query_part"></a>Malformed_query_part <span class="keyword">of</span> <code class="type">string * string</code></pre>
+<div class="info">
+invalid query string part encountered, arguments are parameter name and
+  parameter value<br>
+</div>
+<pre><span class="keyword">exception</span> <a name="EXCEPTIONMalformed_request_URI"></a>Malformed_request_URI <span class="keyword">of</span> <code class="type">string</code></pre>
+<div class="info">
+invalid request URI encountered<br>
+</div>
+<pre><span class="keyword">exception</span> <a name="EXCEPTIONMalformed_request"></a>Malformed_request <span class="keyword">of</span> <code class="type">string</code></pre>
+<div class="info">
+malformed request received<br>
+</div>
+<pre><span class="keyword">exception</span> <a name="EXCEPTIONMalformed_response"></a>Malformed_response <span class="keyword">of</span> <code class="type">string</code></pre>
+<div class="info">
+malformed response received, argument is response's first line<br>
+</div>
+<pre><span class="keyword">exception</span> <a name="EXCEPTIONParam_not_found"></a>Param_not_found <span class="keyword">of</span> <code class="type">string</code></pre>
+<div class="info">
+a parameter you were looking for was not found<br>
+</div>
+<pre><span class="keyword">exception</span> <a name="EXCEPTIONInvalid_status_line"></a>Invalid_status_line <span class="keyword">of</span> <code class="type">string</code></pre>
+<div class="info">
+invalid HTTP status line encountered<br>
+</div>
+<pre><span class="keyword">exception</span> <a name="EXCEPTIONHeader_not_found"></a>Header_not_found <span class="keyword">of</span> <code class="type">string</code></pre>
+<div class="info">
+an header you were looking for was not found<br>
+</div>
+<pre><span class="keyword">exception</span> <a name="EXCEPTIONQuit"></a>Quit</pre>
+<div class="info">
+raisable by callbacks to make main daemon quit, this is the only
+ 'clean' way to make start functions return<br>
+</div>
+<pre><span class="keyword">exception</span> <a name="EXCEPTIONUnauthorized"></a>Unauthorized <span class="keyword">of</span> <code class="type">string</code></pre>
+<div class="info">
+raisable by callbacks to force a 401 (unauthorized) HTTP answer.
+ This exception should be raised _before_ sending any data over given out
+ channel.
+<br>
+</div>
+<br>
+<a name="2_OOrepresentationofHTTPmessages"></a>
+<h2>OO representation of HTTP messages</h2><br>
+<pre><span class="keyword">class type</span> <a name="TYPEmessage"></a><a href="Http_types.message.html">message</a> = <code class="code">object</code> <a href="Http_types.message.html">..</a> <code class="code">end</code></pre><div class="info">
+HTTP generic messages.
+</div>
+<pre><span class="keyword">class type</span> <a name="TYPErequest"></a><a href="Http_types.request.html">request</a> = <code class="code">object</code> <a href="Http_types.request.html">..</a> <code class="code">end</code></pre><div class="info">
+HTTP requests
+</div>
+<pre><span class="keyword">class type</span> <a name="TYPEresponse"></a><a href="Http_types.response.html">response</a> = <code class="code">object</code> <a href="Http_types.response.html">..</a> <code class="code">end</code></pre><div class="info">
+HTTP responses
+</div>
+<br>
+<a name="2_Daemonspecification"></a>
+<h2>Daemon specification</h2><br>
+<br><code><span class="keyword">type</span> <a name="TYPEdaemon_spec"></a><code class="type"></code>daemon_spec = {</code><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code>address&nbsp;: <code class="type">string</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code>auth&nbsp;: <code class="type">(string * <a href="Http_types.html#TYPEauth_info">auth_info</a>) option</code>;</code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" >authentication requirements (currently only basic authentication is
+ supported). If set to None no authentication is required. If set to Some
+ ("realm", `Basic ("foo", "bar")), only clients authenticated with baisc
+ authentication, for realm "realm", providing username "foo" and password
+ "bar" are accepted; others are rejected with a 401 response code</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code>callback&nbsp;: <code class="type"><a href="Http_types.request.html">request</a> -> Pervasives.out_channel -> unit</code>;</code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" >function which will be called each time a correct HTTP request will be
+ received. 1st callback argument is an Http_types.request object
+ corresponding to the request received; 2nd argument is an output channel
+ corresponding to the socket connected to the client</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code>mode&nbsp;: <code class="type"><a href="Http_types.html#TYPEdaemon_mode">daemon_mode</a></code>;</code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" >requests handling mode, it can have three different values:<ul>
+<li>`Single -&gt; all requests will be handled by the same process,</li>
+<li>`Fork   -&gt; each request will be handled by a child process,</li>
+<li>`Thread -&gt; each request will be handled by a (new) thread</li>
+</ul>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code>port&nbsp;: <code class="type">int</code>;</code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" >TCP port on which the daemon will be listening</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code>root_dir&nbsp;: <code class="type">string option</code>;</code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" >directory to which ocaml http will chdir before starting handling
+ requests; if None, no chdir will be performed (i.e. stay in the current
+ working directory)</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code>exn_handler&nbsp;: <code class="type">(exn -> Pervasives.out_channel -> unit) option</code>;</code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" >what to do when executing callback raises an exception.  If None, the
+ exception will be re-raised: in `Fork/`Thread mode the current
+ process/thread will be terminated. in `Single mode the exception is
+ ignored and the client socket closed. If Some callback, the callback will
+ be executed before acting as per None; the callback is meant to perform
+ some clean up actions, like releasing global mutexes in `Thread mode</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code>timeout&nbsp;: <code class="type">int option</code>;</code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" >timeout in seconds after which an incoming HTTP request will be
+ terminated closing the corresponding TCP connection; None disable the
+ timeout</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code>auto_close&nbsp;: <code class="type">bool</code>;</code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" >whether ocaml-http will automatically close the connection with the
+ client after callback has completed its execution. If set to true, close
+ will be attempted no matter if the callback raises an exception or not</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr></table>
+}
+
+<div class="info">
+daemon specification, describe the behaviour of an HTTP daemon.
+<p>
+
+ The default daemon specification is <a href="Http_daemon.html#VALdefault_spec"><code class="code">Http_daemon.default_spec</code></a><br>
+</div>
+
+<br>
+<a name="2_OOrepresentationofotherHTTPentities"></a>
+<h2>OO representation of other HTTP entities</h2><br>
+<pre><span class="keyword">class type</span> <a name="TYPEconnection"></a><a href="Http_types.connection.html">connection</a> = <code class="code">object</code> <a href="Http_types.connection.html">..</a> <code class="code">end</code></pre><div class="info">
+an HTTP connection from a client to a server
+</div>
+<pre><span class="keyword">class type</span> <a name="TYPEdaemon"></a><a href="Http_types.daemon.html">daemon</a> = <code class="code">object</code> <a href="Http_types.daemon.html">..</a> <code class="code">end</code></pre><div class="info">
+an HTTP daemon
+</div>
+</body></html>

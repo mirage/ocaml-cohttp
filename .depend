@@ -1,0 +1,49 @@
+http_common.cmo: http_types.cmi http_constants.cmi http_common.cmi 
+http_common.cmx: http_types.cmx http_constants.cmx http_common.cmi 
+http_constants.cmo: http_constants.cmi 
+http_constants.cmx: http_constants.cmi 
+http_daemon.cmo: http_types.cmi http_tcp_server.cmi http_request.cmi \
+    http_parser_sanity.cmi http_parser.cmi http_misc.cmi http_constants.cmi \
+    http_common.cmi http_daemon.cmi 
+http_daemon.cmx: http_types.cmx http_tcp_server.cmx http_request.cmx \
+    http_parser_sanity.cmx http_parser.cmx http_misc.cmx http_constants.cmx \
+    http_common.cmx http_daemon.cmi 
+http_message.cmo: http_types.cmi http_parser_sanity.cmi http_misc.cmi \
+    http_constants.cmi http_common.cmi http_message.cmi 
+http_message.cmx: http_types.cmx http_parser_sanity.cmx http_misc.cmx \
+    http_constants.cmx http_common.cmx http_message.cmi 
+http_misc.cmo: http_types.cmi http_misc.cmi 
+http_misc.cmx: http_types.cmx http_misc.cmi 
+http_parser.cmo: http_types.cmi http_parser_sanity.cmi http_constants.cmi \
+    http_common.cmi http_parser.cmi 
+http_parser.cmx: http_types.cmx http_parser_sanity.cmx http_constants.cmx \
+    http_common.cmx http_parser.cmi 
+http_parser_sanity.cmo: http_types.cmi http_constants.cmi \
+    http_parser_sanity.cmi 
+http_parser_sanity.cmx: http_types.cmx http_constants.cmx \
+    http_parser_sanity.cmi 
+http_request.cmo: http_types.cmi http_parser.cmi http_misc.cmi \
+    http_message.cmi http_common.cmi http_request.cmi 
+http_request.cmx: http_types.cmx http_parser.cmx http_misc.cmx \
+    http_message.cmx http_common.cmx http_request.cmi 
+http_response.cmo: http_types.cmi http_misc.cmi http_message.cmi \
+    http_daemon.cmi http_constants.cmi http_common.cmi http_response.cmi 
+http_response.cmx: http_types.cmx http_misc.cmx http_message.cmx \
+    http_daemon.cmx http_constants.cmx http_common.cmx http_response.cmi 
+http_tcp_server.cmo: http_threaded_tcp_server.cmi http_tcp_server.cmi 
+http_tcp_server.cmx: http_threaded_tcp_server.cmi http_tcp_server.cmi 
+http_types.cmo: http_types.cmi 
+http_types.cmx: http_types.cmi 
+http_user_agent.cmo: http_parser.cmi http_misc.cmi http_common.cmi \
+    http_user_agent.cmi 
+http_user_agent.cmx: http_parser.cmx http_misc.cmx http_common.cmx \
+    http_user_agent.cmi 
+http_common.cmi: http_types.cmi 
+http_constants.cmi: http_types.cmi 
+http_daemon.cmi: http_types.cmi 
+http_message.cmi: http_types.cmi 
+http_parser.cmi: http_types.cmi 
+http_request.cmi: http_types.cmi 
+http_response.cmi: http_types.cmi 
+http_tcp_server.cmi: http_types.cmi 
+http_user_agent.cmi: http_types.cmi 

@@ -1,0 +1,15 @@
+
+Author: Stefano Zacchiroli <zack@cs.unibo.it>
+
+Copyright:
+
+  OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
+
+  Copyright (C) <2002-2005> Stefano Zacchiroli <zack@cs.unibo.it>
+
+  OCaml HTTP is distributed under the term of the GNU Library General
+  Public License version 2, on Debian systems you can find a copy of the
+  license in:
+
+    /usr/share/common-licenses/LGPL-2
+

@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Http_types.message.html">
+<link rel="next" href="Http_types.response.html">
+<link rel="Up" href="Http_types.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of class methods" rel=Appendix href="index_methods.html">
+<link title="Index of classes" rel=Appendix href="index_classes.html">
+<link title="Index of class types" rel=Appendix href="index_class_types.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Http_common" rel="Chapter" href="Http_common.html">
+<link title="Http_constants" rel="Chapter" href="Http_constants.html">
+<link title="Http_daemon" rel="Chapter" href="Http_daemon.html">
+<link title="Http_message" rel="Chapter" href="Http_message.html">
+<link title="Http_misc" rel="Chapter" href="Http_misc.html">
+<link title="Http_parser" rel="Chapter" href="Http_parser.html">
+<link title="Http_parser_sanity" rel="Chapter" href="Http_parser_sanity.html">
+<link title="Http_request" rel="Chapter" href="Http_request.html">
+<link title="Http_response" rel="Chapter" href="Http_response.html">
+<link title="Http_tcp_server" rel="Chapter" href="Http_tcp_server.html">
+<link title="Http_threaded_tcp_server" rel="Chapter" href="Http_threaded_tcp_server.html">
+<link title="Http_types" rel="Chapter" href="Http_types.html">
+<link title="Http_user_agent" rel="Chapter" href="Http_user_agent.html"><title>Http_types.request</title>
+</head>
+<body>
+<div class="navbar"><a href="Http_types.message.html">Previous</a>
+&nbsp;<a href="Http_types.html">Up</a>
+&nbsp;<a href="Http_types.response.html">Next</a>
+</div>
+<center><h1>Class type <a href="type_Http_types.request.html">Http_types.request</a></h1></center>
+<br>
+<pre><span class="keyword">class type</span> <a name="TYPErequest"></a>request = <code class="code">object</code> <a href="Http_types.request.html">..</a> <code class="code">end</code></pre>HTTP requests<br>
+<b>Inherits</b><ul>
+<li><a href="Http_types.message.html"><code class="code">Http_types.message</code></a>    an HTTP request is a flavour of HTTP message</li>
+</ul>
+<hr width="100%">
+<pre><span class="keyword">method</span> <a name="METHODmeth"></a>meth : <code class="type"><a href="Http_types.html#TYPEmeth">meth</a></code></pre><div class="info">
+<b>Returns</b> request method<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODuri"></a>uri : <code class="type">string</code></pre><div class="info">
+<b>Returns</b> requested URI (including query string, fragment, ...)<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODpath"></a>path : <code class="type">string</code></pre><div class="info">
+<b>Returns</b> requested path<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODparam"></a>param : <code class="type">?meth:<a href="Http_types.html#TYPEmeth">meth</a> -> ?default:string -> string -> string</code></pre><div class="info">
+lookup a given parameter<br>
+<b>Raises</b> <code>Param_not_found</code> if parameter name was not found<br>
+<b>Returns</b> value associated to parameter name<br>
+</div>
+<div class="param_info"><code class="code">meth</code> : if given restrict the lookup area (e.g. if meth = POST than
+        only parameters received via POST are searched), if not given both GET
+        and POST parameter are searched in an unspecified order (actually the
+        implementation prefers POST parameters but this is not granted, you've
+        been warned)</div>
+<div class="param_info"><code class="code">default</code> : if provided, this value will be returned in case no
+        parameter of that name is available instead of raising Param_not_found</div>
+<pre><span class="keyword">method</span> <a name="METHODparamAll"></a>paramAll : <code class="type">?meth:<a href="Http_types.html#TYPEmeth">meth</a> -> string -> string list</code></pre><div class="info">
+like param above but return a list of values associated to given
+      parameter (a parameter could be defined indeed more than once: passed more
+      than once in a query string or passed both insider the url (the GET way)
+      and inside message body (the POST way))<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODparams"></a>params : <code class="type">(string * string) list</code></pre><div class="info">
+<b>Returns</b> the list of all received parameters<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODparams_GET"></a>params_GET : <code class="type">(string * string) list</code></pre><div class="info">
+<b>Returns</b> the list of all parameters received via GET<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODparams_POST"></a>params_POST : <code class="type">(string * string) list</code></pre><div class="info">
+<b>Returns</b> the list of all parameter received via POST<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODauthorization"></a>authorization : <code class="type"><a href="Http_types.html#TYPEauth_info">auth_info</a> option</code></pre><div class="info">
+<b>Returns</b> authorization information, if given by the client<br>
+</div>
+</body></html>

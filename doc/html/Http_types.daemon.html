@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Http_types.connection.html">
+<link rel="Up" href="Http_types.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of class methods" rel=Appendix href="index_methods.html">
+<link title="Index of classes" rel=Appendix href="index_classes.html">
+<link title="Index of class types" rel=Appendix href="index_class_types.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Http_common" rel="Chapter" href="Http_common.html">
+<link title="Http_constants" rel="Chapter" href="Http_constants.html">
+<link title="Http_daemon" rel="Chapter" href="Http_daemon.html">
+<link title="Http_message" rel="Chapter" href="Http_message.html">
+<link title="Http_misc" rel="Chapter" href="Http_misc.html">
+<link title="Http_parser" rel="Chapter" href="Http_parser.html">
+<link title="Http_parser_sanity" rel="Chapter" href="Http_parser_sanity.html">
+<link title="Http_request" rel="Chapter" href="Http_request.html">
+<link title="Http_response" rel="Chapter" href="Http_response.html">
+<link title="Http_tcp_server" rel="Chapter" href="Http_tcp_server.html">
+<link title="Http_threaded_tcp_server" rel="Chapter" href="Http_threaded_tcp_server.html">
+<link title="Http_types" rel="Chapter" href="Http_types.html">
+<link title="Http_user_agent" rel="Chapter" href="Http_user_agent.html"><title>Http_types.daemon</title>
+</head>
+<body>
+<div class="navbar"><a href="Http_types.connection.html">Previous</a>
+&nbsp;<a href="Http_types.html">Up</a>
+&nbsp;</div>
+<center><h1>Class type <a href="type_Http_types.daemon.html">Http_types.daemon</a></h1></center>
+<br>
+<pre><span class="keyword">class type</span> <a name="TYPEdaemon"></a>daemon = <code class="code">object</code> <a href="Http_types.daemon.html">..</a> <code class="code">end</code></pre>an HTTP daemon<br>
+<hr width="100%">
+<pre><span class="keyword">method</span> <a name="METHODaccept"></a>accept : <code class="type"><a href="Http_types.connection.html">connection</a></code></pre><div class="info">
+<b>Returns</b> a connection to a client, may block if no client has connected
+      yet<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODgetRequest"></a>getRequest : <code class="type"><a href="Http_types.request.html">request</a> * <a href="Http_types.connection.html">connection</a></code></pre><div class="info">
+shortcut method, blocks until a client has submit a request and
+      return a pair request * connection<br>
+</div>
+</body></html>

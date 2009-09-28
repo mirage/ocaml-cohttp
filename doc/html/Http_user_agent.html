@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Http_types.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of class methods" rel=Appendix href="index_methods.html">
+<link title="Index of classes" rel=Appendix href="index_classes.html">
+<link title="Index of class types" rel=Appendix href="index_class_types.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Http_common" rel="Chapter" href="Http_common.html">
+<link title="Http_constants" rel="Chapter" href="Http_constants.html">
+<link title="Http_daemon" rel="Chapter" href="Http_daemon.html">
+<link title="Http_message" rel="Chapter" href="Http_message.html">
+<link title="Http_misc" rel="Chapter" href="Http_misc.html">
+<link title="Http_parser" rel="Chapter" href="Http_parser.html">
+<link title="Http_parser_sanity" rel="Chapter" href="Http_parser_sanity.html">
+<link title="Http_request" rel="Chapter" href="Http_request.html">
+<link title="Http_response" rel="Chapter" href="Http_response.html">
+<link title="Http_tcp_server" rel="Chapter" href="Http_tcp_server.html">
+<link title="Http_threaded_tcp_server" rel="Chapter" href="Http_threaded_tcp_server.html">
+<link title="Http_types" rel="Chapter" href="Http_types.html">
+<link title="Http_user_agent" rel="Chapter" href="Http_user_agent.html"><title>Http_user_agent</title>
+</head>
+<body>
+<div class="navbar"><a href="Http_types.html">Previous</a>
+&nbsp;<a href="index.html">Up</a>
+&nbsp;</div>
+<center><h1>Module <a href="type_Http_user_agent.html">Http_user_agent</a></h1></center>
+<br>
+<pre><span class="keyword">module</span> Http_user_agent: <code class="code">sig</code> <a href="Http_user_agent.html">..</a> <code class="code">end</code></pre>Minimal implementation of an HTTP 1.0/1.1 client. Interface is similar to
+ Gerd Stoplmann's Http_client module. Implementation is simpler and doesn't
+ handle HTTP redirection, proxies, ecc. The only reason for the existence of
+ this module is for performances and incremental elaboration of response's
+ bodies<br>
+<hr width="100%">
+<pre><span class="keyword">exception</span> <a name="EXCEPTIONHttp_error"></a>Http_error <span class="keyword">of</span> <code class="type">(int * string)</code></pre>
+<pre><span class="keyword">val</span> <a name="VALget"></a>get : <code class="type">?head_callback:(<a href="Http_types.html#TYPEstatus">Http_types.status</a> -> (string * string) list -> unit) -><br>       string -> string</code></pre><div class="info">
+<b>Raises</b> <code>Http_error</code> when response code &lt;&gt; 200<br>
+<b>Returns</b> HTTP response's body<br>
+</div>
+<div class="param_info"><code class="code">head_callback</code> : optional calllback invoked on response's status and
+ headers. If not provided no callback will be invoked</div>
+<pre><span class="keyword">val</span> <a name="VALget_iter"></a>get_iter : <code class="type">?head_callback:(<a href="Http_types.html#TYPEstatus">Http_types.status</a> -> (string * string) list -> unit) -><br>       (string -> unit) -> string -> unit</code></pre><div class="info">
+as above but iter callback function on HTTP response's body instead of
+ returning it as a string<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALhead"></a>head : <code class="type">string -> string</code></pre><div class="info">
+<b>Raises</b> <code>Http_error</code> when response code &lt;&gt; 200<br>
+<b>Returns</b> HTTP HEAD raw response<br>
+</div>
+</body></html>

@@ -1,0 +1,37 @@
+
+In order to build ocaml-http you will need:
+
+  - the ocaml compiler
+    [ http://caml.inria.fr ]
+
+  - findlib
+    [ http://www.ocaml-programming.de/packages/documentation/findlib/ ]
+
+  - ocamlnet
+    [ http://sourceforge.net/projects/ocamlnet ]
+
+  - pcre-ocaml
+    [ http://www.ai.univie.ac.at/~markus/home/ocaml_sources.html ]
+
+To build the bytecode library:
+
+  $ make all
+
+To build the nativecode library (only if you have an ocaml native code
+compiler):
+
+  $ make opt
+
+To install the built stuff in the OCaml standard library directory (as root):
+
+  # make install
+
+To install the built stuff in another directory:
+
+  $ make install DESTDIR=another_directory
+
+To build a debian package of the library (please note that to build a debian
+package you will also need some additional stuff like debhelper, fakeroot, ...):
+
+  $ fakeroot debian/rules binary
+

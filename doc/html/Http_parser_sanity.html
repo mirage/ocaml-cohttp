@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Http_parser.html">
+<link rel="next" href="Http_request.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of class methods" rel=Appendix href="index_methods.html">
+<link title="Index of classes" rel=Appendix href="index_classes.html">
+<link title="Index of class types" rel=Appendix href="index_class_types.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Http_common" rel="Chapter" href="Http_common.html">
+<link title="Http_constants" rel="Chapter" href="Http_constants.html">
+<link title="Http_daemon" rel="Chapter" href="Http_daemon.html">
+<link title="Http_message" rel="Chapter" href="Http_message.html">
+<link title="Http_misc" rel="Chapter" href="Http_misc.html">
+<link title="Http_parser" rel="Chapter" href="Http_parser.html">
+<link title="Http_parser_sanity" rel="Chapter" href="Http_parser_sanity.html">
+<link title="Http_request" rel="Chapter" href="Http_request.html">
+<link title="Http_response" rel="Chapter" href="Http_response.html">
+<link title="Http_tcp_server" rel="Chapter" href="Http_tcp_server.html">
+<link title="Http_threaded_tcp_server" rel="Chapter" href="Http_threaded_tcp_server.html">
+<link title="Http_types" rel="Chapter" href="Http_types.html">
+<link title="Http_user_agent" rel="Chapter" href="Http_user_agent.html"><title>Http_parser_sanity</title>
+</head>
+<body>
+<div class="navbar"><a href="Http_parser.html">Previous</a>
+&nbsp;<a href="index.html">Up</a>
+&nbsp;<a href="Http_request.html">Next</a>
+</div>
+<center><h1>Module <a href="type_Http_parser_sanity.html">Http_parser_sanity</a></h1></center>
+<br>
+<pre><span class="keyword">module</span> Http_parser_sanity: <code class="code">sig</code> <a href="Http_parser_sanity.html">..</a> <code class="code">end</code></pre>Sanity test functions related to HTTP message parsing<br>
+<hr width="100%">
+<pre><span class="keyword">val</span> <a name="VALheal_header_name"></a>heal_header_name : <code class="type">string -> unit</code></pre><div class="info">
+<b>Raises</b> <code>Invalid_header_name</code> if name isn't a valid HTTP header name<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALheal_header_value"></a>heal_header_value : <code class="type">string -> unit</code></pre><div class="info">
+<b>Raises</b> <code>Invalid_header_value</code> if value isn't a valid HTTP header value<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALheal_header"></a>heal_header : <code class="type">string * string -> unit</code></pre><div class="info">
+<b>Raises</b><ul><li><code>Invalid_header_name</code> if name isn't a valid HTTP header name</li>
+<li><code>Invalid_header_value</code> if value isn't a valid HTTP header value</li>
+</ul>
+</div>
+<pre><span class="keyword">val</span> <a name="VALnormalize_header_value"></a>normalize_header_value : <code class="type">string -> string</code></pre><div class="info">
+remove heading and/or trailing LWS sequences as per RFC2616<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALurl_of_string"></a>url_of_string : <code class="type">string -> Neturl.url</code></pre><div class="info">
+parse an URL from a string.<br>
+<b>Raises</b> <code>Malformed_URL</code> if an invalid URL is encountered<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALstring_of_url"></a>string_of_url : <code class="type">Neturl.url -> string</code></pre><div class="info">
+pretty print an URL<br>
+</div>
+</body></html>

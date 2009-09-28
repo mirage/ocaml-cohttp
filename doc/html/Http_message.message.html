@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="Up" href="Http_message.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of class methods" rel=Appendix href="index_methods.html">
+<link title="Index of classes" rel=Appendix href="index_classes.html">
+<link title="Index of class types" rel=Appendix href="index_class_types.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Http_common" rel="Chapter" href="Http_common.html">
+<link title="Http_constants" rel="Chapter" href="Http_constants.html">
+<link title="Http_daemon" rel="Chapter" href="Http_daemon.html">
+<link title="Http_message" rel="Chapter" href="Http_message.html">
+<link title="Http_misc" rel="Chapter" href="Http_misc.html">
+<link title="Http_parser" rel="Chapter" href="Http_parser.html">
+<link title="Http_parser_sanity" rel="Chapter" href="Http_parser_sanity.html">
+<link title="Http_request" rel="Chapter" href="Http_request.html">
+<link title="Http_response" rel="Chapter" href="Http_response.html">
+<link title="Http_tcp_server" rel="Chapter" href="Http_tcp_server.html">
+<link title="Http_threaded_tcp_server" rel="Chapter" href="Http_threaded_tcp_server.html">
+<link title="Http_types" rel="Chapter" href="Http_types.html">
+<link title="Http_user_agent" rel="Chapter" href="Http_user_agent.html"><title>Http_message.message</title>
+</head>
+<body>
+<div class="navbar">&nbsp;<a href="Http_message.html">Up</a>
+&nbsp;</div>
+<center><h1>Class virtual <a href="type_Http_message.message.html">Http_message.message</a></h1></center>
+<br>
+<pre><span class="keyword">class</span> <a name="TYPEmessage"></a><span class="keyword">virtual</span> message : <code class="type">body:string -> headers:(string * string) list -> version:<a href="Http_types.html#TYPEversion">Http_types.version</a> option -> clisockaddr:Unix.sockaddr -> srvsockaddr:Unix.sockaddr -> </code><code class="code">object</code> <a href="Http_message.message.html">..</a> <code class="code">end</code></pre>OO representation of an HTTP message<br>
+<div class="param_info"><code class="code">headers</code> : message headers shipped with the message</div>
+<hr width="100%">
+<pre><span class="keyword">method</span> <a name="METHODversion"></a>version : <code class="type"><a href="Http_types.html#TYPEversion">Http_types.version</a> option</code></pre><div class="info">
+<b>Returns</b> message HTTP version, it can be None because older version
+        of the HTTP protocol don't require HTTP version to be told between
+        message source and destination<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODsetVersion"></a>setVersion : <code class="type"><a href="Http_types.html#TYPEversion">Http_types.version</a> -> unit</code></pre><div class="info">
+set message HTTP version<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODbody"></a>body : <code class="type">string</code></pre><div class="info">
+<b>Returns</b> message body<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODsetBody"></a>setBody : <code class="type">string -> unit</code></pre><div class="info">
+set message body<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODbodyBuf"></a>bodyBuf : <code class="type">Buffer.t</code></pre><div class="info">
+<b>Returns</b> a Buffer.t connected to message body (Warning: changing this
+        buffer will change message body too)<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODsetBodyBuf"></a>setBodyBuf : <code class="type">Buffer.t -> unit</code></pre><div class="info">
+set a new Buffer.t used to keep message body<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODaddBody"></a>addBody : <code class="type">string -> unit</code></pre><div class="info">
+append a string to message body<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODaddBodyBuf"></a>addBodyBuf : <code class="type">Buffer.t -> unit</code></pre><div class="info">
+append a whole buffer to message body<br>
+</div>
+<i>header name comparison are performed in a case-insensitive manner
+      as required by RFC2616, actually the implementation works converting all
+      header names in lowercase</i><pre><span class="keyword">method</span> <a name="METHODaddHeader"></a>addHeader : <code class="type">name:string -> value:string -> unit</code></pre><div class="info">
+add an HTTP header<br>
+</div>
+<div class="param_info"><code class="code">name</code> : header's name</div>
+<div class="param_info"><code class="code">value</code> : header's value</div>
+<pre><span class="keyword">method</span> <a name="METHODaddHeaders"></a>addHeaders : <code class="type">(string * string) list -> unit</code></pre><div class="info">
+add a list of HTTP headers<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODreplaceHeader"></a>replaceHeader : <code class="type">name:string -> value:string -> unit</code></pre><div class="info">
+like addHeader but replace previous definition of the same header<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODreplaceHeaders"></a>replaceHeaders : <code class="type">(string * string) list -> unit</code></pre><div class="info">
+like addHeaders but replace previous definition of headers that were
+        already defined<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODremoveHeader"></a>removeHeader : <code class="type">name:string -> unit</code></pre><div class="info">
+remove _all_ occurences of an HTTP header from the message<br>
+</div>
+<div class="param_info"><code class="code">name</code> : name of the header to be removed</div>
+<pre><span class="keyword">method</span> <a name="METHODhasHeader"></a>hasHeader : <code class="type">name:string -> bool</code></pre><div class="info">
+<b>Returns</b> true if given header exists in message, false otherwise<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODheader"></a>header : <code class="type">name:string -> string</code></pre><div class="info">
+<b>Raises</b> <code>Header_not_found</code> if given header wasn't defined in message<br>
+<b>Returns</b> value associated to a given header<br>
+</div>
+<div class="param_info"><code class="code">name</code> : name of the header to lookup</div>
+<pre><span class="keyword">method</span> <a name="METHODheaders"></a>headers : <code class="type">(string * string) list</code></pre><div class="info">
+<b>Returns</b> the full set of headers defined for this message, the value
+        returned is an association list from headers name to headers value, an
+        header may occurs more that once in the list<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODclientSockaddr"></a>clientSockaddr : <code class="type">Unix.sockaddr</code></pre><div class="info">
+<b>Returns</b> client Unix.sockaddr<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODclientAddr"></a>clientAddr : <code class="type">string</code></pre><div class="info">
+<b>Returns</b> client address pretty printed<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODclientPort"></a>clientPort : <code class="type">int</code></pre><div class="info">
+<b>Returns</b> client port<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODserverSockaddr"></a>serverSockaddr : <code class="type">Unix.sockaddr</code></pre><div class="info">
+<b>Returns</b> server Unix.sockaddr<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODserverAddr"></a>serverAddr : <code class="type">string</code></pre><div class="info">
+<b>Returns</b> server address pretty printed<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODserverPort"></a>serverPort : <code class="type">int</code></pre><div class="info">
+<b>Returns</b> server port<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODfstLineToString"></a><span class="keyword">private</span> <span class="keyword">virtual</span> fstLineToString : <code class="type">string</code></pre><div class="info">
+<b>Returns</b> for requests first request line, for responses first
+        response line.
+        User by derived requests and responses to implement toString method<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODtoString"></a>toString : <code class="type">string</code></pre><div class="info">
+<b>Returns</b> a string representation of the message<br>
+</div>
+<pre><span class="keyword">method</span> <a name="METHODserialize"></a>serialize : <code class="type">Pervasives.out_channel -> unit</code></pre><div class="info">
+serialize the message over an output channel<br>
+</div>
+</body></html>

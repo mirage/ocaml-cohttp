@@ -1,0 +1,24 @@
+PKGNAME = http
+DISTVERSION = $(shell dpkg-parsechangelog | egrep '^Version: ' | sed 's/^Version: //' | sed 's/-.*//')
+
+DEBUG_FLAGS =
+REQUIRES = unix str pcre netstring
+COMMON_FLAGS = $(DEBUG_FLAGS) -pp camlp4o -package "$(REQUIRES)"
+THREADS_FLAGS = -package threads -thread
+OCAMLFIND = ocamlfind
+OCAMLC = $(OCAMLFIND) ocamlc $(COMMON_FLAGS)
+OCAMLOPT = $(OCAMLFIND) ocamlopt $(COMMON_FLAGS)
+OCAMLDEP = $(OCAMLFIND) ocamldep $(COMMON_FLAGS)
+OCAMLDOC :=							\
+	ocamldoc -stars						\
+		$(shell $(OCAMLFIND) query -i-format unix)	\
+		$(shell $(OCAMLFIND) query -i-format pcre)	\
+		$(shell $(OCAMLFIND) query -i-format netstring)
+DOT = dot
+
+DISTNAME = ocaml-http
+DISTDIR = $(DISTNAME)-$(DISTVERSION)
+EXTRA_DIST =	\
+	INSTALL LICENSE README META.in Makefile Makefile.defs	\
+	.depend
+

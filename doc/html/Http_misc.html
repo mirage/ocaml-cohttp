@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Http_message.html">
+<link rel="next" href="Http_parser.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of class methods" rel=Appendix href="index_methods.html">
+<link title="Index of classes" rel=Appendix href="index_classes.html">
+<link title="Index of class types" rel=Appendix href="index_class_types.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Http_common" rel="Chapter" href="Http_common.html">
+<link title="Http_constants" rel="Chapter" href="Http_constants.html">
+<link title="Http_daemon" rel="Chapter" href="Http_daemon.html">
+<link title="Http_message" rel="Chapter" href="Http_message.html">
+<link title="Http_misc" rel="Chapter" href="Http_misc.html">
+<link title="Http_parser" rel="Chapter" href="Http_parser.html">
+<link title="Http_parser_sanity" rel="Chapter" href="Http_parser_sanity.html">
+<link title="Http_request" rel="Chapter" href="Http_request.html">
+<link title="Http_response" rel="Chapter" href="Http_response.html">
+<link title="Http_tcp_server" rel="Chapter" href="Http_tcp_server.html">
+<link title="Http_threaded_tcp_server" rel="Chapter" href="Http_threaded_tcp_server.html">
+<link title="Http_types" rel="Chapter" href="Http_types.html">
+<link title="Http_user_agent" rel="Chapter" href="Http_user_agent.html"><title>Http_misc</title>
+</head>
+<body>
+<div class="navbar"><a href="Http_message.html">Previous</a>
+&nbsp;<a href="index.html">Up</a>
+&nbsp;<a href="Http_parser.html">Next</a>
+</div>
+<center><h1>Module <a href="type_Http_misc.html">Http_misc</a></h1></center>
+<br>
+<pre><span class="keyword">module</span> Http_misc: <code class="code">sig</code> <a href="Http_misc.html">..</a> <code class="code">end</code></pre>Helpers and other not better classified functions which should not be
+exposed in the final API<br>
+<hr width="100%">
+<pre><span class="keyword">val</span> <a name="VALdate_822"></a>date_822 : <code class="type">unit -> string</code></pre><div class="info">
+<b>Returns</b> the current date compliant to RFC 1123, which updates RFC 822
+  zone info are retrieved from UTC<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALis_directory"></a>is_directory : <code class="type">string -> bool</code></pre><div class="info">
+<b>Returns</b> true if 'name' is a directory on the file system, false otherwise<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALfilesize"></a>filesize : <code class="type">string -> int</code></pre><div class="info">
+<b>Returns</b> the filesize of fname<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALstrip_trailing_slash"></a>strip_trailing_slash : <code class="type">string -> string</code></pre><div class="info">
+strip trailing '/', if any, from a string and<br>
+<b>Returns</b> the new string<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALstrip_heading_slash"></a>strip_heading_slash : <code class="type">string -> string</code></pre><div class="info">
+strip heading '/', if any, from a string and<br>
+<b>Returns</b> the new string<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALls"></a>ls : <code class="type">Unix.dir_handle -> string list</code></pre><div class="info">
+given a dir handle<br>
+<b>Returns</b> a list of entries contained<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALstring_explode"></a>string_explode : <code class="type">string -> char list</code></pre><div class="info">
+explode a string in a char list<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALstring_implode"></a>string_implode : <code class="type">char list -> string</code></pre><div class="info">
+implode a char list in a string<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALreason_phrase_of_code"></a>reason_phrase_of_code : <code class="type">int -> string</code></pre><div class="info">
+given an HTTP response code return the corresponding reason phrase<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALbuild_sockaddr"></a>build_sockaddr : <code class="type">string * int -> Unix.sockaddr</code></pre><div class="info">
+build a Unix.sockaddr inet address from a string representation of an IP
+  address and a port number<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALexplode_sockaddr"></a>explode_sockaddr : <code class="type">Unix.sockaddr -> string * int</code></pre><div class="info">
+explode an _inet_ Unix.sockaddr address in a string representation of an
+  IP address and a port number<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALpeername_of_out_channel"></a>peername_of_out_channel : <code class="type">Pervasives.out_channel -> Unix.sockaddr</code></pre><div class="info">
+given an out_channel build on top of a socket, return peername related to
+  that socket<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALpeername_of_in_channel"></a>peername_of_in_channel : <code class="type">Pervasives.in_channel -> Unix.sockaddr</code></pre><div class="info">
+as above but works on in_channels<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALsockname_of_out_channel"></a>sockname_of_out_channel : <code class="type">Pervasives.out_channel -> Unix.sockaddr</code></pre><div class="info">
+given an out_channel build on top of a socket, return sockname related to
+  that socket<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALsockname_of_in_channel"></a>sockname_of_in_channel : <code class="type">Pervasives.in_channel -> Unix.sockaddr</code></pre><div class="info">
+as above but works on in_channels<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALbuf_of_inchan"></a>buf_of_inchan : <code class="type">?limit:int -> Pervasives.in_channel -> Buffer.t</code></pre><div class="info">
+reads from an input channel till it End_of_file and returns what has been
+  read; if limit is given returned buffer will contains at most first 'limit'
+  bytes read from input channel<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALlist_assoc_all"></a>list_assoc_all : <code class="type">'a -> ('a * 'b) list -> 'b list</code></pre><div class="info">
+like List.assoc but return all bindings of a given key instead of the
+  leftmost one only<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALwarn"></a>warn : <code class="type">string -> unit</code></pre><div class="info">
+print a warning msg to stderr. Adds trailing \n<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALerror"></a>error : <code class="type">string -> unit</code></pre><div class="info">
+print an error msg to stderr. Adds trailing \n<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALfinally"></a>finally : <code class="type">(unit -> unit) -> ('a -> 'b) -> 'a -> 'b</code></pre><div class="info">
+</div>
+</body></html>

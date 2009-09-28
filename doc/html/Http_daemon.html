@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Http_constants.html">
+<link rel="next" href="Http_message.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of class methods" rel=Appendix href="index_methods.html">
+<link title="Index of classes" rel=Appendix href="index_classes.html">
+<link title="Index of class types" rel=Appendix href="index_class_types.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Http_common" rel="Chapter" href="Http_common.html">
+<link title="Http_constants" rel="Chapter" href="Http_constants.html">
+<link title="Http_daemon" rel="Chapter" href="Http_daemon.html">
+<link title="Http_message" rel="Chapter" href="Http_message.html">
+<link title="Http_misc" rel="Chapter" href="Http_misc.html">
+<link title="Http_parser" rel="Chapter" href="Http_parser.html">
+<link title="Http_parser_sanity" rel="Chapter" href="Http_parser_sanity.html">
+<link title="Http_request" rel="Chapter" href="Http_request.html">
+<link title="Http_response" rel="Chapter" href="Http_response.html">
+<link title="Http_tcp_server" rel="Chapter" href="Http_tcp_server.html">
+<link title="Http_threaded_tcp_server" rel="Chapter" href="Http_threaded_tcp_server.html">
+<link title="Http_types" rel="Chapter" href="Http_types.html">
+<link title="Http_user_agent" rel="Chapter" href="Http_user_agent.html"><title>Http_daemon</title>
+</head>
+<body>
+<div class="navbar"><a href="Http_constants.html">Previous</a>
+&nbsp;<a href="index.html">Up</a>
+&nbsp;<a href="Http_message.html">Next</a>
+</div>
+<center><h1>Module <a href="type_Http_daemon.html">Http_daemon</a></h1></center>
+<br>
+<pre><span class="keyword">module</span> Http_daemon: <code class="code">sig</code> <a href="Http_daemon.html">..</a> <code class="code">end</code></pre>Main OCaml HTTP module.
+    Here you can find two set of functions:<ul>
+<li>functions which let you start an HTTP Daemon (start* functions)</li>
+<li>facility functions which let you sent responses back to clients</li>
+</ul>
+<br>
+<hr width="100%">
+<pre><span class="keyword">val</span> <a name="VALsend_CRLF"></a>send_CRLF : <code class="type">Pervasives.out_channel -> unit</code></pre><div class="info">
+send a CRLF sequence on the given output channel, this is mandatory after
+  the last header was sent and before start sending the response body<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALsend_status_line"></a>send_status_line : <code class="type">?version:<a href="Http_types.html#TYPEversion">Http_types.version</a> -><br>       code:<a href="Http_types.html#TYPEstatus_code">Http_types.status_code</a> -> Pervasives.out_channel -> unit</code></pre><div class="info">
+send response status line, version is the http version used in response,
+  either code or status must be given (not both, not none) which represent the
+  HTTP response code, outchan is the output channel to which send status line<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALsend_basic_headers"></a>send_basic_headers : <code class="type">?version:<a href="Http_types.html#TYPEversion">Http_types.version</a> -><br>       code:<a href="Http_types.html#TYPEstatus_code">Http_types.status_code</a> -> Pervasives.out_channel -> unit</code></pre><div class="info">
+like send_status_line but additionally will also send "Date" and "Server"
+  standard headers<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALsend_header"></a>send_header : <code class="type">header:string -> value:string -> Pervasives.out_channel -> unit</code></pre><div class="info">
+send an HTTP header on outchan<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALsend_headers"></a>send_headers : <code class="type">headers:(string * string) list -> Pervasives.out_channel -> unit</code></pre><div class="info">
+as send_header, but for a list of pairs &lt;header, value&gt;<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALsend_file"></a>send_file : <code class="type">src:<a href="Http_types.html#TYPEfile_source">Http_types.file_source</a> -> Pervasives.out_channel -> unit</code></pre><div class="info">
+send a file through an out_channel<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALrespond"></a>respond : <code class="type">?body:string -><br>       ?headers:(string * string) list -><br>       ?version:<a href="Http_types.html#TYPEversion">Http_types.version</a> -><br>       ?code:<a href="Http_types.html#TYPEstatus_code">Http_types.status_code</a> -> Pervasives.out_channel -> unit</code></pre><div class="info">
+high level response function, respond on outchan sending: basic headers
+  (including Content-Length computed using 'body' argument), headers probided
+  via 'headers' argument, body given via 'body' argument.  Default response
+  status is 200, default response HTTP version is Http_common.http_version<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALrespond_not_found"></a>respond_not_found : <code class="type">url:string -> ?version:<a href="Http_types.html#TYPEversion">Http_types.version</a> -> Pervasives.out_channel -> unit</code></pre><div class="info">
+send a 404 (not found) HTTP response<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALrespond_forbidden"></a>respond_forbidden : <code class="type">url:string -> ?version:<a href="Http_types.html#TYPEversion">Http_types.version</a> -> Pervasives.out_channel -> unit</code></pre><div class="info">
+send a 403 (forbidden) HTTP response<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALrespond_redirect"></a>respond_redirect : <code class="type">location:string -><br>       ?body:string -><br>       ?version:<a href="Http_types.html#TYPEversion">Http_types.version</a> -><br>       ?code:<a href="Http_types.html#TYPEstatus_code">Http_types.status_code</a> -> Pervasives.out_channel -> unit</code></pre><div class="info">
+send a "redirection" class response, optional body argument contains data
+  that will be displayed in the body of the response, default response status is
+  301 (moved permanently), only redirection status are accepted by this
+  function, other values will raise Failure<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALrespond_unauthorized"></a>respond_unauthorized : <code class="type">?version:<a href="Http_types.html#TYPEversion">Http_types.version</a> -><br>       ?realm:string -> Pervasives.out_channel -> unit</code></pre><div class="info">
+respond with a 401 (Unauthorized) response asking for authentication
+ against given realm (default is the server name)<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALrespond_error"></a>respond_error : <code class="type">?body:string -><br>       ?version:<a href="Http_types.html#TYPEversion">Http_types.version</a> -><br>       ?code:<a href="Http_types.html#TYPEstatus_code">Http_types.status_code</a> -> Pervasives.out_channel -> unit</code></pre><div class="info">
+send an "error" response (i.e. 400 &lt;= status &lt; 600), optional body
+  argument as per send_redirect, default response status is 400 (bad request),
+  only error status are accepted by this function, other values will
+  raise Failure<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALrespond_file"></a>respond_file : <code class="type">fname:string -> ?version:<a href="Http_types.html#TYPEversion">Http_types.version</a> -> Pervasives.out_channel -> unit</code></pre><div class="info">
+tipical static pages http daemon behaviour, if requested url is a file,
+  return it, it it is a directory return a directory listing of it<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALrespond_with"></a>respond_with : <code class="type"><a href="Http_types.response.html">Http_types.response</a> -> Pervasives.out_channel -> unit</code></pre><div class="info">
+respond using a prebuilt Http_types.response object<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALmain"></a>main : <code class="type"><a href="Http_types.html#TYPEdaemon_spec">Http_types.daemon_spec</a> -> unit</code></pre><div class="info">
+start an HTTP daemon
+<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALdefault_spec"></a>default_spec : <code class="type"><a href="Http_types.html#TYPEdaemon_spec">Http_types.daemon_spec</a></code></pre><div class="info">
+default daemon specification:<ul>
+<li>listen on 0.0.0.0, port 80</li>
+<li>"always ok" callback  (return an empty response, response code 200)</li>
+<li>fork a child for each request</li>
+<li>do not change to a root directory (i.e. keep cwd)</li>
+<li>300 seconds timeout</li>
+<li>ignores exceptions</li>
+<li>no authentication required</li>
+<li>do not automatically close client connections after callback</li>
+</ul>
+<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALdaemon_spec"></a>daemon_spec : <code class="type">?address:string -><br>       ?auth:(string * <a href="Http_types.html#TYPEauth_info">Http_types.auth_info</a>) option -><br>       ?auto_close:bool -><br>       ?callback:(<a href="Http_types.request.html">Http_types.request</a> -> Pervasives.out_channel -> unit) -><br>       ?mode:<a href="Http_types.html#TYPEdaemon_mode">Http_types.daemon_mode</a> -><br>       ?port:int -><br>       ?root_dir:string option -><br>       ?exn_handler:(exn -> Pervasives.out_channel -> unit) option -><br>       ?timeout:int option -> unit -> <a href="Http_types.html#TYPEdaemon_spec">Http_types.daemon_spec</a></code></pre><div class="info">
+currified daemon_spec constructor. Each parameter of this function
+ corresponds to one field of Http_types.daemon_spec and defaults to the
+ corresponding field of Http_daemon.default_spec<br>
+</div>
+<pre><span class="keyword">class</span> <a name="TYPEdaemon"></a><a href="Http_daemon.daemon.html">daemon</a> : <code class="type">?addr:string -> ?port:int -> unit -> </code><code class="type"><a href="Http_types.daemon.html">Http_types.daemon</a></code></pre><div class="info">
+Object oriented interface to HTTP daemons.
+</div>
+<pre><span class="keyword">module</span> <a href="Http_daemon.Trivial.html">Trivial</a>: <code class="code">sig</code> <a href="Http_daemon.Trivial.html">..</a> <code class="code">end</code></pre><div class="info">
+Trivial static pages HTTP daemon.
+</div>
+</body></html>

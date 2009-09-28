@@ -1,0 +1,8 @@
+description = "OCaml HTTP daemon library"
+version = "@DISTVERSION@"
+requires = "unix,pcre,netstring"
+requires(mt) = "unix,pcre,netstring,threads"
+archive(byte) = "http.cma"
+archive(native) = "http.cmxa"
+archive(mt,byte) = "http_mt.cma"
+archive(mt,native) = "http_mt.cmxa"

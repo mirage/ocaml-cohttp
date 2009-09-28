@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Http_common.html">
+<link rel="next" href="Http_daemon.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of class methods" rel=Appendix href="index_methods.html">
+<link title="Index of classes" rel=Appendix href="index_classes.html">
+<link title="Index of class types" rel=Appendix href="index_class_types.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Http_common" rel="Chapter" href="Http_common.html">
+<link title="Http_constants" rel="Chapter" href="Http_constants.html">
+<link title="Http_daemon" rel="Chapter" href="Http_daemon.html">
+<link title="Http_message" rel="Chapter" href="Http_message.html">
+<link title="Http_misc" rel="Chapter" href="Http_misc.html">
+<link title="Http_parser" rel="Chapter" href="Http_parser.html">
+<link title="Http_parser_sanity" rel="Chapter" href="Http_parser_sanity.html">
+<link title="Http_request" rel="Chapter" href="Http_request.html">
+<link title="Http_response" rel="Chapter" href="Http_response.html">
+<link title="Http_tcp_server" rel="Chapter" href="Http_tcp_server.html">
+<link title="Http_threaded_tcp_server" rel="Chapter" href="Http_threaded_tcp_server.html">
+<link title="Http_types" rel="Chapter" href="Http_types.html">
+<link title="Http_user_agent" rel="Chapter" href="Http_user_agent.html"><link title="daemon default values" rel="Section" href="#2_daemondefaultvalues">
+<title>Http_constants</title>
+</head>
+<body>
+<div class="navbar"><a href="Http_common.html">Previous</a>
+&nbsp;<a href="index.html">Up</a>
+&nbsp;<a href="Http_daemon.html">Next</a>
+</div>
+<center><h1>Module <a href="type_Http_constants.html">Http_constants</a></h1></center>
+<br>
+<pre><span class="keyword">module</span> Http_constants: <code class="code">sig</code> <a href="Http_constants.html">..</a> <code class="code">end</code></pre>Constants<br>
+<hr width="100%">
+<pre><span class="keyword">val</span> <a name="VALversion"></a>version : <code class="type"><a href="Http_types.html#TYPEversion">Http_types.version</a></code></pre><div class="info">
+default HTTP version<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALserver_string"></a>server_string : <code class="type">string</code></pre><div class="info">
+string returned as value of "Server:" response header<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALcrlf"></a>crlf : <code class="type">string</code></pre><div class="info">
+"\r\n" string<br>
+</div>
+<br>
+<a name="2_daemondefaultvalues"></a>
+<h2>daemon default values</h2><br>
+<pre><span class="keyword">val</span> <a name="VALdefault_addr"></a>default_addr : <code class="type">string</code></pre><pre><span class="keyword">val</span> <a name="VALdefault_auth"></a>default_auth : <code class="type">(string * <a href="Http_types.html#TYPEauth_info">Http_types.auth_info</a>) option</code></pre><pre><span class="keyword">val</span> <a name="VALdefault_auto_close"></a>default_auto_close : <code class="type">bool</code></pre><pre><span class="keyword">val</span> <a name="VALdefault_callback"></a>default_callback : <code class="type"><a href="Http_types.request.html">Http_types.request</a> -> Pervasives.out_channel -> unit</code></pre><pre><span class="keyword">val</span> <a name="VALdefault_mode"></a>default_mode : <code class="type"><a href="Http_types.html#TYPEdaemon_mode">Http_types.daemon_mode</a></code></pre><pre><span class="keyword">val</span> <a name="VALdefault_port"></a>default_port : <code class="type">int</code></pre><pre><span class="keyword">val</span> <a name="VALdefault_root_dir"></a>default_root_dir : <code class="type">string option</code></pre><pre><span class="keyword">val</span> <a name="VALdefault_exn_handler"></a>default_exn_handler : <code class="type">(exn -> Pervasives.out_channel -> unit) option</code></pre><pre><span class="keyword">val</span> <a name="VALdefault_timeout"></a>default_timeout : <code class="type">int option</code></pre></body></html>

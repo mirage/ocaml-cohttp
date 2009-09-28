@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="next" href="Http_constants.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of exceptions" rel=Appendix href="index_exceptions.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of class methods" rel=Appendix href="index_methods.html">
+<link title="Index of classes" rel=Appendix href="index_classes.html">
+<link title="Index of class types" rel=Appendix href="index_class_types.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Http_common" rel="Chapter" href="Http_common.html">
+<link title="Http_constants" rel="Chapter" href="Http_constants.html">
+<link title="Http_daemon" rel="Chapter" href="Http_daemon.html">
+<link title="Http_message" rel="Chapter" href="Http_message.html">
+<link title="Http_misc" rel="Chapter" href="Http_misc.html">
+<link title="Http_parser" rel="Chapter" href="Http_parser.html">
+<link title="Http_parser_sanity" rel="Chapter" href="Http_parser_sanity.html">
+<link title="Http_request" rel="Chapter" href="Http_request.html">
+<link title="Http_response" rel="Chapter" href="Http_response.html">
+<link title="Http_tcp_server" rel="Chapter" href="Http_tcp_server.html">
+<link title="Http_threaded_tcp_server" rel="Chapter" href="Http_threaded_tcp_server.html">
+<link title="Http_types" rel="Chapter" href="Http_types.html">
+<link title="Http_user_agent" rel="Chapter" href="Http_user_agent.html"><title>Http_common</title>
+</head>
+<body>
+<div class="navbar">&nbsp;<a href="index.html">Up</a>
+&nbsp;<a href="Http_constants.html">Next</a>
+</div>
+<center><h1>Module <a href="type_Http_common.html">Http_common</a></h1></center>
+<br>
+<pre><span class="keyword">module</span> Http_common: <code class="code">sig</code> <a href="Http_common.html">..</a> <code class="code">end</code></pre>Common functionalities shared by other OCaml HTTP modules<br>
+<hr width="100%">
+<pre><span class="keyword">val</span> <a name="VALdebug"></a>debug : <code class="type">bool Pervasives.ref</code></pre><div class="info">
+whether debugging messages are enabled or not, can be changed at runtime<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALdebug_print"></a>debug_print : <code class="type">string -> unit</code></pre><div class="info">
+print a string on stderr only if debugging is enabled<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALhttp_version"></a>http_version : <code class="type"><a href="Http_types.html#TYPEversion">Http_types.version</a></code></pre><div class="info">
+see <a href="Http_constants.html#VALversion"><code class="code">Http_constants.version</code></a><br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALserver_string"></a>server_string : <code class="type">string</code></pre><div class="info">
+see <a href="Http_constants.html#VALserver_string"><code class="code">Http_constants.server_string</code></a><br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALstring_of_version"></a>string_of_version : <code class="type"><a href="Http_types.html#TYPEversion">Http_types.version</a> -> string</code></pre><div class="info">
+pretty print an HTTP version<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALversion_of_string"></a>version_of_string : <code class="type">string -> <a href="Http_types.html#TYPEversion">Http_types.version</a></code></pre><div class="info">
+parse an HTTP version from a string<br>
+<b>Raises</b> <code>Invalid_HTTP_version</code> if given string doesn't represent a supported HTTP
+  version<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALstring_of_method"></a>string_of_method : <code class="type"><a href="Http_types.html#TYPEmeth">Http_types.meth</a> -> string</code></pre><div class="info">
+pretty print an HTTP method<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALmethod_of_string"></a>method_of_string : <code class="type">string -> <a href="Http_types.html#TYPEmeth">Http_types.meth</a></code></pre><div class="info">
+parse an HTTP method from a string<br>
+<b>Raises</b> <code>Invalid_HTTP_method</code> if given string doesn't represent a supported
+  method<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALstatus_of_code"></a>status_of_code : <code class="type">int -> <a href="Http_types.html#TYPEstatus">Http_types.status</a></code></pre><div class="info">
+converts an integer HTTP status to the corresponding status value<br>
+<b>Raises</b> <code>Invalid_code</code> if given integer isn't a valid HTTP status code<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALcode_of_status"></a>code_of_status : <code class="type">[< <a href="Http_types.html#TYPEstatus">Http_types.status</a> ] -> int</code></pre><div class="info">
+converts an HTTP status to the corresponding integer value<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALis_informational"></a>is_informational : <code class="type">int -> bool</code></pre><div class="info">
+<b>Returns</b> true on "informational" status codes, false elsewhere<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALis_success"></a>is_success : <code class="type">int -> bool</code></pre><div class="info">
+<b>Returns</b> true on "success" status codes, false elsewhere<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALis_redirection"></a>is_redirection : <code class="type">int -> bool</code></pre><div class="info">
+<b>Returns</b> true on "redirection" status codes, false elsewhere<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALis_client_error"></a>is_client_error : <code class="type">int -> bool</code></pre><div class="info">
+<b>Returns</b> true on "client error" status codes, false elsewhere<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALis_server_error"></a>is_server_error : <code class="type">int -> bool</code></pre><div class="info">
+<b>Returns</b> true on "server error" status codes, false elsewhere<br>
+</div>
+<pre><span class="keyword">val</span> <a name="VALis_error"></a>is_error : <code class="type">int -> bool</code></pre><div class="info">
+<b>Returns</b> true on "client error" and "server error" status code, false
+  elsewhere<br>
+</div>
+</body></html>
