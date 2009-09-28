@@ -139,26 +139,6 @@ val daemon_spec:
   unit ->
     Http_types.daemon_spec
 
-(*
-(** XXX
- * This function has been deprecated for a while. Now it has been removed! *)
-val start:
-  ?addr: string -> ?port: int ->
-  ?timeout: int option -> ?mode: Http_types.daemon_mode -> ?root: string ->
-  (string -> (string * string) list -> out_channel -> unit) ->
-    unit
-*)
-
-(*
-(** XXX
- * This function has been deprecated for a while. Now it has been removed! *)
-val start':
-  ?addr: string -> ?port: int ->
-  ?timeout: int option -> ?mode: Http_types.daemon_mode -> ?root: string -> 
-  (Http_types.request -> out_channel -> unit) ->
-    unit
-*)
-
   (** Object oriented interface to HTTP daemons.
   * @param addr address on which daemon will listen for connections
   * @param port port which daemon will bind
