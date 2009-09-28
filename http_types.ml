@@ -23,7 +23,6 @@
 
 type version = [ `HTTP_1_0 | `HTTP_1_1 ]
 type meth = [ `GET | `POST ]
-type daemon_mode = [ `Single | `Fork | `Thread ]
 
 type tcp_server =
   sockaddr:Unix.sockaddr -> timeout:int option ->
@@ -210,7 +209,6 @@ type daemon_spec = {
   address: string;
   auth: (string * auth_info) option;
   callback: request -> out_channel -> unit;
-  mode: daemon_mode;
   port: int;
   root_dir: string option;
   exn_handler: (exn -> out_channel -> unit) option;

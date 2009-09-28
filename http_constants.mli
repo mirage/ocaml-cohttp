@@ -36,7 +36,6 @@ val default_addr: string
 val default_auth: (string * Http_types.auth_info) option
 val default_auto_close: bool
 val default_callback: Http_types.request -> out_channel -> unit
-val default_mode: Http_types.daemon_mode
 val default_port: int
 val default_root_dir: string option
 val default_exn_handler: (exn -> out_channel -> unit) option

@@ -27,7 +27,6 @@ let default_addr = "0.0.0.0"
 let default_auth = None
 let default_auto_close = false
 let default_callback = fun _ _ -> ()
-let default_mode = `Fork
 let default_port = 80
 let default_root_dir = None
 let default_exn_handler = Some (fun exn outchan -> ())

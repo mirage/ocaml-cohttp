@@ -439,7 +439,6 @@ let default_spec = {
   auth = default_auth;
   auto_close = default_auto_close;
   callback = default_callback;
-  mode = default_mode;
   port = default_port;
   root_dir = default_root_dir;
   exn_handler = default_exn_handler;
@@ -449,7 +448,7 @@ let default_spec = {
 let daemon_spec
   ?(address = default_addr) ?(auth = default_auth)
   ?(auto_close = default_auto_close)
-  ?(callback = default_callback) ?(mode = default_mode) ?(port = default_port)
+  ?(callback = default_callback) ?(port = default_port)
   ?(root_dir = default_root_dir) ?(exn_handler = default_exn_handler)
   ?(timeout = default_timeout)
   ()
@@ -459,7 +458,6 @@ let daemon_spec
       auth = auth;
       auto_close = auto_close;
       callback = callback;
-      mode = mode;
       port = port;
       root_dir = root_dir;
       exn_handler = exn_handler;

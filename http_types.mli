@@ -35,14 +35,6 @@ type meth =
   | `POST
   ]
 
-  (** Daemon behaviour wrt request handling. `Single mode use a single process
-  to handle all requests, no request is served until a previous one has been
-  fully served. `Fork mode fork a new process for each request, the new process
-  will execute the callback function and then exit. `Thread mode create a new
-  thread for each request, the new thread will execute the callback function and
-  then exit, threads can communicate using standard OCaml Thread library. *)
-type daemon_mode = [ `Single | `Fork | `Thread ]
-
   (** A TCP server is a function taking an address on which bind and listen for
   connections, an optional timeout after which abort client connections and a
   callback function which in turn takes an input and an output channel as
@@ -397,11 +389,6 @@ type daemon_spec = {
     * received. 1st callback argument is an Http_types.request object
     * corresponding to the request received; 2nd argument is an output channel
     * corresponding to the socket connected to the client *)
-  mode: daemon_mode;
-    (** requests handling mode, it can have three different values:
-    * - `Single -> all requests will be handled by the same process,
-    * - `Fork   -> each request will be handled by a child process,
-    * - `Thread -> each request will be handled by a (new) thread *)
   port: int;  (** TCP port on which the daemon will be listening *)
   root_dir: string option;
     (** directory to which ocaml http will chdir before starting handling
@@ -409,11 +396,10 @@ type daemon_spec = {
     * working directory) *)
   exn_handler: (exn -> out_channel -> unit) option;
     (** what to do when executing callback raises an exception.  If None, the
-    * exception will be re-raised: in `Fork/`Thread mode the current
-    * process/thread will be terminated. in `Single mode the exception is
-    * ignored and the client socket closed. If Some callback, the callback will
-    * be executed before acting as per None; the callback is meant to perform
-    * some clean up actions, like releasing global mutexes in `Thread mode *)
+    * exception will be re-raised: the exception is ignored and the client 
+    * socket closed. If Some callback, the callback will be executed before 
+    * acting as per None; the callback is meant to perform some clean up 
+    * actions *)
   timeout: int option;
     (** timeout in seconds after which an incoming HTTP request will be
     * terminated closing the corresponding TCP connection; None disable the

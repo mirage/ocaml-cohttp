@@ -132,7 +132,6 @@ val daemon_spec:
   ?auth:(string * Http_types.auth_info) option ->
   ?auto_close:bool ->
   ?callback:(Http_types.request -> out_channel -> unit) ->
-  ?mode:(Http_types.daemon_mode) ->
   ?port:int ->
   ?root_dir:string option ->
   ?exn_handler:(exn -> out_channel -> unit) option ->
