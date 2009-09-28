@@ -453,7 +453,7 @@ let daemon_spec
   ?(timeout = default_timeout)
   ()
 =
-  { default_spec with
+  {
       address = address;
       auth = auth;
       auto_close = auto_close;
