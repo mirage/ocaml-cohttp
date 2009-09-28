@@ -6,6 +6,7 @@ SOURCES = http_types.mli http_constants.ml http_types.ml http_parser_sanity.ml h
 PACKS = netstring lwt
 RESULT = httplib
 LIB_PACK_NAME = httplib
+ANNOTATE = yes
 
 .PHONY: all
 all: pack-byte-code pack-native-code httplib.cma
