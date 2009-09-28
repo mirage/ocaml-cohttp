@@ -8,7 +8,7 @@ RESULT = httplib
 LIB_PACK_NAME = httplib
 
 .PHONY: all
-all: pack-byte-code pack-native-code
+all: pack-byte-code pack-native-code httplib.cma
 	@ :
 
 META: META.in
