@@ -3,6 +3,7 @@
   OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
 
   Copyright (C) <2002-2005> Stefano Zacchiroli <zack@cs.unibo.it>
+  Copyright (C) <2009> Anil Madhavapeddy <anil@recoil.org>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU Library General Public License as
@@ -22,7 +23,7 @@
 open Lwt
 
 let version = `HTTP_1_1 ;;
-let server_string = "OCaml HTTP Daemon" ;;
+let server_string = "CoHTTP Daemon" ;;
 let crlf = "\r\n" ;;
 
 let default_addr = "0.0.0.0"
