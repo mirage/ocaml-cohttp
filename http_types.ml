@@ -25,11 +25,6 @@
 type version = [ `HTTP_1_0 | `HTTP_1_1 ]
 type meth = [ `GET | `POST ]
 
-type tcp_server =
-  sockaddr:Unix.sockaddr -> timeout:int option ->
-  (Lwt_io.input_channel -> Lwt_io.output_channel -> unit) ->
-    unit
-
 type auth_info =
   [ `Basic of string * string (* username, password *)
   ]
@@ -103,10 +98,6 @@ type status =
 
 type status_code = [ `Code of int | `Status of status ]
 
-type file_source =
-  | FileSrc of string
-  | InChanSrc of Lwt_io.input_channel
-
 exception Invalid_header of string
 exception Invalid_header_name of string
 exception Invalid_header_value of string
@@ -122,88 +113,5 @@ exception Malformed_response of string
 exception Param_not_found of string
 exception Invalid_status_line of string
 exception Header_not_found of string
-exception Quit
 exception Unauthorized of string
-
-class type message = object
-    method version: version option
-    method setVersion: version -> unit
-    method body: string
-    method setBody: string -> unit
-    method bodyBuf: Buffer.t
-    method setBodyBuf: Buffer.t -> unit
-    method addBody: string -> unit
-    method addBodyBuf: Buffer.t -> unit
-    method addHeader: name:string -> value:string -> unit
-    method addHeaders: (string * string) list -> unit
-    method replaceHeader: name:string -> value:string -> unit
-    method replaceHeaders: (string * string) list -> unit
-    method removeHeader: name:string -> unit
-    method hasHeader: name:string -> bool
-    method header: name:string -> string
-    method headers: (string * string) list
-    method clientSockaddr: Unix.sockaddr
-    method clientAddr: string
-    method clientPort: int
-    method serverSockaddr: Unix.sockaddr
-    method serverAddr: string
-    method serverPort: int
-    method toString: string
-    method serialize: out_channel -> unit
-  end
-
-class type request = object
-    inherit message
-    method meth: meth
-    method uri: string
-    method path: string
-    method param: ?meth:meth -> ?default:string -> string -> string
-    method paramAll: ?meth:meth -> string -> string list
-    method params: (string * string) list
-    method params_GET: (string * string) list
-    method params_POST: (string * string) list
-    method authorization: auth_info option
-  end
-
-class type response = object
-    inherit message
-    method code: int
-    method setCode: int -> unit
-    method status: status
-    method setStatus: status -> unit
-    method reason: string
-    method setReason: string -> unit
-    method statusLine: string
-    method setStatusLine: string -> unit
-    method isInformational: bool
-    method isSuccess: bool
-    method isRedirection: bool
-    method isClientError: bool
-    method isServerError: bool
-    method isError: bool
-    method addBasicHeaders: unit
-    method contentType: string
-    method setContentType: string -> unit
-    method contentEncoding: string
-    method setContentEncoding: string -> unit
-    method date: string
-    method setDate: string -> unit
-    method expires: string
-    method setExpires: string -> unit
-    method server: string
-    method setServer: string -> unit
-  end
-
-class type connection =
-  object
-    method getRequest: request option
-    method respond_with: response -> unit
-    method close: unit
-  end
-class type daemon =
-  object
-    method accept: connection
-    method getRequest: request * connection
-  end
-
 

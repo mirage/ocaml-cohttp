@@ -35,17 +35,6 @@ type meth =
   | `POST
   ]
 
-  (** A TCP server is a function taking an address on which bind and listen for
-  connections, an optional timeout after which abort client connections and a
-  callback function which in turn takes an input and an output channel as
-  arguments. After receiving this argument a TCP server sits and waits for
-  connection, on each connection it apply the callback function to channels
-  connected to client. *)
-type tcp_server =
-  sockaddr:Unix.sockaddr -> timeout:int option ->
-  (Lwt_io.input_channel -> Lwt_io.output_channel -> unit) ->
-    unit
-
   (** authentication information *)
 type auth_info =
   [ `Basic of string * string (* username, password *)
@@ -134,11 +123,6 @@ type status =
 
 type status_code = [ `Code of int | `Status of status ]
 
-  (** File sources *)
-type file_source =
-  | FileSrc of string           (** filename *)
-  | InChanSrc of Lwt_io.input_channel     (** input channel *)
-
   (** {2 Exceptions} *)
 
   (** invalid header encountered *)
@@ -186,10 +170,6 @@ exception Invalid_status_line of string
 
   (** an header you were looking for was not found *)
 exception Header_not_found of string
-
-  (** raisable by callbacks to make main daemon quit, this is the only
-  * 'clean' way to make start functions return *)
-exception Quit
 
   (** raisable by callbacks to force a 401 (unauthorized) HTTP answer.
   * This exception should be raised _before_ sending any data over given out
