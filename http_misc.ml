@@ -33,8 +33,6 @@ let is_directory name =
   | { Unix.st_kind = Unix.S_DIR } -> true
   | _ -> false
 
-let filesize fname = (Unix.stat fname).Unix.st_size
-
 let strip_trailing_slash =
   let rex = Pcre.regexp "/$" in
   fun s -> Pcre.replace ~rex ~templ:"" s
@@ -42,12 +40,6 @@ let strip_trailing_slash =
 let strip_heading_slash =
   let rex = Pcre.regexp "^/" in
   fun s -> Pcre.replace ~rex ~templ:"" s
-
-let ls dir =
-  let rec ls' entries =
-    try ls' ((Unix.readdir dir)::entries) with End_of_file -> entries
-  in
-  ls' []
 
 let string_explode s =
   let rec string_explode' acc = function
@@ -110,15 +102,6 @@ let build_sockaddr (addr, port) =
 let explode_sockaddr = function
   | Unix.ADDR_INET (addr, port) -> (Unix.string_of_inet_addr addr, port)
   | _ -> assert false (* can explode only inet address *)
-
-let peername_of_out_channel outchan =
-  Unix.getpeername (Unix.descr_of_out_channel outchan)
-let peername_of_in_channel inchan =
-  Unix.getpeername (Unix.descr_of_in_channel inchan)
-let sockname_of_out_channel outchan =
-  Unix.getsockname (Unix.descr_of_out_channel outchan)
-let sockname_of_in_channel inchan =
-  Unix.getsockname (Unix.descr_of_in_channel inchan)
 
 let list_assoc_all key pairs =
   snd (List.split (List.filter (fun (k, v) -> k = key) pairs))

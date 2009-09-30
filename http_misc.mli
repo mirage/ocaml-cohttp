@@ -30,17 +30,11 @@ val date_822: unit -> string
   *)
 val is_directory: string -> bool
 
-  (** @return the filesize of fname *)
-val filesize: string -> int
-
   (** strip trailing '/', if any, from a string and @return the new string *)
 val strip_trailing_slash: string -> string
 
   (** strip heading '/', if any, from a string and @return the new string *)
 val strip_heading_slash: string -> string
-
-  (** given a dir handle @return a list of entries contained *)
-val ls: Unix.dir_handle -> string list
 
   (** explode a string in a char list *)
 val string_explode: string -> char list
@@ -58,20 +52,6 @@ val build_sockaddr: string * int -> Unix.sockaddr Lwt.t
   (** explode an _inet_ Unix.sockaddr address in a string representation of an
   IP address and a port number *)
 val explode_sockaddr: Unix.sockaddr -> string * int
-
-  (** given an out_channel build on top of a socket, return peername related to
-  that socket *)
-val peername_of_out_channel: out_channel -> Unix.sockaddr
-
-  (** as above but works on in_channels *)
-val peername_of_in_channel: in_channel -> Unix.sockaddr
-
-  (** given an out_channel build on top of a socket, return sockname related to
-  that socket *)
-val sockname_of_out_channel: out_channel -> Unix.sockaddr
-
-  (** as above but works on in_channels *)
-val sockname_of_in_channel: in_channel -> Unix.sockaddr
 
   (** like List.assoc but return all bindings of a given key instead of the
   leftmost one only *)
