@@ -1,0 +1,6 @@
+description = "Lightweight HTTP daemon library"
+version = "0.1"
+requires = "unix,pcre,netstring"
+requires(mt) = "unix,pcre,netstring,threads"
+archive(byte) = "cohttp.cma"
+archive(native) = "cohttp.cmxa"
