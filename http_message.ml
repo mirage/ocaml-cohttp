@@ -19,10 +19,10 @@
   USA
 *)
 
-open Http_common;;
-open Http_constants;;
-open Http_types;;
-open Printf;;
+open Http_common
+open Http_constants
+open Http_types
+open Printf
 
   (* remove all bindings of 'name' from hashtbl 'tbl' *)
 let rec hashtbl_remove_all tbl name =
@@ -30,89 +30,95 @@ let rec hashtbl_remove_all tbl name =
     raise (Header_not_found name);
   Hashtbl.remove tbl name;
   if Hashtbl.mem tbl name then hashtbl_remove_all tbl name
-;;
 
-class virtual message ~body ~headers ~version ~clisockaddr ~srvsockaddr =
+type message = {
+  m_contents : Buffer.t;
+  m_headers : (string, string) Hashtbl.t;
+  mutable m_version : version option;
+  m_cliaddr : string;
+  m_cliport : int;
+  m_srvaddr : string;
+  m_srvport : int;
+} 
 
+let body msg = Buffer.contents msg.m_contents
+let body_buf msg = msg.m_contents
+let set_body msg =
+  Buffer.clear msg.m_contents;
+  Buffer.add_string msg.m_contents
+let set_body_buf msg = 
+  Buffer.clear msg.m_contents;
+  Buffer.add_buffer msg.m_contents
+let add_body msg =
+  Buffer.add_string msg.m_contents
+let add_body_buf msg =
+  Buffer.add_buffer msg.m_contents
+let add_header msg ~name ~value =
+  let name = String.lowercase name in
+  Http_parser_sanity.heal_header (name, value);
+  Hashtbl.add msg.m_headers name value
+let add_headers msg =
+  List.iter (fun (name, value) -> add_header msg ~name ~value)
+let replace_header msg ~name ~value =
+  let name = String.lowercase name in
+  Http_parser_sanity.heal_header (name, value);
+  Hashtbl.replace msg.m_headers name value
+let replace_headers msg =
+  List.iter (fun (name, value) -> replace_header msg ~name ~value)
+let remove_header msg ~name =
+  let name = String.lowercase name in
+  hashtbl_remove_all msg.m_headers name
+let has_header msg ~name =
+  Hashtbl.mem msg.m_headers name
+let header msg ~name =
+  match has_header msg ~name with
+  |false -> None
+  |true ->
+    let name = String.lowercase name in
+    let r = String.concat ", " (List.rev (Hashtbl.find_all msg.m_headers name)) in
+    Some r
+let headers msg =
+  List.rev (
+    Hashtbl.fold 
+      (fun name _ headers -> 
+         match header msg ~name with
+         |None -> headers
+         |Some h -> (name, h) :: headers
+      ) msg.m_headers [])
+
+let client_addr msg = msg.m_cliaddr
+let server_addr msg = msg.m_srvaddr
+let client_port msg = msg.m_cliport
+let server_port msg = msg.m_srvport
+
+let version msg = msg.m_version
+let set_version msg v = msg.m_version <- Some v
+
+let init ~body ~headers ~version ~clisockaddr ~srvsockaddr =
   let ((cliaddr, cliport), (srvaddr, srvport)) =
     (Http_misc.explode_sockaddr clisockaddr,
-     Http_misc.explode_sockaddr srvsockaddr)
-  in
+     Http_misc.explode_sockaddr srvsockaddr) in
+  let msg = { m_contents = Buffer.create 1024;
+    m_headers = Hashtbl.create 11;
+    m_version = version;
+    m_cliaddr = cliaddr;
+    m_cliport = cliport;
+    m_srvaddr = srvaddr;
+    m_srvport = srvport;
+  } in
+  set_body msg body;
+  add_headers msg headers;
+  msg
 
-  object (self)
+let to_string msg ~fstLineToString =
+  let b = body msg in
+  fstLineToString ^  (* {request,status} line *)
+  crlf ^
+  (String.concat  (* headers, crlf terminated *) ""
+    (List.map (fun (h,v) -> h ^ ": " ^ v ^ crlf) (headers msg))) ^
+  (sprintf "Content-Length: %d" (String.length b)) ^ crlf ^
+  crlf ^
+  b (* body *)
 
-    val _contentsBuf = Buffer.create 1024
-    val _headers = Hashtbl.create 11
-    val mutable _version: version option = version
-
-    initializer
-      self#setBody body;
-      self#addHeaders headers
-
-    method version = _version
-    method setVersion v = _version <- Some v
-
-    method body = Buffer.contents _contentsBuf
-    method setBody c =
-      Buffer.clear _contentsBuf;
-      Buffer.add_string _contentsBuf c
-    method bodyBuf = _contentsBuf
-    method setBodyBuf b =
-      Buffer.clear _contentsBuf;
-      Buffer.add_buffer _contentsBuf b
-    method addBody s = Buffer.add_string _contentsBuf s
-    method addBodyBuf b = Buffer.add_buffer _contentsBuf b
-
-    method addHeader ~name ~value =
-      let name = String.lowercase name in
-      Http_parser_sanity.heal_header (name, value);
-      Hashtbl.add _headers name value
-    method addHeaders =
-      List.iter (fun (name, value) -> self#addHeader ~name ~value)
-    method replaceHeader ~name ~value =
-      let name = String.lowercase name in
-      Http_parser_sanity.heal_header (name, value);
-      Hashtbl.replace _headers name value
-    method replaceHeaders =
-      List.iter (fun (name, value) -> self#replaceHeader ~name ~value)
-    method removeHeader ~name =
-      let name = String.lowercase name in
-      hashtbl_remove_all _headers name
-    method hasHeader ~name =
-      let name = String.lowercase name in
-      Hashtbl.mem _headers name
-    method header ~name =
-      if not (self#hasHeader name) then raise (Header_not_found name);
-      let name = String.lowercase name in
-      String.concat ", " (List.rev (Hashtbl.find_all _headers name))
-    method headers =
-      List.rev
-        (Hashtbl.fold
-          (fun name _ headers -> (name, self#header ~name)::headers)
-          _headers
-          [])
-
-    method clientSockaddr = clisockaddr
-    method clientAddr = cliaddr
-    method clientPort = cliport
-
-    method serverSockaddr = srvsockaddr
-    method serverAddr = srvaddr
-    method serverPort = srvport
-
-    method private virtual fstLineToString: string
-    method toString =
-      self#fstLineToString ^  (* {request,status} line *)
-      crlf ^
-      (String.concat  (* headers, crlf terminated *)
-        ""
-        (List.map (fun (h,v) -> h ^ ": " ^ v ^ crlf) self#headers)) ^
-      (sprintf "Content-Length: %d" (String.length self#body)) ^ crlf ^
-      crlf ^
-      self#body (* body *)
-    method serialize outchan =
-      output_string outchan self#toString;
-      flush outchan
-
-  end
-
+let serialize msg outchan ~fstLineToString =
+  Lwt_io.write outchan (to_string msg ~fstLineToString)

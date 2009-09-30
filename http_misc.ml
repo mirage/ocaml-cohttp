@@ -20,6 +20,7 @@
 *)
 
 open Printf
+open Lwt
 
 open Http_types
 
@@ -100,10 +101,12 @@ let reason_phrase_of_code = function
   | invalid_code -> raise (Invalid_code invalid_code)
 
 let build_sockaddr (addr, port) =
-  try
-    Unix.ADDR_INET ((Unix.gethostbyname addr).Unix.h_addr_list.(0), port)
-  with Not_found -> failwith ("OCaml-HTTP, can't resolve hostname: " ^ addr)
-
+  catch 
+   (fun () -> 
+      Lwt_lib.gethostbyname addr >>= fun hent ->
+      return (Unix.ADDR_INET (hent.Unix.h_addr_list.(0), port))
+   ) (function _ -> failwith ("Ocaml-HTTP, cant resolve hostname: " ^ addr))
+     
 let explode_sockaddr = function
   | Unix.ADDR_INET (addr, port) -> (Unix.string_of_inet_addr addr, port)
   | _ -> assert false (* can explode only inet address *)

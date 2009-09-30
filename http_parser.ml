@@ -19,11 +19,12 @@
   USA
 *)
 
-open Printf;;
+open Printf
+open Lwt
 
-open Http_common;;
-open Http_types;;
-open Http_constants;;
+open Http_common
+open Http_types
+open Http_constants
 
 let (bindings_sep, binding_sep, pieces_sep, header_sep) =
   (Pcre.regexp "&", Pcre.regexp "=", Pcre.regexp " ", Pcre.regexp ":")
@@ -46,42 +47,6 @@ let split_query_params query =
           | _ -> raise (Malformed_query_part (binding, query)))
         bindings
 
-  (** internal, used by generic_input_line *)
-exception Line_completed;;
-
-  (** given an input channel and a separator
-  @return a line read from it (like Pervasives.input_line)
-  line is returned only after reading a separator string; separator string isn't
-  included in the returned value
-  TODO what about efficiency?, input is performed char-by-char
-  *)
-let generic_input_line ~sep ~ic =
-  let sep_len = String.length sep in
-  if sep_len < 1 then
-    failwith ("Separator '" ^ sep ^ "' is too short!")
-  else  (* valid separator *)
-    let line = ref "" in
-    let sep_pointer = ref 0 in
-    try
-      while true do
-        if !sep_pointer >= String.length sep then (* line completed *)
-          raise Line_completed
-        else begin (* incomplete line: need to read more *)
-          let ch = input_char ic in
-          if ch = String.get sep !sep_pointer then  (* next piece of sep *)
-            incr sep_pointer
-          else begin  (* useful char *)
-            for i = 0 to !sep_pointer - 1 do
-              line := !line ^ (String.make 1 (String.get sep i))
-            done;
-            sep_pointer := 0;
-            line := !line ^ (String.make 1 ch)
-          end
-        end
-      done;
-      assert false  (* unreacheable statement *)
-    with Line_completed -> !line
-
 let patch_empty_path = function "" -> "/" | s -> s
 let debug_dump_request path params =
   debug_print
@@ -91,33 +56,34 @@ let debug_dump_request path params =
       (String.concat ", " (List.map (fun (n, v) -> n ^ "=" ^ v) params)))
 
 let parse_request_fst_line ic =
-  let request_line = generic_input_line ~sep:crlf ~ic in
+  Lwt_io.read_line ic >>= fun request_line ->
   debug_print (sprintf "HTTP request line (not yet parsed): %s" request_line);
-  try
+  catch (fun () ->
     (match Pcre.split ~rex:pieces_sep request_line with
     | [ meth_raw; uri_raw ] ->  (* ancient HTTP request line *)
-        (method_of_string meth_raw,                 (* method *)
+        return (method_of_string meth_raw,                 (* method *)
         Http_parser_sanity.url_of_string uri_raw,   (* uri *)
         None)                                       (* no version given *)
     | [ meth_raw; uri_raw; http_version_raw ] ->  (* HTTP 1.{0,1} *)
-          (method_of_string meth_raw,                 (* method *)
+          return (method_of_string meth_raw,                 (* method *)
           Http_parser_sanity.url_of_string uri_raw,   (* uri *)
           Some (version_of_string http_version_raw))  (* version *)
-    | _ -> raise (Malformed_request request_line))
-  with Malformed_URL url -> raise (Malformed_request_URI url)
+    | _ -> fail (Malformed_request request_line)))
+  (function |Malformed_URL url -> fail (Malformed_request_URI url) |e -> fail e)
 
 let parse_response_fst_line ic =
-  let response_line = generic_input_line ~sep:crlf ~ic in
+  Lwt_io.read_line ic  >>= fun response_line ->
   debug_print (sprintf "HTTP response line (not yet parsed): %s" response_line);
-  try
+  catch (fun () ->
     (match Pcre.split ~rex:pieces_sep response_line with
     | version_raw :: code_raw :: _ ->
-        (version_of_string version_raw,             (* method *)
+        return (version_of_string version_raw,             (* method *)
         status_of_code (int_of_string code_raw))    (* status *)
-    | _ -> raise (Malformed_response response_line))
-  with
+    | _ -> fail (Malformed_response response_line)))
+  (function 
   | Malformed_URL _ | Invalid_code _ | Failure "int_of_string" ->
-      raise (Malformed_response response_line)
+      fail (Malformed_response response_line)
+  | e -> fail e )
 
 let parse_path uri = patch_empty_path (String.concat "/" (Neturl.url_path uri))
 let parse_query_get_params uri =
@@ -128,33 +94,25 @@ let parse_query_get_params uri =
 let parse_headers ic =
   (* consume also trailing "^\r\n$" line *)
   let rec parse_headers' headers =
-    match generic_input_line ~sep:crlf ~ic with
-    | "" -> List.rev headers
+    Lwt_io.read_line ic >>= function
+    | "" -> return (List.rev headers)
     | line ->
-        (let subs =
-          try
-            Pcre.extract ~rex:header_RE line
-          with Not_found -> raise (Invalid_header line)
-        in
-        let header =
-          try
-            subs.(1)
-          with Invalid_argument "Array.get" -> raise (Invalid_header line)
-        in
-        let value =
-          try
-            Http_parser_sanity.normalize_header_value subs.(2) 
-          with Invalid_argument "Array.get" -> ""
-        in
+        catch (fun () -> return (Pcre.extract ~rex:header_RE line))
+          (function Not_found -> fail (Invalid_header line) |e -> fail e) >>= fun subs ->
+        catch (fun () -> return (subs.(1)))
+          (function Invalid_argument "Array.get" -> fail (Invalid_header line) 
+                   |e -> fail e) >>= fun header ->
+        catch (fun () -> return (Http_parser_sanity.normalize_header_value subs.(2)))
+          (function Invalid_argument "Array.get" -> return "" |e -> fail e) >>= fun value ->
         Http_parser_sanity.heal_header (header, value);
-        parse_headers' ((header, value) :: headers))
+        parse_headers' ((header, value) :: headers)
   in
   parse_headers' []
 
 let parse_request ic =
-  let (meth, uri, version) = parse_request_fst_line ic in
+  parse_request_fst_line ic >>= fun (meth, uri, version) ->
   let path = parse_path uri in
   let query_get_params = parse_query_get_params uri in
   debug_dump_request path query_get_params;
-  (path, query_get_params)
+  return (path, query_get_params)
 

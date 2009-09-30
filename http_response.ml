@@ -19,11 +19,11 @@
   USA
 *)
 
-open Http_types;;
-open Http_constants;;
-open Http_common;;
-open Http_daemon;;
-open Printf;;
+open Http_types
+open Http_constants
+open Http_common
+open Printf
+open Lwt
 
 let status_line_RE = Pcre.regexp "^(HTTP/\\d\\.\\d) (\\d{3}) (.*)$"
 
@@ -31,88 +31,84 @@ let anyize = function
   | Some addr -> addr
   | None -> Unix.ADDR_INET (Unix.inet_addr_any, -1)
 
-class response
-  (* Warning: keep default values in sync with Http_daemon.respond function *)
-  ?(body = "") ?(headers = []) ?(version = http_version)
-  ?clisockaddr ?srvsockaddr (* optional because response have to be easily
-                            buildable in callback functions *)
-  ?(code = 200) ?status
-  ()
-  =
+type response = {
+  r_msg: Http_message.message;
+  mutable r_code: int;
+  mutable r_reason: string option;
+  
+}
 
+let init
+  ?(body = "") ?(headers = []) ?(version = http_version) ?(code = 200)
+  ?clisockaddr ?srvsockaddr ?status ()
+  =
     (** if no address were supplied for client and/or server, use a foo address
     instead *)
   let (clisockaddr, srvsockaddr) = (anyize clisockaddr, anyize srvsockaddr) in
-
-    (* "version code reason_phrase" *)
-  object (self)
-
-      (* note that response objects can't be created with a None version *)
-    inherit
-      Http_message.message
-        ~body ~headers ~version:(Some version) ~clisockaddr ~srvsockaddr
-
-    val mutable _code =
-      match status with
+  let msg = Http_message.init ~body ~headers ~version:(Some version)
+     ~clisockaddr ~srvsockaddr in
+  let code = match status with
       | None -> code
-      | Some (s: Http_types.status) -> code_of_status s
-    val mutable _reason: string option = None
+      | Some (s: Http_types.status) -> code_of_status s in
+  let reason = None in
+  { r_msg = msg; r_code = code; r_reason = reason }
 
-    method private getRealVersion =
-      match self#version with
+let real_version r = 
+  match Http_message.version r.r_msg with
       | None ->
           failwith ("Http_response.fstLineToString: " ^
             "can't serialize an HTTP response with no HTTP version defined")
       | Some v -> string_of_version v
 
-    method code = _code
-    method setCode c =
-      ignore (status_of_code c);  (* sanity check on c *)
-      _code <- c
-    method status = status_of_code _code
-    method setStatus (s: Http_types.status) = _code <- code_of_status s
-    method reason =
-      match _reason with
-      | None -> Http_misc.reason_phrase_of_code _code
+let code r = r.r_code
+let set_code r c = 
+   ignore (status_of_code c);  (* sanity check on c *)
+   r.r_code <- c
+let status r = status_of_code (code r)
+let set_status r (s: Http_types.status) = r.r_code <- code_of_status s
+let reason r =
+   match r.r_reason with
+      | None -> Http_misc.reason_phrase_of_code r.r_code
       | Some r -> r
-    method setReason r = _reason <- Some r
-    method statusLine =
+let set_reason r rs = r.r_reason <- Some rs
+let status_line r =
       String.concat " "
-        [self#getRealVersion; string_of_int self#code; self#reason]
-    method setStatusLine s =
-      try
-        let subs = Pcre.extract ~rex:status_line_RE s in
-        self#setVersion (version_of_string subs.(1));
-        self#setCode (int_of_string subs.(2));
-        self#setReason subs.(3)
-      with Not_found ->
-        raise (Invalid_status_line s)
+        [real_version r; string_of_int (code r); reason r ]
+let set_status_line r s =
+   try
+     let subs = Pcre.extract ~rex:status_line_RE s in
+     Http_message.set_version r.r_msg (version_of_string subs.(1));
+     set_code r (int_of_string subs.(2));
+     set_reason r subs.(3);
+   with Not_found ->
+      raise (Invalid_status_line s)
 
-    method isInformational = is_informational _code
-    method isSuccess = is_success _code
-    method isRedirection = is_redirection _code
-    method isClientError = is_client_error _code
-    method isServerError = is_server_error _code
-    method isError = is_error _code
+let is_informational r = Http_common.is_informational r.r_code
+let is_success r = Http_common.is_success r.r_code
+let is_redirection r = Http_common.is_redirection r.r_code
+let is_client_error r = Http_common.is_client_error r.r_code
+let is_server_error r = Http_common.is_server_error r.r_code
+let is_error r = Http_common.is_error r.r_code
 
-      (* FIXME duplication of code between this and send_basic_headers *)
-    method addBasicHeaders =
-      self#addHeader ~name:"Date" ~value:(Http_misc.date_822 ());
-      self#addHeader ~name:"Server" ~value:server_string
+let add_basic_headers r =
+  Http_message.add_header r.r_msg ~name:"Date" ~value:(Http_misc.date_822 ());
+  Http_message.add_header r.r_msg ~name:"Server" ~value:server_string
 
-    method contentType = self#header "Content-Type"
-    method setContentType t = self#replaceHeader "Content-Type" t
-    method contentEncoding = self#header "Content-Encoding"
-    method setContentEncoding e = self#replaceHeader "Content-Encoding" e
-    method date = self#header "Date"
-    method setDate d = self#replaceHeader "Date" d
-    method expires = self#header "Expires"
-    method setExpires t = self#replaceHeader "Expires" t
-    method server = self#header "Server"
-    method setServer s = self#replaceHeader "Server" s
+let gh name r = Http_message.header r.r_msg ~name
+let rh name r = Http_message.replace_header r.r_msg ~name
 
-    method private fstLineToString =
-      sprintf "%s %d %s" self#getRealVersion self#code self#reason
+let content_type = gh "Content-Type"
+let set_content_type = rh "Content-Type"
+let content_encoding = gh "Content-Encoding"
+let set_content_encoding = rh "Content-Encoding"
+let date = gh "Date"
+let set_date = rh "Date"
+let expires = gh "Expires"
+let set_expires = rh "Expires"
+let server = gh "Server"
+let set_server = rh "Server"
 
-  end
-
+let serialize r outchan = 
+  let fstLineToString =
+    sprintf "%s %d %s" (real_version r) (code r) (reason r) in
+  Http_message.serialize r.r_msg outchan ~fstLineToString

@@ -35,9 +35,9 @@ val crlf: string
 val default_addr: string
 val default_auth: (string * Http_types.auth_info) option
 val default_auto_close: bool
-val default_callback: Http_types.request -> out_channel -> unit
+val default_callback: Http_request.request -> Lwt_io.output_channel -> unit Lwt.t
 val default_port: int
 val default_root_dir: string option
-val default_exn_handler: (exn -> out_channel -> unit) option
+val default_exn_handler: (exn -> Lwt_io.output_channel -> unit Lwt.t) option
 val default_timeout: int option
 

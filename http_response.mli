@@ -1,33 +1,35 @@
-
-(*
-  OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
-
-  Copyright (C) <2002-2005> Stefano Zacchiroli <zack@cs.unibo.it>
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Library General Public License as
-  published by the Free Software Foundation, version 2.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Library General Public License for more details.
-
-  You should have received a copy of the GNU Library General Public
-  License along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
-  USA
-*)
-
-(** Object Oriented representation of HTTP responses *)
-
-open Http_types;;
-
-  (** OO representation of an HTTP response. *)
-class response:
-  ?body:string -> ?headers:(string * string) list -> ?version: version ->
-  ?clisockaddr: Unix.sockaddr -> ?srvsockaddr: Unix.sockaddr ->
-  ?code:int -> ?status:Http_types.status ->
-  unit ->
-    Http_types.response
-
+type response
+val init :
+  ?body:string ->
+  ?headers:(string * string) list ->
+  ?version:Http_types.version ->
+  ?code:int ->
+  ?clisockaddr:Unix.sockaddr ->
+  ?srvsockaddr:Unix.sockaddr -> ?status:Http_types.status -> unit -> response
+val real_version : response -> string
+val code : response -> int
+val set_code : response -> int -> unit
+val status : response -> Http_types.status
+val set_status : response -> Http_types.status -> unit
+val reason : response -> string
+val set_reason : response -> string -> unit
+val status_line : response -> string
+val set_status_line : response -> string -> unit
+val is_informational : response -> bool
+val is_success : response -> bool
+val is_redirection : response -> bool
+val is_client_error : response -> bool
+val is_server_error : response -> bool
+val is_error : response -> bool
+val add_basic_headers : response -> unit
+val content_type : response -> string option
+val set_content_type : response -> value:string -> unit
+val content_encoding : response -> string option
+val set_content_encoding : response -> value:string -> unit
+val date : response -> string option
+val set_date : response -> value:string -> unit
+val expires : response -> string option
+val set_expires : response -> value:string -> unit
+val server : response -> string option
+val set_server : response -> value:string -> unit
+val serialize : response -> Lwt_io.output_channel -> unit Lwt.t

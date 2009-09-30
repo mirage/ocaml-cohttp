@@ -22,7 +22,7 @@
 open Http_types;;
 open Printf;;
 
-let debug = ref false
+let debug = ref true
 let debug_print s =
   if !debug then
     prerr_endline (sprintf "[OCaml HTTP] DEBUG: %s" s)

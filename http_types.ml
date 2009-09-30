@@ -26,7 +26,7 @@ type meth = [ `GET | `POST ]
 
 type tcp_server =
   sockaddr:Unix.sockaddr -> timeout:int option ->
-  (in_channel -> out_channel -> unit) ->
+  (Lwt_io.input_channel -> Lwt_io.output_channel -> unit) ->
     unit
 
 type auth_info =
@@ -104,7 +104,7 @@ type status_code = [ `Code of int | `Status of status ]
 
 type file_source =
   | FileSrc of string
-  | InChanSrc of in_channel
+  | InChanSrc of Lwt_io.input_channel
 
 exception Invalid_header of string
 exception Invalid_header_name of string
@@ -205,14 +205,4 @@ class type daemon =
     method getRequest: request * connection
   end
 
-type daemon_spec = {
-  address: string;
-  auth: (string * auth_info) option;
-  callback: request -> out_channel -> unit;
-  port: int;
-  root_dir: string option;
-  exn_handler: (exn -> out_channel -> unit) option;
-  timeout: int option;
-  auto_close: bool;
-}
 

@@ -1,29 +1,14 @@
-
-(*
-  OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
-
-  Copyright (C) <2002-2005> Stefano Zacchiroli <zack@cs.unibo.it>
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Library General Public License as
-  published by the Free Software Foundation, version 2.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Library General Public License for more details.
-
-  You should have received a copy of the GNU Library General Public
-  License along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
-  USA
-*)
-
-(** Object Oriented representation of HTTP requests *)
-
-open Http_types;;
-
-  (** OO representation of an HTTP request
-  @param inchan input channel from which parse an HTTP request *)
-class request: in_channel -> Http_types.request
-
+type request
+val init_request :
+  clisockaddr:Unix.sockaddr ->
+  srvsockaddr:Unix.sockaddr -> Lwt_io.input_channel -> request Lwt.t
+val meth : request -> Http_types.meth
+val uri : request -> string
+val path : request -> string
+val param :
+  ?meth:[< `GET | `POST ] -> ?default:string -> request -> string -> string
+val param_all : ?meth:Http_types.meth -> request -> string -> string list
+val params : request -> (string, string) Hashtbl.t
+val params_get : request -> (string * string) list
+val params_post : request -> (string * string) list
+val authorization : request -> [> `Basic of string * string ] option

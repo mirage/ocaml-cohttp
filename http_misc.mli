@@ -53,7 +53,7 @@ val reason_phrase_of_code: int -> string
 
   (** build a Unix.sockaddr inet address from a string representation of an IP
   address and a port number *)
-val build_sockaddr: string * int -> Unix.sockaddr
+val build_sockaddr: string * int -> Unix.sockaddr Lwt.t
 
   (** explode an _inet_ Unix.sockaddr address in a string representation of an
   IP address and a port number *)
