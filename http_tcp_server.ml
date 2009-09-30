@@ -1,3 +1,4 @@
+(*pp camlp4o -I `ocamlfind query lwt.syntax` pa_lwt.cmo *)
 
 (*
   OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
@@ -20,25 +21,10 @@
 *)
 
 open Http_common
+open Http_types
 open Lwt
 
-  (** raised when a client timeouts *)
-exception Timeout
-
-let backlog = 10
-
-  (** if timeout is given (Some _) @return a new callback which establish
-  timeout_callback as callback for signal Sys.sigalrm and register an alarm
-  (expiring after timeout seconds) before invoking the real callback given. If
-  timeout is None, callback is returned unchanged. *)
-let wrap_callback_w_timeout ~callback ~timeout ~timeout_callback =
-  match timeout with
-  | None -> callback
-  | Some timeout -> (* wrap callback setting an handler for ALRM signal and an
-                    alarm that ring after timeout seconds *)
-      (fun (inchan:Lwt_io.input_channel) (outchan:Lwt_io.output_channel) ->
-        (* XXX register Lwt alarm here *)
-        callback inchan outchan)
+let backlog = 15
 
 let try_close chan =
   catch (fun () -> Lwt_io.close chan)
@@ -46,28 +32,31 @@ let try_close chan =
 
 let init_socket sockaddr =
   let suck = Lwt_unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
-    (* shutdown socket on SIGTERM *)
   Lwt_unix.setsockopt suck Unix.SO_REUSEADDR true;
   Lwt_unix.bind suck sockaddr;
   Lwt_unix.listen suck backlog;
   suck
 
+let process_accept ~sockaddr ~timeout callback (client,_) =
+  debug_print "accepted connection";
+  (* client is now connected *)
+  let inchan = Lwt_io.of_fd Lwt_io.input client in
+  let outchan = Lwt_io.of_fd Lwt_io.output client in
+ 
+  let clisockaddr = Unix.getpeername (Lwt_unix.unix_file_descr client) in
+  let srvsockaddr = Unix.getsockname (Lwt_unix.unix_file_descr client) in
+
+  let c = callback ~clisockaddr ~srvsockaddr inchan outchan in
+  let events = match timeout with
+    |None -> [c]
+    |Some t -> [c; (Lwt_unix.sleep (float_of_int t) >> return ()) ] in
+  Lwt.select events >> try_close outchan >> try_close inchan
+  
 let simple ~sockaddr ~timeout callback =
   let suck = init_socket sockaddr in
   let rec handle_connection () =
-    Lwt_unix.accept suck >>= fun (client,_) ->
-    debug_print "accepted connection";
-    (* client is now connected *)
-    let inchan = Lwt_io.of_fd Lwt_io.input client in
-    let outchan = Lwt_io.of_fd Lwt_io.output client in
- 
-    let clisockaddr = Unix.getpeername (Lwt_unix.unix_file_descr client) in
-    let srvsockaddr = Unix.getsockname (Lwt_unix.unix_file_descr client) in
-
-    debug_print "callback start";
-    callback ~clisockaddr ~srvsockaddr inchan outchan >>= fun () ->
-    debug_print "callback end";
-    try_close outchan >>= fun () ->
-    try_close inchan 
+     lwt x = Lwt_unix.accept suck in
+     let _ =  process_accept ~sockaddr ~timeout callback x in
+     handle_connection()
   in
   handle_connection ()

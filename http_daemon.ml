@@ -1,3 +1,4 @@
+(*pp camlp4o -I `ocamlfind query lwt.syntax` pa_lwt.cmo *)
 
 (*
   OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
@@ -262,20 +263,14 @@ let chdir_to_document_root = function (* chdir to document root *)
   (** - handle HTTP authentication
    *  - handle automatic closures of client connections *)
 let invoke_callback (req:Http_request.request) spec (outchan:Lwt_io.output_channel) =
-  let callback req outchan =
-    let do_close () = if spec.auto_close then
-       Lwt_io.close outchan else return () in
-    catch (fun () -> spec.callback req outchan >>= do_close)
-    (function _ -> do_close ())
-  in
   catch (fun () ->
     match (spec.auth, (Http_request.authorization req)) with
-    | None, _ -> callback req outchan  (* no auth required *)
+    | None, _ -> spec.callback req outchan  (* no auth required *)
     | Some (realm, `Basic (spec_username, spec_password)),
       Some (`Basic (username, password))
       when (username = spec_username) && (password = spec_password) ->
         (* auth ok *)
-        callback req outchan
+        spec.callback req outchan
     | Some (realm, _), _ -> fail (Unauthorized realm)) (* auth failure *)
   (function
   | Unauthorized realm -> respond_unauthorized ~realm outchan
@@ -285,7 +280,7 @@ let invoke_callback (req:Http_request.request) spec (outchan:Lwt_io.output_chann
 
 let main spec =
   chdir_to_document_root spec.root_dir;
-  Http_misc.build_sockaddr (spec.address, spec.port) >>= fun sockaddr ->
+  lwt sockaddr = Http_misc.build_sockaddr (spec.address, spec.port) in
   
   let daemon_callback ~clisockaddr ~srvsockaddr inchan outchan =
     let rec loop () =
@@ -299,6 +294,7 @@ let main spec =
         loop ()
       ) ( function 
          | End_of_file -> debug_print "done with connction"; return ()
+         | Canceled -> debug_print "cancelled"; return ()
          | e -> fail e )
     in
     debug_print "server starting";
