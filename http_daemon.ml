@@ -94,10 +94,6 @@ let foo_body code body =
 </BODY></HTML>"
     code reason_phrase code reason_phrase body
 
-  (** internal: send a fooish body explaining in HTML form the 'reason phrase'
-  of an HTTP response; body, if given, will be appended to the body *)
-let send_foo_body code body = send_raw ~data:(foo_body code body)
-
   (* Warning: keep default values in sync with Http_response.response class *)
 let respond ?(body = "") ?(headers = []) ?version ?(code = `Code 200) (outchan:Lwt_io.output_channel) =
   send_basic_headers ?version ~code outchan >>
