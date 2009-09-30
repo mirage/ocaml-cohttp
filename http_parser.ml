@@ -1,3 +1,4 @@
+(*pp camlp4o -I `ocamlfind query lwt.syntax` pa_lwt.cmo *)
 
 (*
   OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
@@ -56,9 +57,9 @@ let debug_dump_request path params =
       (String.concat ", " (List.map (fun (n, v) -> n ^ "=" ^ v) params)))
 
 let parse_request_fst_line ic =
-  Lwt_io.read_line ic >>= fun request_line ->
+  lwt request_line = Lwt_io.read_line ic in
   debug_print (sprintf "HTTP request line (not yet parsed): %s" request_line);
-  catch (fun () ->
+  try_lwt
     (match Pcre.split ~rex:pieces_sep request_line with
     | [ meth_raw; uri_raw ] ->  (* ancient HTTP request line *)
         return (method_of_string meth_raw,                 (* method *)
@@ -68,22 +69,22 @@ let parse_request_fst_line ic =
           return (method_of_string meth_raw,                 (* method *)
           Http_parser_sanity.url_of_string uri_raw,   (* uri *)
           Some (version_of_string http_version_raw))  (* version *)
-    | _ -> fail (Malformed_request request_line)))
-  (function |Malformed_URL url -> fail (Malformed_request_URI url) |e -> fail e)
+    | _ -> fail (Malformed_request request_line))
+  with |Malformed_URL url -> fail (Malformed_request_URI url)
 
 let parse_response_fst_line ic =
-  Lwt_io.read_line ic  >>= fun response_line ->
+  lwt response_line = Lwt_io.read_line ic in
   debug_print (sprintf "HTTP response line (not yet parsed): %s" response_line);
-  catch (fun () ->
+  try_lwt
     (match Pcre.split ~rex:pieces_sep response_line with
     | version_raw :: code_raw :: _ ->
         return (version_of_string version_raw,             (* method *)
         status_of_code (int_of_string code_raw))    (* status *)
-    | _ -> fail (Malformed_response response_line)))
-  (function 
+    | _ -> fail (Malformed_response response_line))
+  with 
   | Malformed_URL _ | Invalid_code _ | Failure "int_of_string" ->
-      fail (Malformed_response response_line)
-  | e -> fail e )
+     fail (Malformed_response response_line)
+  | e -> fail e
 
 let parse_path uri = patch_empty_path (String.concat "/" (Neturl.url_path uri))
 let parse_query_get_params uri =
@@ -97,20 +98,25 @@ let parse_headers ic =
     Lwt_io.read_line ic >>= function
     | "" -> return (List.rev headers)
     | line ->
-        catch (fun () -> return (Pcre.extract ~rex:header_RE line))
-          (function Not_found -> fail (Invalid_header line) |e -> fail e) >>= fun subs ->
-        catch (fun () -> return (subs.(1)))
-          (function Invalid_argument "Array.get" -> fail (Invalid_header line) 
-                   |e -> fail e) >>= fun header ->
-        catch (fun () -> return (Http_parser_sanity.normalize_header_value subs.(2)))
-          (function Invalid_argument "Array.get" -> return "" |e -> fail e) >>= fun value ->
+        lwt subs = 
+          try_lwt 
+            return (Pcre.extract ~rex:header_RE line)
+          with Not_found -> fail (Invalid_header line) in
+        lwt header =
+          try_lwt
+            return (subs.(1))
+          with Invalid_argument "Array.get" -> fail (Invalid_header line) in
+        lwt value =
+          try_lwt
+            return (Http_parser_sanity.normalize_header_value subs.(2))
+          with Invalid_argument "Array.get" -> return "" in
         Http_parser_sanity.heal_header (header, value);
         parse_headers' ((header, value) :: headers)
   in
   parse_headers' []
 
 let parse_request ic =
-  parse_request_fst_line ic >>= fun (meth, uri, version) ->
+  lwt (meth, uri, version) = parse_request_fst_line ic in
   let path = parse_path uri in
   let query_get_params = parse_query_get_params uri in
   debug_dump_request path query_get_params;

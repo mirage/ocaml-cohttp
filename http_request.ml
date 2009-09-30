@@ -1,3 +1,4 @@
+(*pp camlp4o -I `ocamlfind query lwt.syntax` pa_lwt.cmo *)
 
 (*
   OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
@@ -47,16 +48,16 @@ type request = {
 }
  
 let init_request ~clisockaddr ~srvsockaddr ic =
-  Http_parser.parse_request_fst_line ic >>= fun (meth, uri, version) ->
+  lwt (meth, uri, version) = Http_parser.parse_request_fst_line ic in
   let uri_str = Neturl.string_of_url uri in
   let path = Http_parser.parse_path uri in
   let query_get_params = Http_parser.parse_query_get_params uri in
-  (match version with
+  lwt (headers,body) = match version with
     | None -> return ([], "")  (* No version given, use request's 1st line only *)
     | Some version -> (* Version specified, parse also headers and body *)
-        Http_parser.parse_headers ic >>= fun headers ->
+        lwt headers = Http_parser.parse_headers ic in
         let headers = List.map (fun (h,v) -> (String.lowercase h, v)) headers in
-        (if meth = `POST then begin
+        lwt body = (if meth = `POST then begin
             let limit = try Some 
                 (int_of_string (List.assoc "content-length" headers))
               with Not_found -> None in
@@ -65,9 +66,9 @@ let init_request ~clisockaddr ~srvsockaddr ic =
             |Some count -> Lwt_io.read ~count ic
           end
           else  (* TODO empty body for methods other than POST, is ok? *)
-           return "") >>= fun body ->
+           return "") in
         return (headers, body)
-   ) >>= fun (headers, body) ->
+  in
   let query_post_params =
     match meth with
     | `POST ->

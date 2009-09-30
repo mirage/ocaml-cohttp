@@ -73,22 +73,10 @@ val sockname_of_out_channel: out_channel -> Unix.sockaddr
   (** as above but works on in_channels *)
 val sockname_of_in_channel: in_channel -> Unix.sockaddr
 
-  (* TODO replace with Buffer.add_channel which does almost the same :-((( *)
-  (** reads from an input channel till it End_of_file and returns what has been
-  read; if limit is given returned buffer will contains at most first 'limit'
-  bytes read from input channel *)
-val buf_of_inchan: ?limit: int -> in_channel -> Buffer.t
-
   (** like List.assoc but return all bindings of a given key instead of the
   leftmost one only *)
 val list_assoc_all: 'a -> ('a * 'b) list -> 'b list
 
 val warn: string -> unit (** print a warning msg to stderr. Adds trailing \n *)
 val error: string -> unit (** print an error msg to stderr. Adds trailing \n *)
-
-  (** @param finalizer finalization function (execution both in case of success
-   * and in case of raised exception
-   * @param f function to be invoked
-   * @param arg argument to be passed to function *)
-val finally: (unit -> unit) -> ('a -> 'b) -> 'a -> 'b
 

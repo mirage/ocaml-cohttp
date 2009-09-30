@@ -1,3 +1,4 @@
+(*pp camlp4o -I `ocamlfind query lwt.syntax` pa_lwt.cmo *)
 
 (*
   OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
@@ -101,11 +102,10 @@ let reason_phrase_of_code = function
   | invalid_code -> raise (Invalid_code invalid_code)
 
 let build_sockaddr (addr, port) =
-  catch 
-   (fun () -> 
-      Lwt_lib.gethostbyname addr >>= fun hent ->
+  try_lwt
+      lwt hent = Lwt_lib.gethostbyname addr in
       return (Unix.ADDR_INET (hent.Unix.h_addr_list.(0), port))
-   ) (function _ -> failwith ("Ocaml-HTTP, cant resolve hostname: " ^ addr))
+  with _ -> failwith ("Ocaml-HTTP, cant resolve hostname: " ^ addr)
      
 let explode_sockaddr = function
   | Unix.ADDR_INET (addr, port) -> (Unix.string_of_inet_addr addr, port)
@@ -120,38 +120,9 @@ let sockname_of_out_channel outchan =
 let sockname_of_in_channel inchan =
   Unix.getsockname (Unix.descr_of_in_channel inchan)
 
-let buf_of_inchan ?limit ic =
-  let buf = Buffer.create 10240 in
-  let tmp = String.make 1024 '\000' in
-  let rec buf_of_inchan' limit =
-    (match limit with
-    | None ->
-        let bytes = input ic tmp 0 1024 in
-        if bytes > 0 then begin
-          Buffer.add_substring buf tmp 0 bytes;
-          buf_of_inchan' None
-        end
-    | Some lim -> (* TODO what about using a single really_input call? *)
-        let bytes = input ic tmp 0 (min lim 1024) in
-        if bytes > 0 then begin
-          Buffer.add_substring buf tmp 0 bytes;
-          buf_of_inchan' (Some (lim - bytes))
-        end)
-  in
-  (try buf_of_inchan' limit with End_of_file -> ());
-  buf
-
 let list_assoc_all key pairs =
   snd (List.split (List.filter (fun (k, v) -> k = key) pairs))
 
 let warn msg  = prerr_endline (sprintf "ocaml-http WARNING: %s" msg)
 let error msg = prerr_endline (sprintf "ocaml-http ERROR:   %s" msg)
-
-let finally at_end f arg =
-  let res =
-    try f arg
-    with exn -> at_end (); raise exn
-  in
-  at_end ();
-  res
 

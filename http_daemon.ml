@@ -75,7 +75,7 @@ let send_status_line ?(version = http_version) ~(code: status_code) outchan =
 
   (* FIXME duplication of code between this and response#addBasicHeaders *)
 let send_basic_headers ?(version = http_version) ~(code: status_code) outchan =
-  send_status_line' ~version (int_of_code code) outchan >>= fun () ->
+  send_status_line' ~version (int_of_code code) outchan >>
   send_headers
     ~headers:["Date", Http_misc.date_822 (); "Server", server_string]
     outchan
@@ -100,10 +100,10 @@ let send_foo_body code body = send_raw ~data:(foo_body code body)
 
   (* Warning: keep default values in sync with Http_response.response class *)
 let respond ?(body = "") ?(headers = []) ?version ?(code = `Code 200) (outchan:Lwt_io.output_channel) =
-  send_basic_headers ?version ~code outchan >>= fun () ->
-  send_headers ~headers outchan >>= fun () ->
-  send_header "Content-Length" (string_of_int (String.length body)) outchan >>= fun () ->
-  send_CRLF outchan >>= fun () ->
+  send_basic_headers ?version ~code outchan >>
+  send_headers ~headers outchan >>
+  send_header "Content-Length" (string_of_int (String.length body)) outchan >>
+  send_CRLF outchan >>
   send_raw ~data:body outchan
 
   (** internal: low level for respond_redirect, respond_error, ...
@@ -154,11 +154,11 @@ let send_file inchan (outchan:Lwt_io.output_channel) =
   let relay in_ch out_ch =
     let buffer = String.create 8192 in
     let rec relay_rec previous_write =
-      Lwt_io.read_into in_ch buffer 0 8192 >>= fun len ->
+      lwt len = Lwt_io.read_into in_ch buffer 0 8192 in
       if len = 0 then return () else begin
       let write =
-        previous_write >>= (fun () ->
-          Lwt_io.write_from_exactly out_ch buffer 0 len)
+        previous_write >>
+          Lwt_io.write_from_exactly out_ch buffer 0 len
       in
       relay_rec write
       end
@@ -181,10 +181,10 @@ let respond_file ~fname ?(version = http_version) (outchan:Lwt_io.output_channel
       end else begin  (* file found, is something else *)
         Lwt_io.with_file ~mode:Lwt_io.input fname 
           (fun inchan ->
-             send_basic_headers ~version ~code:(`Code 200) outchan >>= fun () ->
-             Lwt_io.file_length fname >>= fun file_size ->
-             send_header ~header:"Content-Length" ~value:(Int64.to_string file_size) outchan >>= fun () ->
-             send_CRLF outchan >>= fun () ->
+             send_basic_headers ~version ~code:(`Code 200) outchan >>
+             lwt file_size = Lwt_io.file_length fname in
+             send_header ~header:"Content-Length" ~value:(Int64.to_string file_size) outchan >>
+             send_CRLF outchan >>
              send_file inchan outchan
           )
       end
@@ -220,35 +220,35 @@ let rec wrap_parse_request_w_safety parse_function (inchan:Lwt_io.input_channel)
         ~body:("request 1st line format should be: " ^
                "'&lt;method&gt; &lt;url&gt; &lt;version&gt;'" ^
                "<br />\nwhile received request 1st line was:<br />\n" ^ req)
-        outchan >>= fun () ->
+        outchan >>
       fail Again
   | (Invalid_HTTP_method meth) as e ->
       debug_print (pp_parse_exc e);
       respond_error ~code:(`Code 501)
         ~body:("Method '" ^ meth ^ "' isn't supported (yet)")
-        outchan >>= fun () ->
+        outchan >>
       fail Again
   | (Malformed_request_URI uri) as e ->
       debug_print (pp_parse_exc e);
       respond_error ~code:(`Code 400) ~body:("Malformed URL: '" ^ uri ^ "'")
-        outchan >>= fun () ->
+        outchan >>
       fail Again
   | (Invalid_HTTP_version version) as e ->
       debug_print (pp_parse_exc e);
       respond_error ~code:(`Code 505)
         ~body:("HTTP version '" ^ version ^ "' isn't supported (yet)")
-        outchan >>= fun () ->
+        outchan >>
       fail Again
   | (Malformed_query query) as e ->
       debug_print (pp_parse_exc e);
       respond_error ~code:(`Code 400)
-        ~body:(sprintf "Malformed query string '%s'" query) outchan >>= fun () ->
+        ~body:(sprintf "Malformed query string '%s'" query) outchan >>
       fail Again
   | (Malformed_query_part (binding, query)) as e ->
       debug_print (pp_parse_exc e);
       respond_error ~code:(`Code 400)
         ~body:(sprintf "Malformed query part '%s' in query '%s'" binding query)
-        outchan >>= fun () ->
+        outchan >>
       fail Again
   | e -> fail e)
   
@@ -263,8 +263,8 @@ let chdir_to_document_root = function (* chdir to document root *)
   (** - handle HTTP authentication
    *  - handle automatic closures of client connections *)
 let invoke_callback (req:Http_request.request) spec (outchan:Lwt_io.output_channel) =
-  catch (fun () ->
-    match (spec.auth, (Http_request.authorization req)) with
+  try_lwt 
+    (match (spec.auth, (Http_request.authorization req)) with
     | None, _ -> spec.callback req outchan  (* no auth required *)
     | Some (realm, `Basic (spec_username, spec_password)),
       Some (`Basic (username, password))
@@ -272,11 +272,9 @@ let invoke_callback (req:Http_request.request) spec (outchan:Lwt_io.output_chann
         (* auth ok *)
         spec.callback req outchan
     | Some (realm, _), _ -> fail (Unauthorized realm)) (* auth failure *)
-  (function
+  with
   | Unauthorized realm -> respond_unauthorized ~realm outchan
   | Again -> return ()
-  | e -> fail e
-  )
 
 let main spec =
   chdir_to_document_root spec.root_dir;
@@ -286,20 +284,21 @@ let main spec =
     let rec loop () =
       catch (fun () -> 
         debug_print "request";
-        wrap_parse_request_w_safety (Http_request.init_request ~clisockaddr ~srvsockaddr) 
-          inchan outchan >>= fun req ->
+        lwt req = wrap_parse_request_w_safety 
+          (Http_request.init_request ~clisockaddr ~srvsockaddr) 
+          inchan outchan in
         debug_print "invoke_callback";
-        invoke_callback req spec outchan >>= fun () ->
-        debug_print "loop";
-        loop ()
+        invoke_callback req spec outchan >>=
+        loop
       ) ( function 
          | End_of_file -> debug_print "done with connction"; return ()
          | Canceled -> debug_print "cancelled"; return ()
          | e -> fail e )
     in
     debug_print "server starting";
-    catch loop
-    (function
+    try_lwt
+      loop ()
+    with
      | exn ->
       debug_print (sprintf "uncaught exception: %s" (Printexc.to_string exn));
       (match spec.exn_handler with
@@ -308,7 +307,7 @@ let main spec =
           f exn outchan
       | None ->
           debug_print "no handler given: re-raising";
-          fail exn))
+          fail exn)
   in
   Http_tcp_server.simple ~sockaddr ~timeout:spec.timeout daemon_callback
 
