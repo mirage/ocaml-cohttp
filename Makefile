@@ -9,10 +9,17 @@ LIB_PACK_NAME = cohttp
 ANNOTATE = yes
 
 .PHONY: all
-all: pack-byte-code pack-native-code cohttp.cma
+all: pack-byte-code pack-native-code cohttp.cma cohttp.cmxa
 	@ :
+
+DISTVERSION = 0.1
 
 META: META.in
 	cat META.in | sed -e 's/@DISTVERSION@/$(DISTVERSION)/' > META
+
+LIBINSTALL_FILES = META cohttp.cma cohttp.cmxa
+
+install: libinstall
+uninstall: libuninstall
 
 -include $(OCAMLMAKEFILE)
