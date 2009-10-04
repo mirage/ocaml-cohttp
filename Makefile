@@ -17,7 +17,7 @@ DISTVERSION = 0.1
 META: META.in
 	cat META.in | sed -e 's/@DISTVERSION@/$(DISTVERSION)/' > META
 
-LIBINSTALL_FILES = META cohttp.cma cohttp.cmxa
+LIBINSTALL_FILES = META cohttp.cma cohttp.cmxa cohttp.a
 
 install: libinstall
 uninstall: libuninstall
