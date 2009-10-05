@@ -164,7 +164,8 @@ let send_file inchan (outchan:Lwt_io.output_channel) =
     in
   relay inchan outchan
 
-let respond_file ~fname ?(version = http_version) (outchan:Lwt_io.output_channel) =
+let respond_file ~fname ?(version = http_version) 
+      ?(mime_type = "application/octet-stream") (outchan:Lwt_io.output_channel) =
   (** ASSUMPTION: 'fname' doesn't begin with a "/"; it's relative to the current
   document root (usually the daemon's cwd) *)
   let droot = Sys.getcwd () in  (* document root *)
