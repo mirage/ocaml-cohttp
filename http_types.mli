@@ -33,6 +33,8 @@ type version =
 type meth =
   [ `GET
   | `POST
+  | `HEAD
+  | `DELETE
   ]
 
   (** authentication information *)

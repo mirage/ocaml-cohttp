@@ -108,6 +108,8 @@ let param ?meth ?default r name =
 let param_all ?meth r name =
   (match (meth: meth option) with
    | None -> List.rev (Hashtbl.find_all r.r_params name)
+   | Some `DELETE
+   | Some `HEAD
    | Some `GET -> Http_misc.list_assoc_all name r.r_get_params
    | Some `POST -> Http_misc.list_assoc_all name r.r_post_params)
 

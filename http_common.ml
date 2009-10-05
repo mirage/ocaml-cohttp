@@ -43,10 +43,14 @@ let version_of_string = function
 let string_of_method = function
   | `GET -> "GET"
   | `POST -> "POST"
+  | `HEAD -> "HEAD"
+  | `DELETE -> "DELETE"
 
 let method_of_string = function
   | "GET" -> `GET
   | "POST" -> `POST
+  | "HEAD" -> `HEAD
+  | "DELETE" -> `DELETE
   | invalid_method -> raise (Invalid_HTTP_method invalid_method)
 
 let status_of_code = function
