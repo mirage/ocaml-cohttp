@@ -5,6 +5,7 @@ val init_request :
 val meth : request -> Http_types.meth
 val uri : request -> string
 val path : request -> string
+val body : request -> string
 val param :
   ?meth:[< `GET | `POST ] -> ?default:string -> request -> string -> string
 val param_all : ?meth:Http_types.meth -> request -> string -> string list
