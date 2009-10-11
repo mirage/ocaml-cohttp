@@ -1,7 +1,7 @@
 OCAMLMAKEFILE=OCamlMakefile
 
 SOURCES = http_types.mli http_daemon.mli http_constants.ml http_types.ml http_parser_sanity.ml http_misc.ml http_common.ml \
-	http_tcp_server.ml http_parser.ml http_message.ml http_request.ml http_response.ml http_daemon.ml
+	http_tcp_server.ml http_parser.ml http_message.ml http_request.ml http_response.ml http_daemon.ml magic_mime.ml
 PACKS = netstring lwt lwt.extra
 THREADS = yes
 RESULT = cohttp
