@@ -24,7 +24,17 @@ let init file_name =
        ) (read_lines ch)
    )
 
-let lookup ext =
+(* Retrieve file extension , if any, or blank string otherwise *)
+let get_extension ~filename =
+  let rec search_dot i =
+    if i < 1 || filename.[i] = '/' then ""
+    else if filename.[i] = '.' then String.sub filename (i+1) (String.length filename - i - 1)
+    else search_dot (i - 1) in
+  search_dot (String.length filename - 1)
+
+(* Given a full filename, lookup its MIME type *)
+let lookup ~filename =
+  let ext = get_extension ~filename in
   try
     Hashtbl.find magic (String.lowercase ext)
   with
