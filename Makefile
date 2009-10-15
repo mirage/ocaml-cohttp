@@ -21,5 +21,6 @@ LIBINSTALL_FILES = META cohttp.cma cohttp.cmxa cohttp.a cohttp.cmi
 
 install: libinstall
 uninstall: libuninstall
+reinstall: uninstall install
 
 -include $(OCAMLMAKEFILE)
