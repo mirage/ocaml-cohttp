@@ -13,3 +13,4 @@ val params : request -> (string, string) Hashtbl.t
 val params_get : request -> (string * string) list
 val params_post : request -> (string * string) list
 val authorization : request -> [> `Basic of string * string ] option
+val header : request -> name:string -> string option
