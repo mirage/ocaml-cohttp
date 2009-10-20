@@ -64,7 +64,10 @@ let init_request ~clisockaddr ~srvsockaddr ic =
               with Not_found -> None in
             match limit with 
             |None -> Lwt_io.read ic
-            |Some count -> Lwt_io.read ~count ic
+            |Some count -> 
+               let s = String.create count in
+               Lwt_io.read_into_exactly ic s 0 count >>
+               return s
           end
           else  (* TODO empty body for methods other than POST, is ok? *)
            return "") in
