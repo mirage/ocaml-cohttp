@@ -164,11 +164,12 @@ let send_file inchan (outchan:Lwt_io.output_channel) =
     in
   relay inchan outchan
 
-let respond_file ~fname ?(version = http_version) 
+let respond_file ~fname ?droot ?(version = http_version) 
       ?(mime_type = "application/octet-stream") (outchan:Lwt_io.output_channel) =
   (** ASSUMPTION: 'fname' doesn't begin with a "/"; it's relative to the current
   document root (usually the daemon's cwd) *)
-  let droot = Sys.getcwd () in  (* document root *)
+  let droot = match droot with
+    |None -> Sys.getcwd () |Some d -> d in  (* document root *)
   let path = droot ^ "/" ^ fname in (* full path to the desired file *)
   if not (Sys.file_exists path) then (* file not found *)
     respond_not_found ~url:fname outchan
@@ -177,10 +178,10 @@ let respond_file ~fname ?(version = http_version)
       if Http_misc.is_directory path then begin (* file found, is a dir *)
         respond_forbidden ~url:fname ~version outchan
       end else begin  (* file found, is something else *)
-        Lwt_io.with_file ~mode:Lwt_io.input fname 
+        Lwt_io.with_file ~mode:Lwt_io.input path
           (fun inchan ->
              send_basic_headers ~version ~code:(`Code 200) outchan >>
-             lwt file_size = Lwt_io.file_length fname in
+             lwt file_size = Lwt_io.file_length path in
              send_header ~header:"Content-Length" ~value:(Int64.to_string file_size) outchan >>
              send_CRLF outchan >>
              send_file inchan outchan

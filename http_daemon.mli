@@ -41,6 +41,7 @@ val respond_unauthorized :
 val send_file : Lwt_io.input_channel -> Lwt_io.output_channel -> unit Lwt.t
 val respond_file :
   fname:Lwt_io.file_name ->
+  ?droot:string ->
   ?version:Http_types.version -> ?mime_type: string ->  Lwt_io.output_channel -> unit Lwt.t
 val respond_with :
   Http_response.response -> Lwt_io.output_channel -> unit Lwt.t
