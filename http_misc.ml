@@ -95,7 +95,7 @@ let reason_phrase_of_code = function
 
 let build_sockaddr (addr, port) =
   try_lwt
-      lwt hent = Lwt_lib.gethostbyname addr in
+      let hent = Unix.gethostbyname addr in
       return (Unix.ADDR_INET (hent.Unix.h_addr_list.(0), port))
   with _ -> failwith ("Ocaml-HTTP, cant resolve hostname: " ^ addr)
      
