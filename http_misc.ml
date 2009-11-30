@@ -95,9 +95,10 @@ let reason_phrase_of_code = function
 
 let build_sockaddr (addr, port) =
   try_lwt
+      (* should this be lwt hent = Lwt_lib.gethostbyname addr ? *)
       let hent = Unix.gethostbyname addr in
       return (Unix.ADDR_INET (hent.Unix.h_addr_list.(0), port))
-  with _ -> failwith ("Ocaml-HTTP, cant resolve hostname: " ^ addr)
+  with _ -> failwith ("ocaml-cohttp, cant resolve hostname: " ^ addr)
      
 let explode_sockaddr = function
   | Unix.ADDR_INET (addr, port) -> (Unix.string_of_inet_addr addr, port)
@@ -106,6 +107,6 @@ let explode_sockaddr = function
 let list_assoc_all key pairs =
   snd (List.split (List.filter (fun (k, v) -> k = key) pairs))
 
-let warn msg  = prerr_endline (sprintf "ocaml-http WARNING: %s" msg)
-let error msg = prerr_endline (sprintf "ocaml-http ERROR:   %s" msg)
+let warn msg  = prerr_endline (sprintf "ocaml-cohttp WARNING: %s" msg)
+let error msg = prerr_endline (sprintf "ocaml-cohttp ERROR:   %s" msg)
 
