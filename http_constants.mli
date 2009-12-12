@@ -21,23 +21,8 @@
 
 (** Constants *)
 
-  (** default HTTP version *)
-val version: Http_types.version
+val default_version: Http_types.version
 
-  (** string returned as value of "Server:" response header *)
 val server_string: string
 
-  (** "\r\n" string *)
 val crlf: string
-
-  (** {2 daemon default values} *)
-
-val default_addr: string
-val default_auth: (string * Http_types.auth_info) option
-val default_auto_close: bool
-val default_callback: Http_request.request -> Lwt_io.output_channel -> unit Lwt.t
-val default_port: int
-val default_root_dir: string option
-val default_exn_handler: (exn -> Lwt_io.output_channel -> unit Lwt.t) option
-val default_timeout: int option
-

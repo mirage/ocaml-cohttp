@@ -20,17 +20,6 @@
   USA
 *)
 
-open Lwt
-
-let version = `HTTP_1_1 ;;
-let server_string = "CoHTTP Daemon" ;;
-let crlf = "\r\n" ;;
-
-let default_addr = "0.0.0.0"
-let default_auth = None
-let default_auto_close = false
-let default_callback = fun _ _ -> return ()
-let default_port = 80
-let default_root_dir = None
-let default_exn_handler = None
-let default_timeout = Some 300
+let default_version = `HTTP_1_1
+let server_string = "CoHTTP Daemon"
+let crlf = "\r\n"
