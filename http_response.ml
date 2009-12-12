@@ -80,7 +80,8 @@ let is_client_error r = Http_common.is_client_error r.r_code
 let is_server_error r = Http_common.is_server_error r.r_code
 let is_error r = Http_common.is_error r.r_code
 
-let gh name r = Http_message.header r.r_msg ~name
+let gh name r =
+  match Http_message.header r.r_msg ~name with [] -> None | x :: _ -> Some x
 let rh name r = Http_message.replace_header r.r_msg ~name
 
 let content_type = gh "Content-Type"

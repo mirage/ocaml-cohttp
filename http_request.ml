@@ -120,11 +120,11 @@ let params_post r = r.r_post_params
 
 let authorization r = 
   match Http_message.header r.r_msg ~name:"authorization" with
-  |None -> None
-  |Some h -> 
-    let credentials = Netencoding.Base64.decode (Pcre.replace ~rex:basic_auth_RE h) in
-    debug_print ("HTTP Basic auth credentials: " ^ credentials);
-    (match Pcre.split ~rex:auth_sep_RE credentials with
-     | [username; password] -> Some (`Basic (username, password))
-     | l -> None)
+    | [] -> None
+    | h :: _ -> 
+	let credentials = Netencoding.Base64.decode (Pcre.replace ~rex:basic_auth_RE h) in
+	  debug_print ("HTTP Basic auth credentials: " ^ credentials);
+	  (match Pcre.split ~rex:auth_sep_RE credentials with
+	     | [username; password] -> Some (`Basic (username, password))
+	     | l -> None)
 

@@ -15,7 +15,7 @@ val replace_header : message -> name:string -> value:string -> unit
 val replace_headers : message -> (string * string) list -> unit
 val remove_header : message -> name:string -> unit
 val has_header : message -> name:string -> bool
-val header : message -> name:string -> string option
+val header : message -> name:string -> string list
 val headers : message -> (string * string) list
 val client_addr : message -> string
 val server_addr : message -> string

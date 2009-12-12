@@ -90,14 +90,14 @@ let serialize ?(version=`HTTP_1_0) cp =
     | `HTTP_1_1 -> serialize_1_1 cp
 
 let extract req =
-  match Http_request.header req "Cookie" with
-    | Some header ->
-	let comps = Pcre.split ~rex:(Pcre.regexp "(?:;|,)\\s") header in
-	let cookies = List.filter (fun s -> s.[0] != '$') comps in
-	let split_pair nvp =
-	  match Pcre.split ~rex:(Pcre.regexp "=") nvp with
-	    | [] -> ("","")
-	    | n :: [] -> (n, "")
-	    | n :: v :: _ -> (n, v)
-	in List.map split_pair cookies
-    | None -> []
+  List.fold_left
+    (fun acc header ->
+       let comps = Pcre.split ~rex:(Pcre.regexp "(?:;|,)\\s") header in
+       let cookies = List.filter (fun s -> s.[0] != '$') comps in
+       let split_pair nvp =
+	 match Pcre.split ~rex:(Pcre.regexp "=") nvp with
+	   | [] -> ("","")
+	   | n :: [] -> (n, "")
+	   | n :: v :: _ -> (n, v)
+       in (List.map split_pair cookies) @ acc
+    ) [] (Http_request.header req "Cookie")

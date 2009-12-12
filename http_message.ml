@@ -99,21 +99,24 @@ let remove_header msg ~name =
 let has_header msg ~name =
   Hashtbl.mem msg.m_headers name
 let header msg ~name =
-  match has_header msg ~name with
-  |false -> None
-  |true ->
-    let name = String.lowercase name in
-    let r = String.concat ", " (List.rev (Hashtbl.find_all msg.m_headers name)) in
-    Some r
+  let name = String.lowercase name in
+  let compact = String.concat ", " in
+    (* TODO: Just these old headers or all of HTTP 1.0? *)
+  let no_compact = ["set-cookie"] in
+    if has_header msg ~name then
+      let hl = List.rev (Hashtbl.find_all msg.m_headers name) in
+	if List.mem name no_compact then hl
+	else [compact hl]
+    else []
 let headers msg =
-  List.rev (
-    Hashtbl.fold 
-      (fun name _ headers -> 
-         match header msg ~name with
-         |None -> headers
-         |Some h -> (name, h) :: headers
-      ) msg.m_headers [])
-
+  let hset = Hashtbl.create 11 in
+  let () = Hashtbl.iter (fun name _ -> Hashtbl.replace hset name ()) msg.m_headers in
+    Hashtbl.fold (fun name _ headers -> 
+		    List.rev_append
+		      (List.map (fun h -> (name, h)) (header msg ~name))
+		      headers
+		 ) hset []
+    
 let client_addr msg = msg.m_cliaddr
 let server_addr msg = msg.m_srvaddr
 let client_port msg = msg.m_cliport
