@@ -1,3 +1,4 @@
+(*pp camlp4o -I `ocamlfind query lwt.syntax` pa_lwt.cmo *)
 
 (*
   OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
@@ -24,6 +25,7 @@ open Http_common
 open Http_constants
 open Http_types
 open Printf
+open Lwt
 
   (* remove all bindings of 'name' from hashtbl 'tbl' *)
 let rec hashtbl_remove_all tbl name =
@@ -32,28 +34,52 @@ let rec hashtbl_remove_all tbl name =
   Hashtbl.remove tbl name;
   if Hashtbl.mem tbl name then hashtbl_remove_all tbl name
 
+type contents =
+    [ `Buffer of Buffer.t
+    | `String of string
+    | `Inchan of int64 * Lwt_io.input_channel
+    ]
+
 type message = {
-  m_contents : Buffer.t;
+  mutable m_contents : contents list;
   m_headers : (string, string) Hashtbl.t;
-  mutable m_version : version option;
+  m_version : version;
   m_cliaddr : string;
   m_cliport : int;
   m_srvaddr : string;
   m_srvport : int;
 } 
 
-let body msg = Buffer.contents msg.m_contents
-let body_buf msg = msg.m_contents
-let set_body msg =
-  Buffer.clear msg.m_contents;
-  Buffer.add_string msg.m_contents
-let set_body_buf msg = 
-  Buffer.clear msg.m_contents;
-  Buffer.add_buffer msg.m_contents
-let add_body msg =
-  Buffer.add_string msg.m_contents
-let add_body_buf msg =
-  Buffer.add_buffer msg.m_contents
+let body msg = List.rev msg.m_contents
+let body_size cl =
+  let (+) = Int64.add in
+    List.fold_left (fun a c -> match c with
+		      | `String s -> a + (Int64.of_int (String.length s))
+		      | `Buffer b -> a + (Int64.of_int (Buffer.length b))
+		      | `Inchan (i, _) -> a + i) Int64.zero cl
+let string_of_body cl =
+  (* TODO: What if the body is larger than 1GB? *)
+  let buf = String.create (Int64.to_int (body_size cl)) in
+    (List.fold_left (fun pos c -> match c with
+		       | `String s ->
+			   lwt pos = pos in
+                           let len = String.length s in
+			   let () = String.blit s 0 buf pos len in
+			     return (pos + len)
+                       | `Buffer b ->
+			   lwt pos = pos in
+                           let len = Buffer.length b in
+			   let str = Buffer.contents b in
+			   let () = String.blit str 0 buf pos len in
+			     return (pos + len)
+	               | `Inchan (il, ic) ->
+			   lwt pos = pos in
+                           let il = Int64.to_int il in
+                             (Lwt_io.read_into_exactly ic buf pos il) >>
+			       return (pos + il)
+                    ) (return 0) cl) >>= (fun _ -> return buf)
+let set_body msg contents = msg.m_contents <- [contents]
+let add_body msg contents = msg.m_contents <- (contents :: msg.m_contents)
 let add_header msg ~name ~value =
   let name = String.lowercase name in
   Http_parser_sanity.heal_header (name, value);
@@ -93,33 +119,47 @@ let client_port msg = msg.m_cliport
 let server_port msg = msg.m_srvport
 
 let version msg = msg.m_version
-let set_version msg v = msg.m_version <- Some v
 
 let init ~body ~headers ~version ~clisockaddr ~srvsockaddr =
   let ((cliaddr, cliport), (srvaddr, srvport)) =
     (Http_misc.explode_sockaddr clisockaddr,
      Http_misc.explode_sockaddr srvsockaddr) in
-  let msg = { m_contents = Buffer.create 1024;
-    m_headers = Hashtbl.create 11;
-    m_version = version;
-    m_cliaddr = cliaddr;
-    m_cliport = cliport;
-    m_srvaddr = srvaddr;
-    m_srvport = srvport;
-  } in
-  set_body msg body;
-  add_headers msg headers;
-  msg
-
-let to_string msg ~fstLineToString =
-  let b = body msg in
-  fstLineToString ^  (* {request,status} line *)
-  crlf ^
-  (String.concat  (* headers, crlf terminated *) ""
-    (List.map (fun (h,v) -> h ^ ": " ^ v ^ crlf) (headers msg))) ^
-  (sprintf "Content-Length: %d" (String.length b)) ^ crlf ^
-  crlf ^
-  b (* body *)
+  let msg = { m_contents = body;
+	      m_headers = Hashtbl.create 11;
+	      m_version = version;
+	      m_cliaddr = cliaddr;
+	      m_cliport = cliport;
+	      m_srvaddr = srvaddr;
+	      m_srvport = srvport;
+	    } in
+    add_headers msg headers;
+    msg
+      
+let relay ic oc m =
+  let bufsize = 8192 in
+  let buffer = String.create bufsize in
+  let rec aux m =
+    lwt len = Lwt_io.read_into ic buffer 0 bufsize in
+      if len = 0 then m else
+	aux (m >> Lwt_io.write_from_exactly oc buffer 0 len)
+  in aux m
 
 let serialize msg outchan ~fstLineToString =
-  Lwt_io.write outchan (to_string msg ~fstLineToString)
+  let body = body msg in
+  let bodylen = body_size body
+  in (Lwt_io.write outchan (fstLineToString ^ crlf)) >>
+       (List.fold_left
+	  (fun m (h,v) ->
+	     m >> Lwt_io.write outchan (h ^ ": " ^ v ^ crlf))
+	  (Lwt.return ())
+	  (headers msg)) >>
+       (if bodylen != Int64.zero then
+	  Lwt_io.write outchan (sprintf "Content-Length: %Ld\r\n\r\n" bodylen)
+	else return ()) >>
+       (List.fold_left
+	  (fun m c -> match c with
+	     | `String s -> m >> (Lwt_io.write outchan s)
+	     | `Buffer b -> m >> (Lwt_io.write outchan (Buffer.contents b))
+	     | `Inchan (_, ic) -> relay ic outchan m)
+	  (Lwt.return ())
+	  body)

@@ -44,7 +44,7 @@ type request = {
   r_post_params: (string * string) list;
   r_meth: meth;
   r_uri: string;
-  r_version: version option;
+  r_version: version;
   r_path: string;
 }
  
@@ -53,45 +53,40 @@ let init_request ~clisockaddr ~srvsockaddr ic =
   let uri_str = Neturl.string_of_url uri in
   let path = Http_parser.parse_path uri in
   let query_get_params = Http_parser.parse_query_get_params uri in
-  lwt (headers,body) = match version with
-    | None -> return ([], "")  (* No version given, use request's 1st line only *)
-    | Some version -> (* Version specified, parse also headers and body *)
-        lwt headers = Http_parser.parse_headers ic in
-        let headers = List.map (fun (h,v) -> (String.lowercase h, v)) headers in
-        lwt body = (if meth = `POST then begin
-            let limit = try Some 
-                (int_of_string (List.assoc "content-length" headers))
-              with Not_found -> None in
-            match limit with 
-            |None -> Lwt_io.read ic
-            |Some count -> 
-               let s = String.create count in
-               Lwt_io.read_into_exactly ic s 0 count >>
-               return s
-          end
-          else  (* TODO empty body for methods other than POST, is ok? *)
-           return "") in
-        return (headers, body)
-  in
-  let query_post_params =
+  lwt headers = Http_parser.parse_headers ic in
+  let headers = List.map (fun (h,v) -> (String.lowercase h, v)) headers in
+  lwt body = (if meth = `POST then begin
+		let limit = try Some 
+                  (Int64.of_string (List.assoc "content-length" headers))
+		with Not_found -> None in
+		  match limit with 
+		    |None -> Lwt_io.read ic >|= (fun s -> [`String s])
+		    |Some count -> return [`Inchan (count, ic)]
+              end
+              else  (* TODO empty body for methods other than POST, is ok? *)
+		return [`String ""]) in
+  lwt query_post_params =
     match meth with
-    | `POST ->
-        let ct = try List.assoc "content-type" headers with Not_found -> "" in
-        if ct = "application/x-www-form-urlencoded" then
-          Http_parser.split_query_params body
-        else []
-    | _ -> []
+      | `POST -> begin
+          try
+	    let ct = List.assoc "content-type" headers in
+	      if ct = "application/x-www-form-urlencoded" then
+		(Http_message.string_of_body body) >|= Http_parser.split_query_params
+	      else return []
+	  with Not_found -> return []
+	end
+      | _ -> return []
   in
   let params = query_post_params @ query_get_params in (* prefers POST params *)
   let _ = debug_dump_request path params in
   let msg = Http_message.init ~body ~headers ~version ~clisockaddr ~srvsockaddr in
   let params_tbl =
-      let tbl = Hashtbl.create (List.length params) in
+    let tbl = Hashtbl.create (List.length params) in
       List.iter (fun (n,v) -> Hashtbl.add tbl n v) params;
       tbl in
-  return { r_msg=msg; r_params=params_tbl; r_get_params = query_get_params; 
-           r_post_params = query_post_params; r_uri=uri_str; r_meth=meth; 
-           r_version=version; r_path=path }
+    return { r_msg=msg; r_params=params_tbl; r_get_params = query_get_params; 
+             r_post_params = query_post_params; r_uri=uri_str; r_meth=meth; 
+             r_version=version; r_path=path }
 
 let meth r = r.r_meth
 let uri r = r.r_uri

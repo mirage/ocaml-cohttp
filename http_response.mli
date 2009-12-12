@@ -1,12 +1,13 @@
 type response
 val init :
-  ?body:string ->
+  ?body:Http_message.contents list ->
   ?headers:(string * string) list ->
   ?version:Http_types.version ->
-  ?code:int ->
+  ?status:Http_types.status_code ->
+  ?reason:string ->
   ?clisockaddr:Unix.sockaddr ->
-  ?srvsockaddr:Unix.sockaddr -> ?status:Http_types.status -> unit -> response
-val real_version : response -> string
+  ?srvsockaddr:Unix.sockaddr -> unit -> response
+val version_string : response -> string
 val code : response -> int
 val set_code : response -> int -> unit
 val status : response -> Http_types.status
@@ -14,7 +15,6 @@ val set_status : response -> Http_types.status -> unit
 val reason : response -> string
 val set_reason : response -> string -> unit
 val status_line : response -> string
-val set_status_line : response -> string -> unit
 val is_informational : response -> bool
 val is_success : response -> bool
 val is_redirection : response -> bool

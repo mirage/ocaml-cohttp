@@ -1,10 +1,14 @@
+type contents =
+    [ `Buffer of Buffer.t
+    | `String of string
+    | `Inchan of int64 * Lwt_io.input_channel
+    ]
 type message
-val body : message -> string
-val body_buf : message -> Buffer.t
-val set_body : message -> string -> unit
-val set_body_buf : message -> Buffer.t -> unit
-val add_body : message -> string -> unit
-val add_body_buf : message -> Buffer.t -> unit
+val body : message -> contents list
+val body_size : contents list -> int64
+val string_of_body : contents list -> string Lwt.t
+val set_body : message -> contents -> unit
+val add_body : message -> contents -> unit
 val add_header : message -> name:string -> value:string -> unit
 val add_headers : message -> (string * string) list -> unit
 val replace_header : message -> name:string -> value:string -> unit
@@ -17,12 +21,11 @@ val client_addr : message -> string
 val server_addr : message -> string
 val client_port : message -> int
 val server_port : message -> int
-val version : message -> Http_types.version option
-val set_version : message -> Http_types.version -> unit
+val version : message -> Http_types.version
 val init :
-  body:string ->
+  body:contents list ->
   headers:(string * string) list ->
-  version:Http_types.version option ->
+  version:Http_types.version ->
   clisockaddr:Unix.sockaddr -> srvsockaddr:Unix.sockaddr -> message
 val serialize :
   message -> Lwt_io.output_channel -> fstLineToString:string -> unit Lwt.t
