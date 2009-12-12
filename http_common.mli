@@ -30,12 +30,6 @@ val debug: bool ref
   (** print a string on stderr only if debugging is enabled *)
 val debug_print: string -> unit
 
-  (** see {!Http_constants.version} *)
-val http_version: version
-
-  (** see {!Http_constants.server_string} *)
-val server_string: string
-
   (** pretty print an HTTP version *)
 val string_of_version: version -> string
 
