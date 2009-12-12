@@ -37,7 +37,7 @@ val split_query_params: string -> (string * string) list
   was specified
   @raise Malformed_request if request 1st linst isn't well formed
   @raise Malformed_request_URI if requested URI isn't well formed *)
-val parse_request_fst_line: Lwt_io.input_channel -> (meth * Neturl.url * version option) Lwt.t
+val parse_request_fst_line: Lwt_io.input_channel -> (meth * Neturl.url * version) Lwt.t
 
   (** parse 1st line of an HTTP response
    * @param inchan input channel from which parse response

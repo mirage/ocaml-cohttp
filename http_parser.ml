@@ -60,18 +60,14 @@ let debug_dump_request path params =
 let parse_request_fst_line ic =
   lwt request_line = Lwt_io.read_line ic in
   debug_print (sprintf "HTTP request line (not yet parsed): %s" request_line);
-  try_lwt
-    (match Pcre.split ~rex:pieces_sep request_line with
-    | [ meth_raw; uri_raw ] ->  (* ancient HTTP request line *)
-        return (method_of_string meth_raw,                 (* method *)
-        Http_parser_sanity.url_of_string uri_raw,   (* uri *)
-        None)                                       (* no version given *)
-    | [ meth_raw; uri_raw; http_version_raw ] ->  (* HTTP 1.{0,1} *)
-          return (method_of_string meth_raw,                 (* method *)
-          Http_parser_sanity.url_of_string uri_raw,   (* uri *)
-          Some (version_of_string http_version_raw))  (* version *)
-    | _ -> fail (Malformed_request request_line))
-  with |Malformed_URL url -> fail (Malformed_request_URI url)
+  try_lwt begin
+    match Pcre.split ~rex:pieces_sep request_line with
+      | [ meth_raw; uri_raw; http_version_raw ] ->
+          return (method_of_string meth_raw,
+		  Http_parser_sanity.url_of_string uri_raw,
+		  version_of_string http_version_raw)
+      | _ -> fail (Malformed_request request_line)
+  end with | Malformed_URL url -> fail (Malformed_request_URI url)
 
 let parse_response_fst_line ic =
   lwt response_line = Lwt_io.read_line ic in
