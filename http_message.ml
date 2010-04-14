@@ -140,12 +140,12 @@ let init ~body ~headers ~version ~clisockaddr ~srvsockaddr =
     msg
       
 let relay ic oc m =
-  let bufsize = 8192 in
+  let bufsize = 4096 in (* blksz *)
   let buffer = String.create bufsize in
   let rec aux m =
-    lwt len = Lwt_io.read_into ic buffer 0 bufsize in
-      if len = 0 then m else
-	aux (m >> Lwt_io.write_from_exactly oc buffer 0 len)
+    lwt len = m >> (Lwt_io.read_into ic buffer 0 bufsize) in
+      if len = 0 then Lwt.return ()
+      else aux (Lwt_io.write_from_exactly oc buffer 0 len)
   in aux m
 
 let serialize msg outchan ~fstLineToString =
