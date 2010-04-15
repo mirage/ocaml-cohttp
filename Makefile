@@ -5,7 +5,7 @@ SOURCES = http_types.ml http_constants.ml \
 	  http_misc.ml http_message.ml \
 	  http_response.ml http_request.ml \
 	  http_user_agent.ml http_cookie.ml
-PACKS = netstring lwt
+PACKS = netstring lwt lwt.unix
 RESULT = cohttp
 LIB_PACK_NAME = cohttp
 ANNOTATE = yes
