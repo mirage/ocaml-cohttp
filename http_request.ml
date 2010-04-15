@@ -94,6 +94,7 @@ let uri r = r.r_uri
 let path r = r.r_path
 let body r = Http_message.body r.r_msg
 let header r ~name = Http_message.header r.r_msg ~name
+let client_addr r = Http_message.client_addr r.r_msg
 
 let param ?meth ?default r name =
   try
