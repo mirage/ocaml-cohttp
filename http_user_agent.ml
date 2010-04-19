@@ -22,13 +22,13 @@
 *)
 
 open Printf
-
 open Http_common
-
 open Lwt
 
 type headers = (string * string) list
 
+type tcp_error_source = Connect | Read | Write
+exception Tcp_error of tcp_error_source * exn
 exception Http_error of (int * headers * string)  (* code, body *)
 
 let http_scheme_RE = Pcre.regexp ~flags:[`CASELESS] "^http://"
@@ -67,6 +67,7 @@ let build_req_string headers meth address path body =
 let request outchan headers meth body (address, _, path) =
   let headers = match headers with None -> [] | Some hs -> hs in
     Lwt_io.write outchan (build_req_string headers meth address path body)
+    >> Lwt_io.flush outchan
 
 let read inchan =
   lwt (_, status) = Http_parser.parse_response_fst_line inchan in
@@ -87,7 +88,18 @@ let call headers kind body url =
     | `HEAD -> "HEAD"
     | `POST -> "POST" in
   let endp = parse_url url in
-    connect endp (fun (i, o) -> request o headers meth body endp >> read i)
+    try_lwt connect endp
+      (fun (i, o) ->
+	 (try_lwt request o headers meth body endp
+	  with exn -> fail (Tcp_error (Write, exn))
+	 ) >> (try_lwt read i
+	       with
+		 | (Http_error _) as e -> fail e
+		 | exn -> fail (Tcp_error (Read, exn))
+	      ))
+    with
+      | (Tcp_error _ | Http_error _) as e -> fail e
+      | exn -> fail (Tcp_error (Connect, exn))
 
 let head ?headers url = call headers `HEAD None url
 let get  ?headers url = call headers `GET None url
