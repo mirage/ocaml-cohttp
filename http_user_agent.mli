@@ -29,6 +29,8 @@ open Http_types
 
 type headers = (string * string) list
 
+type tcp_error_source = Connect | Read | Write
+exception Tcp_error of tcp_error_source * exn
 exception Http_error of (int * headers * string)  (* code, headers, body *)
 
   (**
