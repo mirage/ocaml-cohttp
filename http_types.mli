@@ -175,7 +175,7 @@ exception Invalid_status_line of string
 exception Header_not_found of string
 
   (** raisable by callbacks to force a 401 (unauthorized) HTTP answer.
-  * This exception should be raised _before_ sending any data over given out
-  * channel.
-  * @param realm authentication realm (usually needed to prompt user) *)
+      This exception should be raised _before_ sending any data over given out
+      channel.
+      @param realm authentication realm (usually needed to prompt user) *)
 exception Unauthorized of string
