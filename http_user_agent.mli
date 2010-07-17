@@ -20,10 +20,10 @@
 *)
 
 (** Minimal implementation of an HTTP 1.0/1.1 client. Interface is similar to
- * Gerd Stoplmann's Http_client module. Implementation is simpler and doesn't
- * handle HTTP redirection, proxies, ecc. The only reason for the existence of
- * this module is for performances and incremental elaboration of response's
- * bodies *)
+    Gerd Stoplmann's Http_client module. Implementation is simpler and doesn't
+    handle HTTP redirection, proxies, ecc. The only reason for the existence of
+    this module is for performances and incremental elaboration of response's
+    bodies *)
 
 open Http_types
 
@@ -34,24 +34,24 @@ exception Tcp_error of tcp_error_source * exn
 exception Http_error of (int * headers * string)  (* code, headers, body *)
 
   (**
-   * @param headers optional overriding headers
-   * @param url an HTTP url
-   * @return HTTP response's body
-   * @raise Http_error when response code <> 200 *)
+     @param headers optional overriding headers
+     @param url an HTTP url
+     @return HTTP response's body
+     @raise Http_error when response code <> 200 *)
 val get : ?headers:headers -> string -> (headers * string) Lwt.t
 
   (**
-   * @param headers optional overriding headers
-   * @param url an HTTP url
-   * @return HTTP HEAD raw response
-   * @raise Http_error when response code <> 200 *)
+     @param headers optional overriding headers
+     @param url an HTTP url
+     @return HTTP HEAD raw response
+     @raise Http_error when response code <> 200 *)
 val head : ?headers:headers -> string -> (headers * string) Lwt.t
 
   (**
-   * @param headers optional overriding headers
-   * @param body optional message
-   * @param url an HTTP url
-   * @return HTTP HEAD raw response
-   * @raise Http_error when response code <> 200 *)
+     @param headers optional overriding headers
+     @param body optional message
+     @param url an HTTP url
+     @return HTTP HEAD raw response
+     @raise Http_error when response code <> 200 *)
 val post : ?headers:headers -> ?body:string -> string -> (headers * string) Lwt.t
 
