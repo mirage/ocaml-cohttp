@@ -1,7 +1,7 @@
 type request
 val init_request :
   clisockaddr:Unix.sockaddr ->
-  srvsockaddr:Unix.sockaddr -> Lwt_io.input_channel -> request Lwt.t
+  srvsockaddr:Unix.sockaddr -> unit Lwt.u -> Lwt_io.input_channel -> request Lwt.t
 val meth : request -> Http_types.meth
 val uri : request -> string
 val path : request -> string

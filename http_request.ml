@@ -49,7 +49,7 @@ type request = {
   r_path: string;
 }
  
-let init_request ~clisockaddr ~srvsockaddr ic =
+let init_request ~clisockaddr ~srvsockaddr finished ic =
   lwt (meth, uri, version) = Http_parser.parse_request_fst_line ic in
   let uri_str = Neturl.string_of_url uri in
   let path = Http_parser.parse_path uri in
@@ -61,11 +61,11 @@ let init_request ~clisockaddr ~srvsockaddr ic =
                   (Int64.of_string (List.assoc "content-length" headers))
 		with Not_found -> None in
 		  match limit with 
-		    |None -> Lwt_io.read ic >|= (fun s -> [`String s])
-		    |Some count -> return [`Inchan (count, ic)]
+		    |None -> Lwt_io.read ic >|= (fun s -> Lwt.wakeup finished (); [`String s])
+		    |Some count -> return [`Inchan (count, ic, finished)]
               end
               else  (* TODO empty body for methods other than POST, is ok? *)
-		return [`String ""]) in
+		(Lwt.wakeup finished (); return [`String ""])) in
   lwt query_post_params =
     match meth with
       | `POST -> begin

@@ -1,7 +1,7 @@
 type contents =
     [ `Buffer of Buffer.t
     | `String of string
-    | `Inchan of int64 * Lwt_io.input_channel
+    | `Inchan of int64 * Lwt_io.input_channel * unit Lwt.u
     ]
 type message
 val body : message -> contents list
