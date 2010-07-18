@@ -38,7 +38,7 @@ let rec hashtbl_remove_all tbl name =
 type contents =
     [ `Buffer of Buffer.t
     | `String of string
-    | `Inchan of int64 * Lwt_io.input_channel
+    | `Inchan of int64 * Lwt_io.input_channel * unit Lwt.u
     ]
 
 type message = {
@@ -57,7 +57,7 @@ let body_size cl =
     List.fold_left (fun a c -> match c with
 		      | `String s -> a + (Int64.of_int (String.length s))
 		      | `Buffer b -> a + (Int64.of_int (Buffer.length b))
-		      | `Inchan (i, _) -> a + i) Int64.zero cl
+		      | `Inchan (i, _, _) -> a + i) Int64.zero cl
 let string_of_body cl =
   (* TODO: What if the body is larger than 1GB? *)
   let buf = String.create (Int64.to_int (body_size cl)) in
@@ -73,11 +73,11 @@ let string_of_body cl =
 			   let str = Buffer.contents b in
 			   let () = String.blit str 0 buf pos len in
 			     return (pos + len)
-	               | `Inchan (il, ic) ->
+	               | `Inchan (il, ic, finished) ->
 			   lwt pos = pos in
                            let il = Int64.to_int il in
                              (Lwt_io.read_into_exactly ic buf pos il) >>
-			       return (pos + il)
+			       (Lwt.wakeup finished (); return (pos + il))
                     ) (return 0) cl) >>= (fun _ -> return buf)
 let set_body msg contents = msg.m_contents <- [contents]
 let add_body msg contents = msg.m_contents <- (contents :: msg.m_contents)
@@ -164,6 +164,6 @@ let serialize msg outchan ~fstLineToString =
 	  (fun m c -> match c with
 	     | `String s -> m >> (Lwt_io.write outchan s)
 	     | `Buffer b -> m >> (Lwt_io.write outchan (Buffer.contents b))
-	     | `Inchan (_, ic) -> relay ic outchan m)
+	     | `Inchan (_, ic, finished) -> relay ic outchan m >> (Lwt.wakeup finished (); Lwt.return ()))
 	  (Lwt.return ())
 	  body)
