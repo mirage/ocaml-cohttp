@@ -51,7 +51,7 @@ let init
   let r = { r_msg = Http_message.init ~body ~headers ~version ~clisockaddr ~srvsockaddr;
 	    r_code = begin match status with
 	      | `Code c -> c
-	      | `Status s -> code_of_status s
+	      | #status as s -> code_of_status s
 	    end;
 	    r_reason = reason } in
   let () = add_basic_headers r in r

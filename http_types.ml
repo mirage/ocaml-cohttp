@@ -30,11 +30,11 @@ type auth_info =
   | `Basic of string * (string -> string -> bool) (* realm, user -> pass -> bool *)
   ]
 
-type informational_substatus =
+type informational_status =
   [ `Continue
   | `Switching_protocols
   ]
-type success_substatus =
+type success_status =
   [ `OK
   | `Created
   | `Accepted
@@ -43,7 +43,7 @@ type success_substatus =
   | `Reset_content
   | `Partial_content
   ]
-type redirection_substatus =
+type redirection_status =
   [ `Multiple_choices
   | `Moved_permanently
   | `Found
@@ -52,7 +52,7 @@ type redirection_substatus =
   | `Use_proxy
   | `Temporary_redirect
   ]
-type client_error_substatus =
+type client_error_status =
   [ `Bad_request
   | `Unauthorized
   | `Payment_required
@@ -72,7 +72,7 @@ type client_error_substatus =
   | `Requested_range_not_satisfiable
   | `Expectation_failed
   ]
-type server_error_substatus =
+type server_error_status =
   [ `Internal_server_error
   | `Not_implemented
   | `Bad_gateway
@@ -80,11 +80,6 @@ type server_error_substatus =
   | `Gateway_time_out
   | `HTTP_version_not_supported
   ]
-type informational_status = [ `Informational of informational_substatus ]
-type success_status = [ `Success of success_substatus ]
-type redirection_status = [ `Redirection of redirection_substatus ]
-type client_error_status = [ `Client_error of client_error_substatus ]
-type server_error_status = [ `Server_error of server_error_substatus ]
 type error_status =
   [ client_error_status
   | server_error_status
@@ -97,7 +92,7 @@ type status =
   | server_error_status
   ]
 
-type status_code = [ `Code of int | `Status of status ]
+type status_code = [ `Code of int | status ]
 
 exception Invalid_header of string
 exception Invalid_header_name of string
