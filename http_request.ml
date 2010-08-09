@@ -66,17 +66,17 @@ let init_request ~clisockaddr ~srvsockaddr finished ic =
               end
               else  (* TODO empty body for methods other than POST, is ok? *)
 		(Lwt.wakeup finished (); return [`String ""])) in
-  lwt query_post_params =
+  lwt query_post_params, body =
     match meth with
       | `POST -> begin
           try
 	    let ct = List.assoc "content-type" headers in
 	      if ct = "application/x-www-form-urlencoded" then
-		(Http_message.string_of_body body) >|= Http_parser.split_query_params
-	      else return []
-	  with Not_found -> return []
+		(Http_message.string_of_body body) >|= (fun s -> Http_parser.split_query_params s, [`String s])
+	      else return ([], body)
+	  with Not_found -> return ([], body)
 	end
-      | _ -> return []
+      | _ -> return ([], body)
   in
   let params = query_post_params @ query_get_params in (* prefers POST params *)
   let _ = debug_dump_request path params in
