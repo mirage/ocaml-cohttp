@@ -139,31 +139,45 @@ let init ~body ~headers ~version ~clisockaddr ~srvsockaddr =
     add_headers msg headers;
     msg
       
-let relay ic oc m =
+let relay ic oc write_from_exactly m =
   let bufsize = 4096 in (* blksz *)
   let buffer = String.create bufsize in
   let rec aux m =
     lwt len = m >> (Lwt_io.read_into ic buffer 0 bufsize) in
       if len = 0 then Lwt.return ()
-      else aux (Lwt_io.write_from_exactly oc buffer 0 len)
+      else aux (write_from_exactly oc buffer 0 len)
   in aux m
 
-let serialize msg outchan ~fstLineToString =
+let serialize msg outchan write write_from_exactly ~fstLineToString =
   let body = body msg in
   let bodylen = body_size body
-  in (Lwt_io.write outchan (fstLineToString ^ crlf)) >>
+  in (write outchan (fstLineToString ^ crlf)) >>
        (List.fold_left
 	  (fun m (h,v) ->
-	     m >> Lwt_io.write outchan (h ^ ": " ^ v ^ crlf))
+	     m >> write outchan (h ^ ": " ^ v ^ crlf))
 	  (Lwt.return ())
 	  (headers msg)) >>
        (if bodylen != Int64.zero then
-	  Lwt_io.write outchan (sprintf "Content-Length: %Ld\r\n\r\n" bodylen)
+	  write outchan (sprintf "Content-Length: %Ld\r\n\r\n" bodylen)
 	else return ()) >>
        (List.fold_left
 	  (fun m c -> match c with
-	     | `String s -> m >> (Lwt_io.write outchan s)
-	     | `Buffer b -> m >> (Lwt_io.write outchan (Buffer.contents b))
-	     | `Inchan (_, ic, finished) -> relay ic outchan m >> (Lwt.wakeup finished (); Lwt.return ()))
+	     | `String s -> m >> (write outchan s)
+	     | `Buffer b -> m >> (write outchan (Buffer.contents b))
+	     | `Inchan (_, ic, finished) -> relay ic outchan write_from_exactly m >> (Lwt.wakeup finished (); Lwt.return ()))
 	  (Lwt.return ())
 	  body)
+
+let serialize_to_output_channel msg outchan ~fstLineToString =
+  serialize msg outchan Lwt_io.write Lwt_io.write_from_exactly ~fstLineToString
+
+let serialize_to_stream msg ~fstLineToString =
+  let stream, push = Lwt_stream.create () in
+  Lwt.ignore_result
+    (serialize
+       msg
+       ()
+       (fun () s -> push (Some s); Lwt.return ())
+       (fun () buf off len -> push (Some (String.sub buf off len)); Lwt.return ())
+       ~fstLineToString >> (push None; Lwt.return ()));
+  stream

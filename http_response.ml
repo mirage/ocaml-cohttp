@@ -95,7 +95,17 @@ let set_expires = rh "Expires"
 let server = gh "Server"
 let set_server = rh "Server"
 
-let serialize r outchan = 
-  let fstLineToString =
-    sprintf "%s %d %s" (version_string r) (code r) (reason r) in
-  Http_message.serialize r.r_msg outchan ~fstLineToString
+let fstLineToString r =
+  sprintf "%s %d %s" (version_string r) (code r) (reason r)
+
+let serialize r outchan write write_from_exactly = 
+  let fstLineToString = fstLineToString r in
+  Http_message.serialize r.r_msg outchan write write_from_exactly ~fstLineToString
+
+let serialize_to_output_channel r outchan =
+  let fstLineToString = fstLineToString r in
+  Http_message.serialize_to_output_channel r.r_msg outchan ~fstLineToString
+
+let serialize_to_stream r =
+  let fstLineToString = fstLineToString r in
+  Http_message.serialize_to_stream r.r_msg ~fstLineToString
