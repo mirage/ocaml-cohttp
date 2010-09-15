@@ -28,4 +28,10 @@ val init :
   version:Http_types.version ->
   clisockaddr:Unix.sockaddr -> srvsockaddr:Unix.sockaddr -> message
 val serialize :
+  message ->
+  'a -> ('a -> string -> unit Lwt.t) -> ('a -> string -> int -> int -> unit Lwt.t) ->
+  fstLineToString:string -> unit Lwt.t
+val serialize_to_output_channel :
   message -> Lwt_io.output_channel -> fstLineToString:string -> unit Lwt.t
+val serialize_to_stream :
+  message -> fstLineToString:string -> string Lwt_stream.t
