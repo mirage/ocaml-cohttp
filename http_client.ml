@@ -49,40 +49,77 @@ let parse_url url =
       (sprintf "Can't parse url: %s (exception: %s)"
         url (Printexc.to_string exc))
 
-let build_req_string headers meth address path body =
-  let content_type = ("Content-Type", "application/x-www-form-urlencoded") in
-  let content_length s = ("Content-Length", string_of_int (String.length s)) in
-  let body, headers = match body with
-    | None -> "", headers
-    | Some s -> s, content_type::(content_length s)::headers in
-  let headers = ("Host", address)::headers in
+let rec read_write ?(count=tcp_bufsiz) inchan outchan =
+  lwt s = Lwt_io.read ~count inchan in
+  if s = "" then
+    return ()
+  else
+    lwt () = Lwt_io.write outchan s in
+    read_write ~count inchan outchan
+  
+
+(* the source of a request body, if any, can be either a string or an
+   input channel *)
+type request_body = [ 
+| `None 
+| `String of string 
+| `InChannel of (int * Lwt_io.input_channel) 
+]
+
+let content_length_header s = 
+  "Content-Length", s 
+
+let default_content_type_h = "Content-Type", "application/x-www-form-urlencoded"
+
+let build_req_header headers meth address path body =
+  let headers = 
+    match body with
+      | `None -> headers
+      | `String s -> 
+	let content_length_h = content_length_header (string_of_int (String.length s)) in
+	default_content_type_h :: content_length_h :: headers
+      | `InChannel (cl,_) -> 
+	let content_length_h = content_length_header (string_of_int cl) in
+	default_content_type_h :: content_length_h ::headers
+  in
+  let headers = ("Host", address) :: headers in
   let hdrcnt = List.length headers in
   let add_header ht (n, v) = (Hashtbl.replace ht n v; ht) in
   let hdrht = List.fold_left add_header (Hashtbl.create hdrcnt) headers in
   let serialize_header name value prev =
     sprintf "%s\r\n%s: %s" prev name value in
   let hdrst = Hashtbl.fold serialize_header hdrht "" in
-    sprintf "%s %s HTTP/1.0%s\r\n\r\n%s" meth path hdrst body
+  sprintf "%s %s HTTP/1.0%s\r\n\r\n" meth path hdrst
 
 let request outchan headers meth body (address, _, path) =
   let headers = match headers with None -> [] | Some hs -> hs in
-    Lwt_io.write outchan (build_req_string headers meth address path body)
-    >> Lwt_io.flush outchan
+  let req_header = build_req_header headers meth address path body in
+  lwt () = Lwt_io.write outchan req_header in
+  lwt () =
+    match body with
+      | `None -> return ()
+      | `String s ->
+	Lwt_io.write outchan s
+      | `InChannel (content_length, inchan) ->
+	read_write inchan outchan
+  in
+  Lwt_io.flush outchan
+
 
 let read inchan =
   lwt (_, status) = Http_parser.parse_response_fst_line inchan in
   lwt headers = Http_parser.parse_headers inchan in
   let headers = List.map (fun (h, v) -> (String.lowercase h, v)) headers in
   lwt resp = Lwt_io.read inchan in
-    match code_of_status status with
-      | 200 -> return (headers, resp)
-      | code -> fail (Http_error (code, headers, resp))
+  match code_of_status status with
+    | 200 -> return (headers, resp)
+    | code -> fail (Http_error (code, headers, resp))
 
 let connect (address, port, _) iofn =
   lwt sockaddr = Http_misc.build_sockaddr (address, port) in
   Lwt_io.with_connection ~buffer_size:tcp_bufsiz sockaddr iofn
-    
-let call headers kind body url =
+  
+let call headers kind ?(body=`None) url =
   let meth = match kind with
     | `GET -> "GET"
     | `HEAD -> "HEAD"
@@ -90,21 +127,21 @@ let call headers kind body url =
     | `DELETE -> "DELETE" 
     | `POST -> "POST" in
   let endp = parse_url url in
-    try_lwt connect endp
-      (fun (i, o) ->
-	 (try_lwt request o headers meth body endp
-	  with exn -> fail (Tcp_error (Write, exn))
-	 ) >> (try_lwt read i
-	       with
-		 | (Http_error _) as e -> fail e
-		 | exn -> fail (Tcp_error (Read, exn))
-	      ))
+  try_lwt connect endp
+    (fun (i, o) ->
+      (try_lwt request o headers meth body endp
+       with exn -> fail (Tcp_error (Write, exn))
+      ) >> (try_lwt read i
+	    with
+	      | (Http_error _) as e -> fail e
+	      | exn -> fail (Tcp_error (Read, exn))
+       ))
     with
       | (Tcp_error _ | Http_error _) as e -> fail e
       | exn -> fail (Tcp_error (Connect, exn))
 
-let head ?headers url = call headers `HEAD None url
-let get  ?headers url = call headers `GET None url
-let post ?headers ?body url = call headers `POST body url
-let put  ?headers ?body url = call headers `PUT body url
-let delete  ?headers url = call headers `DELETE None url
+let head   ?headers               url = call headers `HEAD         url
+let get    ?headers               url = call headers `GET          url
+let post   ?headers ?(body=`None) url = call headers `POST   ~body url
+let put    ?headers ?(body=`None) url = call headers `PUT    ~body url
+let delete ?headers               url = call headers `DELETE       url
