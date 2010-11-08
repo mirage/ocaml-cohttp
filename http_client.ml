@@ -106,20 +106,29 @@ let request outchan headers meth body (address, _, path) =
   Lwt_io.flush outchan
 
 
-let read inchan =
+let read_response inchan response_body =
   lwt (_, status) = Http_parser.parse_response_fst_line inchan in
   lwt headers = Http_parser.parse_headers inchan in
   let headers = List.map (fun (h, v) -> (String.lowercase h, v)) headers in
-  lwt resp = Lwt_io.read inchan in
-  match code_of_status status with
-    | 200 -> return (headers, resp)
-    | code -> fail (Http_error (code, headers, resp))
+  match response_body with
+    | `String -> (
+      lwt resp = Lwt_io.read inchan in
+      match code_of_status status with
+	| 200 -> return (`S (headers, resp))
+	| code -> fail (Http_error (code, headers, resp))
+      )
+    | `OutChannel outchan -> (
+      lwt () = read_write inchan outchan in
+      match code_of_status status with
+	| 200 -> return (`C headers)
+	| code -> fail (Http_error (code, headers, ""))
+      )
 
 let connect (address, port, _) iofn =
   lwt sockaddr = Http_misc.build_sockaddr (address, port) in
   Lwt_io.with_connection ~buffer_size:tcp_bufsiz sockaddr iofn
   
-let call headers kind ?(body=`None) url =
+let call headers kind request_body url response_body =
   let meth = match kind with
     | `GET -> "GET"
     | `HEAD -> "HEAD"
@@ -129,19 +138,43 @@ let call headers kind ?(body=`None) url =
   let endp = parse_url url in
   try_lwt connect endp
     (fun (i, o) ->
-      (try_lwt request o headers meth body endp
-       with exn -> fail (Tcp_error (Write, exn))
-      ) >> (try_lwt read i
-	    with
-	      | (Http_error _) as e -> fail e
-	      | exn -> fail (Tcp_error (Read, exn))
+      (try_lwt
+	 request o headers meth request_body endp
+       with exn -> 
+	 fail (Tcp_error (Write, exn))
+      ) >> (
+	try_lwt 
+          read_response i response_body
+	with
+	  | (Http_error _) as e -> fail e
+	  | exn -> fail (Tcp_error (Read, exn))
        ))
-    with
-      | (Tcp_error _ | Http_error _) as e -> fail e
-      | exn -> fail (Tcp_error (Connect, exn))
+  with
+    | (Tcp_error _ | Http_error _) as e -> fail e
+    | exn -> fail (Tcp_error (Connect, exn))
 
-let head   ?headers               url = call headers `HEAD         url
-let get    ?headers               url = call headers `GET          url
-let post   ?headers ?(body=`None) url = call headers `POST   ~body url
-let put    ?headers ?(body=`None) url = call headers `PUT    ~body url
-let delete ?headers               url = call headers `DELETE       url
+let call_to_string headers kind request_body url =
+  lwt resp = call headers kind request_body url `String in
+  (* assert relation between request and response kind *)
+  match resp with
+    | `S hb -> return hb
+    | _ -> assert false
+
+let call_to_chan headers kind request_body url outchan =
+  lwt resp = call headers kind request_body url (`OutChannel outchan) in
+  (* assert relation between request and response kind *)
+  match resp with
+    | `C h -> return h
+    | _ -> assert false
+
+let head   ?headers               url = call_to_string headers `HEAD   `None url 
+let get    ?headers               url = call_to_string headers `GET    `None url 
+let post   ?headers ?(body=`None) url = call_to_string headers `POST    body url 
+let put    ?headers ?(body=`None) url = call_to_string headers `PUT     body url 
+let delete ?headers               url = call_to_string headers `DELETE `None url 
+
+let head_to_chan   ?headers               url ch = call_to_chan headers `HEAD   `None url ch
+let get_to_chan    ?headers               url ch = call_to_chan headers `GET    `None url ch
+let post_to_chan   ?headers ?(body=`None) url ch = call_to_chan headers `POST    body url ch
+let put_to_chan    ?headers ?(body=`None) url ch = call_to_chan headers `PUT     body url ch
+let delete_to_chan ?headers               url ch = call_to_chan headers `DELETE `None url ch
