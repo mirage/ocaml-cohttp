@@ -49,13 +49,23 @@ let parse_url url =
       (sprintf "Can't parse url: %s (exception: %s)"
         url (Printexc.to_string exc))
 
-let rec read_write ?(count=tcp_bufsiz) inchan outchan =
-  lwt s = Lwt_io.read ~count inchan in
-  if s = "" then
+let rec read_write_r inchan outchan read_size num_read max_to_read =
+  lwt s = Lwt_io.read ~count:read_size inchan in
+  if s = ""  then
     return ()
   else
     lwt () = Lwt_io.write outchan s in
-    read_write ~count inchan outchan
+    let num_read_incr = num_read + (String.length s) in
+    if num_read_incr < max_to_read then
+      read_write_r inchan outchan read_size num_read_incr max_to_read
+    else
+      return ()
+
+let read_write ?(read_size=tcp_bufsiz) inchan outchan =
+  read_write_r inchan outchan read_size 0 max_int
+
+let read_write_count ?(read_size=tcp_bufsiz) inchan outchan ~count =
+  read_write_r inchan outchan read_size 0 count
   
 
 (* the source of a request body, if any, can be either a string or an
@@ -101,26 +111,68 @@ let request outchan headers meth body (address, _, path) =
       | `String s ->
         Lwt_io.write outchan s
       | `InChannel (content_length, inchan) ->
-        read_write inchan outchan
+        read_write inchan outchan 
   in
   Lwt_io.flush outchan
 
+
+let id x = x
+
+let parse_content_range s =
+  try
+    let start, fini, total = Scanf.sscanf s "bytes %d-%d/%d" 
+      (fun start fini total -> start, fini, total) 
+    in
+    Some (start, fini, total)
+  with Scanf.Scan_failure _ ->
+    None
+
+(* if we see a "Content-Range" header, than we should limit the
+   number of bytes we attempt to read *)
+let content_length_of_content_range headers = 
+  try
+    (* assuming header keys were downcased in previous step *)
+    let range_s = List.assoc "content-range" headers in
+    match parse_content_range range_s with
+      | Some (start, fini, total) ->
+          (* some sanity checking before we act on these values *)
+        if fini < total && start <= total && 0 <= start && 0 <= total then (
+          let num_bytes_to_read = fini - start + 1 in
+          Some num_bytes_to_read
+        )
+        else
+          None
+      | None -> 
+        None
+  with Not_found ->
+    None
 
 let read_response inchan response_body =
   lwt (_, status) = Http_parser.parse_response_fst_line inchan in
   lwt headers = Http_parser.parse_headers inchan in
   let headers = List.map (fun (h, v) -> (String.lowercase h, v)) headers in
+  let content_length_opt = content_length_of_content_range headers in
+  (* a status code of 206 (Partial) will typicall accompany "Content-Range" 
+     response header *)
   match response_body with
     | `String -> (
-      lwt resp = Lwt_io.read inchan in
+      lwt resp = 
+        match content_length_opt with
+          | Some count -> Lwt_io.read ~count inchan
+          | None -> Lwt_io.read inchan
+      in
       match code_of_status status with
-        | 200 -> return (`S (headers, resp))
+        | 200 | 206 -> return (`S (headers, resp))
         | code -> fail (Http_error (code, headers, resp))
       )
     | `OutChannel outchan -> (
-      lwt () = read_write inchan outchan in
+      lwt () = 
+        match content_length_opt with
+          | Some count -> read_write_count ~count inchan outchan 
+          | None -> read_write inchan outchan
+      in
       match code_of_status status with
-        | 200 -> return (`C headers)
+        | 200 | 206 -> return (`C headers)
         | code -> fail (Http_error (code, headers, ""))
       )
 
