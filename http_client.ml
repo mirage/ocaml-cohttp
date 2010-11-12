@@ -76,11 +76,11 @@ let build_req_header headers meth address path body =
     match body with
       | `None -> headers
       | `String s -> 
-	let content_length_h = content_length_header (string_of_int (String.length s)) in
-	default_content_type_h :: content_length_h :: headers
+        let content_length_h = content_length_header (string_of_int (String.length s)) in
+        default_content_type_h :: content_length_h :: headers
       | `InChannel (cl,_) -> 
-	let content_length_h = content_length_header (string_of_int cl) in
-	default_content_type_h :: content_length_h ::headers
+        let content_length_h = content_length_header (string_of_int cl) in
+        default_content_type_h :: content_length_h ::headers
   in
   let headers = ("Host", address) :: headers in
   let hdrcnt = List.length headers in
@@ -99,9 +99,9 @@ let request outchan headers meth body (address, _, path) =
     match body with
       | `None -> return ()
       | `String s ->
-	Lwt_io.write outchan s
+        Lwt_io.write outchan s
       | `InChannel (content_length, inchan) ->
-	read_write inchan outchan
+        read_write inchan outchan
   in
   Lwt_io.flush outchan
 
@@ -114,14 +114,14 @@ let read_response inchan response_body =
     | `String -> (
       lwt resp = Lwt_io.read inchan in
       match code_of_status status with
-	| 200 -> return (`S (headers, resp))
-	| code -> fail (Http_error (code, headers, resp))
+        | 200 -> return (`S (headers, resp))
+        | code -> fail (Http_error (code, headers, resp))
       )
     | `OutChannel outchan -> (
       lwt () = read_write inchan outchan in
       match code_of_status status with
-	| 200 -> return (`C headers)
-	| code -> fail (Http_error (code, headers, ""))
+        | 200 -> return (`C headers)
+        | code -> fail (Http_error (code, headers, ""))
       )
 
 let connect (address, port, _) iofn =
@@ -139,15 +139,15 @@ let call headers kind request_body url response_body =
   try_lwt connect endp
     (fun (i, o) ->
       (try_lwt
-	 request o headers meth request_body endp
+         request o headers meth request_body endp
        with exn -> 
-	 fail (Tcp_error (Write, exn))
+         fail (Tcp_error (Write, exn))
       ) >> (
-	try_lwt 
+        try_lwt 
           read_response i response_body
-	with
-	  | (Http_error _) as e -> fail e
-	  | exn -> fail (Tcp_error (Read, exn))
+        with
+          | (Http_error _) as e -> fail e
+          | exn -> fail (Tcp_error (Read, exn))
        ))
   with
     | (Tcp_error _ | Http_error _) as e -> fail e
