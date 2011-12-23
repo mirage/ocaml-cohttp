@@ -1,9 +1,9 @@
-(*pp camlp4o -I `ocamlfind query lwt.syntax` lwt-syntax-options.cma lwt-syntax.cma *)
-
 (*
   OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
 
   Copyright (C) <2002-2005> Stefano Zacchiroli <zack@cs.unibo.it>
+	              2006-2009 Citrix Systems Inc.
+	              2010 Thomas Gazagnaire <thomas@gazagnaire.com>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU Library General Public License as
@@ -23,32 +23,32 @@
 open Printf
 open Lwt
 
-open Http_types
+open Types
+open Net.Nettypes
+
+let months = [| "Jan"; "Feb"; "Mar"; "Apr"; "May"; "Jun"; 
+   							"Jul"; "Aug"; "Sep"; "Oct"; "Nov"; "Dec" |]
+let days = [| "Sun"; "Mon"; "Tue"; "Wed"; "Thu"; "Fri"; "Sat" |]
+
+let rfc822_of_float x =
+  let time = OS.Clock.gmtime x in
+  Printf.sprintf "%s, %d %s %d %02d:%02d:%02d GMT"
+    days.(time.OS.Clock.tm_wday) time.OS.Clock.tm_mday
+    months.(time.OS.Clock.tm_mon) (time.OS.Clock.tm_year+1900)
+    time.OS.Clock.tm_hour time.OS.Clock.tm_min time.OS.Clock.tm_sec
 
 let date_822 () =
-  Netdate.mk_mail_date ~zone:Netdate.localzone (Unix.time ())
+  rfc822_of_float (OS.Clock.time ())
 
-let is_directory name =
-  match Unix.lstat name with
-  | { Unix.st_kind = Unix.S_DIR } -> true
-  | _ -> false
+let strip_trailing_slash s =
+  match String.length s with
+  |0 -> s
+  |n -> if s.[n-1] = '/' then String.sub s 0 (n-1) else s
 
-let strip_trailing_slash =
-  let rex = Pcre.regexp "/$" in
-  fun s -> Pcre.replace ~rex ~templ:"" s
-
-let strip_heading_slash =
-  let rex = Pcre.regexp "^/" in
-  fun s -> Pcre.replace ~rex ~templ:"" s
-
-let string_explode s =
-  let rec string_explode' acc = function
-    | "" -> acc
-    | s -> string_explode' (s.[0] :: acc) (String.sub s 1 (String.length s - 1))
-  in
-  List.rev (string_explode' [] s)
-
-let string_implode = List.fold_left (fun s c -> s ^ (String.make 1 c)) ""
+let strip_heading_slash s =
+  match String.length s with
+  |0 -> s
+  |n -> if s.[0] = '/' then String.sub s 1 (n-1) else s
 
 let reason_phrase_of_code = function
   | 100 -> "Continue"
@@ -93,20 +93,8 @@ let reason_phrase_of_code = function
   | 505 -> "HTTP version not supported"
   | invalid_code -> raise (Invalid_code invalid_code)
 
-let build_sockaddr (addr, port) =
-  try_lwt
-      (* should this be lwt hent = Lwt_lib.gethostbyname addr ? *)
-      let hent = Unix.gethostbyname addr in
-      return (Unix.ADDR_INET (hent.Unix.h_addr_list.(0), port))
-  with _ -> failwith ("ocaml-cohttp, cant resolve hostname: " ^ addr)
-     
-let explode_sockaddr = function
-  | Unix.ADDR_INET (addr, port) -> (Unix.string_of_inet_addr addr, port)
-  | _ -> assert false (* can explode only inet address *)
-
 let list_assoc_all key pairs =
   snd (List.split (List.filter (fun (k, v) -> k = key) pairs))
 
 let warn msg  = prerr_endline (sprintf "ocaml-cohttp WARNING: %s" msg)
 let error msg = prerr_endline (sprintf "ocaml-cohttp ERROR:   %s" msg)
-

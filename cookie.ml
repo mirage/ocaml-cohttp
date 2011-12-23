@@ -19,6 +19,8 @@
   USA
 *)
 
+open Regexp
+
 type time = [ `Day of int | `Hour of int | `Minute of int | `Second of int ] list
 type expiration = [ `Discard | `Session | `Age of time | `Until of float ]
 
@@ -51,7 +53,7 @@ let serialize_1_1 (n, c) =
     | `Discard -> "Max-Age=0" :: attrs
     | `Session -> "Discard" :: attrs
     | `Until stamp ->
-	let offset = int_of_float (stamp -. (Unix.time ())) in
+	let offset = int_of_float (stamp -. (OS.Clock.time ())) in
 	  ("Max-Age=" ^ (string_of_int (min 0 offset))) :: attrs
     | `Age tml -> ("Max-Age=" ^ (string_of_int (duration tml))) :: attrs in
   let attrs = match c.domain with None -> attrs
@@ -59,15 +61,7 @@ let serialize_1_1 (n, c) =
     ("Set-Cookie2", String.concat "; " attrs)
   
 let serialize_1_0 (n, c) =
-  let fmt_time a =
-    let days = [| "Sun"; "Mon"; "Tue"; "Wed"; "Thu"; "Fri"; "Sat" |] in
-    let months = [| "Jan"; "Feb"; "Mar"; "Apr"; "May"; "Jun";
-		    "Jul"; "Aug"; "Sep"; "Oct"; "Nov"; "Dec" |] in
-    let tm = Unix.gmtime a in
-      Printf.sprintf "%s, %02d-%s-%d %02d:%02d:%02d GMT"
-	days.(tm.Unix.tm_wday) tm.Unix.tm_mday months.(tm.Unix.tm_mon)
-	(1900 + tm.Unix.tm_year) tm.Unix.tm_hour tm.Unix.tm_min tm.Unix.tm_sec
-  in
+  let fmt_time a = Misc.rfc822_of_float a in
   let attrs = if c.secure then ["secure"] else [] in
   let attrs = match c.path with None -> attrs
     | Some p -> ("path=" ^ p) :: attrs in
@@ -79,7 +73,7 @@ let serialize_1_0 (n, c) =
     | `Until stamp -> ("expires=" ^ (fmt_time stamp)) :: attrs
     | `Age tml ->
 	let age = float (duration tml) in
-	  ("expires=" ^ (fmt_time ((Unix.time ()) +. age))) :: attrs in
+	  ("expires=" ^ (fmt_time ((OS.Clock.time ()) +. age))) :: attrs in
   let attrs = (n ^ (match c.value with "" -> ""
 		      | v -> "=" ^ v)) :: attrs in
     ("Set-Cookie", String.concat "; " attrs)
@@ -92,12 +86,14 @@ let serialize ?(version=`HTTP_1_0) cp =
 let extract req =
   List.fold_left
     (fun acc header ->
-       let comps = Pcre.split ~rex:(Pcre.regexp "(?:;|,)\\s") header in
-       let cookies = List.filter (fun s -> s.[0] != '$') comps in
-       let split_pair nvp =
-	 match Pcre.split ~rex:(Pcre.regexp "=") nvp with
-	   | [] -> ("","")
-	   | n :: [] -> (n, "")
-	   | n :: v :: _ -> (n, v)
-       in (List.map split_pair cookies) @ acc
-    ) [] (Http_request.header req "Cookie")
+        let comps =
+          Re.(split_delim (from_string "(\\?:;\\|,)([ \t])") header)
+        in
+        let cookies = List.filter (fun s -> s.[0] != '$') comps in
+        let split_pair nvp =
+          match Re.(split_delim (from_string "=")) nvp with
+          | [] -> ("","")
+          | n :: [] -> (n, "")
+          | n :: v :: _ -> (n, v)
+        in (List.map split_pair cookies) @ acc
+    ) [] (Request.header req "Cookie")

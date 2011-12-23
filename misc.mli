@@ -26,9 +26,8 @@ exposed in the final API *)
   zone info are retrieved from UTC *)
 val date_822: unit -> string
 
-  (** @return true if 'name' is a directory on the file system, false otherwise
-  *)
-val is_directory: string -> bool
+(** Convert a number of seconds to a date compliant with RFC 822 *)
+val rfc822_of_float : float -> string
 
   (** strip trailing '/', if any, from a string and @return the new string *)
 val strip_trailing_slash: string -> string
@@ -36,22 +35,8 @@ val strip_trailing_slash: string -> string
   (** strip heading '/', if any, from a string and @return the new string *)
 val strip_heading_slash: string -> string
 
-  (** explode a string in a char list *)
-val string_explode: string -> char list
-
-  (** implode a char list in a string *)
-val string_implode: char list -> string
-
   (** given an HTTP response code return the corresponding reason phrase *)
 val reason_phrase_of_code: int -> string
-
-  (** build a Unix.sockaddr inet address from a string representation of an IP
-  address and a port number *)
-val build_sockaddr: string * int -> Unix.sockaddr Lwt.t
-
-  (** explode an _inet_ Unix.sockaddr address in a string representation of an
-  IP address and a port number *)
-val explode_sockaddr: Unix.sockaddr -> string * int
 
   (** like List.assoc but return all bindings of a given key instead of the
   leftmost one only *)

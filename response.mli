@@ -1,17 +1,18 @@
+open Net.Nettypes
+
 type response
 val init :
-  ?body:Http_message.contents list ->
+  ?body:Message.contents list ->
   ?headers:(string * string) list ->
-  ?version:Http_types.version ->
-  ?status:Http_types.status_code ->
+  ?version:Types.version ->
+  ?status:Types.status_code ->
   ?reason:string ->
-  ?clisockaddr:Unix.sockaddr ->
-  ?srvsockaddr:Unix.sockaddr -> unit -> response
+  unit -> response
 val version_string : response -> string
 val code : response -> int
 val set_code : response -> int -> unit
-val status : response -> Http_types.status
-val set_status : response -> Http_types.status -> unit
+val status : response -> Types.status
+val set_status : response -> Types.status -> unit
 val reason : response -> string
 val set_reason : response -> string -> unit
 val status_line : response -> string
@@ -32,9 +33,4 @@ val expires : response -> string option
 val set_expires : response -> value:string -> unit
 val server : response -> string option
 val set_server : response -> value:string -> unit
-val serialize :
-  response ->
-  'a -> ('a -> string -> unit Lwt.t) -> ('a -> string -> int -> int -> unit Lwt.t) ->
-  unit Lwt.t
-val serialize_to_output_channel : response -> Lwt_io.output_channel -> unit Lwt.t
-val serialize_to_stream : response -> string Lwt_stream.t
+val serialize_to_channel : response -> Net.Channel.t -> unit Lwt.t

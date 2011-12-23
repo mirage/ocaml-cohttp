@@ -21,14 +21,7 @@
 
 (** Common functionalities shared by other OCaml HTTP modules *)
 
-open Http_types;;
-
-  (** whether debugging messages are enabled or not, can be changed at runtime
-  *)
-val debug: bool ref
-
-  (** print a string on stderr only if debugging is enabled *)
-val debug_print: string -> unit
+open Types;;
 
   (** pretty print an HTTP version *)
 val string_of_version: version -> string
