@@ -1,0 +1,15 @@
+OASISFormat: 0.2
+Name:        cohttp
+Version:     0.9-dev
+Synopsis:    HTTP protocol library for Lwt
+Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire
+License:     LGPL-2.0 with OCaml linking exception
+Plugins:     META (0.2)
+
+Library cohttp
+  Path:       lib
+  Findlibname: cohttp
+  Pack: true
+  Modules: Request,Response,Cookie
+  BuildTools: ocamlbuild
+  BuildDepends:	lwt.syntax, lwt, regexp, lwt.unix
