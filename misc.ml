@@ -24,21 +24,21 @@ open Printf
 open Lwt
 
 open Types
-open Net.Nettypes
 
 let months = [| "Jan"; "Feb"; "Mar"; "Apr"; "May"; "Jun"; 
    							"Jul"; "Aug"; "Sep"; "Oct"; "Nov"; "Dec" |]
 let days = [| "Sun"; "Mon"; "Tue"; "Wed"; "Thu"; "Fri"; "Sat" |]
 
 let rfc822_of_float x =
-  let time = OS.Clock.gmtime x in
+  let open Unix in
+  let time = gmtime x in
   Printf.sprintf "%s, %d %s %d %02d:%02d:%02d GMT"
-    days.(time.OS.Clock.tm_wday) time.OS.Clock.tm_mday
-    months.(time.OS.Clock.tm_mon) (time.OS.Clock.tm_year+1900)
-    time.OS.Clock.tm_hour time.OS.Clock.tm_min time.OS.Clock.tm_sec
+    days.(time.tm_wday) time.tm_mday
+    months.(time.tm_mon) (time.tm_year+1900)
+    time.tm_hour time.tm_min time.tm_sec
 
 let date_822 () =
-  rfc822_of_float (OS.Clock.time ())
+  rfc822_of_float (Unix.gettimeofday ())
 
 let strip_trailing_slash s =
   match String.length s with

@@ -1,6 +1,6 @@
 type contents = [
  | `String of string
- | `Inchan of int64 * Bitstring.t Lwt_stream.t
+ | `Inchan of int64 * string Lwt_stream.t
 ]
 
 type message
@@ -22,4 +22,4 @@ val init :
   headers:(string * string) list ->
   version:Types.version -> message
 val serialize_to_channel :
-  message -> fstLineToString:string -> Net.Channel.t -> unit Lwt.t
+  message -> fstLineToString:string -> Lwt_io.output Lwt_io.channel -> unit Lwt.t
