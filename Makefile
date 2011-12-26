@@ -10,6 +10,10 @@ build: setup.data
 install:
 	ocaml setup.ml -install
 
+reinstall:
+	ocamlfind remove cohttp || true
+	ocaml setup.ml -reinstall
+
 clean:
 	ocamlbuild -clean
 	rm -f setup.data setup.log
