@@ -10,6 +10,6 @@ Library cohttp
   Path:       lib
   Findlibname: cohttp
   Pack: true
-  Modules: Request,Response,Cookie
+  Modules: Base64, Common, Constants, Cookie, Misc, Parser, Request, Response, Types, Url, Message
   BuildTools: ocamlbuild
   BuildDepends:	lwt.syntax, lwt, regexp, lwt.unix

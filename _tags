@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: f6f2f4773e2072d95a9c4670832b6419)
+# DO NOT EDIT (digest: 3bc0cbc4439d58dac70e44f3fc2c2529)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -15,12 +15,28 @@
 "_darcs": not_hygienic
 # Library cohttp
 "lib": include
+"lib/base64.cmx": for-pack(Cohttp)
+"lib/Base64.cmx": for-pack(Cohttp)
+"lib/common.cmx": for-pack(Cohttp)
+"lib/Common.cmx": for-pack(Cohttp)
+"lib/constants.cmx": for-pack(Cohttp)
+"lib/Constants.cmx": for-pack(Cohttp)
+"lib/cookie.cmx": for-pack(Cohttp)
+"lib/Cookie.cmx": for-pack(Cohttp)
+"lib/misc.cmx": for-pack(Cohttp)
+"lib/Misc.cmx": for-pack(Cohttp)
+"lib/parser.cmx": for-pack(Cohttp)
+"lib/Parser.cmx": for-pack(Cohttp)
 "lib/request.cmx": for-pack(Cohttp)
 "lib/Request.cmx": for-pack(Cohttp)
 "lib/response.cmx": for-pack(Cohttp)
 "lib/Response.cmx": for-pack(Cohttp)
-"lib/cookie.cmx": for-pack(Cohttp)
-"lib/Cookie.cmx": for-pack(Cohttp)
+"lib/types.cmx": for-pack(Cohttp)
+"lib/Types.cmx": for-pack(Cohttp)
+"lib/url.cmx": for-pack(Cohttp)
+"lib/Url.cmx": for-pack(Cohttp)
+"lib/message.cmx": for-pack(Cohttp)
+"lib/Message.cmx": for-pack(Cohttp)
 <lib/*.ml{,i}>: pkg_regexp
 <lib/*.ml{,i}>: pkg_lwt.unix
 <lib/*.ml{,i}>: pkg_lwt.syntax
