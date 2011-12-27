@@ -5,6 +5,8 @@ val init :
   ?version:Types.version ->
   ?status:Types.status_code ->
   ?reason:string ->
+  ?clisockaddr:Unix.sockaddr ->
+  ?srvsockaddr:Unix.sockaddr ->
   unit -> response
 val version_string : response -> string
 val code : response -> int
@@ -32,3 +34,4 @@ val set_expires : response -> value:string -> unit
 val server : response -> string option
 val set_server : response -> value:string -> unit
 val serialize_to_channel : response -> Lwt_io.output Lwt_io.channel -> unit Lwt.t
+val serialize_to_stream : response -> string Lwt_stream.t

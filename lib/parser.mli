@@ -23,6 +23,13 @@
 
 open Types;;
 
+  (** given an HTTP like query string (e.g. "name1=value1&name2=value2&...")
+  @return a list of pairs [("name1", "value1"); ("name2", "value2")]
+  @raise Malformed_query if the string isn't a valid query string
+  @raise Malformed_query_part if some piece of the query isn't valid
+  *)
+val split_query_params: string -> (string * string) list
+
   (** parse 1st line of an HTTP request
   @param inchan input channel from which parse request
   @return a triple meth * url * version, meth is the HTTP method invoked, url is
@@ -30,27 +37,29 @@ open Types;;
   was specified
   @raise Malformed_request if request 1st linst isn't well formed
   @raise Malformed_request_URI if requested URI isn't well formed *)
-val parse_request_fst_line: (unit -> string Lwt.t) -> (meth * Url.t * version) Lwt.t
+val parse_request_fst_line: Lwt_io.input_channel -> (meth * Url.t * version) Lwt.t
 
   (** parse 1st line of an HTTP response
    * @param inchan input channel from which parse response
    * @raise Malformed_response if first line isn't well formed
   *)
-val parse_response_fst_line: (unit -> string Lwt.t) -> (version * status) Lwt.t
+val parse_response_fst_line: Lwt_io.input_channel -> (version * status) Lwt.t
 
   (** parse HTTP headers. Consumes also trailing CRLF at the end of header list
   @param inchan input channel from which parse headers
   @return a list of pairs header_name * header_value
   @raise Invalid_header if a not well formed header is encountered *)
-val parse_headers: (unit -> string Lwt.t) -> ((string * string) list) Lwt.t
+val parse_headers: Lwt_io.input_channel -> ((string * string) list) Lwt.t
 
   (** given an input channel, reads from it a GET HTTP request and
   @return a pair <path, query_params> where path is a string representing the
   requested path and query_params is a list of pairs <name, value> (the GET
   parameters) *)
-val parse_request: (unit -> string Lwt.t) -> (string * (string * string) list) Lwt.t
+val parse_request: Lwt_io.input_channel -> (string * (string * string) list) Lwt.t
 
   (** parse content-range header in a request
   @return number of bytes to read, or None if all available should be read
   *)
 val parse_content_range: (string * string) list -> int option
+
+

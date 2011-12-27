@@ -1,4 +1,3 @@
-
 (*
   OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
 
@@ -33,12 +32,17 @@ type response = {
   mutable r_reason: string option;
 }
 
+let anyize = function
+  | Some addr -> addr
+  | None -> Unix.ADDR_INET (Unix.inet_addr_any, -1)
+
 let add_basic_headers r =
   Message.add_header r.r_msg ~name:"Date" ~value:(Misc.date_822 ());
   Message.add_header r.r_msg ~name:"Server" ~value:server_string
 
-let init ?(body = [`String ""]) ?(headers = []) ?(version = default_version) ?(status=`Code 200) ?reason () =
-  let r_msg = Message.init ~body ~headers ~version in
+let init ?(body = [`String ""]) ?(headers = []) ?(version = default_version) ?(status=`Code 200) ?reason ?clisockaddr ?srvsockaddr () =
+  let (clisockaddr, srvsockaddr) = (anyize clisockaddr, anyize srvsockaddr) in
+  let r_msg = Message.init ?clisockaddr ?srvsockaddr ~body ~headers ~version in
   let r_code = match status with
   | `Code c -> c
   | #status as s -> code_of_status s in
@@ -98,4 +102,8 @@ let fstLineToString r =
 
 let serialize_to_channel r =
   let fstLineToString = fstLineToString r in
-  Message.serialize_to_channel r.r_msg ~fstLineToString
+  Message.serialize_to_output_channel r.r_msg ~fstLineToString
+
+let serialize_to_stream r =
+  let fstLineToString = fstLineToString r in
+  Message.serialize_to_stream r.r_msg ~fstLineToString

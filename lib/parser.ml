@@ -37,7 +37,7 @@ let bindings_sep, binding_sep, pieces_sep, header_sep =
 let url_decode url = Url.decode url
 
 let parse_request_fst_line ic =
-  lwt request_line = ic () in
+  lwt request_line = Lwt_io.read_line ic in
   try_lwt begin
     match Re.split_delim pieces_sep request_line with
     | [ meth_raw; uri_raw; http_version_raw ] -> return
@@ -48,8 +48,23 @@ let parse_request_fst_line ic =
     | _ -> fail (Malformed_request request_line)
   end with | Malformed_URL url -> fail (Malformed_request_URI url)
 
+let split_query_params query =
+  let bindings = Re.split_delim bindings_sep query in
+  match bindings with
+  | [] -> raise (Malformed_query query)
+  | bindings ->
+      List.map
+        (fun binding ->
+          match Re.split_delim binding_sep binding with
+          | [ ""; b ] -> (* '=b' *)
+              raise (Malformed_query_part (binding, query))
+          | [ a; b ]  -> (* 'a=b' *) (url_decode a, url_decode b)
+          | [ a ]     -> (* 'a=' || 'a' *) (url_decode a, "")
+          | _ -> raise (Malformed_query_part (binding, query)))
+        bindings
+
 let parse_response_fst_line ic =
-  lwt response_line = ic () in
+  lwt response_line = Lwt_io.read_line ic in
   try_lwt
     (match Re.split_delim pieces_sep response_line with
     | version_raw :: code_raw :: _ ->
@@ -65,7 +80,7 @@ let parse_response_fst_line ic =
 let parse_headers ic =
   (* consume also trailing "^\r\n$" line *)
   let rec parse_headers' headers =
-    ic () >>= function
+    Lwt_io.read_line ic >>= function
     | "" -> return (List.rev headers)
     | line -> begin
         (*TODO: optimize by not going through the whole header and cat-ing it*)

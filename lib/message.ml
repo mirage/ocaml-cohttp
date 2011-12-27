@@ -19,13 +19,12 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
   USA
 *)
+
 open Common
 open Constants
 open Types
 open Printf
 open Lwt
-
-exception Not_supported of string
 
 (* remove all bindings of 'name' from hashtbl 'tbl' *)
 let rec hashtbl_remove_all tbl name =
@@ -34,54 +33,71 @@ let rec hashtbl_remove_all tbl name =
   Hashtbl.remove tbl name;
   if Hashtbl.mem tbl name then hashtbl_remove_all tbl name
 
-type contents = [
-  | `String of string
-  | `Inchan of (int64 * string Lwt_stream.t) (* size * stream *)
-]
+type contents =
+    [ `Buffer of Buffer.t
+    | `String of string
+    | `Inchan of int64 * Lwt_io.input_channel * unit Lwt.u
+    ]
 
 type message = {
   mutable m_contents : contents list;
   m_headers : (string, string) Hashtbl.t;
   m_version : version;
+  m_cliaddr : string;
+  m_cliport : int;
+  m_srvaddr : string;
+  m_srvport : int;
 } 
 
-let body msg =
-  List.rev msg.m_contents
+let explode_sockaddr = function
+  | Unix.ADDR_INET (addr, port) -> (Unix.string_of_inet_addr addr, port)
+  | _ -> assert false (* can explode only inet address *)
 
+let body msg = List.rev msg.m_contents
 let body_size cl =
-  List.fold_left (fun a -> 
-    function
-    |`String s -> Int64.(add a (of_int (String.length s)))
-    |`Inchan (sz,_) -> sz
-  ) Int64.zero cl
-
-let set_body msg contents =
-  msg.m_contents <- [contents]
-
-let add_body msg contents =
-  msg.m_contents <- (contents :: msg.m_contents)
-
+  let (+) = Int64.add in
+    List.fold_left (fun a c -> match c with
+		      | `String s -> a + (Int64.of_int (String.length s))
+		      | `Buffer b -> a + (Int64.of_int (Buffer.length b))
+		      | `Inchan (i, _, _) -> a + i) Int64.zero cl
+let string_of_body cl =
+  (* TODO: What if the body is larger than 1GB? *)
+  let buf = String.create (Int64.to_int (body_size cl)) in
+    (List.fold_left (fun pos c -> match c with
+		       | `String s ->
+			   lwt pos = pos in
+                           let len = String.length s in
+			   let () = String.blit s 0 buf pos len in
+			     return (pos + len)
+                       | `Buffer b ->
+			   lwt pos = pos in
+                           let len = Buffer.length b in
+			   let str = Buffer.contents b in
+			   let () = String.blit str 0 buf pos len in
+			     return (pos + len)
+	               | `Inchan (il, ic, finished) ->
+			   lwt pos = pos in
+                           let il = Int64.to_int il in
+                             (Lwt_io.read_into_exactly ic buf pos il) >>
+			       (Lwt.wakeup finished (); return (pos + il))
+                    ) (return 0) cl) >>= (fun _ -> return buf)
+let set_body msg contents = msg.m_contents <- [contents]
+let add_body msg contents = msg.m_contents <- (contents :: msg.m_contents)
 let add_header msg ~name ~value =
   let name = String.lowercase name in
   Hashtbl.add msg.m_headers name value
-
 let add_headers msg =
   List.iter (fun (name, value) -> add_header msg ~name ~value)
-
 let replace_header msg ~name ~value =
   let name = String.lowercase name in
   Hashtbl.replace msg.m_headers name value
-
 let replace_headers msg =
   List.iter (fun (name, value) -> replace_header msg ~name ~value)
-
 let remove_header msg ~name =
   let name = String.lowercase name in
   hashtbl_remove_all msg.m_headers name
-
 let has_header msg ~name =
   Hashtbl.mem msg.m_headers name
-
 let header msg ~name =
   let name = String.lowercase name in
   let compact = String.concat ", " in
@@ -89,32 +105,79 @@ let header msg ~name =
   let no_compact = ["set-cookie"] in
     if has_header msg ~name then
       let hl = List.rev (Hashtbl.find_all msg.m_headers name) in
-    if List.mem name no_compact then hl
-    else [compact hl]
+	if List.mem name no_compact then hl
+	else [compact hl]
     else []
-
 let headers msg =
   let hset = Hashtbl.create 11 in
-  Hashtbl.iter (fun name _ -> Hashtbl.replace hset name ()) msg.m_headers;
-  Hashtbl.fold (fun name _ headers -> 
-    List.rev_append (List.map (fun h -> (name, h)) (header msg ~name)) headers
-  ) hset []
+  let () = Hashtbl.iter (fun name _ -> Hashtbl.replace hset name ()) msg.m_headers in
+    Hashtbl.fold (fun name _ headers -> 
+		    List.rev_append
+		      (List.map (fun h -> (name, h)) (header msg ~name))
+		      headers
+		 ) hset []
     
+let client_addr msg = msg.m_cliaddr
+let server_addr msg = msg.m_srvaddr
+let client_port msg = msg.m_cliport
+let server_port msg = msg.m_srvport
+
 let version msg = msg.m_version
 
-let init ~body ~headers ~version =
-  let msg = { m_contents=body; m_headers = Hashtbl.create 11; 
-    m_version = version } in
-  add_headers msg headers;
-  msg
+let init ~body ~headers ~version ~clisockaddr ~srvsockaddr =
+  let ((cliaddr, cliport), (srvaddr, srvport)) =
+    (explode_sockaddr clisockaddr,
+     explode_sockaddr srvsockaddr) in
+  let msg = { m_contents = body;
+	      m_headers = Hashtbl.create 11;
+	      m_version = version;
+	      m_cliaddr = cliaddr;
+	      m_cliport = cliport;
+	      m_srvaddr = srvaddr;
+	      m_srvport = srvport;
+	    } in
+    add_headers msg headers;
+    msg
+      
+let relay ic oc write_from_exactly m =
+  let bufsize = 4096 in (* blksz *)
+  let buffer = String.create bufsize in
+  let rec aux m =
+    lwt len = m >> (Lwt_io.read_into ic buffer 0 bufsize) in
+      if len = 0 then Lwt.return ()
+      else aux (write_from_exactly oc buffer 0 len)
+  in aux m
 
-let serialize_to_channel msg ~fstLineToString chan =
+let serialize msg outchan write write_from_exactly ~fstLineToString =
   let body = body msg in
-  let bodylen = body_size body in
-  Lwt_io.write_line chan fstLineToString >>
-  Lwt_list.iter_s (fun (h,v) -> Lwt_io.write chan (sprintf "%s: %s\r\n" h v)) (headers msg) >>
-  Lwt_io.write chan (sprintf "Content-Length: %Ld\r\n\r\n" bodylen) >>
-  Lwt_list.iter_s (function
-    |`String s -> Lwt_io.write chan s
-    |`Inchan (_,t) -> Lwt_stream.iter_s (Lwt_io.write chan) t
-  ) body
+  let bodylen = body_size body
+  in (write outchan (fstLineToString ^ crlf)) >>
+       (List.fold_left
+	  (fun m (h,v) ->
+	     m >> write outchan (h ^ ": " ^ v ^ crlf))
+	  (Lwt.return ())
+	  (headers msg)) >>
+       (if bodylen != Int64.zero then
+	  write outchan (sprintf "Content-Length: %Ld\r\n\r\n" bodylen)
+	else return ()) >>
+       (List.fold_left
+	  (fun m c -> match c with
+	     | `String s -> m >> (write outchan s)
+	     | `Buffer b -> m >> (write outchan (Buffer.contents b))
+	     | `Inchan (_, ic, finished) -> relay ic outchan write_from_exactly m >> (Lwt.wakeup finished (); Lwt.return ()))
+	  (Lwt.return ())
+	  body)
+
+let serialize_to_output_channel msg outchan ~fstLineToString =
+  serialize msg outchan Lwt_io.write Lwt_io.write_from_exactly ~fstLineToString
+
+let serialize_to_stream msg ~fstLineToString =
+  let stream, push = Lwt_stream.create () in
+  Lwt.ignore_result
+    (serialize
+       msg
+       ()
+       (fun () s -> push (Some s); Lwt.return ())
+       (fun () buf off len -> push (Some (String.sub buf off len)); Lwt.return ())
+       ~fstLineToString >> (push None; Lwt.return ()));
+  stream
