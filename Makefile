@@ -1,11 +1,14 @@
 .PHONY: all clean install build
-all: build
+all: build doc
 
 setup.data:
 	ocaml setup.ml -configure
 
 build: setup.data
 	ocaml setup.ml -build
+
+doc: setup.data
+	ocaml setup.ml -doc
 
 install:
 	ocaml setup.ml -install

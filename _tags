@@ -43,3 +43,4 @@
 <lib/*.ml{,i}>: pkg_lwt
 # OASIS_STOP
 <lib/*>: syntax_camlp4o
+<lib/*>: pkg_lwt.syntax

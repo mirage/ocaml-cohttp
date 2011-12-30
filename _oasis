@@ -5,11 +5,18 @@ Synopsis:    HTTP protocol library for Lwt
 Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire
 License:     LGPL-2.0 with OCaml linking exception
 Plugins:     META (0.2)
+BuildTools:  ocamlbuild
 
 Library cohttp
   Path:       lib
   Findlibname: cohttp
   Pack: true
   Modules: Base64, Common, Constants, Cookie, Misc, Parser, Request, Response, Types, Url, Message
-  BuildTools: ocamlbuild
   BuildDepends:	lwt.syntax, lwt, regexp, lwt.unix
+
+Document cohttp
+  Title:                Cohttp docs
+  Type:                 ocamlbuild (0.2)
+  BuildTools+:          ocamldoc
+  XOCamlbuildPath:      lib
+  XOCamlbuildLibraries: cohttp
