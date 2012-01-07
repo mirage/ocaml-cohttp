@@ -20,3 +20,22 @@ Document cohttp
   BuildTools+:          ocamldoc
   XOCamlbuildPath:      lib
   XOCamlbuildLibraries: cohttp
+
+Flag tests
+  Description:        Build and run tests
+  Default:            true
+
+Executable test_base64
+  Path:               lib_test
+  MainIs:             test_base64.ml
+  Build$:             flag(tests)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp,oUnit (>= 1.0.2)
+
+Test test_base64
+  Run$:               flag(tests)
+  Command:            $test_base64
+  WorkingDirectory:   lib_test
+

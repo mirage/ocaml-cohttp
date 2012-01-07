@@ -66,17 +66,3 @@ let encode x =
     output.[String.length output - i] <- '=';
   done;
   output
-
-let test x = 
-  let x' = encode x in
-  let x'' = decode x' in
-  if x <> x'' 
-  then failwith (Printf.sprintf "Original: '%s'; encoded = '%s'; decoded = '%s'" x x' x'')
-
-let tests = [ "hello"; 
-	      "this is a basic test"; "1"; "22"; "333"; "4444"; "5555";
-	      "\000"; "\000\000"; "\000\000\000"; "\000\000\000\000" ]
-
-(*
-let _ = List.iter test tests
-*)
