@@ -37,13 +37,6 @@ type meth =
   | `DELETE
   ]
 
-  (** authentication information *)
-type auth_info =
-  [ `None
-  | `Basic of string * (string -> string -> bool) (* realm, user -> pass -> bool *)
-(*| `Digest of ...  (* TODO digest authentication *) *)
-  ]
-
   (** @see "RFC2616" informational HTTP status *)
 type informational_status =
   [ `Continue

@@ -25,11 +25,6 @@
 type version = [ `HTTP_1_0 | `HTTP_1_1 ]
 type meth = [ `GET | `POST | `HEAD | `DELETE ]
 
-type auth_info =
-  [ `None
-  | `Basic of string * (string -> string -> bool) (* realm, user -> pass -> bool *)
-  ]
-
 type informational_status =
   [ `Continue
   | `Switching_protocols
