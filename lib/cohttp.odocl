@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 782a253cb0b38890b12ff79e98867c67)
+# DO NOT EDIT (digest: 72eb902d62c480c149397e757f42767c)
 Base64
 Common
 Constants
@@ -9,6 +9,5 @@ Parser
 Request
 Response
 Types
-Url
 Message
 # OASIS_STOP

@@ -25,14 +25,6 @@ open Lwt
 
 open Common
 open Types
-open Regexp
-
-let auth_sep_RE = Re.compile (Re.string ":")
-let remove_basic_auth s =
-  let re = Re.from_string "Basic( +)" in
-  match Re.match_string re s 0 with
-  | None -> s
-  | Some e -> String.sub s e (String.length s - e)
 
 type request = {
   r_msg: Message.message;
@@ -40,7 +32,7 @@ type request = {
   r_get_params: (string * string) list;
   r_post_params: (string * string) list;
   r_meth: meth;
-  r_uri: string;
+  r_uri: Uri.t;
   r_version: version;
   r_path: string;
 }
@@ -48,14 +40,9 @@ type request = {
 exception Length_required (* HTTP 411 *)
 
 let init_request ~clisockaddr ~srvsockaddr finished ic =
-  let unopt def = function
-    | None -> def
-    | Some v -> v
-  in
   lwt (meth, uri, version) = Parser.parse_request_fst_line ic in
-  let uri_str = Url.to_string uri in
-  let path = unopt "/" uri.Url.path_string in
-  let query_get_params = unopt [] uri.Url.query in
+  let path = Uri.path uri in
+  let query_get_params = Uri.query uri in
   lwt headers = Parser.parse_headers ic in
   let headers = List.map (fun (h,v) -> (String.lowercase h, v)) headers in
   lwt body = (if meth = `POST then begin
@@ -74,7 +61,7 @@ let init_request ~clisockaddr ~srvsockaddr finished ic =
           try
 	    let ct = List.assoc "content-type" headers in
 	      if ct = "application/x-www-form-urlencoded" then
-		(Message.string_of_body body) >|= (fun s -> Parser.split_query_params s, [`String s])
+		(Message.string_of_body body) >|= (fun s -> Uri.parse_query s, [`String s])
 	      else return ([], body)
 	  with Not_found -> return ([], body)
 	end
@@ -87,7 +74,7 @@ let init_request ~clisockaddr ~srvsockaddr finished ic =
       List.iter (fun (n,v) -> Hashtbl.add tbl n v) params;
       tbl in
     return { r_msg=msg; r_params=params_tbl; r_get_params = query_get_params; 
-             r_post_params = query_post_params; r_uri=uri_str; r_meth=meth; 
+             r_post_params = query_post_params; r_uri=uri; r_meth=meth; 
              r_version=version; r_path=path }
 
 let meth r = r.r_meth
@@ -119,13 +106,3 @@ let param_all ?meth r name =
 let params r = r.r_params
 let params_get r = r.r_get_params
 let params_post r = r.r_post_params
-
-let authorization r = 
-  match Message.header r.r_msg ~name:"authorization" with
-    | [] -> None
-    | h :: _ -> 
-      let credentials = Base64.decode (remove_basic_auth h) in
-      (match Re.split_delim auth_sep_RE credentials with
-         | [username; password] -> Some (`Basic (username, password))
-         | l -> None)
-

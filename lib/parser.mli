@@ -23,13 +23,6 @@
 
 open Types;;
 
-  (** given an HTTP like query string (e.g. "name1=value1&name2=value2&...")
-  @return a list of pairs [("name1", "value1"); ("name2", "value2")]
-  @raise Malformed_query if the string isn't a valid query string
-  @raise Malformed_query_part if some piece of the query isn't valid
-  *)
-val split_query_params: string -> (string * string) list
-
   (** parse 1st line of an HTTP request
   @param inchan input channel from which parse request
   @return a triple meth * url * version, meth is the HTTP method invoked, url is
@@ -37,7 +30,7 @@ val split_query_params: string -> (string * string) list
   was specified
   @raise Malformed_request if request 1st linst isn't well formed
   @raise Malformed_request_URI if requested URI isn't well formed *)
-val parse_request_fst_line: Lwt_io.input_channel -> (meth * Url.t * version) Lwt.t
+val parse_request_fst_line: Lwt_io.input_channel -> (meth * Uri.t * version) Lwt.t
 
   (** parse 1st line of an HTTP response
    * @param inchan input channel from which parse response

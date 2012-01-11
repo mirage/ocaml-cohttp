@@ -11,8 +11,8 @@ Library cohttp
   Path:       lib
   Findlibname: cohttp
   Pack: true
-  Modules: Base64, Common, Constants, Cookie, Misc, Parser, Request, Response, Types, Url, Message
-  BuildDepends:	lwt.syntax, lwt, regexp, lwt.unix
+  Modules: Base64, Common, Constants, Cookie, Misc, Parser, Request, Response, Types, Message
+  BuildDepends:	lwt.syntax, lwt, re, lwt.unix, uri
 
 Document cohttp
   Title:                Cohttp docs

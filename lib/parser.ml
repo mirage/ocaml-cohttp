@@ -25,48 +25,30 @@ open Lwt
 open Common
 open Types
 open Constants
-open Regexp
 
-let bindings_sep, binding_sep, pieces_sep, header_sep =
-  Re.(compile (char '&'),
-      compile (char '='),
-      compile (char ' '),
-      from_string ": *"
-     )
+let bindings_sep = Re_str.regexp_string "&"
+let binding_sep = Re_str.regexp_string "="
+let pieces_sep = Re_str.regexp_string " "
+let header_sep = Re_str.regexp ": *"
 
-let url_decode url = Url.decode url
+let url_decode url = Uri.pct_decode url
 
 let parse_request_fst_line ic =
   lwt request_line = Lwt_io.read_line ic in
   try_lwt begin
-    match Re.split_delim pieces_sep request_line with
+    match Re_str.split_delim pieces_sep request_line with
     | [ meth_raw; uri_raw; http_version_raw ] -> return
       ( method_of_string meth_raw
-      , Url.of_string uri_raw
+      , Uri.of_string uri_raw
       , version_of_string http_version_raw
       )
     | _ -> fail (Malformed_request request_line)
   end with | Malformed_URL url -> fail (Malformed_request_URI url)
 
-let split_query_params query =
-  let bindings = Re.split_delim bindings_sep query in
-  match bindings with
-  | [] -> raise (Malformed_query query)
-  | bindings ->
-      List.map
-        (fun binding ->
-          match Re.split_delim binding_sep binding with
-          | [ ""; b ] -> (* '=b' *)
-              raise (Malformed_query_part (binding, query))
-          | [ a; b ]  -> (* 'a=b' *) (url_decode a, url_decode b)
-          | [ a ]     -> (* 'a=' || 'a' *) (url_decode a, "")
-          | _ -> raise (Malformed_query_part (binding, query)))
-        bindings
-
 let parse_response_fst_line ic =
   lwt response_line = Lwt_io.read_line ic in
   try_lwt
-    (match Re.split_delim pieces_sep response_line with
+    (match Re_str.split_delim pieces_sep response_line with
     | version_raw :: code_raw :: _ ->
        return (version_of_string version_raw,      (* method *)
        status_of_code (int_of_string code_raw))    (* status *)
@@ -84,7 +66,7 @@ let parse_headers ic =
     | "" -> return (List.rev headers)
     | line -> begin
         (*TODO: optimize by not going through the whole header and cat-ing it*)
-        lwt (header, value) = match Re.(split_delim header_sep line) with
+        lwt (header, value) = match Re_str.split_delim header_sep line with
           | [] | [_] -> fail (Invalid_header line)
           | hd :: tl -> Lwt.return (hd, String.concat ":" tl)
         in
@@ -95,8 +77,8 @@ let parse_headers ic =
 
 let parse_request ic =
   lwt (meth, uri, version) = parse_request_fst_line ic in
-  let path = match uri.Url.path_string with None -> "/" | Some p -> p in
-  let query_get_params = match uri.Url.query with None -> [] | Some l -> l in
+  let path = match uri.Uri.path with "" -> "/" | p -> p in
+  let query_get_params = Uri.query uri in
   return (path, query_get_params)
 
 let parse_content_range s =

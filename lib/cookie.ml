@@ -1,6 +1,7 @@
 (*
   OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
 
+  Copyright (C) <2012> Anil Madhavapeddy <anil@recoil.org>
   Copyright (C) <2009> David Sheets <sheets@alum.mit.edu>
 
   This program is free software; you can redistribute it and/or modify
@@ -17,8 +18,6 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
   USA
 *)
-
-open Regexp
 
 type time = [ `Day of int | `Hour of int | `Minute of int | `Second of int ] list
 type expiration = [ `Discard | `Session | `Age of time | `Until of float ]
@@ -82,15 +81,16 @@ let serialize ?(version=`HTTP_1_0) cp =
     | `HTTP_1_0 -> serialize_1_0 cp
     | `HTTP_1_1 -> serialize_1_1 cp
 
+let cookie_re = Re_str.regexp "(\\?:;\\|,)([ \t])"
+let equals_re = Re_str.regexp_string "="
+
 let extract req =
   List.fold_left
     (fun acc header ->
-        let comps =
-          Re.(split_delim (from_string "(\\?:;\\|,)([ \t])") header)
-        in
+        let comps = Re_str.split_delim cookie_re header in
         let cookies = List.filter (fun s -> s.[0] != '$') comps in
         let split_pair nvp =
-          match Re.(split_delim (from_string "=")) nvp with
+          match Re_str.split_delim equals_re nvp with
           | [] -> ("","")
           | n :: [] -> (n, "")
           | n :: v :: _ -> (n, v)
