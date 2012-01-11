@@ -40,42 +40,49 @@ type request = {
 exception Length_required (* HTTP 411 *)
 
 let init_request ~clisockaddr ~srvsockaddr finished ic =
-  lwt (meth, uri, version) = Parser.parse_request_fst_line ic in
+  lwt meth, uri, version = Parser.parse_request_fst_line ic in
   let path = Uri.path uri in
   let query_get_params = Uri.query uri in
   lwt headers = Parser.parse_headers ic in
   let headers = List.map (fun (h,v) -> (String.lowercase h, v)) headers in
-  lwt body = (if meth = `POST then begin
-		let limit = try Some 
-                  (Int64.of_string (List.assoc "content-length" headers))
-		with Not_found -> None in
-		  match limit with 
-		    |None -> Lwt_io.read ic >|= (fun s -> Lwt.wakeup finished (); [`String s])
-		    |Some count -> return [`Inchan (count, ic, finished)]
-              end
-              else  (* TODO empty body for methods other than POST, is ok? *)
-		(Lwt.wakeup finished (); return [`String ""])) in
+  lwt body = 
+    match meth with
+    |`POST -> begin
+      let limit =
+        try Some (Int64.of_string (List.assoc "content-length" headers))
+        with Not_found -> None 
+      in
+      match limit with 
+      |None -> Lwt_io.read ic >|= (fun s -> Lwt.wakeup finished (); [`String s])
+      |Some count -> return [`Inchan (count, ic, finished)]
+    end
+    |_ ->  (* TODO empty body for methods other than POST, is ok? *)
+      Lwt.wakeup finished ();
+      return [`String ""]
+  in
   lwt query_post_params, body =
     match meth with
-      | `POST -> begin
-          try
-	    let ct = List.assoc "content-type" headers in
-	      if ct = "application/x-www-form-urlencoded" then
-		(Message.string_of_body body) >|= (fun s -> Uri.parse_query s, [`String s])
-	      else return ([], body)
-	  with Not_found -> return ([], body)
-	end
-      | _ -> return ([], body)
+    | `POST -> begin
+         try
+           let ct = List.assoc "content-type" headers in
+           if ct = "application/x-www-form-urlencoded" then
+             Message.string_of_body body >|= (fun s -> Uri.parse_query s, [`String s])
+           else return ([], body)
+         with Not_found ->
+           return ([], body)
+    end
+    | _ -> return ([], body)
   in
   let params = query_post_params @ query_get_params in (* prefers POST params *)
   let msg = Message.init ~body ~headers ~version ~clisockaddr ~srvsockaddr in
   let params_tbl =
     let tbl = Hashtbl.create (List.length params) in
-      List.iter (fun (n,v) -> Hashtbl.add tbl n v) params;
-      tbl in
-    return { r_msg=msg; r_params=params_tbl; r_get_params = query_get_params; 
-             r_post_params = query_post_params; r_uri=uri; r_meth=meth; 
-             r_version=version; r_path=path }
+    List.iter (fun (n,v) -> Hashtbl.add tbl n v) params;
+    tbl
+  in
+  return { r_msg=msg; r_params=params_tbl; r_get_params = query_get_params; 
+    r_post_params = query_post_params; r_uri=uri; r_meth=meth; 
+    r_version=version; r_path=path }
 
 let meth r = r.r_meth
 let uri r = r.r_uri
