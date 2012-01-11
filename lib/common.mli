@@ -1,4 +1,3 @@
-
 (*
   OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
 
@@ -21,7 +20,7 @@
 
 (** Common functionalities shared by other OCaml HTTP modules *)
 
-open Types;;
+open Types
 
   (** pretty print an HTTP version *)
 val string_of_version: version -> string

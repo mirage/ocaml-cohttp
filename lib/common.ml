@@ -1,4 +1,3 @@
-
 (*
   OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
 
@@ -20,8 +19,7 @@
   USA
 *)
 
-open Types;;
-open Printf;;
+open Types
 
 let string_of_version = function
   | `HTTP_1_0 -> "HTTP/1.0"
