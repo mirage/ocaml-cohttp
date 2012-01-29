@@ -1,9 +1,9 @@
 (*
   OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
 
-  Copyright (C) <2002-2005> Stefano Zacchiroli <zack@cs.unibo.it>
-  Copyright (C) <2009-2011> Anil Madhavapeddy <anil@recoil.org>
+  Copyright (C) <2009-2012> Anil Madhavapeddy <anil@recoil.org>
   Copyright (C) <2009> David Sheets <sheets@alum.mit.edu>
+  Copyright (C) <2002-2005> Stefano Zacchiroli <zack@cs.unibo.it>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU Library General Public License as
