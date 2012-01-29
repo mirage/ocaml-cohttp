@@ -45,6 +45,9 @@ val status_of_code: int -> status
   (** converts an HTTP status to the corresponding integer value *)
 val code_of_status: [< status] -> int
 
+  (** converts an HTTP status to a human-readable string value *)
+val string_of_status: [< status] -> string
+
   (** @return true on "informational" status codes, false elsewhere *)
 val is_informational: int -> bool
 

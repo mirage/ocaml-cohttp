@@ -128,6 +128,48 @@ let code_of_status = function
   | `Gateway_time_out -> 504
   | `HTTP_version_not_supported -> 505
 
+let string_of_status = function
+  | `Continue -> "100 Continue"
+  | `Switching_protocols -> "101 Switching Protocols"
+  | `OK -> "200 OK"
+  | `Created -> "201 Created"
+  | `Accepted -> "202 Accepted"
+  | `Non_authoritative_information -> "203 Non-authoritative Information"
+  | `No_content -> "204 No Content"
+  | `Reset_content -> "205 Reset Content"
+  | `Partial_content -> "206 Partial Content"
+  | `Multiple_choices -> "300 Multiple Choices"
+  | `Moved_permanently -> "301 Moved Permanently"
+  | `Found -> "302 Found"
+  | `See_other -> "303 See Other"
+  | `Not_modified -> "304 Not Modified"
+  | `Use_proxy -> "305 Use Proxy"
+  | `Temporary_redirect -> "307 Temporary Redirect"
+  | `Bad_request -> "400 Bad Request"
+  | `Unauthorized -> "401 Unauthorized"
+  | `Payment_required -> "402 Payment Required"
+  | `Forbidden -> "403 Forbidden"
+  | `Not_found -> "404 Not Found"
+  | `Method_not_allowed -> "405 Method Not Allowed"
+  | `Not_acceptable -> "406 Not Acceptable"
+  | `Proxy_authentication_required -> "407 Proxy Authentication Required"
+  | `Request_time_out -> "408 Request Time Out"
+  | `Conflict -> "409 Conflict"
+  | `Gone -> "410 Gone"
+  | `Length_required -> "411 Length Required"
+  | `Precondition_failed -> "412 Precondition Failed"
+  | `Request_entity_too_large -> "413 Request Entity Too Large"
+  | `Request_URI_too_large -> "414 Request URI Too Large"
+  | `Unsupported_media_type -> "415 Unsupported Media Type"
+  | `Requested_range_not_satisfiable -> "416 Requested Range Not Satisfiable"
+  | `Expectation_failed -> "417 Expectation Failed"
+  | `Internal_server_error -> "500 Internal Server Error"
+  | `Not_implemented -> "501 Not Implemented"
+  | `Bad_gateway -> "502 Bad Gateway"
+  | `Service_unavailable -> "503 Service Unavailable"
+  | `Gateway_time_out -> "504 Gateway Timeout"
+  | `HTTP_version_not_supported -> "505 HTTP Version Not Supported"
+
 let is_informational code =
   match status_of_code code with
   | #informational_status -> true
