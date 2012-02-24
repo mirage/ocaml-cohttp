@@ -66,7 +66,8 @@ let init_request ~clisockaddr ~srvsockaddr finished ic =
          try
            let ct = List.assoc "content-type" headers in
            if ct = "application/x-www-form-urlencoded" then
-             Message.string_of_body body >|= (fun s -> Uri.parse_query s, [`String s])
+             Message.string_of_body body >|=
+             (fun s -> Uri.query_of_encoded s, [`String s])
            else return ([], body)
          with Not_found ->
            return ([], body)

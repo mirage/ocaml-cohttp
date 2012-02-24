@@ -77,7 +77,7 @@ let parse_headers ic =
 
 let parse_request ic =
   lwt (meth, uri, version) = parse_request_fst_line ic in
-  let path = match uri.Uri.path with "" -> "/" | p -> p in
+  let path = match Uri.path uri with "" -> "/" | p -> p in
   let query_get_params = Uri.query uri in
   return (path, query_get_params)
 
