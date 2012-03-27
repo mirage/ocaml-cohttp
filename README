@@ -1,1 +1,0 @@
-CoHTTP is an OCaml library for creating HTTP daemons.  It uses simple cooperative threading via the LWT library to handle concurrency, making it quite lightweight and portable.

@@ -3,7 +3,6 @@
   OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
 
   Copyright (C) <2002-2005> Stefano Zacchiroli <zack@cs.unibo.it>
-  Copyright (C) <2009> Anil Madhavapeddy <anil@recoil.org>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU Library General Public License as
@@ -22,18 +21,29 @@
 
 (** Type definitions *)
 
-type version = [ `HTTP_1_0 | `HTTP_1_1 ]
-type meth = [ `GET | `POST | `HEAD | `DELETE ]
-
-type auth_info =
-  [ `None
-  | `Basic of string * (string -> string -> bool) (* realm, user -> pass -> bool *)
+  (** HTTP version, actually only 1.0 and 1.1 are supported. Note that
+  'supported' here means only 'accepted inside a HTTP request line', no
+  different behaviours are actually implemented depending on HTTP version *)
+type version =
+  [ `HTTP_1_0
+  | `HTTP_1_1
   ]
 
+  (** HTTP method, actually only GET and POST methods are supported *)
+type meth =
+  [ `GET
+  | `POST
+  | `HEAD
+  | `DELETE
+  ]
+
+  (** @see "RFC2616" informational HTTP status *)
 type informational_status =
   [ `Continue
   | `Switching_protocols
   ]
+
+  (** @see "RFC2616" success HTTP status *)
 type success_status =
   [ `OK
   | `Created
@@ -43,6 +53,8 @@ type success_status =
   | `Reset_content
   | `Partial_content
   ]
+
+  (** @see "RFC2616" redirection HTTP status *)
 type redirection_status =
   [ `Multiple_choices
   | `Moved_permanently
@@ -52,6 +64,8 @@ type redirection_status =
   | `Use_proxy
   | `Temporary_redirect
   ]
+
+  (** @see "RFC2616" client error HTTP status *)
 type client_error_status =
   [ `Bad_request
   | `Unauthorized
@@ -72,6 +86,8 @@ type client_error_status =
   | `Requested_range_not_satisfiable
   | `Expectation_failed
   ]
+
+  (** @see "RFC2616" server error HTTP status *)
 type server_error_status =
   [ `Internal_server_error
   | `Not_implemented
@@ -80,10 +96,13 @@ type server_error_status =
   | `Gateway_time_out
   | `HTTP_version_not_supported
   ]
+
 type error_status =
   [ client_error_status
   | server_error_status
   ]
+
+  (** HTTP status *)
 type status =
   [ informational_status
   | success_status
@@ -94,20 +113,56 @@ type status =
 
 type status_code = [ `Code of int | status ]
 
-exception Invalid_header of string
-exception Invalid_header_name of string
-exception Invalid_header_value of string
-exception Invalid_HTTP_version of string
-exception Invalid_HTTP_method of string
-exception Invalid_code of int
-exception Malformed_URL of string
-exception Malformed_query of string
-exception Malformed_query_part of string * string
-exception Malformed_request_URI of string
-exception Malformed_request of string
-exception Malformed_response of string
-exception Param_not_found of string
-exception Invalid_status_line of string
-exception Header_not_found of string
-exception Unauthorized of string
+  (** {2 Exceptions} *)
 
+  (** invalid header encountered *)
+exception Invalid_header of string
+
+  (** invalid header name encountered *)
+exception Invalid_header_name of string
+
+  (** invalid header value encountered *)
+exception Invalid_header_value of string
+
+  (** unsupported or invalid HTTP version encountered *)
+exception Invalid_HTTP_version of string
+
+  (** unsupported or invalid HTTP method encountered *)
+exception Invalid_HTTP_method of string
+
+  (** invalid HTTP status code integer representation encountered *)
+exception Invalid_code of int
+
+  (** invalid URL encountered *)
+exception Malformed_URL of string
+
+  (** invalid query string encountered *)
+exception Malformed_query of string
+
+  (** invalid query string part encountered, arguments are parameter name and
+  parameter value *)
+exception Malformed_query_part of string * string
+
+  (** invalid request URI encountered *)
+exception Malformed_request_URI of string
+
+  (** malformed request received *)
+exception Malformed_request of string
+
+  (** malformed response received, argument is response's first line *)
+exception Malformed_response of string
+
+  (** a parameter you were looking for was not found *)
+exception Param_not_found of string
+
+  (** invalid HTTP status line encountered *)
+exception Invalid_status_line of string
+
+  (** an header you were looking for was not found *)
+exception Header_not_found of string
+
+  (** raisable by callbacks to force a 401 (unauthorized) HTTP answer.
+      This exception should be raised _before_ sending any data over given out
+      channel.
+      @param realm authentication realm (usually needed to prompt user) *)
+exception Unauthorized of string

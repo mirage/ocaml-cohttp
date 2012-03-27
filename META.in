@@ -1,5 +1,0 @@
-description = "Lightweight HTTP daemon library"
-version = "@DISTVERSION@"
-requires = "unix,pcre,netstring,lwt.unix"
-archive(byte) = "cohttp.cma"
-archive(native) = "cohttp.cmxa"

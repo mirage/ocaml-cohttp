@@ -21,11 +21,11 @@ val client_addr : message -> string
 val server_addr : message -> string
 val client_port : message -> int
 val server_port : message -> int
-val version : message -> Http_types.version
+val version : message -> Types.version
 val init :
   body:contents list ->
   headers:(string * string) list ->
-  version:Http_types.version ->
+  version:Types.version ->
   clisockaddr:Unix.sockaddr -> srvsockaddr:Unix.sockaddr -> message
 val serialize :
   message ->

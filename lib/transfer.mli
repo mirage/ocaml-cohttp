@@ -1,9 +1,5 @@
-
 (*
-  OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
-
-  Copyright (C) <2002-2005> Stefano Zacchiroli <zack@cs.unibo.it>
-  Copyright (C) <2009> Anil Madhavapeddy <anil@recoil.org>
+  Copyright (C) <2012> Anil Madhavapeddy <anil@recoil.org>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU Library General Public License as
@@ -20,6 +16,5 @@
   USA
 *)
 
-let default_version = `HTTP_1_1
-let server_string = "CoHTTP Daemon"
-let crlf = "\r\n"
+type encoding = Chunked | Fixed of int |Unknown
+val read : encoding -> Lwt_io.input_channel -> string Lwt_stream.t

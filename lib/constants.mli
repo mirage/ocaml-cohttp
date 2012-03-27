@@ -1,4 +1,3 @@
-
 (*
   OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
 
@@ -21,7 +20,7 @@
 
 (** Constants *)
 
-val default_version: Http_types.version
+val default_version: Types.version
 
 val server_string: string
 

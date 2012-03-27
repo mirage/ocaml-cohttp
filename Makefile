@@ -1,28 +1,33 @@
-OCAMLMAKEFILE=OCamlMakefile
+.PHONY: all clean install build
+all: build test doc
 
-SOURCES = http_types.mli http_types.ml http_constants.mli http_constants.ml \
-	  http_common.mli http_common.ml http_parser_sanity.mli http_parser_sanity.ml http_parser.mli http_parser.ml \
-	  http_misc.mli http_misc.ml http_message.mli http_message.ml \
-	  http_response.mli http_response.ml http_request.mli http_request.ml \
-	  http_client.mli http_client.ml http_cookie.mli http_cookie.ml
-PACKS = netstring lwt lwt.unix
-RESULT = cohttp
-LIB_PACK_NAME = cohttp
-ANNOTATE = yes
+NAME=cohttp
 
-.PHONY: all
-all: pack-byte-code pack-native-code cohttp.cma cohttp.cmxa
-	@ :
+export OCAMLRUNPARAM=b
 
-DISTVERSION = 0.1
+setup.bin: setup.ml
+	ocamlopt.opt -o $@ $< || ocamlopt -o $@ $< || ocamlc -o $@ $<
+	rm -f setup.cmx setup.cmi setup.o setup.cmo
 
-META: META.in
-	cat META.in | sed -e 's/@DISTVERSION@/$(DISTVERSION)/' > META
+setup.data: setup.bin
+	./setup.bin -configure
 
-LIBINSTALL_FILES = META cohttp.cma cohttp.cmxa cohttp.a cohttp.cmi
+build: setup.data setup.bin
+	./setup.bin -build
 
-install: libinstall
-uninstall: libuninstall
-reinstall: uninstall install
+doc: setup.data setup.bin
+	./setup.bin -doc
 
--include $(OCAMLMAKEFILE)
+install: setup.bin
+	./setup.bin -install
+
+test: setup.bin build
+	./setup.bin -test
+
+reinstall: setup.bin
+	ocamlfind remove $(NAME) || true
+	./setup.bin -reinstall
+
+clean:
+	ocamlbuild -clean
+	rm -f setup.data setup.log setup.bin

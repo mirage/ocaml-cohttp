@@ -1,0 +1,41 @@
+OASISFormat: 0.2
+Name:        cohttp
+Version:     0.9-dev
+Synopsis:    HTTP protocol library for Lwt
+Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire
+License:     LGPL-2.0 with OCaml linking exception
+Plugins:     META (0.2)
+BuildTools:  ocamlbuild
+
+Library cohttp
+  Path:       lib
+  Findlibname: cohttp
+  Pack: true
+  Modules: Base64, Common, Constants, Cookie, Misc, Parser, Request, Response, Types, Message, Transfer
+  BuildDepends:	lwt.syntax, lwt, re, lwt.unix, uri
+
+Document cohttp
+  Title:                Cohttp docs
+  Type:                 ocamlbuild (0.2)
+  BuildTools+:          ocamldoc
+  XOCamlbuildPath:      lib
+  XOCamlbuildLibraries: cohttp
+
+Flag tests
+  Description:        Build and run tests
+  Default:            true
+
+Executable test_base64
+  Path:               lib_test
+  MainIs:             test_base64.ml
+  Build$:             flag(tests)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp,oUnit (>= 1.0.2)
+
+Test test_base64
+  Run$:               flag(tests)
+  Command:            $test_base64
+  WorkingDirectory:   lib_test
+
