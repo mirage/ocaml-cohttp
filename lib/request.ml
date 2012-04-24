@@ -39,6 +39,16 @@ type request = {
 
 exception Length_required (* HTTP 411 *)
 
+let media_type_re =
+  (* Grab "foo/bar" from " foo/bar ; charset=UTF-8" *)
+  Re_str.regexp "[ \t]*\\([^ \t;]+\\)"
+
+let extract_media_type s =
+  if Re_str.string_match media_type_re s 0 then
+    Re_str.matched_group 1 s
+  else
+    ""
+
 let init_request ~clisockaddr ~srvsockaddr finished ic =
   lwt meth, uri, version = Parser.parse_request_fst_line ic in
   let path = Uri.path uri in
@@ -64,8 +74,8 @@ let init_request ~clisockaddr ~srvsockaddr finished ic =
     match meth with
     | `POST -> begin
          try
-           let ct = List.assoc "content-type" headers in
-           if ct = "application/x-www-form-urlencoded" then
+           let mt = extract_media_type (List.assoc "content-type" headers) in
+           if mt = "application/x-www-form-urlencoded" then
              Message.string_of_body body >|=
              (fun s -> Uri.query_of_encoded s, [`String s])
            else return ([], body)
