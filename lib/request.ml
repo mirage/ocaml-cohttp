@@ -90,6 +90,7 @@ let uri r = r.r_uri
 let path r = r.r_path
 let body r = Message.body r.r_msg
 let header r ~name = Message.header r.r_msg ~name
+let headers r = Message.headers r.r_msg
 let client_addr r = Message.client_addr r.r_msg
 
 let param ?meth ?default r name =
