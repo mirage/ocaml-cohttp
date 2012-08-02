@@ -48,6 +48,9 @@ val code_of_status: [< status] -> int
   (** converts an HTTP status to a human-readable string value *)
 val string_of_status: [< status] -> string
 
+  (** converts an HTTP status to the corresponding RFC reason phrase *)
+val reason_phrase_of_code: int -> string
+
   (** @return true on "informational" status codes, false elsewhere *)
 val is_informational: int -> bool
 

@@ -64,7 +64,7 @@ let set_status r (s: Types.status) = r.r_code <- code_of_status s
 
 let reason r =
   match r.r_reason with
-  | None -> Misc.reason_phrase_of_code r.r_code
+  | None -> Common.reason_phrase_of_code r.r_code
   | Some r -> r
 
 let set_reason r rs = r.r_reason <- Some rs

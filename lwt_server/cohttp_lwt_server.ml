@@ -88,7 +88,7 @@ exception Http_daemon_failure of string
   representing an HTML document that explains the meaning of given status code.
   Additional data can be added to the body via 'body' argument *)
 let control_body code body =
-  let reason_phrase = Misc.reason_phrase_of_code code in
+  let reason_phrase = Common.reason_phrase_of_code code in
   sprintf
 "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">
 <HTML><HEAD>
