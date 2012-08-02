@@ -26,7 +26,7 @@ open Lwt
 open Types
 
 let months = [| "Jan"; "Feb"; "Mar"; "Apr"; "May"; "Jun"; 
-   							"Jul"; "Aug"; "Sep"; "Oct"; "Nov"; "Dec" |]
+                 "Jul"; "Aug"; "Sep"; "Oct"; "Nov"; "Dec" |]
 let days = [| "Sun"; "Mon"; "Tue"; "Wed"; "Thu"; "Fri"; "Sat" |]
 
 let rfc822_of_float x =
@@ -40,18 +40,5 @@ let rfc822_of_float x =
 let date_822 () =
   rfc822_of_float (Unix.gettimeofday ())
 
-let strip_trailing_slash s =
-  match String.length s with
-  |0 -> s
-  |n -> if s.[n-1] = '/' then String.sub s 0 (n-1) else s
-
-let strip_heading_slash s =
-  match String.length s with
-  |0 -> s
-  |n -> if s.[0] = '/' then String.sub s 1 (n-1) else s
-
 let list_assoc_all key pairs =
   snd (List.split (List.filter (fun (k, v) -> k = key) pairs))
-
-let warn msg  = prerr_endline (sprintf "ocaml-cohttp WARNING: %s" msg)
-let error msg = prerr_endline (sprintf "ocaml-cohttp ERROR:   %s" msg)

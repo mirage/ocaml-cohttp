@@ -293,7 +293,7 @@ module Trivial =
     let trivial_callback _ req =
       let path = Request.path req in
       if String.length path > 0 && path.[0] = '/' then
-        respond_file ~fname:(Misc.strip_heading_slash path) ()
+        respond_file ~fname:(String.sub path 1 (String.length path - 1)) ()
       else
         respond_error ~status:(`Code 400) ()
 
