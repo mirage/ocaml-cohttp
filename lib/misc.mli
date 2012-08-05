@@ -28,7 +28,3 @@ val date_822: unit -> string
 
 (** Convert a number of seconds to a date compliant with RFC 822 *)
 val rfc822_of_float : float -> string
-
-  (** like List.assoc but return all bindings of a given key instead of the
-  leftmost one only *)
-val list_assoc_all: 'a -> ('a * 'b) list -> 'b list

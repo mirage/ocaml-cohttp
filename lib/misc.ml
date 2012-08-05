@@ -39,6 +39,3 @@ let rfc822_of_float x =
 
 let date_822 () =
   rfc822_of_float (Unix.gettimeofday ())
-
-let list_assoc_all key pairs =
-  snd (List.split (List.filter (fun (k, v) -> k = key) pairs))
