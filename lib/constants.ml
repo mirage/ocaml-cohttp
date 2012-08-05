@@ -21,4 +21,3 @@
 
 let default_version = `HTTP_1_1
 let server_string = "MirageHttp"
-let crlf = "\r\n"

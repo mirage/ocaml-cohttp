@@ -23,5 +23,3 @@
 val default_version: Types.version
 
 val server_string: string
-
-val crlf: string
