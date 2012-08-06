@@ -60,14 +60,14 @@ module Fixed = struct
     let len = ref len in
     Lwt_stream.from (fun () ->
       match !len with
-      |0 ->
+      |0L ->
          return None
       |count -> begin
-         match_lwt Lwt_io.read ~count ic with 
+         match_lwt Lwt_io.read ~count:(Int64.to_int count) ic with 
          |"" ->
            return None
          |chunk ->
-           len := !len - (String.length chunk);
+           len := Int64.sub !len (Int64.of_int (String.length chunk));
            return (Some chunk)
       end
     )
@@ -94,8 +94,14 @@ end
 
 type encoding =
   | Chunked
-  | Fixed of int 
+  | Fixed of int64
   | Unknown
+
+let encoding_to_string =
+  function
+  | Chunked -> "chunked"
+  | Fixed i -> Printf.sprintf "fixed[%Ld]" i
+  | Unknown -> "unknown"
 
 let read =
   function

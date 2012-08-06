@@ -15,5 +15,6 @@
  *
  *)
 
-type encoding = Chunked | Fixed of int |Unknown
+type encoding = Chunked | Fixed of int64 |Unknown
 val read : encoding -> Lwt_io.input_channel -> string Lwt_stream.t
+val encoding_to_string : encoding -> string
