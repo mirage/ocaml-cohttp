@@ -1,16 +1,15 @@
 type request
-val init_request :
-  clisockaddr:Unix.sockaddr ->
-  srvsockaddr:Unix.sockaddr ->
-  unit Lwt.u -> Lwt_io.input_channel -> request Lwt.t
-val meth : request -> Types.meth
+
+val parse : IO.ic -> request option IO.M.t
+
+val meth : request -> Code.meth
 val uri : request -> Uri.t
+val version : request -> Code.version
+
 val path : request -> string
-val body : request -> Message.contents list
-val param :
-  ?meth:[< `GET | `POST ] -> ?default:string -> request -> string -> string
-val param_all : ?meth:Types.meth -> request -> string -> string list
-val params : request -> (string, string) Hashtbl.t
+
+val header : name:string -> request -> string list
+
 val params_get : request -> (string * string) list
 val params_post : request -> (string * string) list
-val header : request -> name:string -> string list
+val param : string -> request -> string option
