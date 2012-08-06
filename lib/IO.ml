@@ -30,7 +30,10 @@ end
 open Lwt
 
 let iter fn x = Lwt_list.iter_s fn x
-let read_line ic = Lwt_io.read_line ic
+
+let read_line ic =
+  try_lwt Lwt_io.read_line ic >>= fun x -> return (Some x)
+  with _ -> return None
 
 (* An inefficient relay function *)
 let relay ic oc =
@@ -41,3 +44,6 @@ let relay ic oc =
     |0 -> return ()
     |len -> Lwt_io.write_from_exactly oc buffer 0 len >>= aux
   in aux ()
+
+let ic_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.input buf
+let oc_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.output buf
