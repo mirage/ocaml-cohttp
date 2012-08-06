@@ -2,6 +2,7 @@
 (*
   OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
 
+  Copyright (C) <2011-2012> Anil Madhavapeddy <anil@recoil.org>
   Copyright (C) <2002-2005> Stefano Zacchiroli <zack@cs.unibo.it>
 
   This program is free software; you can redistribute it and/or modify
@@ -21,7 +22,7 @@
 
 (** HTTP messages parsing *)
 
-open Types;;
+open Code
 
   (** parse 1st line of an HTTP request
   @param inchan input channel from which parse request
@@ -30,29 +31,27 @@ open Types;;
   was specified
   @raise Malformed_request if request 1st linst isn't well formed
   @raise Malformed_request_URI if requested URI isn't well formed *)
-val parse_request_fst_line: Lwt_io.input_channel -> (meth * Uri.t * version) Lwt.t
+val parse_request_fst_line: IO.ic -> (meth * Uri.t * version) option IO.M.t
 
   (** parse 1st line of an HTTP response
    * @param inchan input channel from which parse response
    * @raise Malformed_response if first line isn't well formed
   *)
-val parse_response_fst_line: Lwt_io.input_channel -> (version * status) Lwt.t
+val parse_response_fst_line: IO.ic -> (version * status_code) option IO.M.t
 
   (** parse HTTP headers. Consumes also trailing CRLF at the end of header list
   @param inchan input channel from which parse headers
   @return a list of pairs header_name * header_value
   @raise Invalid_header if a not well formed header is encountered *)
-val parse_headers: Lwt_io.input_channel -> ((string * string) list) Lwt.t
+val parse_headers: IO.ic -> ((string * string) list) IO.M.t
 
   (** given an input channel, reads from it a GET HTTP request and
   @return a pair <path, query_params> where path is a string representing the
   requested path and query_params is a list of pairs <name, value> (the GET
   parameters) *)
-val parse_request: Lwt_io.input_channel -> (string * (string * string) list) Lwt.t
+val parse_request: IO.ic -> (string * (string * string) list) option IO.M.t
 
   (** parse content-range header in a request
   @return number of bytes to read, or None if all available should be read
   *)
 val parse_content_range: (string * string) list -> int option
-
-
