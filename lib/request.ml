@@ -23,10 +23,11 @@ type request = {
   headers: (string * string) list;
   meth: meth;
   uri: Uri.t;
-  get_params: (string * string) list;
-  post_params: (string * string) list;
+  get: (string * string) list;
+  post: (string * string) list;
   version: version;
   bodylen: int64;
+  encoding: Transfer.encoding;
 }
 
 let meth r = r.meth
@@ -48,33 +49,53 @@ let content_type headers =
   try List.assoc "content-type" headers
   with Not_found -> ""
 
-let params_get r = r.get_params
-let params_post r = r.post_params
-
+let params_get r = r.get
+let params_post r = r.post
 let param p r =
-  try Some (List.assoc p r.post_params) with
+  try Some (List.assoc p r.post) with
   Not_found ->
-    (try Some (List.assoc p r.get_params) with
+    (try Some (List.assoc p r.get) with
     Not_found -> None)
+
+(* Parse the transfer-encoding and content-length headers to
+ * determine how to decode a body *)
+let transfer_encoding headers =
+  let enc =
+    try Some (List.assoc "transfer-encoding" headers) 
+    with Not_found -> None
+  in
+  match enc with
+  |Some enc -> Transfer.Chunked
+  |None -> begin
+     try
+       let len = Int64.of_string (List.assoc "content-length" headers) in
+       Transfer.Fixed len
+     with Not_found ->
+       Transfer.Unknown
+  end
 
 open IO.M
 
 let parse ic =
   Parser.parse_request_fst_line ic >>=
-    function
-    |None -> return None
-    |Some (meth, uri, version) ->
-       Parser.parse_headers ic >>= fun headers ->
-       let ctype = content_type headers in
-       let bodylen = content_length headers in
-       let get_params = Uri.query uri in
-       match meth, ctype with
-       |`POST, "application/x-www-form-urlencoded" -> 
-         (* If the form is query-encoded, then extract those parameters also *)
-         IO.read (Int64.to_int bodylen) ic >>= fun query ->
-         let post_params = Uri.query_of_encoded query in
-         return (Some { ic; headers; meth; uri; version; bodylen; post_params; get_params })
-       |_ -> (* Parse content length and generate an iterator for the body *)
-         let post_params = [] in
-         return (Some { ic; headers; meth; uri; version; bodylen; post_params; get_params })
-
+  function
+  |None -> return None
+  |Some (meth, uri, version) ->
+    Parser.parse_headers ic >>= fun headers ->
+    let ctype = content_type headers in
+    let bodylen = content_length headers in
+    let get = Uri.query uri in
+    (match meth, ctype with
+      |`POST, "application/x-www-form-urlencoded" -> 
+        (* If the form is query-encoded, then extract those parameters also *)
+        IO.read (Int64.to_int bodylen) ic >>= fun query ->
+        let post = Uri.query_of_encoded query in
+        let encoding = Transfer.Fixed 0L in
+        return (post, encoding)
+      |`POST, _ ->
+        let post = [] in
+        let encoding = transfer_encoding headers in
+        return (post, encoding)
+      | _ -> return ([], (Transfer.Fixed 0L)) 
+    ) >>= fun (post, encoding) ->
+    return (Some { ic; headers; meth; uri; version; bodylen; post; get; encoding })
