@@ -35,6 +35,9 @@ let read_line ic =
   try_lwt Lwt_io.read_line ic >>= fun x -> return (Some x)
   with _ -> return None
 
+let read count ic =
+  Lwt_io.read ~count ic
+
 (* An inefficient relay function *)
 let relay ic oc =
   let bufsize = 4096 in (* blksz *)
