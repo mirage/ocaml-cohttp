@@ -1,14 +1,10 @@
 # OASIS_START
-# DO NOT EDIT (digest: 85639473e627c9dd803d5b1dfb91e0a2)
+# DO NOT EDIT (digest: 7646ba5e2eb1225d59b27da31a935d39)
 Base64
-Common
+Code
 Constants
-Cookie
-Misc
+Date
+IO
 Parser
 Request
-Response
-Types
-Message
-Transfer
 # OASIS_STOP
