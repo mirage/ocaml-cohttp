@@ -112,3 +112,12 @@ let parse_content_range headers =
     |None -> None
   end else None    
 
+let media_type_re =
+  (* Grab "foo/bar" from " foo/bar ; charset=UTF-8" *)
+  Re_str.regexp "[ \t]*\\([^ \t;]+\\)"
+
+let parse_media_type s =
+  if Re_str.string_match media_type_re s 0 then
+    Some (Re_str.matched_group 1 s)
+  else
+    None

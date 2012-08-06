@@ -55,3 +55,6 @@ val parse_request: IO.ic -> (string * (string * string) list) option IO.M.t
   @return number of bytes to read, or None if all available should be read
   *)
 val parse_content_range: (string * string) list -> int option
+
+  (** parse the media type portion of a header, e.g. foo/bar from "foo/bar ; charset=UTF-8" *)
+val parse_media_type: string -> string option
