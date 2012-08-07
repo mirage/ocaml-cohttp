@@ -12,9 +12,14 @@ Library cohttp
   Findlibname: cohttp
   Pack: true
   Modules: Base64, Code, Constants, Date, IO, Parser, Request
-# Parser, Request, Response, Types, Message, Transfer
-# Cookie (depends on Request)
   BuildDepends:	lwt.syntax, lwt, re, lwt.unix, uri
+
+Library cohttp_lwt
+  Path: lwt
+  Findlibname: lwt
+  FindlibParent: cohttp
+  BuildDepends: lwt.unix, lwt, uri, cohttp, lwt.ssl
+  Modules: Cohttp_lwt
 
 Document cohttp
   Title:                Cohttp docs
@@ -39,7 +44,7 @@ Executable test_parser
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp,oUnit (>= 1.0.2)
+  BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2)
 
 Test test_base64
   Run$:               flag(tests)

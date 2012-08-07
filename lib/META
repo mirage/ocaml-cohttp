@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 5489afcfa12a5a816aa120e907302208)
+# DO NOT EDIT (digest: 401a5a4a0c7b2f53c758670ff4d189f6)
 version = "0.9-dev"
 description = "HTTP protocol library for Lwt"
 requires = "lwt.syntax lwt re lwt.unix uri"
@@ -8,5 +8,15 @@ archive(byte, plugin) = "cohttp.cma"
 archive(native) = "cohttp.cmxa"
 archive(native, plugin) = "cohttp.cmxs"
 exists_if = "cohttp.cma"
+package "lwt" (
+ version = "0.9-dev"
+ description = "HTTP protocol library for Lwt"
+ requires = "lwt.unix lwt uri cohttp lwt.ssl"
+ archive(byte) = "cohttp_lwt.cma"
+ archive(byte, plugin) = "cohttp_lwt.cma"
+ archive(native) = "cohttp_lwt.cmxa"
+ archive(native, plugin) = "cohttp_lwt.cmxs"
+ exists_if = "cohttp_lwt.cma"
+)
 # OASIS_STOP
 
