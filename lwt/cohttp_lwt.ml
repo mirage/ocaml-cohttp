@@ -15,18 +15,28 @@
  *
  *)
 
-module type M = sig
-  type 'a t
-  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-  val return : 'a -> 'a t
+module IO = struct
 
-  type ic
-  type oc
-  type buf
+  type 'a t = 'a Lwt.t
+  let (>>=) = Lwt.bind
+  let return = Lwt.return
 
-  val iter : ('a -> unit t) -> 'a list -> unit t
-  val read_line : ic -> string option t
-  val read : int -> ic -> string t
-  val ic_of_buffer : buf -> ic
-  val oc_of_buffer : buf -> oc
+  type ic = Lwt_io.input_channel
+  type oc = Lwt_io.output_channel
+  type buf = Lwt_bytes.t
+
+  let iter fn x = Lwt_list.iter_s fn x
+
+  let read_line ic =
+    try_lwt Lwt_io.read_line ic >>= fun x -> return (Some x)
+    with _ -> return None
+
+  let read count ic =
+    Lwt_io.read ~count ic
+
+  let ic_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.input buf
+  let oc_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.output buf
 end
+
+module Parser = Parser.M(IO)
+module Request = Request.M(IO)
