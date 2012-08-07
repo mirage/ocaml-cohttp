@@ -83,10 +83,12 @@ another-footer: another-value
 
 let basic_res_plus_crlf = basic_res ^ "\r\n\r\n"
 
+module Cohttp = Cohttp_lwt
+
 let basic_req_parse () =
   let open Cohttp in
-  let open IO.M in
-  let ic = IO.ic_of_buffer (Lwt_bytes.of_string basic_req) in
+  let open IO in
+  let ic = ic_of_buffer (Lwt_bytes.of_string basic_req) in
   Parser.parse_request_fst_line ic >>=
   function
   |Some (meth, uri, ver) ->
@@ -98,8 +100,8 @@ let basic_req_parse () =
 
 let basic_res_parse res () =
   let open Cohttp in
-  let open IO.M in
-  let ic = IO.ic_of_buffer (Lwt_bytes.of_string res) in
+  let open IO in
+  let ic = ic_of_buffer (Lwt_bytes.of_string res) in
   Parser.parse_response_fst_line ic >>=
   function
   |Some (version, status) ->
@@ -116,8 +118,8 @@ let basic_res_parse res () =
 
 let req_parse () =
   let open Cohttp in
-  let open IO.M in
-  let ic = IO.ic_of_buffer (Lwt_bytes.of_string basic_req) in
+  let open IO in
+  let ic = ic_of_buffer (Lwt_bytes.of_string basic_req) in
   Request.parse ic >>= function
   |None -> assert false
   |Some req ->
@@ -128,8 +130,8 @@ let req_parse () =
 
 let post_form_parse () =
   let open Cohttp in
-  let open IO.M in
-  let ic = IO.ic_of_buffer (Lwt_bytes.of_string post_req) in
+  let open IO in
+  let ic = ic_of_buffer (Lwt_bytes.of_string post_req) in
   Request.parse ic >>= function
   |None -> assert false
   |Some req ->
@@ -140,8 +142,8 @@ let post_form_parse () =
 
 let post_data_parse () =
   let open Cohttp in
-  let open IO.M in
-  let ic = IO.ic_of_buffer (Lwt_bytes.of_string post_data_req) in
+  let open IO in
+  let ic = ic_of_buffer (Lwt_bytes.of_string post_data_req) in
   Request.parse ic >>= function
   |None -> assert false
   |Some req ->
@@ -151,8 +153,8 @@ let post_data_parse () =
 
 let post_chunked_parse () =
   let open Cohttp in
-  let open IO.M in
-  let ic = IO.ic_of_buffer (Lwt_bytes.of_string post_chunked_req) in
+  let open IO in
+  let ic = ic_of_buffer (Lwt_bytes.of_string post_chunked_req) in
   Request.parse ic >>= function
   |None -> assert false
   |Some req ->
