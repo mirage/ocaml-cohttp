@@ -20,6 +20,6 @@
 
 (** Constants *)
 
-val default_version: Types.version
+val default_version: Code.version
 
 val server_string: string
