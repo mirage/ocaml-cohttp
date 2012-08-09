@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 87329dbe496203a79f3cef34fd41374c)
+# DO NOT EDIT (digest: ff46ef47802ad2dd262441608919417b)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -17,7 +17,6 @@
 "lib/cohttp.cmxs": use_cohttp
 "lib/base64.cmx": for-pack(Cohttp)
 "lib/code.cmx": for-pack(Cohttp)
-"lib/constants.cmx": for-pack(Cohttp)
 "lib/date.cmx": for-pack(Cohttp)
 "lib/IO.cmx": for-pack(Cohttp)
 "lib/parser.cmx": for-pack(Cohttp)
