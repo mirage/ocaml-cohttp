@@ -26,7 +26,10 @@ module type M = sig
 
   val iter : ('a -> unit t) -> 'a list -> unit t
   val read_line : ic -> string option t
-  val read : int -> ic -> string t
+  val read : ic -> int -> string t
+  val read_exactly : ic -> string -> int -> int -> bool t
+  val write : oc -> string -> unit t
+  val write_line : oc -> string -> unit t
   val ic_of_buffer : buf -> ic
   val oc_of_buffer : buf -> oc
 end
