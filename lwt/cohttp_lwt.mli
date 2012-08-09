@@ -55,3 +55,11 @@ module Request : sig
   val body : request -> string option IO.t
   val transfer_encoding : request -> string
 end
+
+module Response : sig
+  type response
+  val parse : IO.ic -> response option IO.t
+  val version : response -> Code.version
+  val status : response -> Code.status_code
+  val body : response -> string option IO.t
+end

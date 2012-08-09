@@ -45,3 +45,4 @@ end
 
 module Parser = Parser.M(IO)
 module Request = Request.M(IO)
+module Response = Response.M(IO)
