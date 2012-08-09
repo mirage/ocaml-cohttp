@@ -15,24 +15,22 @@
  *
  *)
 
-module M : functor(IO:IO.M) -> sig
+module M(IO:IO.M) : sig
+  type request
 
-type request
+  val parse : IO.ic -> request option IO.t
 
-val parse : IO.ic -> request option IO.t
+  val meth : request -> Code.meth
+  val uri : request -> Uri.t
+  val version : request -> Code.version
 
-val meth : request -> Code.meth
-val uri : request -> Uri.t
-val version : request -> Code.version
+  val path : request -> string
+  val header : name:string -> request -> string list
 
-val path : request -> string
+  val params_get : request -> (string * string) list
+  val params_post : request -> (string * string) list
+  val param : string -> request -> string option
 
-val header : name:string -> request -> string list
-
-val params_get : request -> (string * string) list
-val params_post : request -> (string * string) list
-val param : string -> request -> string option
-
-val body : request -> string option IO.t
-val transfer_encoding : request -> string
+  val body : request -> string option IO.t
+  val transfer_encoding : request -> string
 end

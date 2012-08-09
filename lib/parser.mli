@@ -22,7 +22,7 @@
 
 (** HTTP messages parsing *)
 
-module M : functor (IO:IO.M) -> sig
+module M(IO:IO.M) : sig
 
   (** parse 1st line of an HTTP request
   @param inchan input channel from which parse request

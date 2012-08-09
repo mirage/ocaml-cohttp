@@ -15,7 +15,7 @@
  *
  *)
 
-module M : functor(IO:IO.M) -> sig
+module M(IO:IO.M) : sig
   type encoding = Chunked | Fixed of int64 |Unknown
   val read : encoding -> IO.ic -> string option IO.t
   val encoding_to_string : encoding -> string
