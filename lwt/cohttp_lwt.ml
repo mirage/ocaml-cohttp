@@ -27,12 +27,17 @@ module IO = struct
 
   let iter fn x = Lwt_list.iter_s fn x
 
-  let read_line ic =
-    try_lwt Lwt_io.read_line ic >>= fun x -> return (Some x)
-    with _ -> return None
+  let read_line ic = Lwt_io.read_line_opt ic
+  let read ic count = 
+   try_lwt Lwt_io.read ~count ic
+   with End_of_file -> return ""
 
-  let read count ic =
-    Lwt_io.read ~count ic
+  let read_exactly ic buf off len =
+    try_lwt Lwt_io.read_into_exactly ic buf off len >> return true
+    with End_of_file -> return false
+
+  let write oc buf = Lwt_io.write oc buf
+  let write_line oc buf = Lwt_io.write_line oc buf
 
   let ic_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.input buf
   let oc_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.output buf
