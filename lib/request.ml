@@ -60,23 +60,7 @@ module M (IO:IO.M) = struct
       (try Some (List.assoc p r.get) with
       Not_found -> None)
   
-  (* Parse the transfer-encoding and content-length headers to
-   * determine how to decode a body *)
-  let transfer_encoding headers =
-    let enc =
-      try Some (List.assoc "transfer-encoding" headers) 
-      with Not_found -> None
-    in
-    match enc with
-    |Some enc -> Transfer.Chunked
-    |None -> begin
-       try
-         let len = Int64.of_string (List.assoc "content-length" headers) in
-         Transfer.Fixed len
-       with Not_found ->
-         Transfer.Unknown
-    end
-  
+ 
   let parse ic =
     Parser.parse_request_fst_line ic >>=
     function
@@ -95,7 +79,7 @@ module M (IO:IO.M) = struct
           return (post, encoding)
         |`POST, _ ->
           let post = [] in
-          let encoding = transfer_encoding headers in
+          let encoding = Transfer.parse_transfer_encoding headers in
           return (post, encoding)
         | _ -> return ([], (Transfer.Fixed 0L)) 
       ) >>= fun (post, encoding) ->
