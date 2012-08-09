@@ -59,7 +59,8 @@ module M(IO:IO.M) = struct
   end
   
   module Unknown = struct
-    (* If we have no idea, then read one chunk and return it. *)
+    (* If we have no idea, then read one chunk and return it.
+     * TODO should this be a read with an explicit timeout? *)
     let read ic =
       read ic 16384 >>= fun buf -> return (Some buf)
   end
@@ -81,4 +82,4 @@ module M(IO:IO.M) = struct
     | Fixed len -> Fixed.read ~len
     | Unknown -> Unknown.read
   
-  end
+end
