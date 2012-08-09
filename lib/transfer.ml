@@ -15,96 +15,70 @@
  *
  *)
 
-open Lwt
+module M(IO:IO.M) = struct
+  open IO
 
-module Chunked = struct
-  let read ic =
-    Lwt_stream.from (fun () ->
+  module Chunked = struct
+    let read ic =
       (* Read chunk size *)
-      lwt chunk_size_hex = Lwt_io.read_line ic in
-      let chunk_size = 
-        try
-          Some (int_of_string ("0x" ^ chunk_size_hex))
-        with _ ->
-          None
-      in
-      match chunk_size with
-      |None ->
-         return None (* Malformd chunk, terminate stream *)
-      |Some 0 ->
-         return None
-      |Some count -> begin
-         let buf = String.create count in
-         lwt () = Lwt_io.read_into_exactly ic buf 0 count in
-         match_lwt Lwt_io.read_line ic with
-         |"" -> return (Some buf)
-         |x -> return None (* malformed chunk *)
+      read_line ic >>= function
+      |Some chunk_size_hex -> begin
+        let chunk_size = 
+          let hex =
+            (* chunk size is optionally delimited by ; *)
+            try String.sub chunk_size_hex 0 (String.rindex chunk_size_hex ';')
+            with _ -> chunk_size_hex in
+          try Some (int_of_string ("0x" ^ hex)) with _ -> None
+        in
+        match chunk_size with
+        |None | Some 0 -> return None
+        |Some count -> begin
+          read ic count >>= fun buf ->
+          read_line ic >>= fun trailer ->
+          match trailer with
+          |Some "" -> return (Some buf)
+          |_ -> return None (* TODO trailer headers *)
+        end
       end
-    )
-
-  (* TODO who closes the channel when this is done? *)
-  let writer oc =
-    let stream, stream_push = Lwt_stream.create () in
-    let stream_t = 
-      Lwt_stream.iter_s (fun chunk -> 
-        let len = String.length chunk in
-        lwt () = Lwt_io.fprintf oc "%x\r\n" len in
-        Lwt_io.write oc chunk
-      ) stream
-    in
-    stream_t, stream_push
-end
-
-module Fixed = struct
-  let read ~len ic =
-    let len = ref len in
-    Lwt_stream.from (fun () ->
-      match !len with
-      |0L ->
-         return None
-      |count -> begin
-         match_lwt Lwt_io.read ~count:(Int64.to_int count) ic with 
-         |"" ->
-           return None
-         |chunk ->
-           len := Int64.sub !len (Int64.of_int (String.length chunk));
-           return (Some chunk)
-      end
-    )
-end
-
-module Unknown = struct
-  (* If we have no idea, then read one chunk and return it.
-   * Arbitrary timeout in case it hangs for ages *)
-  let read ic =
-    let timeout = 10.0 in
-    Lwt_stream.from (fun () ->
-      let timeout_t =
-        lwt () = Lwt_unix.timeout timeout in
-        return None
-      in
-      let read_t =
-        match_lwt Lwt_io.read ic with
-        |"" -> return None
-        |buf -> return (Some buf)
-      in
-      read_t <?> timeout_t
-    )
-end
-
-type encoding =
-  | Chunked
-  | Fixed of int64
-  | Unknown
-
-let encoding_to_string =
-  function
-  | Chunked -> "chunked"
-  | Fixed i -> Printf.sprintf "fixed[%Ld]" i
-  | Unknown -> "unknown"
-
-let read =
-  function
-  | Chunked -> Chunked.read
-  | Fixed len -> Fixed.read ~len
-  | Unknown -> Unknown.read
+      |None -> return None
+  
+    let write oc buf =
+      let len = String.length buf in
+      write oc (Printf.sprintf "%x\r\n" len) >>= fun () ->
+      write oc buf
+  end
+  
+  module Fixed = struct
+    let read ~len ic =
+      (* TODO functorise string to a bigbuffer *)
+      let len = Int64.to_int len in
+      let buf = String.create len in
+      read_exactly ic buf 0 len >>= function
+      |false -> return None
+      |true -> return (Some buf)   
+  end
+  
+  module Unknown = struct
+    (* If we have no idea, then read one chunk and return it. *)
+    let read ic =
+      read ic 16384 >>= fun buf -> return (Some buf)
+  end
+  
+  type encoding =
+    | Chunked
+    | Fixed of int64
+    | Unknown
+  
+  let encoding_to_string =
+    function
+    | Chunked -> "chunked"
+    | Fixed i -> Printf.sprintf "fixed[%Ld]" i
+    | Unknown -> "unknown"
+  
+  let read =
+    function
+    | Chunked -> Chunked.read
+    | Fixed len -> Fixed.read ~len
+    | Unknown -> Unknown.read
+  
+  end

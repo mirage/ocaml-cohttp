@@ -15,6 +15,8 @@
  *
  *)
 
-type encoding = Chunked | Fixed of int64 |Unknown
-val read : encoding -> Lwt_io.input_channel -> string Lwt_stream.t
-val encoding_to_string : encoding -> string
+module M : functor(IO:IO.M) -> sig
+  type encoding = Chunked | Fixed of int64 |Unknown
+  val read : encoding -> IO.ic -> string option IO.t
+  val encoding_to_string : encoding -> string
+end

@@ -18,6 +18,7 @@
 module M (IO:IO.M) = struct
 
   module Parser = Parser.M(IO)
+  module Transfer = Transfer.M(IO)
   open IO
 
   type request = { 
@@ -88,7 +89,7 @@ module M (IO:IO.M) = struct
       (match meth, ctype with
         |`POST, "application/x-www-form-urlencoded" -> 
           (* If the form is query-encoded, then extract those parameters also *)
-          IO.read (Int64.to_int bodylen) ic >>= fun query ->
+          IO.read ic (Int64.to_int bodylen) >>= fun query ->
           let post = Uri.query_of_encoded query in
           let encoding = Transfer.Fixed 0L in
           return (post, encoding)
@@ -99,4 +100,8 @@ module M (IO:IO.M) = struct
         | _ -> return ([], (Transfer.Fixed 0L)) 
       ) >>= fun (post, encoding) ->
       return (Some { ic; headers; meth; uri; version; bodylen; post; get; encoding })
+
+  let body req = Transfer.read req.encoding req.ic
+
+  let transfer_encoding req = Transfer.encoding_to_string req.encoding
 end
