@@ -32,6 +32,19 @@ Content-Length: 0
 Connection: close
 Content-Type: text/html; charset=UTF-8"
 
+let basic_res_content =
+"HTTP/1.1 200 OK
+Date: Mon, 23 May 2005 22:38:34 GMT
+Server: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)
+Last-Modified: Wed, 08 Jan 2003 23:11:55 GMT
+Etag: \"3f80f-1b6-3e1cb03b\"
+Accept-Ranges:  none
+Content-Length: 32
+Connection: close
+Content-Type: text/html; charset=UTF-8
+
+home=Cosby&favorite+flavor=flies"
+
 let post_req =
 "POST /path/script.cgi HTTP/1.0
 From: frog@jmarshall.com
@@ -170,9 +183,38 @@ let post_chunked_parse () =
     assert_equal chunk (Some "1234567890abcdef");
     return ()
 
+let res_content_parse () =
+  let open Cohttp in
+  let open IO in
+  let ic = ic_of_buffer (Lwt_bytes.of_string basic_res_content) in
+  Response.parse ic >>= function
+  |None -> assert false
+  |Some res ->
+     assert_equal `HTTP_1_1 (Response.version res);
+     assert_equal `OK (Response.status res);
+     Response.body res >>= fun body ->
+     assert_equal (Some "home=Cosby&favorite+flavor=flies") body;
+     return ()
+
+ let res_chunked_parse () =
+  let open Cohttp in
+  let open IO in
+  let ic = ic_of_buffer (Lwt_bytes.of_string chunked_res) in
+  Response.parse ic >>= function
+  |None -> assert false
+  |Some res ->
+     assert_equal `HTTP_1_1 (Response.version res);
+     assert_equal `OK (Response.status res);
+     Response.body res >>= fun chunk ->
+     assert_equal chunk (Some "abcdefghijklmnopqrstuvwxyz");
+     Response.body res >>= fun chunk ->
+     assert_equal chunk (Some "1234567890abcdef");
+     return ()
+  
 let test_cases =
   let tests = [ basic_req_parse; req_parse; post_form_parse; post_data_parse; 
-    post_chunked_parse; (basic_res_parse basic_res); (basic_res_parse basic_res_plus_crlf) ] in
+    post_chunked_parse; (basic_res_parse basic_res); (basic_res_parse basic_res_plus_crlf);
+    res_content_parse ] in
   List.map (fun x -> "test" >:: (fun () -> Lwt_unix.run (x ()))) tests
 
 (* Returns true if the result list contains successes only.
