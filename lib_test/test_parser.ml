@@ -138,6 +138,8 @@ let post_form_parse () =
     assert_equal (Some "Cosby") (Request.param "home" req);
     assert_equal (Some "flies") (Request.param "favorite flavor" req);
     assert_equal None (Request.param "nonexistent" req);
+    (* multiple requests should still work *)
+    assert_equal (Some "Cosby") (Request.param "home" req);
     return ()
 
 let post_data_parse () =
@@ -147,8 +149,11 @@ let post_data_parse () =
   Request.parse ic >>= function
   |None -> assert false
   |Some req ->
-    let data = () in (* TODO 
-    assert_equal data "home=Cosby&favorite+flavor=flies"; *)
+    Request.body req >>= fun body ->
+    assert_equal (Some "home=Cosby&favorite+flavor=flies") body;
+    (* A subsequent request for the body will have consumed it, therefore None *)
+    Request.body req >>= fun body ->
+    assert_equal None body;
     return ()
 
 let post_chunked_parse () =
@@ -158,7 +163,11 @@ let post_chunked_parse () =
   Request.parse ic >>= function
   |None -> assert false
   |Some req ->
-    let data = () in (* TODO *)
+    assert_equal (Request.transfer_encoding req) "chunked";
+    Request.body req >>= fun chunk ->
+    assert_equal chunk (Some "abcdefghijklmnopqrstuvwxyz");
+    Request.body req >>= fun chunk ->
+    assert_equal chunk (Some "1234567890abcdef");
     return ()
 
 let test_cases =
