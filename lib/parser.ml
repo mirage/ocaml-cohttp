@@ -21,7 +21,6 @@
 
 open Printf
 open Code
-open Constants
 
 module M (IO:IO.M) = struct
   open IO
