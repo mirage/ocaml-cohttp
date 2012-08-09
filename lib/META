@@ -1,8 +1,8 @@
 # OASIS_START
-# DO NOT EDIT (digest: 401a5a4a0c7b2f53c758670ff4d189f6)
+# DO NOT EDIT (digest: 85e676d95ae8b1109e5c62b870f70927)
 version = "0.9-dev"
 description = "HTTP protocol library for Lwt"
-requires = "lwt.syntax lwt re lwt.unix uri"
+requires = "re lwt.unix uri"
 archive(byte) = "cohttp.cma"
 archive(byte, plugin) = "cohttp.cma"
 archive(native) = "cohttp.cmxa"
