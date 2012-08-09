@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 7646ba5e2eb1225d59b27da31a935d39)
+# DO NOT EDIT (digest: 3971ef950f09cc6cb479e3706c7dada8)
 Base64
 Code
 Constants
@@ -7,4 +7,5 @@ Date
 IO
 Parser
 Request
+Transfer
 # OASIS_STOP
