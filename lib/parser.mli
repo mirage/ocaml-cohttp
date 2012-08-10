@@ -43,18 +43,12 @@ module M(IO:IO.M) : sig
   @param inchan input channel from which parse headers
   @return a list of pairs header_name * header_value
   @raise Invalid_header if a not well formed header is encountered *)
-  val parse_headers: IO.ic -> ((string * string) list) IO.t
-
-  (** given an input channel, reads from it a GET HTTP request and
-  @return a pair <path, query_params> where path is a string representing the
-  requested path and query_params is a list of pairs <name, value> (the GET
-  parameters) *)
-  val parse_request: IO.ic -> (string * (string * string) list) option IO.t
+  val parse_headers: IO.ic -> Header.t IO.t
 
   (** parse content-range header in a request
   @return number of bytes to read, or None if all available should be read
   *)
-  val parse_content_range: (string * string) list -> int option
+  val parse_content_range: Header.t -> int option
 
   (** parse the media type portion of a header, e.g. foo/bar from "foo/bar ; charset=UTF-8" *)
   val parse_media_type: string -> string option

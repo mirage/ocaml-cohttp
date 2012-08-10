@@ -60,26 +60,19 @@ module M (IO:IO.M) = struct
   
   let parse_headers ic =
     (* consume also trailing "^\r\n$" line *)
-    let rec parse_headers' headers =
+    let headers = Header.init () in
+    let rec parse_headers' () =
       read_line ic >>= function
-      |Some "" | None -> return (List.rev headers)
+      |Some "" | None -> return headers
       |Some line -> begin
           match Re_str.bounded_split_delim header_sep line 2 with
           | [hd;tl] -> 
               let header = String.lowercase hd in
-              parse_headers' ((header,tl) :: headers)
-          | _ -> return (List.rev headers)
+              Header.add headers header tl;
+              parse_headers' ()
+          | _ -> return headers
       end
-    in parse_headers' []
-  
-  let parse_request ic =
-    parse_request_fst_line ic >>= 
-      function
-      |None -> return None
-      |Some (meth, uri, version) ->
-         let path = match Uri.path uri with "" -> "/" | p -> p in
-         let query_get_params = Uri.query uri in
-         return (Some (path, query_get_params))
+    in parse_headers' ()
   
   let parse_content_range s =
     try
@@ -92,23 +85,22 @@ module M (IO:IO.M) = struct
      number of bytes we attempt to read *)
   let parse_content_range headers = 
     (* assuming header keys were downcased in previous step *)
-    if List.mem_assoc "content-length" headers then begin
-      try 
-        let str = List.assoc "content-length" headers in
-        Some (int_of_string str)
-      with _ ->
-        None
-    end else if List.mem_assoc "content-range" headers then begin
-      let range_s = List.assoc "content-range" headers in
-      match parse_content_range range_s with
-      |Some (start, fini, total) ->
-        (* some sanity checking before we act on these values *)
-        if fini < total && start <= total && 0 <= start && 0 <= total then (
-          let num_bytes_to_read = fini - start + 1 in
-          Some num_bytes_to_read
-        ) else None
-      |None -> None
-    end else None    
+    match Header.get headers "content-length" with
+    |clen::_ -> (try Some (int_of_string clen) with _ -> None)
+    |_ -> begin
+      match Header.get headers "content-range" with
+      |range_s::_ -> begin
+        match parse_content_range range_s with
+        |Some (start, fini, total) ->
+          (* some sanity checking before we act on these values *)
+          if fini < total && start <= total && 0 <= start && 0 <= total then (
+            let num_bytes_to_read = fini - start + 1 in
+            Some num_bytes_to_read
+          ) else None
+        |None -> None
+      end
+      |_ -> None
+   end
   
   let media_type_re =
     (* Grab "foo/bar" from " foo/bar ; charset=UTF-8" *)
