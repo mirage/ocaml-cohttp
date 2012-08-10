@@ -35,25 +35,26 @@ end
 module Parser : sig
   val parse_request_fst_line : IO.ic -> (Code.meth * Uri.t * Code.version) option IO.t
   val parse_response_fst_line : IO.ic -> (Code.version * Code.status_code) option IO.t
-  val parse_headers : IO.ic -> (string * string) list IO.t
-  val parse_request : IO.ic -> (string * (string * string) list) option IO.t
-  val parse_content_range : (string * string) list -> int option
+  val parse_headers : IO.ic -> Header.t IO.t
+  val parse_content_range : Header.t -> int option
   val parse_media_type : string -> string option
 end
 
 module Request : sig
   type request
   val parse : IO.ic -> request option IO.t
+  val body : request -> IO.ic -> string option IO.t
   val meth : request -> Code.meth
   val uri : request -> Uri.t
   val version : request -> Code.version
   val path : request -> string
-  val header : name:string -> request -> string list
-  val params_get : request -> (string * string) list
-  val params_post : request -> (string * string) list
-  val param : string -> request -> string option
-  val body : request -> string option IO.t
+  val header : request -> string -> string list
+  val params_get : request -> Header.t
+  val params_post : request -> Header.t
+  val param : request -> string -> string list
   val transfer_encoding : request -> string
+
+  val make : ?meth:Code.meth -> ?version:Code.version -> ?headers:((string * string) list) -> Uri.t -> (IO.oc -> unit IO.t) -> IO.oc -> unit IO.t
 end
 
 module Response : sig
