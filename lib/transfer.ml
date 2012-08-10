@@ -85,16 +85,11 @@ module M(IO:IO.M) = struct
    (* Parse the transfer-encoding and content-length headers to
    * determine how to decode a body *)
   let parse_transfer_encoding headers =
-    let enc =
-      try Some (List.assoc "transfer-encoding" headers) 
-      with Not_found -> None
-    in
-    match enc with
-    |Some enc -> Chunked
-    |None -> begin
-       try
-         let len = Int64.of_string (List.assoc "content-length" headers) in
-         Fixed len with Not_found -> Unknown
+    match Header.get headers "transfer-encoding" with
+    |"chunked"::_ -> Chunked
+    |_ -> begin
+      match Header.get headers "content-length" with
+      |len::_ -> (try Fixed (Int64.of_string len) with _ -> Unknown)
+      |[] -> Unknown
     end
-  
 end
