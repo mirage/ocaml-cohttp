@@ -24,7 +24,7 @@ module M (IO:IO.M) = struct
   type response = {
     ic: ic;
     encoding: Transfer.encoding;
-    headers: (string * string) list;
+    headers: Header.t;
     version: Code.version;
     status: Code.status_code;
   }
