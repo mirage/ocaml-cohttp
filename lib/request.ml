@@ -22,45 +22,39 @@ module M (IO:IO.M) = struct
   open IO
 
   type request = { 
-    ic: ic;
-    headers: (string * string) list;
+    headers: Header.t;
     meth: Code.meth;
     uri: Uri.t;
-    get: (string * string) list;
-    post: (string * string) list;
+    get: Header.t;
+    post: Header.t;
     version: Code.version;
-    bodylen: int64;
     encoding: Transfer.encoding;
   }
   
   let meth r = r.meth
   let uri r = r.uri
   let version r = r.version
-  
   let path r = Uri.path r.uri
   
-  (* TODO repeated headers handled correctly *)
-  let header ~name r =
-    try [ List.assoc name r.headers ]
-    with Not_found -> []
+  let header req h = Header.get req.get h
   
-  let content_length headers = 
-    try Int64.of_string (List.assoc "content-length" headers)
-    with Not_found -> 0L
+  let content_length headers =
+    match Header.get headers "content-length" with
+    |hd::tl -> (try Int64.of_string hd with _ -> 0L)
+    |[] -> 0L
   
   let content_type headers =
-    try List.assoc "content-type" headers
-    with Not_found -> ""
+    match Header.get headers "content-type" with
+    |hd::tl -> hd
+    |[] -> ""
   
   let params_get r = r.get
   let params_post r = r.post
-  let param p r =
-    try Some (List.assoc p r.post) with
-    Not_found ->
-      (try Some (List.assoc p r.get) with
-      Not_found -> None)
-  
- 
+  let param r p = (Header.get r.post p) @ (Header.get r.get p)
+
+  let body req ic = Transfer.read req.encoding ic
+  let transfer_encoding req = Transfer.encoding_to_string req.encoding
+
   let parse ic =
     Parser.parse_request_fst_line ic >>=
     function
@@ -68,24 +62,52 @@ module M (IO:IO.M) = struct
     |Some (meth, uri, version) ->
       Parser.parse_headers ic >>= fun headers ->
       let ctype = content_type headers in
-      let bodylen = content_length headers in
-      let get = Uri.query uri in
+      let get = Header.of_list (Uri.query uri) in
       (match meth, ctype with
         |`POST, "application/x-www-form-urlencoded" -> 
           (* If the form is query-encoded, then extract those parameters also *)
+          let bodylen = content_length headers in
           IO.read ic (Int64.to_int bodylen) >>= fun query ->
-          let post = Uri.query_of_encoded query in
+          let post = Header.of_list (Uri.query_of_encoded query) in
           let encoding = Transfer.Fixed 0L in
           return (post, encoding)
         |`POST, _ ->
-          let post = [] in
+          let post = Header.init () in
           let encoding = Transfer.parse_transfer_encoding headers in
           return (post, encoding)
-        | _ -> return ([], (Transfer.Fixed 0L)) 
+        | _ -> return ((Header.init ()), (Transfer.Fixed 0L)) 
       ) >>= fun (post, encoding) ->
-      return (Some { ic; headers; meth; uri; version; bodylen; post; get; encoding })
+      return (Some { headers; meth; uri; version; post; get; encoding })
 
-  let body req = Transfer.read req.encoding req.ic
+(* XXX should this be here? *)
+(* Path+Query string *)
+let path_of_uri uri = 
+  match (Uri.path uri), (Uri.query uri) with
+  |"", [] -> "/"
+  |"", q -> Printf.sprintf "/?%s" (Uri.encoded_of_query q)
+  |p, [] -> p
+  |p, q -> Printf.sprintf "%s?%s" p (Uri.encoded_of_query q)
 
-  let transfer_encoding req = Transfer.encoding_to_string req.encoding
+let host_of_uri uri = 
+  match Uri.host uri with
+  |None -> "localhost"
+  |Some h -> h
+
+let port_of_uri uri =
+  match Uri.port uri with
+  |None -> begin
+     match Uri.scheme uri with 
+     |Some "https" -> 443 (* TODO: actually support https *)
+     |Some "http" | Some _ |None -> 80
+  end
+  |Some p -> p
+
+  let make ?(meth=`GET) ?(version=`HTTP_1_1) ?(headers=[]) uri body oc =
+    let fst_line = Printf.sprintf "%s %s %s\r\n" (Code.string_of_method meth)
+      (path_of_uri uri) (Code.string_of_version version) in
+    let headers = ("host", (host_of_uri uri)) :: headers in
+    IO.write oc fst_line >>= fun () ->
+    iter (fun (k,v) -> IO.write oc (Printf.sprintf "%s: %s\r\n" k v)) headers >>= fun () ->
+    IO.write oc "\r\n" >>= fun () ->
+    body oc 
 end

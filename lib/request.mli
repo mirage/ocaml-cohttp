@@ -25,12 +25,16 @@ module M(IO:IO.M) : sig
   val version : request -> Code.version
 
   val path : request -> string
-  val header : name:string -> request -> string list
+  val header : request -> string -> string list
 
-  val params_get : request -> (string * string) list
-  val params_post : request -> (string * string) list
-  val param : string -> request -> string option
+  val params_get : request -> Header.t
+  val params_post : request -> Header.t
+  val param : request -> string -> string list
 
-  val body : request -> string option IO.t
+  val body : request -> IO.ic -> string option IO.t
   val transfer_encoding : request -> string
+
+  val make : ?meth:Code.meth -> ?version:Code.version -> 
+    ?headers:((string * string) list) -> Uri.t -> 
+    (IO.oc -> unit IO.t) -> IO.oc -> unit IO.t
 end
