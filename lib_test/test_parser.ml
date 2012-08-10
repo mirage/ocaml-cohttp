@@ -123,9 +123,9 @@ let basic_res_parse res () =
      assert_equal status `OK;
      (* Now parse the headers *)
      Parser.parse_headers ic >>= fun headers ->
-     assert_equal (List.assoc "connection" headers) "close";
-     assert_equal (List.assoc "accept-ranges" headers) "none";
-     assert_equal (List.assoc "content-type" headers) "text/html; charset=UTF-8";
+     assert_equal (Header.get headers "connection") ["close"];
+     assert_equal (Header.get headers "accept-ranges") ["none"];
+     assert_equal (Header.get headers "content-type") ["text/html; charset=UTF-8"];
      return ()
   |None -> assert false
 
@@ -148,11 +148,11 @@ let post_form_parse () =
   Request.parse ic >>= function
   |None -> assert false
   |Some req ->
-    assert_equal (Some "Cosby") (Request.param "home" req);
-    assert_equal (Some "flies") (Request.param "favorite flavor" req);
-    assert_equal None (Request.param "nonexistent" req);
+    assert_equal ["Cosby"] (Request.param req "home");
+    assert_equal ["flies"] (Request.param req "favorite flavor");
+    assert_equal [] (Request.param req "nonexistent");
     (* multiple requests should still work *)
-    assert_equal (Some "Cosby") (Request.param "home" req);
+    assert_equal ["Cosby"] (Request.param req "home");
     return ()
 
 let post_data_parse () =
@@ -162,10 +162,10 @@ let post_data_parse () =
   Request.parse ic >>= function
   |None -> assert false
   |Some req ->
-    Request.body req >>= fun body ->
+    Request.body req ic >>= fun body ->
     assert_equal (Some "home=Cosby&favorite+flavor=flies") body;
     (* A subsequent request for the body will have consumed it, therefore None *)
-    Request.body req >>= fun body ->
+    Request.body req ic >>= fun body ->
     assert_equal None body;
     return ()
 
@@ -177,9 +177,9 @@ let post_chunked_parse () =
   |None -> assert false
   |Some req ->
     assert_equal (Request.transfer_encoding req) "chunked";
-    Request.body req >>= fun chunk ->
+    Request.body req ic >>= fun chunk ->
     assert_equal chunk (Some "abcdefghijklmnopqrstuvwxyz");
-    Request.body req >>= fun chunk ->
+    Request.body req ic >>= fun chunk ->
     assert_equal chunk (Some "1234567890abcdef");
     return ()
 
@@ -196,7 +196,7 @@ let res_content_parse () =
      assert_equal (Some "home=Cosby&favorite+flavor=flies") body;
      return ()
 
- let res_chunked_parse () =
+let res_chunked_parse () =
   let open Cohttp in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string chunked_res) in
@@ -210,11 +210,20 @@ let res_content_parse () =
      Response.body res >>= fun chunk ->
      assert_equal chunk (Some "1234567890abcdef");
      return ()
-  
+
+let make_simple_req () =
+  let open Cohttp in
+  let open IO in
+  let buf = Lwt_bytes.create 4096 in
+  let oc = oc_of_buffer buf in
+  Request.make (Uri.of_string "/foo/bar") (fun oc -> IO.write oc "hello") oc >>= fun () ->
+  Printf.eprintf "%s\n%!" (Lwt_bytes.to_string buf); (* TODO assert *)
+  return ()
+
 let test_cases =
   let tests = [ basic_req_parse; req_parse; post_form_parse; post_data_parse; 
     post_chunked_parse; (basic_res_parse basic_res); (basic_res_parse basic_res_plus_crlf);
-    res_content_parse ] in
+    res_content_parse; make_simple_req ] in
   List.map (fun x -> "test" >:: (fun () -> Lwt_unix.run (x ()))) tests
 
 (* Returns true if the result list contains successes only.
