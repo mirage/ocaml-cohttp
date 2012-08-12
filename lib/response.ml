@@ -67,5 +67,4 @@ module M (IO:IO.M) = struct
     write_header req oc >>= fun () ->
     fn req oc >>= fun () ->
     write_footer req oc
-
 end

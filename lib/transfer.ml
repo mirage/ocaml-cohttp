@@ -19,7 +19,12 @@ type encoding =
 | Chunked
 | Fixed of int64
 | Unknown
-  
+
+type chunk =
+| Chunk of string
+| Final_chunk of string
+| Done
+
 let encoding_to_string =
   function
   | Chunked -> "chunked"
@@ -62,16 +67,14 @@ module M(IO:IO.M) = struct
           try Some (int_of_string ("0x" ^ hex)) with _ -> None
         in
         match chunk_size with
-        |None | Some 0 -> return None
+        |None | Some 0 -> return Done
         |Some count -> begin
           read ic count >>= fun buf ->
-          read_line ic >>= fun trailer ->
-          match trailer with
-          |Some "" -> return (Some buf)
-          |_ -> return None (* TODO trailer headers *)
+          read_line ic >>= fun _ -> (* Junk the CRLF at end of chunk *)
+          return (Chunk buf)
         end
       end
-      |None -> return None
+      |None -> return Done
  
     let write oc buf =
       let len = String.length buf in
@@ -86,8 +89,8 @@ module M(IO:IO.M) = struct
       let len = Int64.to_int len in
       let buf = String.create len in
       read_exactly ic buf 0 len >>= function
-      |false -> return None
-      |true -> return (Some buf)   
+      |false -> return Done
+      |true -> return (Final_chunk buf)
 
     (* TODO enforce that the correct length is written? *)
     let write oc buf =
@@ -98,7 +101,7 @@ module M(IO:IO.M) = struct
     (* If we have no idea, then read one chunk and return it.
      * TODO should this be a read with an explicit timeout? *)
     let read ic =
-      read ic 16384 >>= fun buf -> return (Some buf)
+      read ic 16384 >>= fun buf -> return (Final_chunk buf)
 
     let write oc buf =
       write oc buf

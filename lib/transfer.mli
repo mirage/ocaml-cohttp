@@ -16,11 +16,13 @@
  *)
 
 type encoding = Chunked | Fixed of int64 | Unknown
+type chunk = Chunk of string | Final_chunk of string | Done
+
 val encoding_to_string : encoding -> string
 val parse_transfer_encoding : Header.t -> encoding
 val add_encoding_headers : Header.t -> encoding -> Header.t
 
 module M(IO:IO.M) : sig
-  val read : encoding -> IO.ic -> string option IO.t
+  val read : encoding -> IO.ic -> chunk IO.t
   val write : encoding -> IO.oc -> string -> unit IO.t 
 end
