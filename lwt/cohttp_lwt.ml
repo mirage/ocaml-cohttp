@@ -137,15 +137,27 @@ let call ?headers ?body meth uri =
     |None -> Transfer.Fixed 0L 
     |Some _ -> Transfer.Chunked in
   let req = Request.make ~meth ~encoding headers uri in
-  connect uri
+  let mvar = Lwt_mvar.create_empty () in
+  let _ = connect uri
     (fun (ic, oc) ->
-       let bodyfn =
-         match body with
+      lwt () = Request.write
+        (match body with
          |None -> (fun _ _ -> return ())
-         |Some body -> body in
-       lwt () = Request.write bodyfn req oc in
-       match_lwt Response.read ic with
-       |None -> Printf.eprintf "no response\n%!"; return ()
-       |Some res ->
-         Response.write (fun _ _ -> return ()) res Lwt_io.stderr
-    )
+         |Some bs ->
+           (fun req oc ->
+             Lwt_stream.iter_s (fun b -> Request.write_body b req oc) bs)
+        ) req oc in
+      match_lwt Response.read ic with
+      |None ->
+        Lwt_mvar.put mvar None
+      |Some res ->
+        let body, push_body = Lwt_stream.create () in
+        let rec push_t () =
+          match_lwt Response.read_body res ic with
+          |Transfer.Done -> push_body None; return ()
+          |Transfer.Final_chunk buf -> push_body (Some buf); push_body None; return ()
+          |Transfer.Chunk buf -> push_body (Some buf); push_t ()
+        in
+        Lwt_mvar.put mvar (Some (res, body)) >>= push_t
+    ) in
+  Lwt_mvar.take mvar

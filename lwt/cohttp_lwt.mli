@@ -27,7 +27,7 @@ module Parser : sig
 end
 
 module Body : sig
-  val read : Transfer.encoding -> Lwt_io.input_channel -> string option Lwt.t
+  val read : Transfer.encoding -> Lwt_io.input_channel -> Transfer.chunk Lwt.t
   val write : Transfer.encoding -> Lwt_io.output_channel -> string -> unit Lwt.t
 end
 
@@ -47,7 +47,7 @@ module Request : sig
     ?encoding:Transfer.encoding -> Header.t -> Uri.t -> request
 
   val read : Lwt_io.input_channel -> request option Lwt.t
-  val read_body : request -> Lwt_io.input_channel -> string option Lwt.t
+  val read_body : request -> Lwt_io.input_channel -> Transfer.chunk Lwt.t
 
   val write_header : request -> Lwt_io.output_channel -> unit Lwt.t
   val write_body : string -> request -> Lwt_io.output_channel -> unit Lwt.t
@@ -64,7 +64,7 @@ module Response : sig
     ?encoding:Transfer.encoding -> Header.t -> response
 
   val read : Lwt_io.input_channel -> response option Lwt.t
-  val read_body : response -> Lwt_io.input_channel -> string option Lwt.t
+  val read_body : response -> Lwt_io.input_channel -> Transfer.chunk Lwt.t
 
   val write_header : response -> Lwt_io.output_channel -> unit Lwt.t
   val write_body : string -> response -> Lwt_io.output_channel -> unit Lwt.t
@@ -72,8 +72,5 @@ module Response : sig
   val write : (response -> Lwt_io.output_channel -> unit Lwt.t) -> response -> Lwt_io.output_channel -> unit Lwt.t
 end
 
-val call :
-  ?headers:Header.t ->
-  ?body:(Request.request -> Lwt_io.output_channel -> unit Lwt.t) ->
-  Code.meth -> Uri.t -> unit Lwt.t
+val call : ?headers:Header.t -> ?body:string Lwt_stream.t -> Code.meth -> Uri.t -> (Response.response * string Lwt_stream.t) option Lwt.t
 
