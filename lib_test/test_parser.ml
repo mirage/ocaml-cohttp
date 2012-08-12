@@ -96,10 +96,10 @@ another-footer: another-value
 
 let basic_res_plus_crlf = basic_res ^ "\r\n\r\n"
 
-module Cohttp = Cohttp_lwt
+open Lwt
 
 let basic_req_parse () =
-  let open Cohttp in
+  let open Cohttp_lwt in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_req) in
   Parser.parse_request_fst_line ic >>=
@@ -112,7 +112,7 @@ let basic_req_parse () =
   |None -> assert false
 
 let basic_res_parse res () =
-  let open Cohttp in
+  let open Cohttp_lwt in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string res) in
   Parser.parse_response_fst_line ic >>=
@@ -130,7 +130,7 @@ let basic_res_parse res () =
   |None -> assert false
 
 let req_parse () =
-  let open Cohttp in
+  let open Cohttp_lwt in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_req) in
   Request.read ic >>= function
@@ -142,7 +142,7 @@ let req_parse () =
     return ()
 
 let post_form_parse () =
-  let open Cohttp in
+  let open Cohttp_lwt in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_req) in
   Request.read ic >>= function
@@ -156,7 +156,7 @@ let post_form_parse () =
     return ()
 
 let post_data_parse () =
-  let open Cohttp in
+  let open Cohttp_lwt in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_data_req) in
   Request.read ic >>= function
@@ -170,7 +170,7 @@ let post_data_parse () =
     return ()
 
 let post_chunked_parse () =
-  let open Cohttp in
+  let open Cohttp_lwt in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_chunked_req) in
   Request.read ic >>= function
@@ -184,7 +184,7 @@ let post_chunked_parse () =
     return ()
 
 let res_content_parse () =
-  let open Cohttp in
+  let open Cohttp_lwt in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_res_content) in
   Response.read ic >>= function
@@ -197,7 +197,7 @@ let res_content_parse () =
      return ()
 
 let res_chunked_parse () =
-  let open Cohttp in
+  let open Cohttp_lwt in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string chunked_res) in
   Response.read ic >>= function
@@ -219,7 +219,7 @@ let get_substring oc buf =
   b
  
 let make_simple_req () =
-  let open Cohttp in
+  let open Cohttp_lwt in
   let open IO in
   let expected = "GET /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
   (* Use the low-level write_header/footer API *)
@@ -239,7 +239,7 @@ let make_simple_req () =
   return ()
 
 let make_simple_res () =
-  let open Cohttp in
+  let open Cohttp_lwt in
   let open IO in
   let expected = "HTTP/1.1 200 OK\r\nfoo: bar\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
   (* Use the low-level write_header/footer API *)
@@ -261,7 +261,8 @@ let make_simple_res () =
 let test_cases =
   let tests = [ basic_req_parse; req_parse; post_form_parse; post_data_parse; 
     post_chunked_parse; (basic_res_parse basic_res); (basic_res_parse basic_res_plus_crlf);
-    res_content_parse; make_simple_req; make_simple_res ] in
+    res_content_parse; make_simple_req; make_simple_res;
+  ] in
   List.map (fun x -> "test" >:: (fun () -> Lwt_unix.run (x ()))) tests
 
 (* Returns true if the result list contains successes only.
