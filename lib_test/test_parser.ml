@@ -102,12 +102,12 @@ let basic_req_parse () =
   let open Cohttp_lwt in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_req) in
-  Parser.parse_request_fst_line ic >>=
+  Request.read ic >>=
   function
-  |Some (meth, uri, ver) ->
-    assert_equal ver `HTTP_1_1;
-    assert_equal meth `GET;
-    assert_equal (Uri.to_string uri) "/index.html";
+  |Some req ->
+    assert_equal (Request.version req) `HTTP_1_1;
+    assert_equal (Request.meth req) `GET;
+    assert_equal (Uri.to_string (Request.uri req)) "/index.html";
     return ()
   |None -> assert false
 
@@ -115,14 +115,13 @@ let basic_res_parse res () =
   let open Cohttp_lwt in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string res) in
-  Parser.parse_response_fst_line ic >>=
+  Response.read ic >>=
   function
-  |Some (version, status) ->
+  |Some res ->
      (* Parse first line *)
-     assert_equal version `HTTP_1_1;
-     assert_equal status `OK;
-     (* Now parse the headers *)
-     Parser.parse_headers ic >>= fun headers ->
+     assert_equal (Response.version res) `HTTP_1_1;
+     assert_equal (Response.status res) `OK;
+     let headers = Response.headers res in
      assert_equal (Header.get headers "connection") ["close"];
      assert_equal (Header.get headers "accept-ranges") ["none"];
      assert_equal (Header.get headers "content-type") ["text/html; charset=UTF-8"];
