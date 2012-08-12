@@ -55,7 +55,7 @@ module M (IO:IO.M) = struct
   let body req ic = Transfer_IO.read req.encoding ic
   let transfer_encoding req = Transfer.encoding_to_string req.encoding
 
-  let parse ic =
+  let read ic =
     Parser.parse_request_fst_line ic >>=
     function
     |None -> return None

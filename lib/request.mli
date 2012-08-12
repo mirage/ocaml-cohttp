@@ -18,8 +18,6 @@
 module M(IO:IO.M) : sig
   type request
 
-  val parse : IO.ic -> request option IO.t
-
   val meth : request -> Code.meth
   val uri : request -> Uri.t
   val version : request -> Code.version
@@ -36,6 +34,8 @@ module M(IO:IO.M) : sig
 
   val make : ?meth:Code.meth -> ?version:Code.version -> 
     ?encoding:Transfer.encoding -> Header.t -> Uri.t -> request
+
+  val read : IO.ic -> request option IO.t
 
   val write_header : request -> IO.oc -> unit IO.t
   val write_body : string -> request -> IO.oc -> unit IO.t

@@ -133,7 +133,7 @@ let req_parse () =
   let open Cohttp in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_req) in
-  Request.parse ic >>= function
+  Request.read ic >>= function
   |None -> assert false
   |Some req ->
     assert_equal `GET (Request.meth req);
@@ -145,7 +145,7 @@ let post_form_parse () =
   let open Cohttp in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_req) in
-  Request.parse ic >>= function
+  Request.read ic >>= function
   |None -> assert false
   |Some req ->
     assert_equal ["Cosby"] (Request.param req "home");
@@ -159,7 +159,7 @@ let post_data_parse () =
   let open Cohttp in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_data_req) in
-  Request.parse ic >>= function
+  Request.read ic >>= function
   |None -> assert false
   |Some req ->
     Request.body req ic >>= fun body ->
@@ -173,7 +173,7 @@ let post_chunked_parse () =
   let open Cohttp in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_chunked_req) in
-  Request.parse ic >>= function
+  Request.read ic >>= function
   |None -> assert false
   |Some req ->
     assert_equal (Request.transfer_encoding req) "chunked";
@@ -187,7 +187,7 @@ let res_content_parse () =
   let open Cohttp in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_res_content) in
-  Response.parse ic >>= function
+  Response.read ic >>= function
   |None -> assert false
   |Some res ->
      assert_equal `HTTP_1_1 (Response.version res);
@@ -200,7 +200,7 @@ let res_chunked_parse () =
   let open Cohttp in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string chunked_res) in
-  Response.parse ic >>= function
+  Response.read ic >>= function
   |None -> assert false
   |Some res ->
      assert_equal `HTTP_1_1 (Response.version res);

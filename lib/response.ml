@@ -29,7 +29,7 @@ module M (IO:IO.M) = struct
     status: Code.status_code;
   }
 
-  let parse ic =
+  let read ic =
     Parser.parse_response_fst_line ic >>= function
     |None -> return None
     |Some (version, status) ->

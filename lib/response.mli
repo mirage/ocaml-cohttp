@@ -18,9 +18,9 @@
 module M(IO:IO.M) : sig
   type response
 
-  val parse: IO.ic -> response option IO.t
-
   val version: response -> Code.version
   val status: response -> Code.status_code
   val body: response -> string option IO.t
+
+  val read: IO.ic -> response option IO.t
 end
