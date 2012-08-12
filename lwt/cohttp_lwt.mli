@@ -18,19 +18,6 @@
 val ic_of_buffer : Lwt_bytes.t -> Lwt_io.input_channel
 val oc_of_buffer : Lwt_bytes.t -> Lwt_io.output_channel
 
-module Parser : sig
-  val parse_request_fst_line : Lwt_io.input_channel -> (Code.meth * Uri.t * Code.version) option Lwt.t
-  val parse_response_fst_line : Lwt_io.input_channel -> (Code.version * Code.status_code) option Lwt.t
-  val parse_headers : Lwt_io.input_channel -> Header.t Lwt.t
-  val parse_content_range : Header.t -> int option
-  val parse_media_type : string -> string option
-end
-
-module Body : sig
-  val read : Transfer.encoding -> Lwt_io.input_channel -> Transfer.chunk Lwt.t
-  val write : Transfer.encoding -> Lwt_io.output_channel -> string -> unit Lwt.t
-end
-
 module Request : sig
   type request
   val meth : request -> Code.meth
@@ -59,6 +46,7 @@ module Response : sig
   type response
   val version : response -> Code.version
   val status : response -> Code.status_code
+  val headers: response -> Header.t
 
   val make : ?version:Code.version -> ?status:Code.status_code -> 
     ?encoding:Transfer.encoding -> Header.t -> response
