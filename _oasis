@@ -12,7 +12,7 @@ Library cohttp
   Findlibname: cohttp
   Pack: true
   Modules: Base64, Code, Date, IO, Header, Parser, Request, Response, Transfer
-  BuildDepends:	re, lwt.unix, uri
+  BuildDepends:	re, lwt.unix, uri (>= 1.2)
 
 Library cohttp_lwt
   Path: lwt
