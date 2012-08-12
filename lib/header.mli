@@ -22,4 +22,5 @@ val remove : t -> string -> t
 val get : t -> string -> string list
 val map : (string -> string -> string) -> t -> t
 val fold : (string -> string -> 'a -> 'a) -> t -> 'a -> 'a
-val of_list : ((string * string) list) -> t
+val of_list : (string * string) list -> t
+val to_list : t -> (string * string) list
