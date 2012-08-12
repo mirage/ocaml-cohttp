@@ -57,8 +57,20 @@ module Response : sig
   val write_header : response -> Lwt_io.output_channel -> unit Lwt.t
   val write_body : string -> response -> Lwt_io.output_channel -> unit Lwt.t
   val write_footer : response -> Lwt_io.output_channel -> unit Lwt.t
-  val write : (response -> Lwt_io.output_channel -> unit Lwt.t) -> response -> Lwt_io.output_channel -> unit Lwt.t
+  val write : (response -> Lwt_io.output_channel -> unit Lwt.t) -> 
+    response -> Lwt_io.output_channel -> unit Lwt.t
 end
 
-val call : ?headers:Header.t -> ?body:string Lwt_stream.t -> Code.meth -> Uri.t -> (Response.response * string Lwt_stream.t) option Lwt.t
+module Client : sig
+  type response = (Response.response * string Lwt_stream.t) option
 
+  val call : ?headers:Header.t -> ?body:string Lwt_stream.t -> 
+    Code.meth -> Uri.t -> response Lwt.t
+
+  val head : ?headers:Header.t -> Uri.t -> response Lwt.t
+  val get : ?headers:Header.t -> Uri.t -> response Lwt.t
+  val post : ?headers:Header.t -> ?body:string Lwt_stream.t -> Uri.t -> response Lwt.t
+  val post_form : ?headers:Header.t -> params:Header.t -> Uri.t -> response Lwt.t
+  val put : ?headers:Header.t -> ?body:string Lwt_stream.t -> Uri.t -> response Lwt.t
+  val delete : ?headers:Header.t -> Uri.t -> response Lwt.t
+end

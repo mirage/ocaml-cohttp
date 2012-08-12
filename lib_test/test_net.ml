@@ -20,7 +20,7 @@ open Printf
 open Lwt
 
 let make_net_req url () =
-  Cohttp_lwt.call `GET (Uri.of_string url) >>= function 
+  Cohttp_lwt.Client.call `GET (Uri.of_string url) >>= function 
   |None -> assert false
   |Some (res,body) ->
     Cohttp_lwt.Response.write_header res Lwt_io.stderr >>

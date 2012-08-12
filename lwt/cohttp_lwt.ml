@@ -127,37 +127,61 @@ let rec read_write_r inchan outchan num_read max_to_read =
 let read_write inchan outchan =
   read_write_r inchan outchan 0 max_int
 
-let call ?headers ?body meth uri =
-  let headers =
-    match headers with
-    |None -> Header.init ()
-    |Some h -> h in
-  let encoding = 
-    match body with 
-    |None -> Transfer.Fixed 0L 
-    |Some _ -> Transfer.Chunked in
-  let req = Request.make ~meth ~encoding headers uri in
-  let mvar = Lwt_mvar.create_empty () in
-  let _ = connect uri
-    (fun (ic, oc) ->
-      lwt () = Request.write
-        (match body with
-         |None -> (fun _ _ -> return ())
-         |Some bs ->
-           (fun req oc ->
-             Lwt_stream.iter_s (fun b -> Request.write_body b req oc) bs)
-        ) req oc in
-      match_lwt Response.read ic with
-      |None ->
-        Lwt_mvar.put mvar None
-      |Some res ->
-        let body, push_body = Lwt_stream.create () in
-        let rec push_t () =
-          match_lwt Response.read_body res ic with
-          |Transfer.Done -> push_body None; return ()
-          |Transfer.Final_chunk buf -> push_body (Some buf); push_body None; return ()
-          |Transfer.Chunk buf -> push_body (Some buf); push_t ()
-        in
-        Lwt_mvar.put mvar (Some (res, body)) >>= push_t
-    ) in
-  Lwt_mvar.take mvar
+module Client = struct
+
+  type response = (Response.response * string Lwt_stream.t) option
+
+  let call ?headers ?body meth uri =
+    let headers =
+      match headers with
+      |None -> Header.init ()
+      |Some h -> h in
+    let encoding = 
+      match body with 
+      |None -> Transfer.Fixed 0L 
+      |Some _ -> Transfer.Chunked in
+    let req = Request.make ~meth ~encoding headers uri in
+    let mvar = Lwt_mvar.create_empty () in
+    let _ = connect uri
+      (fun (ic, oc) ->
+        lwt () = Request.write
+          (match body with
+           |None -> (fun _ _ -> return ())
+           |Some bs ->
+             (fun req oc ->
+               Lwt_stream.iter_s (fun b -> Request.write_body b req oc) bs)
+          ) req oc in
+        match_lwt Response.read ic with
+        |None ->
+          Lwt_mvar.put mvar None
+        |Some res ->
+          let body, push_body = Lwt_stream.create () in
+          let rec push_t () =
+            match_lwt Response.read_body res ic with
+            |Transfer.Done -> push_body None; return ()
+            |Transfer.Final_chunk buf -> push_body (Some buf); push_body None; return ()
+            |Transfer.Chunk buf -> push_body (Some buf); push_t ()
+          in
+          Lwt_mvar.put mvar (Some (res, body)) >>= push_t
+      ) in
+    Lwt_mvar.take mvar
+
+   let head ?headers uri = call ?headers `HEAD uri 
+   let get ?headers uri = call ?headers `GET uri 
+   let delete ?headers uri = call ?headers `DELETE uri 
+   let post ?headers ?body uri = call ?headers ?body `POST uri 
+   let put ?headers ?body uri = call ?headers ?body `POST uri 
+
+   let post_form ?headers ~params uri =
+     let headers =
+       match headers with
+       |None -> Header.of_list ["content-type","application/x-www-form-urlencoded"]
+       |Some h -> Header.add h "content-type" "application/x-www-form-urlencoded"
+     in
+     let body = Lwt_stream.of_list [(Uri.encoded_of_query (Header.to_list params))] in
+     post ~headers ~body uri
+end
+
+module Server = struct
+
+end
