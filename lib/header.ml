@@ -15,15 +15,14 @@
  *
  *)
 
-type t = (string, string) Hashtbl.t
+module StringMap = Map.Make(String)
+type t = string StringMap.t
 
-let init () = Hashtbl.create 7
-let add h k v = Hashtbl.add h k v
-let remove h k = Hashtbl.remove h k
-let get h k = Hashtbl.find_all h k
-let iter fn h = Hashtbl.iter fn h
-let fold fn h acc = Hashtbl.fold fn h acc
-let of_list l =
-  let h = init () in
-  List.iter (fun (k,v) -> add h k v) l;
-  h
+let init () = StringMap.empty
+let add h k v = StringMap.add k v h
+let remove h k = StringMap.remove k h
+let get h k = try [StringMap.find k h] with Not_found -> []
+let map fn h = StringMap.mapi fn h
+let fold fn h acc = StringMap.fold fn h acc
+let of_list l = List.fold_left (fun a (k,v) -> StringMap.add k v a) StringMap.empty l
+  

@@ -17,9 +17,9 @@
 
 type t
 val init : unit -> t
-val add : t -> string -> string -> unit
-val remove : t -> string -> unit
+val add : t -> string -> string -> t
+val remove : t -> string -> t
 val get : t -> string -> string list
-val iter : (string -> string -> unit) -> t -> unit
+val map : (string -> string -> string) -> t -> t
 val fold : (string -> string -> 'a -> 'a) -> t -> 'a -> 'a
 val of_list : ((string * string) list) -> t
