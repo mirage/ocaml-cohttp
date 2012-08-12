@@ -37,5 +37,8 @@ module M(IO:IO.M) : sig
   val make : ?meth:Code.meth -> ?version:Code.version -> 
     ?encoding:Transfer.encoding -> Header.t -> Uri.t -> request
 
-  val output : request -> IO.oc -> unit IO.t
+  val write_header : request -> IO.oc -> unit IO.t
+  val write_body : string -> request -> IO.oc -> unit IO.t
+  val write_footer : request -> IO.oc -> unit IO.t
+  val write : (request -> IO.oc -> unit IO.t) -> request -> IO.oc -> unit IO.t
 end

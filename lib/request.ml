@@ -107,13 +107,33 @@ let port_of_uri uri =
     let post = Header.init () in
     { meth; version; headers; get; post; uri; encoding }
 
-  let output req oc =
-    let fst_line = Printf.sprintf "%s %s %s\r\n" (Code.string_of_method req.meth)
+  let write_header req oc =
+   let fst_line = Printf.sprintf "%s %s %s\r\n" (Code.string_of_method req.meth)
       (path_of_uri req.uri) (Code.string_of_version req.version) in
     Header.add req.headers "host" (host_of_uri req.uri);
+    (match req.encoding with
+     |Transfer.Chunked -> Header.add req.headers "transfer-encoding" "chunked"
+     |Transfer.Fixed len -> Header.add req.headers "content-length" (Int64.to_string len)
+     |Transfer.Unknown -> ()
+    );
     IO.write oc fst_line >>= fun () ->
-    let headers = Header.fold (fun k v acc -> Printf.sprintf "%s: %s\r\n" k v :: acc) req.headers [] in
+    let headers = Header.fold (fun k v acc -> 
+      Printf.sprintf "%s: %s\r\n" k v :: acc) req.headers [] in
     iter (IO.write oc) (List.rev headers) >>= fun () ->
     IO.write oc "\r\n"
-    
+
+  let write_body buf req oc =
+    Transfer_IO.write req.encoding oc buf
+
+  let write_footer req oc =
+    match req.encoding with
+    |Transfer.Chunked ->
+       (* TODO Trailer header support *)
+       IO.write oc "0\r\n\r\n"
+    |Transfer.Fixed _ | Transfer.Unknown -> return ()
+
+  let write fn req oc =
+    write_header req oc >>= fun () ->
+    fn req oc >>= fun () ->
+    write_footer req oc
 end
