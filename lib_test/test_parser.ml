@@ -214,11 +214,26 @@ let res_chunked_parse () =
 let make_simple_req () =
   let open Cohttp in
   let open IO in
+  (* Extract the substring of the byte buffer that has been written to *)
+  let get_substring oc buf =
+    let len = Int64.to_int (Lwt_io.position oc) in
+    let b = String.create len in
+    Lwt_bytes.blit_bytes_string buf 0 b 0 len;
+    b in
+  let expected = "GET /foo/bar HTTP/1.1\r\nhost: localhost\r\nfoo: bar\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
+  (* Use the low-level write_header/footer API *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
   let req = Request.make (Header.of_list [("foo","bar")]) (Uri.of_string "/foo/bar") in
-  Request.output req oc >>= fun () ->
-  Printf.eprintf "%s\n%!" (Lwt_bytes.to_string buf); (* TODO assert *)
+  Request.write_header req oc >>= fun () ->
+  Request.write_body "foobar" req oc >>= fun () ->
+  Request.write_footer req oc >>= fun () ->
+  assert_equal expected (get_substring oc buf);
+  (* Use the high-level write API *)
+  let buf = Lwt_bytes.create 4096 in
+  let oc = oc_of_buffer buf in
+  Request.write (Request.write_body "foobar") req oc >>= fun () ->
+  assert_equal expected (get_substring oc buf);
   return ()
 
 let test_cases =
