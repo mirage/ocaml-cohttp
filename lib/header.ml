@@ -21,6 +21,8 @@ let init () = Hashtbl.create 7
 let add h k v = Hashtbl.add h k v
 let remove h k = Hashtbl.remove h k
 let get h k = Hashtbl.find_all h k
+let iter fn h = Hashtbl.iter fn h
+let fold fn h acc = Hashtbl.fold fn h acc
 let of_list l =
   let h = init () in
   List.iter (fun (k,v) -> add h k v) l;

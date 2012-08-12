@@ -20,4 +20,6 @@ val init : unit -> t
 val add : t -> string -> string -> unit
 val remove : t -> string -> unit
 val get : t -> string -> string list
+val iter : (string -> string -> unit) -> t -> unit
+val fold : (string -> string -> 'a -> 'a) -> t -> 'a -> 'a
 val of_list : ((string * string) list) -> t
