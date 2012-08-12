@@ -21,4 +21,5 @@ val parse_transfer_encoding : Header.t -> encoding
 
 module M(IO:IO.M) : sig
   val read : encoding -> IO.ic -> string option IO.t
+  val write : encoding -> IO.oc -> string -> unit IO.t 
 end

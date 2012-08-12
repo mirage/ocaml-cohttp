@@ -63,11 +63,12 @@ module M(IO:IO.M) = struct
         end
       end
       |None -> return None
-  
+ 
     let write oc buf =
       let len = String.length buf in
       write oc (Printf.sprintf "%x\r\n" len) >>= fun () ->
-      write oc buf
+      write oc buf >>= fun () ->
+      write oc "\r\n"
   end
   
   module Fixed = struct
@@ -78,6 +79,10 @@ module M(IO:IO.M) = struct
       read_exactly ic buf 0 len >>= function
       |false -> return None
       |true -> return (Some buf)   
+
+    (* TODO enforce that the correct length is written? *)
+    let write oc buf =
+      write oc buf
   end
   
   module Unknown = struct
@@ -85,6 +90,9 @@ module M(IO:IO.M) = struct
      * TODO should this be a read with an explicit timeout? *)
     let read ic =
       read ic 16384 >>= fun buf -> return (Some buf)
+
+    let write oc buf =
+      write oc buf
   end
   
   let read =
@@ -93,4 +101,9 @@ module M(IO:IO.M) = struct
     | Fixed len -> Fixed.read ~len
     | Unknown -> Unknown.read
 
+  let write =
+    function
+    | Chunked -> Chunked.write
+    | Fixed len -> Fixed.write
+    | Unknown -> Unknown.write
 end
