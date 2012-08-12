@@ -47,7 +47,6 @@ end
 
 module Request : sig
   type request
-  val body : request -> IO.ic -> string option IO.t
   val meth : request -> Code.meth
   val uri : request -> Uri.t
   val version : request -> Code.version
@@ -62,6 +61,7 @@ module Request : sig
     ?encoding:Transfer.encoding -> Header.t -> Uri.t -> request
 
   val read : IO.ic -> request option IO.t
+  val read_body : request -> IO.ic -> string option IO.t
 
   val write_header : request -> IO.oc -> unit IO.t
   val write_body : string -> request -> IO.oc -> unit IO.t
@@ -78,7 +78,7 @@ module Response : sig
     ?encoding:Transfer.encoding -> Header.t -> response
 
   val read : IO.ic -> response option IO.t
-  val body : response -> IO.ic -> string option IO.t
+  val read_body : response -> IO.ic -> string option IO.t
 
   val write_header : response -> IO.oc -> unit IO.t
   val write_body : string -> response -> IO.oc -> unit IO.t

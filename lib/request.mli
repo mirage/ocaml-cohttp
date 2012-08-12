@@ -29,13 +29,13 @@ module M(IO:IO.M) : sig
   val params_post : request -> Header.t
   val param : request -> string -> string list
 
-  val body : request -> IO.ic -> string option IO.t
   val transfer_encoding : request -> string
 
   val make : ?meth:Code.meth -> ?version:Code.version -> 
     ?encoding:Transfer.encoding -> Header.t -> Uri.t -> request
 
   val read : IO.ic -> request option IO.t
+  val read_body : request -> IO.ic -> string option IO.t
 
   val write_header : request -> IO.oc -> unit IO.t
   val write_body : string -> request -> IO.oc -> unit IO.t

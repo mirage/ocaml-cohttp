@@ -162,10 +162,10 @@ let post_data_parse () =
   Request.read ic >>= function
   |None -> assert false
   |Some req ->
-    Request.body req ic >>= fun body ->
+    Request.read_body req ic >>= fun body ->
     assert_equal (Some "home=Cosby&favorite+flavor=flies") body;
     (* A subsequent request for the body will have consumed it, therefore None *)
-    Request.body req ic >>= fun body ->
+    Request.read_body req ic >>= fun body ->
     assert_equal None body;
     return ()
 
@@ -177,9 +177,9 @@ let post_chunked_parse () =
   |None -> assert false
   |Some req ->
     assert_equal (Request.transfer_encoding req) "chunked";
-    Request.body req ic >>= fun chunk ->
+    Request.read_body req ic >>= fun chunk ->
     assert_equal chunk (Some "abcdefghijklmnopqrstuvwxyz");
-    Request.body req ic >>= fun chunk ->
+    Request.read_body req ic >>= fun chunk ->
     assert_equal chunk (Some "1234567890abcdef");
     return ()
 
@@ -192,7 +192,7 @@ let res_content_parse () =
   |Some res ->
      assert_equal `HTTP_1_1 (Response.version res);
      assert_equal `OK (Response.status res);
-     Response.body res ic >>= fun body ->
+     Response.read_body res ic >>= fun body ->
      assert_equal (Some "home=Cosby&favorite+flavor=flies") body;
      return ()
 
@@ -205,9 +205,9 @@ let res_chunked_parse () =
   |Some res ->
      assert_equal `HTTP_1_1 (Response.version res);
      assert_equal `OK (Response.status res);
-     Response.body res ic >>= fun chunk ->
+     Response.read_body res ic >>= fun chunk ->
      assert_equal chunk (Some "abcdefghijklmnopqrstuvwxyz");
-     Response.body res ic >>= fun chunk ->
+     Response.read_body res ic >>= fun chunk ->
      assert_equal chunk (Some "1234567890abcdef");
      return ()
 

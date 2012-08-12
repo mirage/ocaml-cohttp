@@ -52,7 +52,6 @@ module M (IO:IO.M) = struct
   let params_post r = r.post
   let param r p = (Header.get r.post p) @ (Header.get r.get p)
 
-  let body req ic = Transfer_IO.read req.encoding ic
   let transfer_encoding req = Transfer.encoding_to_string req.encoding
 
   let read ic =
@@ -78,6 +77,8 @@ module M (IO:IO.M) = struct
         | _ -> return ((Header.init ()), (Transfer.Fixed 0L)) 
       ) >>= fun (post, encoding) ->
       return (Some { headers; meth; uri; version; post; get; encoding })
+
+  let read_body req ic = Transfer_IO.read req.encoding ic
 
   let host_of_uri uri = 
     match Uri.host uri with

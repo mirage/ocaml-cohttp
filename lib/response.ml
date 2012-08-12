@@ -30,7 +30,6 @@ module M (IO:IO.M) = struct
 
   let version r = r.version
   let status r = r.status
-  let body r ic = Transfer_IO.read r.encoding ic
 
   let make ?(version=`HTTP_1_1) ?(status=`OK) ?(encoding=Transfer.Chunked) headers =
     { encoding; headers; version; status }
@@ -42,6 +41,8 @@ module M (IO:IO.M) = struct
        Parser.parse_headers ic >>= fun headers ->
        let encoding = Transfer.parse_transfer_encoding headers in
        return (Some { encoding; headers; version; status })
+
+  let read_body r ic = Transfer_IO.read r.encoding ic
 
   let write_header res oc =
     write oc (Printf.sprintf "%s %s\r\n" (Code.string_of_version res.version) 

@@ -20,12 +20,12 @@ module M(IO:IO.M) : sig
 
   val version: response -> Code.version
   val status: response -> Code.status_code
-  val body: response -> IO.ic -> string option IO.t
 
   val make : ?version:Code.version -> ?status:Code.status_code -> 
     ?encoding:Transfer.encoding -> Header.t -> response
 
   val read: IO.ic -> response option IO.t
+  val read_body: response -> IO.ic -> string option IO.t
 
   val write_header : response -> IO.oc -> unit IO.t
   val write_body : string -> response -> IO.oc -> unit IO.t
