@@ -110,15 +110,16 @@ let port_of_uri uri =
   let write_header req oc =
    let fst_line = Printf.sprintf "%s %s %s\r\n" (Code.string_of_method req.meth)
       (path_of_uri req.uri) (Code.string_of_version req.version) in
-    Header.add req.headers "host" (host_of_uri req.uri);
-    (match req.encoding with
-     |Transfer.Chunked -> Header.add req.headers "transfer-encoding" "chunked"
-     |Transfer.Fixed len -> Header.add req.headers "content-length" (Int64.to_string len)
-     |Transfer.Unknown -> ()
-    );
+    let headers = Header.add req.headers "host" (host_of_uri req.uri) in
+    let headers = 
+      match req.encoding with
+      |Transfer.Chunked -> Header.add headers "transfer-encoding" "chunked"
+      |Transfer.Fixed len -> Header.add headers "content-length" (Int64.to_string len)
+      |Transfer.Unknown -> headers
+    in
     IO.write oc fst_line >>= fun () ->
     let headers = Header.fold (fun k v acc -> 
-      Printf.sprintf "%s: %s\r\n" k v :: acc) req.headers [] in
+      Printf.sprintf "%s: %s\r\n" k v :: acc) headers [] in
     iter (IO.write oc) (List.rev headers) >>= fun () ->
     IO.write oc "\r\n"
 

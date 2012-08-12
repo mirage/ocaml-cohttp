@@ -60,19 +60,17 @@ module M (IO:IO.M) = struct
   
   let parse_headers ic =
     (* consume also trailing "^\r\n$" line *)
-    let headers = Header.init () in
-    let rec parse_headers' () =
+    let rec parse_headers' headers =
       read_line ic >>= function
       |Some "" | None -> return headers
       |Some line -> begin
           match Re_str.bounded_split_delim header_sep line 2 with
           | [hd;tl] -> 
               let header = String.lowercase hd in
-              Header.add headers header tl;
-              parse_headers' ()
+              parse_headers' (Header.add headers header tl);
           | _ -> return headers
       end
-    in parse_headers' ()
+    in parse_headers' (Header.init ())
   
   let parse_content_range s =
     try
