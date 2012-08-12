@@ -23,7 +23,6 @@ module IO = struct
 
   type ic = Lwt_io.input_channel
   type oc = Lwt_io.output_channel
-  type buf = Lwt_bytes.t
 
   let iter fn x = Lwt_list.iter_s fn x
 
@@ -38,12 +37,115 @@ module IO = struct
 
   let write oc buf = Lwt_io.write oc buf
   let write_line oc buf = Lwt_io.write_line oc buf
-
-  let ic_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.input buf
-  let oc_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.output buf
 end
+
+let ic_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.input buf
+let oc_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.output buf
 
 module Body  = Transfer.M(IO)
 module Parser = Parser.M(IO)
 module Request = Request.M(IO)
 module Response = Response.M(IO)
+
+open Lwt
+
+let build_sockaddr (addr, port) =
+  try_lwt
+    (* should this be lwt hent = Lwt_lib.gethostbyname addr ? *)
+    let hent = Unix.gethostbyname addr in
+    return (Unix.ADDR_INET (hent.Unix.h_addr_list.(0), port))
+  with _ -> 
+    raise_lwt (Failure ("cant resolve hostname: " ^ addr))
+
+let host_of_uri uri = 
+  match Uri.host uri with
+  |None -> "localhost"
+  |Some h -> h
+
+let port_of_uri uri =
+  match Uri.port uri with
+  |None -> begin
+     match Uri.scheme uri with 
+     |Some "https" -> 443 (* TODO: actually support https *)
+     |Some "http" | Some _ |None -> 80
+  end
+  |Some p -> p
+
+module Normal = struct
+
+  let connect uri iofn =
+    let open Uri in
+    let address = host_of_uri uri in
+    let port = port_of_uri uri in
+    lwt sockaddr = build_sockaddr (address, port) in
+    Lwt_io.with_connection sockaddr iofn
+
+end
+
+module SSL = struct
+
+  let sslcontext =
+    Ssl.init ();
+    Ssl.create_context Ssl.SSLv23 Ssl.Client_context
+
+  let connect uri iofn =
+    let address = host_of_uri uri in
+    let port = port_of_uri uri in
+    lwt sockaddr = build_sockaddr (address, port) in
+    let fd = Lwt_unix.socket (Unix.domain_of_sockaddr sockaddr) Unix.SOCK_STREAM 0 in
+    lwt () = Lwt_unix.connect fd sockaddr in
+    lwt sock = Lwt_ssl.ssl_connect fd sslcontext in
+    let ic = Lwt_ssl.in_channel_of_descr sock in
+    let oc = Lwt_ssl.out_channel_of_descr sock in
+    try_lwt
+      lwt res = iofn (ic,oc) in
+      Lwt_ssl.close sock >>
+      return res
+    with exn ->
+      Lwt_ssl.close sock >>
+      fail exn
+end
+
+let connect uri iofn =
+  match Uri.scheme uri with
+  |Some "https" -> SSL.connect uri iofn
+  |Some "http" -> Normal.connect uri iofn
+  |Some _ | None -> fail (Failure "unknown scheme")
+ 
+let rec read_write_r inchan outchan num_read max_to_read =
+  lwt s = Lwt_io.read inchan in
+  if s = ""  then
+    return ()
+  else
+    lwt () = Lwt_io.write outchan s in
+    let num_read_incr = num_read + (String.length s) in
+    if num_read_incr < max_to_read then
+      read_write_r inchan outchan num_read_incr max_to_read
+    else
+      return ()
+
+let read_write inchan outchan =
+  read_write_r inchan outchan 0 max_int
+
+let call ?headers ?body meth uri =
+  let headers =
+    match headers with
+    |None -> Header.init ()
+    |Some h -> h in
+  let encoding = 
+    match body with 
+    |None -> Transfer.Fixed 0L 
+    |Some _ -> Transfer.Chunked in
+  let req = Request.make ~meth ~encoding headers uri in
+  connect uri
+    (fun (ic, oc) ->
+       let bodyfn =
+         match body with
+         |None -> (fun _ _ -> return ())
+         |Some body -> body in
+       lwt () = Request.write bodyfn req oc in
+       match_lwt Response.read ic with
+       |None -> Printf.eprintf "no response\n%!"; return ()
+       |Some res ->
+         Response.write (fun _ _ -> return ()) res Lwt_io.stderr
+    )

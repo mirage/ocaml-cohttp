@@ -15,34 +15,20 @@
  *
  *)
 
-module IO : sig
-  type 'a t = 'a Lwt.t
-  val (>>=) : 'a Lwt.t -> ('a -> 'b Lwt.t) -> 'b Lwt.t
-  val return : 'a -> 'a Lwt.t
-  type ic = Lwt_io.input_channel
-  type oc = Lwt_io.output_channel
-  type buf = Lwt_bytes.t
-  val iter : ('a -> unit Lwt.t) -> 'a list -> unit Lwt.t
-  val read_line : Lwt_io.input_channel -> string option Lwt.t
-  val read : Lwt_io.input_channel -> int -> string Lwt.t
-  val read_exactly : Lwt_io.input_channel -> string -> int -> int -> bool Lwt.t
-  val write : Lwt_io.output_channel -> string -> unit Lwt.t
-  val write_line : Lwt_io.output_channel -> string -> unit Lwt.t
-  val ic_of_buffer : Lwt_bytes.t -> Lwt_io.input Lwt_io.channel
-  val oc_of_buffer : Lwt_bytes.t -> Lwt_io.output Lwt_io.channel
-end
+val ic_of_buffer : Lwt_bytes.t -> Lwt_io.input_channel
+val oc_of_buffer : Lwt_bytes.t -> Lwt_io.output_channel
 
 module Parser : sig
-  val parse_request_fst_line : IO.ic -> (Code.meth * Uri.t * Code.version) option IO.t
-  val parse_response_fst_line : IO.ic -> (Code.version * Code.status_code) option IO.t
-  val parse_headers : IO.ic -> Header.t IO.t
+  val parse_request_fst_line : Lwt_io.input_channel -> (Code.meth * Uri.t * Code.version) option Lwt.t
+  val parse_response_fst_line : Lwt_io.input_channel -> (Code.version * Code.status_code) option Lwt.t
+  val parse_headers : Lwt_io.input_channel -> Header.t Lwt.t
   val parse_content_range : Header.t -> int option
   val parse_media_type : string -> string option
 end
 
 module Body : sig
-  val read : Transfer.encoding -> IO.ic -> string option IO.t
-  val write : Transfer.encoding -> IO.oc -> string -> unit IO.t
+  val read : Transfer.encoding -> Lwt_io.input_channel -> string option Lwt.t
+  val write : Transfer.encoding -> Lwt_io.output_channel -> string -> unit Lwt.t
 end
 
 module Request : sig
@@ -60,13 +46,13 @@ module Request : sig
   val make : ?meth:Code.meth -> ?version:Code.version -> 
     ?encoding:Transfer.encoding -> Header.t -> Uri.t -> request
 
-  val read : IO.ic -> request option IO.t
-  val read_body : request -> IO.ic -> string option IO.t
+  val read : Lwt_io.input_channel -> request option Lwt.t
+  val read_body : request -> Lwt_io.input_channel -> string option Lwt.t
 
-  val write_header : request -> IO.oc -> unit IO.t
-  val write_body : string -> request -> IO.oc -> unit IO.t
-  val write_footer : request -> IO.oc -> unit IO.t
-  val write : (request -> IO.oc -> unit IO.t) -> request -> IO.oc -> unit IO.t
+  val write_header : request -> Lwt_io.output_channel -> unit Lwt.t
+  val write_body : string -> request -> Lwt_io.output_channel -> unit Lwt.t
+  val write_footer : request -> Lwt_io.output_channel -> unit Lwt.t
+  val write : (request -> Lwt_io.output_channel -> unit Lwt.t) -> request -> Lwt_io.output_channel -> unit Lwt.t
 end
 
 module Response : sig
@@ -77,11 +63,17 @@ module Response : sig
   val make : ?version:Code.version -> ?status:Code.status_code -> 
     ?encoding:Transfer.encoding -> Header.t -> response
 
-  val read : IO.ic -> response option IO.t
-  val read_body : response -> IO.ic -> string option IO.t
+  val read : Lwt_io.input_channel -> response option Lwt.t
+  val read_body : response -> Lwt_io.input_channel -> string option Lwt.t
 
-  val write_header : response -> IO.oc -> unit IO.t
-  val write_body : string -> response -> IO.oc -> unit IO.t
-  val write_footer : response -> IO.oc -> unit IO.t
-  val write : (response -> IO.oc -> unit IO.t) -> response -> IO.oc -> unit IO.t
+  val write_header : response -> Lwt_io.output_channel -> unit Lwt.t
+  val write_body : string -> response -> Lwt_io.output_channel -> unit Lwt.t
+  val write_footer : response -> Lwt_io.output_channel -> unit Lwt.t
+  val write : (response -> Lwt_io.output_channel -> unit Lwt.t) -> response -> Lwt_io.output_channel -> unit Lwt.t
 end
+
+val call :
+  ?headers:Header.t ->
+  ?body:(Request.request -> Lwt_io.output_channel -> unit Lwt.t) ->
+  Code.meth -> Uri.t -> unit Lwt.t
+
