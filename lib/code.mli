@@ -106,10 +106,10 @@ val method_of_string: string -> meth option
 val status_of_code: int -> status_code
 
   (** converts an HTTP status to the corresponding integer value *)
-val code_of_status: [< status] -> int
+val code_of_status: status_code -> int
 
   (** converts an HTTP status to a human-readable string value *)
-val string_of_status: [< status] -> string
+val string_of_status: status_code -> string
 
   (** converts an HTTP status to the corresponding RFC reason phrase *)
 val reason_phrase_of_code: int -> string

@@ -22,22 +22,49 @@ module M (IO:IO.M) = struct
   open IO
 
   type response = {
-    ic: ic;
     encoding: Transfer.encoding;
     headers: Header.t;
     version: Code.version;
     status: Code.status_code;
   }
 
+  let version r = r.version
+  let status r = r.status
+  let body r ic = Transfer_IO.read r.encoding ic
+
+  let make ?(version=`HTTP_1_1) ?(status=`OK) ?(encoding=Transfer.Chunked) headers =
+    { encoding; headers; version; status }
+ 
   let read ic =
     Parser.parse_response_fst_line ic >>= function
     |None -> return None
     |Some (version, status) ->
        Parser.parse_headers ic >>= fun headers ->
        let encoding = Transfer.parse_transfer_encoding headers in
-       return (Some { ic; encoding; headers; version; status })
+       return (Some { encoding; headers; version; status })
 
-  let version r = r.version
-  let status r = r.status
-  let body r = Transfer_IO.read r.encoding r.ic
+  let write_header res oc =
+    write oc (Printf.sprintf "%s %s\r\n" (Code.string_of_version res.version) 
+      (Code.string_of_status res.status)) >>= fun () ->
+    let headers = Transfer.add_encoding_headers res.headers res.encoding in
+    let headers = Header.fold (fun k v acc -> 
+      Printf.sprintf "%s: %s\r\n" k v :: acc) headers [] in
+    iter (IO.write oc) (List.rev headers) >>= fun () ->
+    IO.write oc "\r\n"
+
+  let write_body buf req oc =
+    Transfer_IO.write req.encoding oc buf
+
+  let write_footer req oc =
+    match req.encoding with
+    |Transfer.Chunked ->
+       (* TODO Trailer header support *)
+       IO.write oc "0\r\n\r\n"
+    |Transfer.Fixed _ | Transfer.Unknown -> return ()
+
+  let write fn req oc =
+    write_header req oc >>= fun () ->
+    fn req oc >>= fun () ->
+    write_footer req oc
+
 end

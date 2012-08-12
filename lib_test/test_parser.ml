@@ -192,7 +192,7 @@ let res_content_parse () =
   |Some res ->
      assert_equal `HTTP_1_1 (Response.version res);
      assert_equal `OK (Response.status res);
-     Response.body res >>= fun body ->
+     Response.body res ic >>= fun body ->
      assert_equal (Some "home=Cosby&favorite+flavor=flies") body;
      return ()
 
@@ -205,21 +205,22 @@ let res_chunked_parse () =
   |Some res ->
      assert_equal `HTTP_1_1 (Response.version res);
      assert_equal `OK (Response.status res);
-     Response.body res >>= fun chunk ->
+     Response.body res ic >>= fun chunk ->
      assert_equal chunk (Some "abcdefghijklmnopqrstuvwxyz");
-     Response.body res >>= fun chunk ->
+     Response.body res ic >>= fun chunk ->
      assert_equal chunk (Some "1234567890abcdef");
      return ()
 
+(* Extract the substring of the byte buffer that has been written to *)
+let get_substring oc buf =
+  let len = Int64.to_int (Lwt_io.position oc) in
+  let b = String.create len in
+  Lwt_bytes.blit_bytes_string buf 0 b 0 len;
+  b
+ 
 let make_simple_req () =
   let open Cohttp in
   let open IO in
-  (* Extract the substring of the byte buffer that has been written to *)
-  let get_substring oc buf =
-    let len = Int64.to_int (Lwt_io.position oc) in
-    let b = String.create len in
-    Lwt_bytes.blit_bytes_string buf 0 b 0 len;
-    b in
   let expected = "GET /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
   (* Use the low-level write_header/footer API *)
   let buf = Lwt_bytes.create 4096 in
@@ -237,10 +238,30 @@ let make_simple_req () =
   assert_equal expected (get_substring oc buf);
   return ()
 
+let make_simple_res () =
+  let open Cohttp in
+  let open IO in
+  let expected = "HTTP/1.1 200 OK\r\nfoo: bar\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
+  (* Use the low-level write_header/footer API *)
+  let buf = Lwt_bytes.create 4096 in
+  let oc = oc_of_buffer buf in
+  let res = Response.make (Header.of_list [("foo","bar")]) in
+  Response.write_header res oc >>= fun () ->
+  Response.write_body "foobar" res oc >>= fun () ->
+  Response.write_footer res oc >>= fun () ->
+  assert_equal expected (get_substring oc buf);
+  (* Use the high-level write API. This also tests that req is immutable
+   * by re-using it *)
+  let buf = Lwt_bytes.create 4096 in
+  let oc = oc_of_buffer buf in
+  Response.write (Response.write_body "foobar") res oc >>= fun () ->
+  assert_equal expected (get_substring oc buf);
+  return ()
+
 let test_cases =
   let tests = [ basic_req_parse; req_parse; post_form_parse; post_data_parse; 
     post_chunked_parse; (basic_res_parse basic_res); (basic_res_parse basic_res_plus_crlf);
-    res_content_parse; make_simple_req ] in
+    res_content_parse; make_simple_req; make_simple_res ] in
   List.map (fun x -> "test" >:: (fun () -> Lwt_unix.run (x ()))) tests
 
 (* Returns true if the result list contains successes only.

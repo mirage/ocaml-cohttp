@@ -93,12 +93,7 @@ module M (IO:IO.M) = struct
    let fst_line = Printf.sprintf "%s %s %s\r\n" (Code.string_of_method req.meth)
       (Uri.path_and_query req.uri) (Code.string_of_version req.version) in
     let headers = Header.add req.headers "host" (host_of_uri req.uri) in
-    let headers = 
-      match req.encoding with
-      |Transfer.Chunked -> Header.add headers "transfer-encoding" "chunked"
-      |Transfer.Fixed len -> Header.add headers "content-length" (Int64.to_string len)
-      |Transfer.Unknown -> headers
-    in
+    let headers = Transfer.add_encoding_headers headers req.encoding in
     IO.write oc fst_line >>= fun () ->
     let headers = Header.fold (fun k v acc -> 
       Printf.sprintf "%s: %s\r\n" k v :: acc) headers [] in

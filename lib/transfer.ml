@@ -37,6 +37,15 @@ let parse_transfer_encoding headers =
     |[] -> Unknown
   end
 
+let add_encoding_headers headers = 
+  function
+  |Chunked ->
+     Header.add headers "transfer-encoding" "chunked"
+  |Fixed len -> 
+     Header.add headers "content-length" (Int64.to_string len)
+  |Unknown -> 
+     headers
+ 
 module M(IO:IO.M) = struct
   open IO
 
