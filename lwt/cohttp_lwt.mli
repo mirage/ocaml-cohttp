@@ -40,6 +40,11 @@ module Parser : sig
   val parse_media_type : string -> string option
 end
 
+module Body : sig
+  val read : Transfer.encoding -> IO.ic -> string option IO.t
+  val write : Transfer.encoding -> IO.oc -> string -> unit IO.t
+end
+
 module Request : sig
   type request
   val parse : IO.ic -> request option IO.t
@@ -56,7 +61,11 @@ module Request : sig
 
   val make : ?meth:Code.meth -> ?version:Code.version -> 
     ?encoding:Transfer.encoding -> Header.t -> Uri.t -> request
-  val output : request -> IO.oc -> unit IO.t
+
+  val write_header : request -> IO.oc -> unit IO.t
+  val write_body : string -> request -> IO.oc -> unit IO.t
+  val write_footer : request -> IO.oc -> unit IO.t
+  val write : (request -> IO.oc -> unit IO.t) -> request -> IO.oc -> unit IO.t
 end
 
 module Response : sig

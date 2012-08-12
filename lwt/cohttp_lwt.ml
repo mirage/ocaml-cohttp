@@ -43,6 +43,7 @@ module IO = struct
   let oc_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.output buf
 end
 
+module Body  = Transfer.M(IO)
 module Parser = Parser.M(IO)
 module Request = Request.M(IO)
 module Response = Response.M(IO)
