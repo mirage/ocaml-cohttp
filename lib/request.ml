@@ -18,7 +18,7 @@
 module M (IO:IO.M) = struct
 
   module Parser = Parser.M(IO)
-  module Transfer = Transfer.M(IO)
+  module Transfer_IO = Transfer.M(IO)
   open IO
 
   type request = { 
@@ -52,7 +52,7 @@ module M (IO:IO.M) = struct
   let params_post r = r.post
   let param r p = (Header.get r.post p) @ (Header.get r.get p)
 
-  let body req ic = Transfer.read req.encoding ic
+  let body req ic = Transfer_IO.read req.encoding ic
   let transfer_encoding req = Transfer.encoding_to_string req.encoding
 
   let parse ic =
@@ -102,12 +102,18 @@ let port_of_uri uri =
   end
   |Some p -> p
 
-  let make ?(meth=`GET) ?(version=`HTTP_1_1) ?(headers=[]) uri body oc =
-    let fst_line = Printf.sprintf "%s %s %s\r\n" (Code.string_of_method meth)
-      (path_of_uri uri) (Code.string_of_version version) in
-    let headers = ("host", (host_of_uri uri)) :: headers in
+  let make ?(meth=`GET) ?(version=`HTTP_1_1) ?(encoding=Transfer.Chunked) headers uri =
+    let get = Header.of_list (Uri.query uri) in
+    let post = Header.init () in
+    { meth; version; headers; get; post; uri; encoding }
+
+  let output req oc =
+    let fst_line = Printf.sprintf "%s %s %s\r\n" (Code.string_of_method req.meth)
+      (path_of_uri req.uri) (Code.string_of_version req.version) in
+    Header.add req.headers "host" (host_of_uri req.uri);
     IO.write oc fst_line >>= fun () ->
-    iter (fun (k,v) -> IO.write oc (Printf.sprintf "%s: %s\r\n" k v)) headers >>= fun () ->
-    IO.write oc "\r\n" >>= fun () ->
-    body oc 
+    let headers = Header.fold (fun k v acc -> Printf.sprintf "%s: %s\r\n" k v :: acc) req.headers [] in
+    iter (IO.write oc) (List.rev headers) >>= fun () ->
+    IO.write oc "\r\n"
+    
 end

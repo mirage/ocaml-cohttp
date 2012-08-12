@@ -18,7 +18,7 @@
 module M (IO:IO.M) = struct
 
   module Parser = Parser.M(IO)
-  module Transfer = Transfer.M(IO)
+  module Transfer_IO = Transfer.M(IO)
   open IO
 
   type response = {
@@ -39,5 +39,5 @@ module M (IO:IO.M) = struct
 
   let version r = r.version
   let status r = r.status
-  let body r = Transfer.read r.encoding r.ic
+  let body r = Transfer_IO.read r.encoding r.ic
 end

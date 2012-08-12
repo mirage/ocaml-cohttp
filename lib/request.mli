@@ -35,6 +35,7 @@ module M(IO:IO.M) : sig
   val transfer_encoding : request -> string
 
   val make : ?meth:Code.meth -> ?version:Code.version -> 
-    ?headers:((string * string) list) -> Uri.t -> 
-    (IO.oc -> unit IO.t) -> IO.oc -> unit IO.t
+    ?encoding:Transfer.encoding -> Header.t -> Uri.t -> request
+
+  val output : request -> IO.oc -> unit IO.t
 end
