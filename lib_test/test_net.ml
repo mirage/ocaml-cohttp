@@ -17,16 +17,20 @@
 
 open OUnit
 open Printf
-
 open Lwt
 
-let make_net_req () =
-  lwt _ = Cohttp_lwt.call `GET (Uri.of_string "http://anil.recoil.org/") in
-  lwt _ = Cohttp_lwt.call `GET (Uri.of_string "https://github.com/") in
-  return ()
+let make_net_req url () =
+  Cohttp_lwt.call `GET (Uri.of_string url) >>= function 
+  |None -> assert false
+  |Some (res,body) ->
+    Cohttp_lwt.Response.write_header res Lwt_io.stderr >>
+    Lwt_stream.iter_s (fun _ -> return ()) body
 
 let test_cases =
-  let tests = [ make_net_req;
+  let tests = [
+    make_net_req "http://anil.recoil.org";
+    make_net_req "http://anil.recoil.org/";
+    make_net_req "https://github.com/";
   ] in
   List.map (fun x -> "test" >:: (fun () -> Lwt_unix.run (x ()))) tests
 

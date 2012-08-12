@@ -163,10 +163,10 @@ let post_data_parse () =
   |None -> assert false
   |Some req ->
     Request.read_body req ic >>= fun body ->
-    assert_equal (Some "home=Cosby&favorite+flavor=flies") body;
+    assert_equal (Transfer.Final_chunk "home=Cosby&favorite+flavor=flies") body;
     (* A subsequent request for the body will have consumed it, therefore None *)
     Request.read_body req ic >>= fun body ->
-    assert_equal None body;
+    assert_equal Transfer.Done body;
     return ()
 
 let post_chunked_parse () =
@@ -178,9 +178,9 @@ let post_chunked_parse () =
   |Some req ->
     assert_equal (Request.transfer_encoding req) "chunked";
     Request.read_body req ic >>= fun chunk ->
-    assert_equal chunk (Some "abcdefghijklmnopqrstuvwxyz");
+    assert_equal chunk (Transfer.Chunk "abcdefghijklmnopqrstuvwxyz");
     Request.read_body req ic >>= fun chunk ->
-    assert_equal chunk (Some "1234567890abcdef");
+    assert_equal chunk (Transfer.Chunk "1234567890abcdef");
     return ()
 
 let res_content_parse () =
@@ -193,7 +193,7 @@ let res_content_parse () =
      assert_equal `HTTP_1_1 (Response.version res);
      assert_equal `OK (Response.status res);
      Response.read_body res ic >>= fun body ->
-     assert_equal (Some "home=Cosby&favorite+flavor=flies") body;
+     assert_equal (Transfer.Final_chunk "home=Cosby&favorite+flavor=flies") body;
      return ()
 
 let res_chunked_parse () =
@@ -206,9 +206,9 @@ let res_chunked_parse () =
      assert_equal `HTTP_1_1 (Response.version res);
      assert_equal `OK (Response.status res);
      Response.read_body res ic >>= fun chunk ->
-     assert_equal chunk (Some "abcdefghijklmnopqrstuvwxyz");
+     assert_equal chunk (Transfer.Chunk "abcdefghijklmnopqrstuvwxyz");
      Response.read_body res ic >>= fun chunk ->
-     assert_equal chunk (Some "1234567890abcdef");
+     assert_equal chunk (Transfer.Chunk "1234567890abcdef");
      return ()
 
 (* Extract the substring of the byte buffer that has been written to *)
