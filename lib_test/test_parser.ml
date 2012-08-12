@@ -216,7 +216,8 @@ let make_simple_req () =
   let open IO in
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
-  Request.make (Uri.of_string "/foo/bar") (fun oc -> IO.write oc "hello") oc >>= fun () ->
+  let req = Request.make (Header.of_list [("foo","bar")]) (Uri.of_string "/foo/bar") in
+  Request.output req oc >>= fun () ->
   Printf.eprintf "%s\n%!" (Lwt_bytes.to_string buf); (* TODO assert *)
   return ()
 
