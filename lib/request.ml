@@ -79,28 +79,10 @@ module M (IO:IO.M) = struct
       ) >>= fun (post, encoding) ->
       return (Some { headers; meth; uri; version; post; get; encoding })
 
-(* XXX should this be here? *)
-(* Path+Query string *)
-let path_of_uri uri = 
-  match (Uri.path uri), (Uri.query uri) with
-  |"", [] -> "/"
-  |"", q -> Printf.sprintf "/?%s" (Uri.encoded_of_query q)
-  |p, [] -> p
-  |p, q -> Printf.sprintf "%s?%s" p (Uri.encoded_of_query q)
-
-let host_of_uri uri = 
-  match Uri.host uri with
-  |None -> "localhost"
-  |Some h -> h
-
-let port_of_uri uri =
-  match Uri.port uri with
-  |None -> begin
-     match Uri.scheme uri with 
-     |Some "https" -> 443 (* TODO: actually support https *)
-     |Some "http" | Some _ |None -> 80
-  end
-  |Some p -> p
+  let host_of_uri uri = 
+    match Uri.host uri with
+    |None -> "localhost"
+    |Some h -> h
 
   let make ?(meth=`GET) ?(version=`HTTP_1_1) ?(encoding=Transfer.Chunked) headers uri =
     let get = Header.of_list (Uri.query uri) in
@@ -109,7 +91,7 @@ let port_of_uri uri =
 
   let write_header req oc =
    let fst_line = Printf.sprintf "%s %s %s\r\n" (Code.string_of_method req.meth)
-      (path_of_uri req.uri) (Code.string_of_version req.version) in
+      (Uri.path_and_query req.uri) (Code.string_of_version req.version) in
     let headers = Header.add req.headers "host" (host_of_uri req.uri) in
     let headers = 
       match req.encoding with
