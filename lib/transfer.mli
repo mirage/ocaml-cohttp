@@ -15,9 +15,10 @@
  *
  *)
 
+type encoding = Chunked | Fixed of int64 | Unknown
+val encoding_to_string : encoding -> string
+val parse_transfer_encoding : Header.t -> encoding
+
 module M(IO:IO.M) : sig
-  type encoding = Chunked | Fixed of int64 | Unknown
   val read : encoding -> IO.ic -> string option IO.t
-  val encoding_to_string : encoding -> string
-  val parse_transfer_encoding : Header.t -> encoding
 end

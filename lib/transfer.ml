@@ -15,6 +15,28 @@
  *
  *)
 
+type encoding =
+| Chunked
+| Fixed of int64
+| Unknown
+  
+let encoding_to_string =
+  function
+  | Chunked -> "chunked"
+  | Fixed i -> Printf.sprintf "fixed[%Ld]" i
+  | Unknown -> "unknown"
+
+(* Parse the transfer-encoding and content-length headers to
+ * determine how to decode a body *)
+let parse_transfer_encoding headers =
+  match Header.get headers "transfer-encoding" with
+  |"chunked"::_ -> Chunked
+  |_ -> begin
+    match Header.get headers "content-length" with
+    |len::_ -> (try Fixed (Int64.of_string len) with _ -> Unknown)
+    |[] -> Unknown
+  end
+
 module M(IO:IO.M) = struct
   open IO
 
@@ -65,31 +87,10 @@ module M(IO:IO.M) = struct
       read ic 16384 >>= fun buf -> return (Some buf)
   end
   
-  type encoding =
-    | Chunked
-    | Fixed of int64
-    | Unknown
-  
-  let encoding_to_string =
-    function
-    | Chunked -> "chunked"
-    | Fixed i -> Printf.sprintf "fixed[%Ld]" i
-    | Unknown -> "unknown"
-  
   let read =
     function
     | Chunked -> Chunked.read
     | Fixed len -> Fixed.read ~len
     | Unknown -> Unknown.read
 
-   (* Parse the transfer-encoding and content-length headers to
-   * determine how to decode a body *)
-  let parse_transfer_encoding headers =
-    match Header.get headers "transfer-encoding" with
-    |"chunked"::_ -> Chunked
-    |_ -> begin
-      match Header.get headers "content-length" with
-      |len::_ -> (try Fixed (Int64.of_string len) with _ -> Unknown)
-      |[] -> Unknown
-    end
 end
