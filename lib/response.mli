@@ -20,6 +20,7 @@ module M(IO:IO.M) : sig
 
   val version: response -> Code.version
   val status: response -> Code.status_code
+  val headers: response -> Header.t
 
   val make : ?version:Code.version -> ?status:Code.status_code -> 
     ?encoding:Transfer.encoding -> Header.t -> response

@@ -30,6 +30,7 @@ module M (IO:IO.M) = struct
 
   let version r = r.version
   let status r = r.status
+  let headers r = r.headers
 
   let make ?(version=`HTTP_1_1) ?(status=`OK) ?(encoding=Transfer.Chunked) headers =
     { encoding; headers; version; status }
