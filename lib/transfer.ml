@@ -87,10 +87,13 @@ module M(IO:IO.M) = struct
     let read ~len ic =
       (* TODO functorise string to a bigbuffer *)
       let len = Int64.to_int len in
-      let buf = String.create len in
-      read_exactly ic buf 0 len >>= function
-      |false -> return Done
-      |true -> return (Final_chunk buf)
+      match len with
+      |0 -> return Done
+      |len ->
+        let buf = String.create len in
+        read_exactly ic buf 0 len >>= function
+        |false -> return Done
+        |true -> return (Final_chunk buf)
 
     (* TODO enforce that the correct length is written? *)
     let write oc buf =
