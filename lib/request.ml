@@ -36,7 +36,8 @@ module M (IO:IO.M) = struct
   let version r = r.version
   let path r = Uri.path r.uri
   
-  let header req h = Header.get req.get h
+  let header req h = Header.get req.headers h
+  let headers req = req.headers
   
   let content_length headers =
     match Header.get headers "content-length" with
