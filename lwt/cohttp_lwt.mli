@@ -15,9 +15,6 @@
  *
  *)
 
-val ic_of_buffer : Lwt_bytes.t -> Lwt_io.input_channel
-val oc_of_buffer : Lwt_bytes.t -> Lwt_io.output_channel
-
 module Request : sig
   type request
   val meth : request -> Code.meth

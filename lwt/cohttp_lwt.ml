@@ -39,9 +39,6 @@ module IO = struct
   let write_line oc buf = Lwt_io.write_line oc buf
 end
 
-let ic_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.input buf
-let oc_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.output buf
-
 module Body  = Transfer.M(IO)
 module Parser = Parser.M(IO)
 module Request = Request.M(IO)
