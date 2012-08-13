@@ -184,4 +184,104 @@ end
 
 module Server = struct
 
+  let try_close chan =
+    catch (fun () -> Lwt_io.close chan)
+    (function |_ -> return ())
+
+  let init_socket sockaddr =
+    let suck = Lwt_unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
+    Lwt_unix.setsockopt suck Unix.SO_REUSEADDR true;
+    Lwt_unix.bind suck sockaddr;
+    Lwt_unix.listen suck 15;
+    suck
+
+  let process_accept ~sockaddr ~timeout callback (client,_) =
+    (* client is now connected *)
+    let inchan = Lwt_io.of_fd Lwt_io.input client in
+    let outchan = Lwt_io.of_fd Lwt_io.output client in
+ 
+    let c = callback inchan outchan in
+    let events = match timeout with
+      |None -> [c]
+      |Some t -> [c; (Lwt_unix.sleep (float_of_int t) >> return ()) ] in
+    Lwt.pick events >> try_close outchan >> try_close inchan
+  
+  let tcp_server ~sockaddr ~timeout callback =
+    let suck = init_socket sockaddr in
+    let rec handle_connection () =
+       lwt x = Lwt_unix.accept suck in
+       let _ =  process_accept ~sockaddr ~timeout callback x in
+       handle_connection()
+    in
+    handle_connection ()
+
+  type conn_id = int
+  type response = Response.response * string Lwt_stream.t
+  let string_of_conn_id = string_of_int
+
+  type config = {
+    address: string;
+    callback: conn_id -> Request.request -> 
+      (Response.response * string Lwt_stream.t) Lwt.t;
+    conn_closed : conn_id -> unit;
+    port: int;
+    root_dir: string option;
+    timeout: int option;
+  }
+
+  let respond_string ?headers ~status ~body () =
+    let headers = match headers with |None -> Header.init () |Some h -> h in
+    let res = Response.make ~status 
+      ~encoding:(Transfer.Fixed (Int64.of_int (String.length body))) headers in
+    let body = Lwt_stream.of_list [body] in
+    return (res,body)
+
+  let respond_error ~status ~body () =
+    respond_string ~status ~body:("Error: "^body) ()
+
+  let invoke_callback conn_id (req:Request.request) spec =
+    try_lwt 
+      spec.callback conn_id req
+    with e ->
+      respond_error ~status:`Internal_server_error ~body:(Printexc.to_string e) ()
+
+  let daemon_callback spec =
+    let conn_id = ref 0 in
+    let daemon_callback ic oc =
+      let conn_id = incr conn_id; !conn_id in
+      let responses, response_push = Lwt_stream.create () in
+      let response_t =
+         lwt () = Lwt_stream.iter_s (fun (res, body) ->
+             Response.write 
+               (fun res oc -> 
+                  Lwt_stream.iter_s (fun s ->
+                    Response.write_body s res oc) body
+               ) res oc
+         ) responses in
+         try_close oc
+      in
+      let rec read_request () =
+        match_lwt Request.read ic with
+        |None -> 
+          response_push None;
+          spec.conn_closed conn_id;
+          return ()
+        |Some req -> begin
+          lwt (res,body) = invoke_callback conn_id req spec in
+          response_push (Some (res,body));
+          match Request.header req "connection" with
+          |["close"] -> 
+             response_push None;
+             return ()
+          |_ -> 
+             read_request ()
+        end
+      in
+      response_t <&> (read_request ())
+    in daemon_callback
+ 
+  let main spec =
+    let () = match spec.root_dir with Some dir -> Sys.chdir dir | None -> () in
+    lwt sockaddr = build_sockaddr (spec.address, spec.port) in
+    tcp_server ~sockaddr ~timeout:spec.timeout (daemon_callback spec)
 end

@@ -25,6 +25,7 @@ module Request : sig
   val version : request -> Code.version
   val path : request -> string
   val header : request -> string -> string list
+  val headers : request -> Header.t
   val params_get : request -> Header.t
   val params_post : request -> Header.t
   val param : request -> string -> string list
@@ -73,4 +74,29 @@ module Client : sig
   val post_form : ?headers:Header.t -> params:Header.t -> Uri.t -> response Lwt.t
   val put : ?headers:Header.t -> ?body:string Lwt_stream.t -> Uri.t -> response Lwt.t
   val delete : ?headers:Header.t -> Uri.t -> response Lwt.t
+end
+
+module Server : sig
+  type conn_id
+  type response = Response.response * string Lwt_stream.t
+
+  val string_of_conn_id : conn_id -> string
+
+  type config = {
+    address : string;
+    callback : conn_id -> Request.request -> response Lwt.t;
+    conn_closed : conn_id -> unit;
+    port : int;
+    root_dir : string option;
+    timeout : int option;
+  }  
+
+  val respond_string :
+      ?headers:Header.t ->
+      status:Code.status_code ->
+      body:string -> unit -> response Lwt.t
+
+  val respond_error : status:Code.status_code -> body:string -> unit -> response Lwt.t
+
+  val main : config -> unit Lwt.t
 end
