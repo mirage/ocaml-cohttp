@@ -96,6 +96,9 @@ another-footer: another-value
 
 let basic_res_plus_crlf = basic_res ^ "\r\n\r\n"
 
+let ic_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.input buf
+let oc_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.output buf
+
 open Lwt
 
 let basic_req_parse () =
