@@ -21,6 +21,19 @@ Library cohttp_lwt
   BuildDepends: lwt.unix, lwt, uri, cohttp, lwt.ssl
   Modules: Cohttp_lwt
 
+Flag async
+  Description: build the Core/Async library
+  Default: false
+
+Library cohttp_async
+  Build$: flag(async)
+  Install$: flag(async)
+  Path: async
+  Findlibname: async
+  FindlibParent: cohttp
+  BuildDepends: uri, cohttp, async_core, async_unix, threads, async_extra
+  Modules: Cohttp_async
+
 Document cohttp
   Title:                Cohttp docs
   Type:                 ocamlbuild (0.2)
@@ -46,14 +59,23 @@ Executable test_parser
   Install:            false
   BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2)
 
-Executable test_net
+Executable test_net_lwt
   Path:               lib_test
-  MainIs:             test_net.ml
+  MainIs:             test_net_lwt.ml
   Build$:             flag(tests)
   Custom:             true
   CompiledObject:     best
   Install:            false
   BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2)
+
+Executable test_net_async
+  Path:               lib_test
+  MainIs:             test_net_async.ml
+  Build$:             flag(tests) && flag(async)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.async, oUnit (>= 1.0.2)
 
 Flag nettests
   Description: run the internet-using tests
@@ -69,8 +91,7 @@ Test test_parser
   Command:            $test_parser
   WorkingDirectory:   lib_test
 
-Test test_net
+Test test_net_lwt
   Run$:               flag(nettests)
-  Command:            $test_net
+  Command:            $test_net_lwt
   WorkingDirectory:   lib_test
-

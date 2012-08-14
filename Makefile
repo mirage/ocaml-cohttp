@@ -2,7 +2,9 @@
 all: build test doc
 
 NAME=cohttp
-EXTRA ?= --enable-nettests
+ASYNC ?= --enable-async
+#EXTRA ?= --enable-nettests
+
 
 setup.bin: setup.ml
 	ocamlopt.opt -o $@ $< || ocamlopt -o $@ $< || ocamlc -o $@ $<
