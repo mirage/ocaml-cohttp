@@ -109,21 +109,6 @@ let connect uri iofn =
   |Some "http" -> Normal.connect uri iofn
   |Some _ | None -> fail (Failure "unknown scheme")
  
-let rec read_write_r inchan outchan num_read max_to_read =
-  lwt s = Lwt_io.read inchan in
-  if s = ""  then
-    return ()
-  else
-    lwt () = Lwt_io.write outchan s in
-    let num_read_incr = num_read + (String.length s) in
-    if num_read_incr < max_to_read then
-      read_write_r inchan outchan num_read_incr max_to_read
-    else
-      return ()
-
-let read_write inchan outchan =
-  read_write_r inchan outchan 0 max_int
-
 module Client = struct
 
   type response = (Response.response * string Lwt_stream.t) option
