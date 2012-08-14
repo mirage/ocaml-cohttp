@@ -19,6 +19,20 @@ open OUnit
 open Printf
 open Lwt
 
+let make_server () =
+  let open Cohttp_lwt in
+  let callback conn_id req =
+    Server.respond_string ~status:`OK ~body:"helloworld" ()
+  in
+  let conn_closed conn_id =
+    Printf.eprintf "conn %s closed\n%!" (Server.string_of_conn_id conn_id)
+  in
+  let config = {
+    Server.address = "127.0.0.1"; port=8081;
+    callback; conn_closed; root_dir=None; timeout=None
+  } in
+  Server.main config
+     
 let make_net_req url () =
   Cohttp_lwt.Client.call `GET (Uri.of_string url) >>= function 
   |None -> assert false
@@ -31,6 +45,7 @@ let test_cases =
     make_net_req "http://anil.recoil.org";
     make_net_req "http://anil.recoil.org/";
     make_net_req "https://github.com/";
+(*    make_server *)
   ] in
   List.map (fun x -> "test" >:: (fun () -> Lwt_unix.run (x ()))) tests
 
