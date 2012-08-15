@@ -29,7 +29,7 @@ module Request : sig
   val transfer_encoding : request -> string
 
   val make : ?meth:Code.meth -> ?version:Code.version -> 
-    ?encoding:Transfer.encoding -> Header.t -> Uri.t -> request
+    ?encoding:Transfer.encoding -> ?headers:Header.t -> Uri.t -> request
 
   val read : Lwt_io.input_channel -> request option Lwt.t
   val read_body : request -> Lwt_io.input_channel -> Transfer.chunk Lwt.t
@@ -37,7 +37,8 @@ module Request : sig
   val write_header : request -> Lwt_io.output_channel -> unit Lwt.t
   val write_body : string -> request -> Lwt_io.output_channel -> unit Lwt.t
   val write_footer : request -> Lwt_io.output_channel -> unit Lwt.t
-  val write : (request -> Lwt_io.output_channel -> unit Lwt.t) -> request -> Lwt_io.output_channel -> unit Lwt.t
+  val write : (request -> Lwt_io.output_channel -> unit Lwt.t) -> request -> 
+    Lwt_io.output_channel -> unit Lwt.t
 end
 
 module Response : sig
@@ -47,7 +48,7 @@ module Response : sig
   val headers: response -> Header.t
 
   val make : ?version:Code.version -> ?status:Code.status_code -> 
-    ?encoding:Transfer.encoding -> Header.t -> response
+    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> response
 
   val read : Lwt_io.input_channel -> response option Lwt.t
   val read_body : response -> Lwt_io.input_channel -> Transfer.chunk Lwt.t
@@ -60,7 +61,7 @@ module Response : sig
 end
 
 module Client : sig
-  type response = (Response.response * string Lwt_stream.t) option
+  type response = (Response.response * string Lwt_stream.t option) option
 
   val call : ?headers:Header.t -> ?body:string Lwt_stream.t -> 
     Code.meth -> Uri.t -> response Lwt.t
@@ -71,27 +72,29 @@ module Client : sig
   val post_form : ?headers:Header.t -> params:Header.t -> Uri.t -> response Lwt.t
   val put : ?headers:Header.t -> ?body:string Lwt_stream.t -> Uri.t -> response Lwt.t
   val delete : ?headers:Header.t -> Uri.t -> response Lwt.t
+
+  val callv : ?ssl:bool -> string -> int ->
+      (Request.request * string Lwt_stream.t option) Lwt_stream.t ->
+      (Response.response * string Lwt_stream.t option) Lwt_stream.t Lwt.t
 end
 
 module Server : sig
   type conn_id
-  type response = Response.response * string Lwt_stream.t
+  type response = Response.response * string Lwt_stream.t option
 
   val string_of_conn_id : conn_id -> string
 
   type config = {
     address : string;
-    callback : conn_id -> Request.request -> response Lwt.t;
-    conn_closed : conn_id -> unit;
+    callback : conn_id -> ?body:string Lwt_stream.t -> Request.request -> response Lwt.t;
+    conn_closed : conn_id -> unit -> unit; 
     port : int;
     root_dir : string option;
     timeout : int option;
   }  
 
-  val respond_string :
-      ?headers:Header.t ->
-      status:Code.status_code ->
-      body:string -> unit -> response Lwt.t
+  val respond_string : ?headers:Header.t -> status:Code.status_code ->
+    body:string -> unit -> response Lwt.t
 
   val respond_error : status:Code.status_code -> body:string -> unit -> response Lwt.t
 
