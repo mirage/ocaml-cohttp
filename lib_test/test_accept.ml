@@ -21,26 +21,32 @@ open Printf
 module A = Cohttp.Accept
 
 let test s v () =
-  let s' = A.parse_types [] (A.lexer s) in
-  assert_equal ~printer:A.string_of_types v s'
+  let s' = A.media_ranges s in
+  assert_equal ~printer:A.string_of_media_ranges v s'
 
 let valid_tests = [
-  "text/plain", [1000,A.Type ("text","plain",[])];
-  "text/*", [1000,A.AnySubtype ("text",[])];
-  "*/*", [1000,A.Any []];
-  "*/*;q=1", [1000,A.Any []];
-  "*/*;q=0", [0,A.Any []];
-  "*/*;q=1.", [1000,A.Any []];
-  "*/*;q=1.0", [1000,A.Any []];
-  "*/*;q=.0", [0,A.Any []];
-  "*/*;q=.", [0,A.Any []];
-  "*/*;q=0.", [0,A.Any []];
-  "*/*;q=0.1", [100,A.Any []];
-  "text/plain; q=0.8; charset=utf-8,text/html;q=0.9;charset=utf-8", [
-    800,A.Type ("text","plain",["charset",A.T"utf-8"]);
-    900,A.Type ("text","html",["charset",A.T"utf-8"])
+  "text/plain", [1000,A.MediaType ("text","plain"),[]];
+  "text/*", [1000,A.AnyMediaSubtype "text",[]];
+  "*/*", [1000,A.AnyMedia,[]];
+  "*/*;q=1", [1000,A.AnyMedia,[]];
+  "*/*;q=0", [0,A.AnyMedia,[]];
+  "*/*;q=1.", [1000,A.AnyMedia,[]];
+  "*/*;q=1.0", [1000,A.AnyMedia,[]];
+  "*/*;q=.0", [0,A.AnyMedia,[]];
+  "*/*;q=.", [0,A.AnyMedia,[]];
+  "*/*;q=0.", [0,A.AnyMedia,[]];
+  "*/*;q=0.1", [100,A.AnyMedia,[]];
+  "image/*,text/*", [
+    1000,A.AnyMediaSubtype "image",[];
+    1000,A.AnyMediaSubtype "text",[];
   ];
-  "text/*;foo=\"bar\"", [1000,A.AnySubtype ("text",["foo",A.S"bar"])]
+  "text/plain; q=0.8; charset=utf-8,text/html;q=0.9;charset=utf-8", [
+    800,A.MediaType ("text","plain"),["charset",A.T"utf-8"];
+    900,A.MediaType ("text","html"),["charset",A.T"utf-8"];
+  ];
+  "text/*;foo=\"bar\"", [1000,A.AnyMediaSubtype "text",["foo",A.S"bar"]];
+  "*/*;qu=\"\\\"\"", [1000,A.AnyMedia,["qu",A.S"\""]];
+  "*/*;f=\";q=0,text/plain\"", [1000,A.AnyMedia,["f",A.S";q=0,text/plain"]];
 ]
 
 let valid_test_suite = List.map (fun (s,v) -> s >:: (test s v)) valid_tests
