@@ -72,6 +72,37 @@ module Ssl_client = struct
     try_lwt Lwt_ssl.close oc with _ -> return ()
 end
 
+module Tcp_server = struct
+
+  let close (ic,oc) =
+    let _ = try_lwt Lwt_io.close ic with _ -> return () in
+    try_lwt Lwt_io.close oc with _ -> return ()
+
+  let init_socket sockaddr =
+    let suck = Lwt_unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
+    Lwt_unix.setsockopt suck Unix.SO_REUSEADDR true;
+    Lwt_unix.bind suck sockaddr;
+    Lwt_unix.listen suck 15;
+    suck
+
+  let process_accept ~sockaddr ~timeout callback (client,_) =
+    let ic = Lwt_io.of_fd Lwt_io.input client in
+    let oc = Lwt_io.of_fd Lwt_io.output client in
+ 
+    let c = callback ic oc in
+    let events = match timeout with
+      |None -> [c]
+      |Some t -> [c; (Lwt_unix.sleep (float_of_int t)) ] in
+    Lwt.pick events >> close (ic,oc)
+  
+  let init ~sockaddr ~timeout callback =
+    let s = init_socket sockaddr in
+    while_lwt true do
+      Lwt_unix.accept s >>=
+      process_accept ~sockaddr ~timeout callback
+    done
+end
+
 let connect_uri uri =
   lwt sa = build_sockaddr (Uri.host_with_default uri) (port_of_uri uri) in
   match Uri.scheme uri with
@@ -85,6 +116,15 @@ let connect ?(ssl=false) host port =
   |true -> Ssl_client.connect sa
   |false -> Tcp_client.connect sa
 
+let close_in ic =
+  ignore_result (try_lwt Lwt_io.close ic with _ -> return ())
+
+let close_out oc =
+  ignore_result (try_lwt Lwt_io.close oc with _ -> return ())
+
 let close ic oc =
   let _ = try_lwt Lwt_io.close ic with _ -> return () in
   try_lwt Lwt_io.close oc with _ -> return ()
+
+let close' ic oc =
+  ignore_result (close ic oc)
