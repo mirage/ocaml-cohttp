@@ -21,6 +21,7 @@ type chunk = Chunk of string | Final_chunk of string | Done
 val encoding_to_string : encoding -> string
 val parse_transfer_encoding : Header.t -> encoding
 val add_encoding_headers : Header.t -> encoding -> Header.t
+val has_body : encoding -> bool
 
 module M(IO:IO.M) : sig
   val read : encoding -> IO.ic -> chunk IO.t

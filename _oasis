@@ -19,7 +19,7 @@ Library cohttp_lwt
   Findlibname: lwt
   FindlibParent: cohttp
   BuildDepends: lwt.unix, lwt, uri, cohttp, lwt.ssl
-  Modules: Cohttp_lwt
+  Modules: Cohttp_lwt, Cohttp_lwt_net
 
 Flag async
   Description: build the Core/Async library

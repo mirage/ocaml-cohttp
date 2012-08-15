@@ -33,9 +33,10 @@ module M(IO:IO.M) : sig
   val transfer_encoding : request -> string
 
   val make : ?meth:Code.meth -> ?version:Code.version -> 
-    ?encoding:Transfer.encoding -> Header.t -> Uri.t -> request
+    ?encoding:Transfer.encoding -> ?headers:Header.t -> Uri.t -> request
 
   val read : IO.ic -> request option IO.t
+  val has_body : request -> bool
   val read_body : request -> IO.ic -> Transfer.chunk IO.t
 
   val write_header : request -> IO.oc -> unit IO.t

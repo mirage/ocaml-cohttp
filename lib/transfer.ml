@@ -31,6 +31,13 @@ let encoding_to_string =
   | Fixed i -> Printf.sprintf "fixed[%Ld]" i
   | Unknown -> "unknown"
 
+let has_body =
+  function
+  | Chunked -> true
+  | Fixed 0L -> false
+  | Unknown -> true
+  | Fixed _ -> true
+
 (* Parse the transfer-encoding and content-length headers to
  * determine how to decode a body *)
 let parse_transfer_encoding headers =

@@ -32,7 +32,8 @@ module M (IO:IO.M) = struct
   let status r = r.status
   let headers r = r.headers
 
-  let make ?(version=`HTTP_1_1) ?(status=`OK) ?(encoding=Transfer.Chunked) headers =
+  let make ?(version=`HTTP_1_1) ?(status=`OK) ?(encoding=Transfer.Chunked) ?headers () =
+    let headers = match headers with None -> Header.init () |Some h -> h in
     { encoding; headers; version; status }
  
   let read ic =
@@ -43,6 +44,7 @@ module M (IO:IO.M) = struct
        let encoding = Transfer.parse_transfer_encoding headers in
        return (Some { encoding; headers; version; status })
 
+  let has_body r = Transfer.has_body r.encoding
   let read_body r ic = Transfer_IO.read r.encoding ic
 
   let write_header res oc =

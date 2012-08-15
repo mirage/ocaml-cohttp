@@ -23,9 +23,10 @@ module M(IO:IO.M) : sig
   val headers: response -> Header.t
 
   val make : ?version:Code.version -> ?status:Code.status_code -> 
-    ?encoding:Transfer.encoding -> Header.t -> response
+    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> response
 
   val read: IO.ic -> response option IO.t
+  val has_body : response -> bool
   val read_body: response -> IO.ic -> Transfer.chunk IO.t
 
   val write_header : response -> IO.oc -> unit IO.t

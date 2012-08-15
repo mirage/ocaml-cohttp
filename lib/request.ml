@@ -79,6 +79,7 @@ module M (IO:IO.M) = struct
       ) >>= fun (post, encoding) ->
       return (Some { headers; meth; uri; version; post; get; encoding })
 
+  let has_body req = Transfer.has_body req.encoding
   let read_body req ic = Transfer_IO.read req.encoding ic
 
   let host_of_uri uri = 
@@ -86,7 +87,11 @@ module M (IO:IO.M) = struct
     |None -> "localhost"
     |Some h -> h
 
-  let make ?(meth=`GET) ?(version=`HTTP_1_1) ?(encoding=Transfer.Chunked) headers uri =
+  let make ?(meth=`GET) ?(version=`HTTP_1_1) ?(encoding=Transfer.Chunked) ?headers uri =
+    let headers = 
+      match headers with
+      |None -> Header.init ()
+      |Some h -> h in
     let get = Header.of_list (Uri.query uri) in
     let post = Header.init () in
     { meth; version; headers; get; post; uri; encoding }
