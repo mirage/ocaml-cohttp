@@ -21,10 +21,10 @@ open Lwt
 
 let make_server () =
   let open Cohttp_lwt in
-  let callback conn_id req =
+  let callback conn_id ?body req =
     Server.respond_string ~status:`OK ~body:"helloworld" ()
   in
-  let conn_closed conn_id =
+  let conn_closed conn_id () =
     Printf.eprintf "conn %s closed\n%!" (Server.string_of_conn_id conn_id)
   in
   let config = {
@@ -34,18 +34,25 @@ let make_server () =
   Server.main config
      
 let make_net_req url () =
-  Cohttp_lwt.Client.call `GET (Uri.of_string url) >>= function 
+  let headers = Header.of_list ["connection","close"] in
+  Cohttp_lwt.Client.call ~headers `GET (Uri.of_string url) >>= function 
   |None -> assert false
-  |Some (res,body) ->
-    Cohttp_lwt.Response.write_header res Lwt_io.stderr >>
-    Lwt_stream.iter_s (fun _ -> return ()) body
+  |Some (res, None) ->
+    lwt () = Cohttp_lwt.Response.write_header res Lwt_io.stderr in
+    Printf.eprintf "<no body>\n%!";
+    return ()
+  |Some (res, Some body) ->
+    lwt () = Cohttp_lwt.Response.write_header res Lwt_io.stderr in
+    Lwt_stream.iter_s (fun s -> return ()) body
 
 let test_cases =
   let tests = [
     make_net_req "http://anil.recoil.org";
     make_net_req "http://anil.recoil.org/";
     make_net_req "https://github.com/";
-(*    make_server *)
+(*
+    make_server
+*)
   ] in
   List.map (fun x -> "test" >:: (fun () -> Lwt_unix.run (x ()))) tests
 

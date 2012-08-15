@@ -227,7 +227,7 @@ let make_simple_req () =
   (* Use the low-level write_header/footer API *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
-  let req = Request.make (Header.of_list [("foo","bar")]) (Uri.of_string "/foo/bar") in
+  let req = Request.make ~headers:(Header.of_list [("foo","bar")]) (Uri.of_string "/foo/bar") in
   Request.write_header req oc >>= fun () ->
   Request.write_body "foobar" req oc >>= fun () ->
   Request.write_footer req oc >>= fun () ->
@@ -247,7 +247,7 @@ let make_simple_res () =
   (* Use the low-level write_header/footer API *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
-  let res = Response.make (Header.of_list [("foo","bar")]) in
+  let res = Response.make ~headers:(Header.of_list [("foo","bar")]) () in
   Response.write_header res oc >>= fun () ->
   Response.write_body "foobar" res oc >>= fun () ->
   Response.write_footer res oc >>= fun () ->
