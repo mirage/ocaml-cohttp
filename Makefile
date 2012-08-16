@@ -2,15 +2,16 @@
 all: build test doc
 
 NAME=cohttp
+ASYNC ?= --enable-async
+EXTRA ?= --enable-nettests
 
-export OCAMLRUNPARAM=b
 
 setup.bin: setup.ml
 	ocamlopt.opt -o $@ $< || ocamlopt -o $@ $< || ocamlc -o $@ $<
 	rm -f setup.cmx setup.cmi setup.o setup.cmo
 
 setup.data: setup.bin
-	./setup.bin -configure
+	./setup.bin -configure --enable-tests $(EXTRA)
 
 build: setup.data setup.bin
 	./setup.bin -build
@@ -23,6 +24,9 @@ install: setup.bin
 
 test: setup.bin build
 	./setup.bin -test
+
+fulltest: setup.bin build
+	./setup.bin -test --enable-nettests
 
 reinstall: setup.bin
 	ocamlfind remove $(NAME) || true

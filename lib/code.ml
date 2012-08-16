@@ -19,16 +19,85 @@
   USA
 *)
 
-open Types
+(** Type definitions *)
+
+type version = [ `HTTP_1_0 | `HTTP_1_1 ]
+type meth = [ `GET | `POST | `HEAD | `DELETE ]
+
+type informational_status =
+  [ `Continue
+  | `Switching_protocols
+  ]
+type success_status =
+  [ `OK
+  | `Created
+  | `Accepted
+  | `Non_authoritative_information
+  | `No_content
+  | `Reset_content
+  | `Partial_content
+  ]
+type redirection_status =
+  [ `Multiple_choices
+  | `Moved_permanently
+  | `Found
+  | `See_other
+  | `Not_modified
+  | `Use_proxy
+  | `Temporary_redirect
+  ]
+type client_error_status =
+  [ `Bad_request
+  | `Unauthorized
+  | `Payment_required
+  | `Forbidden
+  | `Not_found
+  | `Method_not_allowed
+  | `Not_acceptable
+  | `Proxy_authentication_required
+  | `Request_time_out
+  | `Conflict
+  | `Gone
+  | `Length_required
+  | `Precondition_failed
+  | `Request_entity_too_large
+  | `Request_URI_too_large
+  | `Unsupported_media_type
+  | `Requested_range_not_satisfiable
+  | `Expectation_failed
+  ]
+type server_error_status =
+  [ `Internal_server_error
+  | `Not_implemented
+  | `Bad_gateway
+  | `Service_unavailable
+  | `Gateway_time_out
+  | `HTTP_version_not_supported
+  ]
+type error_status =
+  [ client_error_status
+  | server_error_status
+  ]
+type status =
+  [ informational_status
+  | success_status
+  | redirection_status
+  | client_error_status
+  | server_error_status
+  ]
+
+type status_code = [ `Code of int | status ]
+
+(* Manipulate the code types *)
 
 let string_of_version = function
   | `HTTP_1_0 -> "HTTP/1.0"
   | `HTTP_1_1 -> "HTTP/1.1"
 
 let version_of_string = function
-  | "HTTP/1.0" -> `HTTP_1_0
-  | "HTTP/1.1" -> `HTTP_1_1
-  | invalid_version -> raise (Invalid_HTTP_version invalid_version)
+  | "HTTP/1.0" -> Some `HTTP_1_0
+  | "HTTP/1.1" -> Some `HTTP_1_1
+  | _ -> None
 
 let string_of_method = function
   | `GET -> "GET"
@@ -37,13 +106,13 @@ let string_of_method = function
   | `DELETE -> "DELETE"
 
 let method_of_string = function
-  | "GET" -> `GET
-  | "POST" -> `POST
-  | "HEAD" -> `HEAD
-  | "DELETE" -> `DELETE
-  | invalid_method -> raise (Invalid_HTTP_method invalid_method)
+  | "GET" -> Some `GET
+  | "POST" -> Some `POST
+  | "HEAD" -> Some `HEAD
+  | "DELETE" -> Some `DELETE
+  | _ -> None
 
-let status_of_code = function
+let status_of_code (x:int) : status_code = match x with
   | 100 -> `Continue
   | 101 -> `Switching_protocols
   | 200 -> `OK
@@ -84,7 +153,7 @@ let status_of_code = function
   | 503 -> `Service_unavailable
   | 504 -> `Gateway_time_out
   | 505 -> `HTTP_version_not_supported
-  | invalid_code -> raise (Invalid_code invalid_code)
+  | code -> `Code code
 
 let code_of_status = function
   | `Continue -> 100
@@ -127,6 +196,7 @@ let code_of_status = function
   | `Service_unavailable -> 503
   | `Gateway_time_out -> 504
   | `HTTP_version_not_supported -> 505
+  | `Code code -> code
 
 let string_of_status = function
   | `Continue -> "100 Continue"
@@ -169,6 +239,50 @@ let string_of_status = function
   | `Service_unavailable -> "503 Service Unavailable"
   | `Gateway_time_out -> "504 Gateway Timeout"
   | `HTTP_version_not_supported -> "505 HTTP Version Not Supported"
+  | `Code code -> string_of_int code
+
+let reason_phrase_of_code = function
+  | 100 -> "Continue"
+  | 101 -> "Switching protocols"
+  | 200 -> "OK"
+  | 201 -> "Created"
+  | 202 -> "Accepted"
+  | 203 -> "Non authoritative information"
+  | 204 -> "No content"
+  | 205 -> "Reset content"
+  | 206 -> "Partial content"
+  | 300 -> "Multiple choices"
+  | 301 -> "Moved permanently"
+  | 302 -> "Found"
+  | 303 -> "See other"
+  | 304 -> "Not modified"
+  | 305 -> "Use proxy"
+  | 307 -> "Temporary redirect"
+  | 400 -> "Bad request"
+  | 401 -> "Unauthorized"
+  | 402 -> "Payment required"
+  | 403 -> "Forbidden"
+  | 404 -> "Not found"
+  | 405 -> "Method not allowed"
+  | 406 -> "Not acceptable"
+  | 407 -> "Proxy authentication required"
+  | 408 -> "Request time out"
+  | 409 -> "Conflict"
+  | 410 -> "Gone"
+  | 411 -> "Length required"
+  | 412 -> "Precondition failed"
+  | 413 -> "Request entity too large"
+  | 414 -> "Request URI too large"
+  | 415 -> "Unsupported media type"
+  | 416 -> "Requested range not satisfiable"
+  | 417 -> "Expectation failed"
+  | 500 -> "Internal server error"
+  | 501 -> "Not implemented"
+  | 502 -> "Bad gateway"
+  | 503 -> "Service unavailable"
+  | 504 -> "Gateway time out"
+  | 505 -> "HTTP version not supported"
+  | invalid_code -> string_of_int invalid_code
 
 let is_informational code =
   match status_of_code code with

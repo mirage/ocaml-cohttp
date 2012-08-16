@@ -15,15 +15,12 @@
  *
  *)
 
-type encoding = Chunked | Fixed of int64 | Unknown
-type chunk = Chunk of string | Final_chunk of string | Done
-
-val encoding_to_string : encoding -> string
-val parse_transfer_encoding : Header.t -> encoding
-val add_encoding_headers : Header.t -> encoding -> Header.t
-val has_body : encoding -> bool
-
-module M(IO:IO.M) : sig
-  val read : encoding -> IO.ic -> chunk IO.t
-  val write : encoding -> IO.oc -> string -> unit IO.t 
-end
+type t
+val init : unit -> t
+val add : t -> string -> string -> t
+val remove : t -> string -> t
+val get : t -> string -> string list
+val map : (string -> string -> string) -> t -> t
+val fold : (string -> string -> 'a -> 'a) -> t -> 'a -> 'a
+val of_list : (string * string) list -> t
+val to_list : t -> (string * string) list

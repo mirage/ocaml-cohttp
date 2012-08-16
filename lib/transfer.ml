@@ -1,105 +1,131 @@
 (*
-  Copyright (C) <2012> Anil Madhavapeddy <anil@recoil.org>
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Library General Public License as
-  published by the Free Software Foundation, version 2.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Library General Public License for more details.
-
-  You should have received a copy of the GNU Library General Public
-  License along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
-  USA
-*)
-
-open Lwt
-
-module Chunked = struct
-  let read ic =
-    Lwt_stream.from (fun () ->
-      (* Read chunk size *)
-      lwt chunk_size_hex = Lwt_io.read_line ic in
-      let chunk_size = 
-        try
-          Some (int_of_string ("0x" ^ chunk_size_hex))
-        with _ ->
-          None
-      in
-      match chunk_size with
-      |None ->
-         return None (* Malformd chunk, terminate stream *)
-      |Some 0 ->
-         return None
-      |Some count -> begin
-         let buf = String.create count in
-         lwt () = Lwt_io.read_into_exactly ic buf 0 count in
-         match_lwt Lwt_io.read_line ic with
-         |"" -> return (Some buf)
-         |x -> return None (* malformed chunk *)
-      end
-    )
-
-  (* TODO who closes the channel when this is done? *)
-  let writer oc =
-    let stream, stream_push = Lwt_stream.create () in
-    let stream_t = 
-      Lwt_stream.iter_s (fun chunk -> 
-        let len = String.length chunk in
-        lwt () = Lwt_io.fprintf oc "%x\r\n" len in
-        Lwt_io.write oc chunk
-      ) stream
-    in
-    stream_t, stream_push
-end
-
-module Fixed = struct
-  let read ~len ic =
-    let len = ref len in
-    Lwt_stream.from (fun () ->
-      match !len with
-      |0 ->
-         return None
-      |count -> begin
-         match_lwt Lwt_io.read ~count ic with 
-         |"" ->
-           return None
-         |chunk ->
-           len := !len - (String.length chunk);
-           return (Some chunk)
-      end
-    )
-end
-
-module Unknown = struct
-  (* If we have no idea, then read one chunk and return it.
-   * Arbitrary timeout in case it hangs for ages *)
-  let read ic =
-    let timeout = 10.0 in
-    Lwt_stream.from (fun () ->
-      let timeout_t =
-        lwt () = Lwt_unix.timeout timeout in
-        return None
-      in
-      let read_t =
-        match_lwt Lwt_io.read ic with
-        |"" -> return None
-        |buf -> return (Some buf)
-      in
-      read_t <?> timeout_t
-    )
-end
+ * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *)
 
 type encoding =
-  | Chunked
-  | Fixed of int 
-  | Unknown
+| Chunked
+| Fixed of int64
+| Unknown
 
-let read =
+type chunk =
+| Chunk of string
+| Final_chunk of string
+| Done
+
+let encoding_to_string =
   function
-  | Chunked -> Chunked.read
-  | Fixed len -> Fixed.read ~len
-  | Unknown -> Unknown.read
+  | Chunked -> "chunked"
+  | Fixed i -> Printf.sprintf "fixed[%Ld]" i
+  | Unknown -> "unknown"
+
+let has_body =
+  function
+  | Chunked -> true
+  | Fixed 0L -> false
+  | Unknown -> true
+  | Fixed _ -> true
+
+(* Parse the transfer-encoding and content-length headers to
+ * determine how to decode a body *)
+let parse_transfer_encoding headers =
+  match Header.get headers "transfer-encoding" with
+  |"chunked"::_ -> Chunked
+  |_ -> begin
+    match Header.get headers "content-length" with
+    |len::_ -> (try Fixed (Int64.of_string len) with _ -> Unknown)
+    |[] -> Unknown
+  end
+
+let add_encoding_headers headers = 
+  function
+  |Chunked ->
+     Header.add headers "transfer-encoding" "chunked"
+  |Fixed len -> 
+     Header.add headers "content-length" (Int64.to_string len)
+  |Unknown -> 
+     headers
+ 
+module M(IO:IO.M) = struct
+  open IO
+
+  module Chunked = struct
+    let read ic =
+      (* Read chunk size *)
+      read_line ic >>= function
+      |Some chunk_size_hex -> begin
+        let chunk_size = 
+          let hex =
+            (* chunk size is optionally delimited by ; *)
+            try String.sub chunk_size_hex 0 (String.rindex chunk_size_hex ';')
+            with _ -> chunk_size_hex in
+          try Some (int_of_string ("0x" ^ hex)) with _ -> None
+        in
+        match chunk_size with
+        |None | Some 0 -> return Done
+        |Some count -> begin
+          read ic count >>= fun buf ->
+          read_line ic >>= fun _ -> (* Junk the CRLF at end of chunk *)
+          return (Chunk buf)
+        end
+      end
+      |None -> return Done
+ 
+    let write oc buf =
+      let len = String.length buf in
+      write oc (Printf.sprintf "%x\r\n" len) >>= fun () ->
+      write oc buf >>= fun () ->
+      write oc "\r\n"
+  end
+  
+  module Fixed = struct
+    let read ~len ic =
+      (* TODO functorise string to a bigbuffer *)
+      let len = Int64.to_int len in
+      match len with
+      |0 -> return Done
+      |len ->
+        let buf = String.create len in
+        read_exactly ic buf 0 len >>= function
+        |false -> return Done
+        |true -> return (Final_chunk buf)
+
+    (* TODO enforce that the correct length is written? *)
+    let write oc buf =
+      write oc buf
+  end
+  
+  module Unknown = struct
+    (* If we have no idea, then read one chunk and return it.
+     * TODO should this be a read with an explicit timeout? *)
+    let read ic =
+      read ic 16384 >>= fun buf -> return (Final_chunk buf)
+
+    let write oc buf =
+      write oc buf
+  end
+  
+  let read =
+    function
+    | Chunked -> Chunked.read
+    | Fixed len -> Fixed.read ~len
+    | Unknown -> Unknown.read
+
+  let write =
+    function
+    | Chunked -> Chunked.write
+    | Fixed len -> Fixed.write
+    | Unknown -> Unknown.write
+end

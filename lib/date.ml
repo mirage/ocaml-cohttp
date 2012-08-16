@@ -2,6 +2,8 @@
   OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
 
   Copyright (C) <2002-2005> Stefano Zacchiroli <zack@cs.unibo.it>
+	              2006-2009 Citrix Systems Inc.
+	              2010 Thomas Gazagnaire <thomas@gazagnaire.com>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU Library General Public License as
@@ -18,10 +20,17 @@
   USA
 *)
 
-(** Constants *)
+let months = [| "Jan"; "Feb"; "Mar"; "Apr"; "May"; "Jun"; 
+                 "Jul"; "Aug"; "Sep"; "Oct"; "Nov"; "Dec" |]
+let days = [| "Sun"; "Mon"; "Tue"; "Wed"; "Thu"; "Fri"; "Sat" |]
 
-val default_version: Types.version
+let rfc822_of_float x =
+  let open Unix in
+  let time = gmtime x in
+  Printf.sprintf "%s, %d %s %d %02d:%02d:%02d GMT"
+    days.(time.tm_wday) time.tm_mday
+    months.(time.tm_mon) (time.tm_year+1900)
+    time.tm_hour time.tm_min time.tm_sec
 
-val server_string: string
-
-val crlf: string
+let date_822 () =
+  rfc822_of_float (Unix.gettimeofday ())

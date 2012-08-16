@@ -20,93 +20,94 @@
 *)
 
 open Printf
-open Lwt
+open Code
 
-open Common
-open Types
-open Constants
-
-let bindings_sep = Re_str.regexp_string "&"
-let binding_sep = Re_str.regexp_string "="
-let pieces_sep = Re_str.regexp_string " "
-let header_sep = Re_str.regexp ": *"
-
-let url_decode url = Uri.pct_decode url
-
-let parse_request_fst_line ic =
-  lwt request_line = Lwt_io.read_line ic in
-  try_lwt begin
-    match Re_str.split_delim pieces_sep request_line with
-    | [ meth_raw; uri_raw; http_version_raw ] -> return
-      ( method_of_string meth_raw
-      , Uri.of_string uri_raw
-      , version_of_string http_version_raw
-      )
-    | _ -> fail (Malformed_request request_line)
-  end with | Malformed_URL url -> fail (Malformed_request_URI url)
-
-let parse_response_fst_line ic =
-  lwt response_line = Lwt_io.read_line ic in
-  try_lwt
-    (match Re_str.split_delim pieces_sep response_line with
-    | version_raw :: code_raw :: _ ->
-       return (version_of_string version_raw,      (* method *)
-       status_of_code (int_of_string code_raw))    (* status *)
-    | _ ->
-   fail (Malformed_response response_line))
-  with 
-  | Malformed_URL _ | Invalid_code _ | Failure "int_of_string" ->
-     fail (Malformed_response response_line)
-  | e -> fail e
-
-let parse_headers ic =
-  (* consume also trailing "^\r\n$" line *)
-  let rec parse_headers' headers =
-    Lwt_io.read_line ic >>= function
-    | "" -> return (List.rev headers)
-    | line -> begin
-        (*TODO: optimize by not going through the whole header and cat-ing it*)
-        lwt (header, value) = match Re_str.split_delim header_sep line with
-          | [] | [_] -> fail (Invalid_header line)
-          | hd :: tl -> Lwt.return (hd, String.concat ":" tl)
-        in
-        parse_headers' ((String.lowercase header, value) :: headers)
+module M (IO:IO.M) = struct
+  open IO
+  
+  let bindings_sep = Re_str.regexp_string "&"
+  let binding_sep = Re_str.regexp_string "="
+  let pieces_sep = Re_str.regexp_string " "
+  let header_sep = Re_str.regexp ": *"
+  
+  let url_decode url = Uri.pct_decode url
+  
+  let parse_request_fst_line ic =
+    read_line ic >>= function
+    |Some request_line -> begin
+      match Re_str.split_delim pieces_sep request_line with
+      | [ meth_raw; uri_raw; http_ver_raw ] -> begin
+          match method_of_string meth_raw, version_of_string http_ver_raw with
+          |Some m, Some v -> return (Some (m, (Uri.of_string uri_raw), v))
+          |_ -> return None
       end
-  in
-  parse_headers' []
-
-let parse_request ic =
-  lwt (meth, uri, version) = parse_request_fst_line ic in
-  let path = match Uri.path uri with "" -> "/" | p -> p in
-  let query_get_params = Uri.query uri in
-  return (path, query_get_params)
-
-let parse_content_range s =
-  try
-    let start, fini, total = Scanf.sscanf s "bytes %d-%d/%d" 
-      (fun start fini total -> start, fini, total) in
-    Some (start, fini, total)
-  with Scanf.Scan_failure _ -> None
-
-(* If we see a "Content-Range" header, than we should limit the
-   number of bytes we attempt to read *)
-let parse_content_range headers = 
-  (* assuming header keys were downcased in previous step *)
-  if List.mem_assoc "content-length" headers then begin
-    try 
-      let str = List.assoc "content-length" headers in
-      Some (int_of_string str)
-    with _ ->
+      | _ -> return None
+    end
+    |None -> return None
+  
+  let parse_response_fst_line ic =
+    read_line ic >>= function
+    |Some response_line -> begin
+      match Re_str.split_delim pieces_sep response_line with
+      | version_raw :: code_raw :: _ -> begin
+         match version_of_string version_raw with
+         |Some v -> return (Some (v, (status_of_code (int_of_string code_raw))))
+         |_ -> return None
+      end
+      | _ -> return None
+    end
+    |None -> return None
+  
+  let parse_headers ic =
+    (* consume also trailing "^\r\n$" line *)
+    let rec parse_headers' headers =
+      read_line ic >>= function
+      |Some "" | None -> return headers
+      |Some line -> begin
+          match Re_str.bounded_split_delim header_sep line 2 with
+          | [hd;tl] -> 
+              let header = String.lowercase hd in
+              parse_headers' (Header.add headers header tl);
+          | _ -> return headers
+      end
+    in parse_headers' (Header.init ())
+  
+  let parse_content_range s =
+    try
+      let start, fini, total = Scanf.sscanf s "bytes %d-%d/%d" 
+        (fun start fini total -> start, fini, total) in
+      Some (start, fini, total)
+    with Scanf.Scan_failure _ -> None
+  
+  (* If we see a "Content-Range" header, than we should limit the
+     number of bytes we attempt to read *)
+  let parse_content_range headers = 
+    (* assuming header keys were downcased in previous step *)
+    match Header.get headers "content-length" with
+    |clen::_ -> (try Some (int_of_string clen) with _ -> None)
+    |_ -> begin
+      match Header.get headers "content-range" with
+      |range_s::_ -> begin
+        match parse_content_range range_s with
+        |Some (start, fini, total) ->
+          (* some sanity checking before we act on these values *)
+          if fini < total && start <= total && 0 <= start && 0 <= total then (
+            let num_bytes_to_read = fini - start + 1 in
+            Some num_bytes_to_read
+          ) else None
+        |None -> None
+      end
+      |_ -> None
+   end
+  
+  let media_type_re =
+    (* Grab "foo/bar" from " foo/bar ; charset=UTF-8" *)
+    Re_str.regexp "[ \t]*\\([^ \t;]+\\)"
+  
+  let parse_media_type s =
+    if Re_str.string_match media_type_re s 0 then
+      Some (Re_str.matched_group 1 s)
+    else
       None
-  end else if List.mem_assoc "content-range" headers then begin
-    let range_s = List.assoc "content-range" headers in
-    match parse_content_range range_s with
-    |Some (start, fini, total) ->
-      (* some sanity checking before we act on these values *)
-      if fini < total && start <= total && 0 <= start && 0 <= total then (
-        let num_bytes_to_read = fini - start + 1 in
-        Some num_bytes_to_read
-      ) else None
-    |None -> None
-  end else None    
-
+  
+end

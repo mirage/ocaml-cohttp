@@ -15,15 +15,18 @@
  *
  *)
 
-type encoding = Chunked | Fixed of int64 | Unknown
-type chunk = Chunk of string | Final_chunk of string | Done
+module type M = sig
+  type 'a t
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val return : 'a -> 'a t
 
-val encoding_to_string : encoding -> string
-val parse_transfer_encoding : Header.t -> encoding
-val add_encoding_headers : Header.t -> encoding -> Header.t
-val has_body : encoding -> bool
+  type ic
+  type oc
 
-module M(IO:IO.M) : sig
-  val read : encoding -> IO.ic -> chunk IO.t
-  val write : encoding -> IO.oc -> string -> unit IO.t 
+  val iter : ('a -> unit t) -> 'a list -> unit t
+  val read_line : ic -> string option t
+  val read : ic -> int -> string t
+  val read_exactly : ic -> string -> int -> int -> bool t
+  val write : oc -> string -> unit t
+  val write_line : oc -> string -> unit t
 end

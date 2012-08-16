@@ -28,20 +28,3 @@ val date_822: unit -> string
 
 (** Convert a number of seconds to a date compliant with RFC 822 *)
 val rfc822_of_float : float -> string
-
-  (** strip trailing '/', if any, from a string and @return the new string *)
-val strip_trailing_slash: string -> string
-
-  (** strip heading '/', if any, from a string and @return the new string *)
-val strip_heading_slash: string -> string
-
-  (** given an HTTP response code return the corresponding reason phrase *)
-val reason_phrase_of_code: int -> string
-
-  (** like List.assoc but return all bindings of a given key instead of the
-  leftmost one only *)
-val list_assoc_all: 'a -> ('a * 'b) list -> 'b list
-
-val warn: string -> unit (** print a warning msg to stderr. Adds trailing \n *)
-val error: string -> unit (** print an error msg to stderr. Adds trailing \n *)
-

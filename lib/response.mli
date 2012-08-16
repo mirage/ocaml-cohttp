@@ -1,37 +1,36 @@
-type response
-val init :
-  ?body:Message.contents list ->
-  ?headers:(string * string) list ->
-  ?version:Types.version ->
-  ?status:Types.status_code ->
-  ?reason:string ->
-  ?clisockaddr:Unix.sockaddr ->
-  ?srvsockaddr:Unix.sockaddr ->
-  unit -> response
-val version_string : response -> string
-val code : response -> int
-val set_code : response -> int -> unit
-val status : response -> Types.status
-val set_status : response -> Types.status -> unit
-val reason : response -> string
-val set_reason : response -> string -> unit
-val status_line : response -> string
-val is_informational : response -> bool
-val is_success : response -> bool
-val is_redirection : response -> bool
-val is_client_error : response -> bool
-val is_server_error : response -> bool
-val is_error : response -> bool
-val add_basic_headers : response -> unit
-val content_type : response -> string option
-val set_content_type : response -> value:string -> unit
-val content_encoding : response -> string option
-val set_content_encoding : response -> value:string -> unit
-val date : response -> string option
-val set_date : response -> value:string -> unit
-val expires : response -> string option
-val set_expires : response -> value:string -> unit
-val server : response -> string option
-val set_server : response -> value:string -> unit
-val serialize_to_channel : response -> Lwt_io.output Lwt_io.channel -> unit Lwt.t
-val serialize_to_stream : response -> string Lwt_stream.t
+(*
+ * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *)
+
+module M(IO:IO.M) : sig
+  type response
+
+  val version: response -> Code.version
+  val status: response -> Code.status_code
+  val headers: response -> Header.t
+
+  val make : ?version:Code.version -> ?status:Code.status_code -> 
+    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> response
+
+  val read: IO.ic -> response option IO.t
+  val has_body : response -> bool
+  val read_body: response -> IO.ic -> Transfer.chunk IO.t
+
+  val write_header : response -> IO.oc -> unit IO.t
+  val write_body : string -> response -> IO.oc -> unit IO.t
+  val write_footer : response -> IO.oc -> unit IO.t
+  val write : (response -> IO.oc -> unit IO.t) -> response -> IO.oc -> unit IO.t
+end

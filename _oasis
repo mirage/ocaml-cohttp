@@ -1,4 +1,4 @@
-OASISFormat: 0.2
+OASISFormat: 0.3
 Name:        cohttp
 Version:     0.9-dev
 Synopsis:    HTTP protocol library for Lwt
@@ -8,11 +8,31 @@ Plugins:     META (0.2)
 BuildTools:  ocamlbuild
 
 Library cohttp
-  Path:       lib
+  Path: lib
   Findlibname: cohttp
   Pack: true
-  Modules: Base64, Common, Constants, Cookie, Misc, Parser, Request, Response, Types, Message, Transfer
-  BuildDepends:	lwt.syntax, lwt, re, lwt.unix, uri
+  Modules: Base64, Code, Date, IO, Header, Parser, Request, Response, Transfer
+  BuildDepends:	re, lwt.unix, uri (>= 1.2)
+
+Library cohttp_lwt
+  Path: lwt
+  Findlibname: lwt
+  FindlibParent: cohttp
+  BuildDepends: lwt.unix, lwt, uri, cohttp, lwt.ssl
+  Modules: Cohttp_lwt, Cohttp_lwt_net
+
+Flag async
+  Description: build the Core/Async library
+  Default: false
+
+Library cohttp_async
+  Build$: flag(async)
+  Install$: flag(async)
+  Path: async
+  Findlibname: async
+  FindlibParent: cohttp
+  BuildDepends: uri, cohttp, async_core, async_unix, threads, async_extra
+  Modules: Cohttp_async
 
 Document cohttp
   Title:                Cohttp docs
@@ -20,10 +40,6 @@ Document cohttp
   BuildTools+:          ocamldoc
   XOCamlbuildPath:      lib
   XOCamlbuildLibraries: cohttp
-
-Flag tests
-  Description:        Build and run tests
-  Default:            true
 
 Executable test_base64
   Path:               lib_test
@@ -34,8 +50,48 @@ Executable test_base64
   Install:            false
   BuildDepends:       cohttp,oUnit (>= 1.0.2)
 
+Executable test_parser
+  Path:               lib_test
+  MainIs:             test_parser.ml
+  Build$:             flag(tests)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2)
+
+Executable test_net_lwt
+  Path:               lib_test
+  MainIs:             test_net_lwt.ml
+  Build$:             flag(tests)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2)
+
+Executable test_net_async
+  Path:               lib_test
+  MainIs:             test_net_async.ml
+  Build$:             flag(tests) && flag(async)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.async, oUnit (>= 1.0.2)
+
+Flag nettests
+  Description: run the internet-using tests
+  Default: false
+
 Test test_base64
   Run$:               flag(tests)
   Command:            $test_base64
   WorkingDirectory:   lib_test
 
+Test test_parser
+  Run$:               flag(tests)
+  Command:            $test_parser
+  WorkingDirectory:   lib_test
+
+Test test_net_lwt
+  Run$:               flag(nettests)
+  Command:            $test_net_lwt
+  WorkingDirectory:   lib_test

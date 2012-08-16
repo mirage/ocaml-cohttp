@@ -15,15 +15,14 @@
  *
  *)
 
-type encoding = Chunked | Fixed of int64 | Unknown
-type chunk = Chunk of string | Final_chunk of string | Done
+module StringMap = Map.Make(String)
+type t = string StringMap.t
 
-val encoding_to_string : encoding -> string
-val parse_transfer_encoding : Header.t -> encoding
-val add_encoding_headers : Header.t -> encoding -> Header.t
-val has_body : encoding -> bool
-
-module M(IO:IO.M) : sig
-  val read : encoding -> IO.ic -> chunk IO.t
-  val write : encoding -> IO.oc -> string -> unit IO.t 
-end
+let init () = StringMap.empty
+let add h k v = StringMap.add k v h
+let remove h k = StringMap.remove k h
+let get h k = try [StringMap.find k h] with Not_found -> []
+let map fn h = StringMap.mapi fn h
+let fold fn h acc = StringMap.fold fn h acc
+let of_list l = List.fold_left (fun a (k,v) -> StringMap.add k v a) StringMap.empty l
+let to_list h = StringMap.fold (fun k v acc -> (k,v)::acc) h []
