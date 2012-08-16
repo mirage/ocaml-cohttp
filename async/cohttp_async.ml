@@ -62,7 +62,6 @@ module IO = struct
 end
 
 module Body = Transfer.M(IO)
-module Parser = Parser.M(IO)
 module Request = Request.M(IO)
 module Response = Response.M(IO)
 
@@ -79,15 +78,11 @@ open Deferred
 module Client = struct
 
   let call ?headers ?body meth uri =
-    let headers =
-      match headers with
-      |None -> Header.init ()
-      |Some h -> h in
     let encoding = 
       match body with 
       |None -> Transfer.Fixed 0L 
       |Some _ -> Transfer.Chunked in
-    let req = Request.make ~meth ~encoding headers uri in
+    let req = Request.make ~meth ~encoding ?headers uri in
     let host = match Uri.host uri with |None -> "localhost" |Some h -> h in
     let port = port_of_uri uri in
     let fn ic oc =
@@ -97,7 +92,6 @@ module Client = struct
          return None
       |Some res -> 
          let r,w = Pipe.create () in
-         
          return (Some (res,pipe))
     in
     Async_extra.Tcp.with_connection ~host ~port fn
