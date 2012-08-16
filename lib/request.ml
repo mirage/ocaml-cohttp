@@ -17,7 +17,7 @@
 
 module M (IO:IO.M) = struct
 
-  module Parser = Parser.M(IO)
+  module Header_IO = Header.M(IO)
   module Transfer_IO = Transfer.M(IO)
   open IO
 
@@ -39,41 +39,49 @@ module M (IO:IO.M) = struct
   let header req h = Header.get req.headers h
   let headers req = req.headers
   
-  let content_length headers =
-    match Header.get headers "content-length" with
-    |hd::tl -> (try Int64.of_string hd with _ -> 0L)
-    |[] -> 0L
-  
-  let content_type headers =
-    match Header.get headers "content-type" with
-    |hd::tl -> hd
-    |[] -> ""
-  
   let params_get r = r.get
   let params_post r = r.post
   let param r p = (Header.get r.post p) @ (Header.get r.get p)
 
   let transfer_encoding req = Transfer.encoding_to_string req.encoding
 
+
+  let url_decode url = Uri.pct_decode url
+
+  let pieces_sep = Re_str.regexp_string " "
+  let parse_request_fst_line ic =
+    let open Code in
+    read_line ic >>= function
+    |Some request_line -> begin
+      match Re_str.split_delim pieces_sep request_line with
+      | [ meth_raw; uri_raw; http_ver_raw ] -> begin
+          match method_of_string meth_raw, version_of_string http_ver_raw with
+          |Some m, Some v -> return (Some (m, (Uri.of_string uri_raw), v))
+          |_ -> return None
+      end
+      | _ -> return None
+    end
+    |None -> return None
+
   let read ic =
-    Parser.parse_request_fst_line ic >>=
-    function
+    parse_request_fst_line ic >>= function
     |None -> return None
     |Some (meth, uri, version) ->
-      Parser.parse_headers ic >>= fun headers ->
-      let ctype = content_type headers in
+      Header_IO.parse ic >>= fun headers ->
+      let ctype = Header.get_media_type headers in
       let get = Header.of_list (Uri.query uri) in
       (match meth, ctype with
-        |`POST, "application/x-www-form-urlencoded" -> 
+        |`POST, Some "application/x-www-form-urlencoded" -> 
           (* If the form is query-encoded, then extract those parameters also *)
-          let bodylen = content_length headers in
-          IO.read ic (Int64.to_int bodylen) >>= fun query ->
+          let bodylen = match Header.get_content_range headers with
+             |None -> 0 |Some x -> x in
+          IO.read ic bodylen >>= fun query ->
           let post = Header.of_list (Uri.query_of_encoded query) in
           let encoding = Transfer.Fixed 0L in
           return (post, encoding)
         |`POST, _ ->
           let post = Header.init () in
-          let encoding = Transfer.parse_transfer_encoding headers in
+          let encoding = Header.get_transfer_encoding headers in
           return (post, encoding)
         | _ -> return ((Header.init ()), (Transfer.Fixed 0L)) 
       ) >>= fun (post, encoding) ->
@@ -100,7 +108,7 @@ module M (IO:IO.M) = struct
    let fst_line = Printf.sprintf "%s %s %s\r\n" (Code.string_of_method req.meth)
       (Uri.path_and_query req.uri) (Code.string_of_version req.version) in
     let headers = Header.add req.headers "host" (host_of_uri req.uri) in
-    let headers = Transfer.add_encoding_headers headers req.encoding in
+    let headers = Header.add_transfer_encoding headers req.encoding in
     IO.write oc fst_line >>= fun () ->
     let headers = Header.fold (fun k v acc -> 
       Printf.sprintf "%s: %s\r\n" k v :: acc) headers [] in

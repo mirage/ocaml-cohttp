@@ -11,7 +11,7 @@ Library cohttp
   Path: lib
   Findlibname: cohttp
   Pack: true
-  Modules: Base64, Code, Date, IO, Header, Parser, Request, Response, Transfer
+  Modules: Code, Date, IO, Header, Request, Response, Transfer
   BuildDepends:	re, lwt.unix, uri (>= 1.2)
 
 Library cohttp_lwt
@@ -40,15 +40,6 @@ Document cohttp
   BuildTools+:          ocamldoc
   XOCamlbuildPath:      lib
   XOCamlbuildLibraries: cohttp
-
-Executable test_base64
-  Path:               lib_test
-  MainIs:             test_base64.ml
-  Build$:             flag(tests)
-  Custom:             true
-  CompiledObject:     best
-  Install:            false
-  BuildDepends:       cohttp,oUnit (>= 1.0.2)
 
 Executable test_parser
   Path:               lib_test
@@ -80,11 +71,6 @@ Executable test_net_async
 Flag nettests
   Description: run the internet-using tests
   Default: false
-
-Test test_base64
-  Run$:               flag(tests)
-  Command:            $test_base64
-  WorkingDirectory:   lib_test
 
 Test test_parser
   Run$:               flag(tests)

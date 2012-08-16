@@ -4,6 +4,7 @@ all: build test doc
 NAME=cohttp
 ASYNC ?= --enable-async
 EXTRA ?= --enable-nettests
+EXTRA ?= $(ASYNC)
 
 
 setup.bin: setup.ml
