@@ -13,6 +13,7 @@ rule header_value = parse
   | '=' { EQUAL }
   | '\"' { QS (List.fold_right (^) (qs [] lexbuf) "") }
   | (token)+ as tok { TOK tok }
+  | ' ' { header_value lexbuf }
   | eof { EOI }
 and qs sl = parse
   | "\\\"" { qs ("\""::sl) lexbuf }

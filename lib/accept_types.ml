@@ -18,3 +18,4 @@ type language =
   | Language of string list
   | AnyLanguage
 type q = int
+type 'a qlist = (q * 'a) list

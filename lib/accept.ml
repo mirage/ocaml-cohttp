@@ -10,22 +10,43 @@ let charsets = parse_using Parser.charsets
 let encodings = parse_using Parser.encodings
 let languages = parse_using Parser.languages
 
-let quote = Str.global_replace (Str.regexp "\"") "\\\""
 let rec string_of_pl = function
   | [] -> ""
   | (k,T v)::r -> sprintf ";%s=%s%s" k v (string_of_pl r)
-  | (k,S v)::r -> sprintf ";%s=\"%s\"%s" k (quote v) (string_of_pl r)
+  | (k,S v)::r -> sprintf ";%s=\"%s\"%s" k (Str.quote v) (string_of_pl r)
+
+let accept_el el pl q =
+  sprintf "%s;q=%.3f%s" el ((float q)/.1000.) (string_of_pl pl)
 
 let string_of_media_range = function
-  | (q,MediaType (t,st),pl) ->
-      sprintf "%s/%s;q=%.3f%s" t st ((float q)/.1000.) (string_of_pl pl)
-  | (q,AnyMediaSubtype (t),pl) ->
-      sprintf "%s/*;q=%.3f%s" t ((float q)/.1000.) (string_of_pl pl)
-  | (q,AnyMedia,pl) -> sprintf "*/*;q=%.3f%s" ((float q)/.1000.) (string_of_pl pl)
+  | (MediaType (t,st),pl) -> accept_el (sprintf "%s/%s" t st) pl
+  | (AnyMediaSubtype (t),pl) -> accept_el (sprintf "%s/*" t) pl
+  | (AnyMedia,pl) -> accept_el "*/*" pl
 
-let string_of_media_ranges =
+let string_of_charset = function
+  | Charset c -> accept_el c []
+  | AnyCharset -> accept_el "*" []
+
+let string_of_encoding = function
+  | Encoding e -> accept_el e []
+  | Gzip -> accept_el "gzip" []
+  | Compress -> accept_el "compress" []
+  | Deflate -> accept_el "deflate" []
+  | Identity -> accept_el "identity" []
+  | AnyEncoding -> accept_el "*" []
+
+let string_of_language = function
+  | Language langl -> accept_el (String.concat "-" langl) []
+  | AnyLanguage -> accept_el "*" []
+
+let string_of_list s_of_el =
   let rec aux s = function
-    | mr::[] -> s^(string_of_media_range mr)
+    | (q,el)::[] -> s^(s_of_el el q)
     | [] -> s
-    | mr::r -> aux (s^(string_of_media_range mr)^",") r
+    | (q,el)::r -> aux (s^(s_of_el el q)^",") r
   in aux ""
+
+let string_of_media_ranges = string_of_list string_of_media_range
+let string_of_charsets = string_of_list string_of_charset
+let string_of_encodings = string_of_list string_of_encoding
+let string_of_languages = string_of_list string_of_language

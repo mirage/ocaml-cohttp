@@ -3,35 +3,31 @@
   module Str = Re_str
 
   type param = Q of int | Kv of (string * pv)
-  exception Invalid_input
 
   let get_q = function
     | (Q q)::_ -> q
     | _ -> 1000
 
   let get_rest = function
-    | (Q _)::r | r -> List.map
-        (function Kv p -> p | Q _ -> raise Invalid_input) r
-
-  let only_q = function Q q -> q | _ -> raise Invalid_input
+    | (Q _)::r | r -> List.fold_right
+        (function Kv p -> fun l -> p::l | Q _ -> fun l -> l) r []
 %}
 
 %token STAR SLASH SEMI COMMA EQUAL EOI
 %token <string> TOK QS
-%token <int> INT
-%token <float> FLOAT
 %start media_ranges charsets encodings languages
-%type <(Accept_types.q * Accept_types.media_range * Accept_types.p list) list> media_ranges
-%type <(Accept_types.q * Accept_types.charset) list> charsets
-%type <(Accept_types.q * Accept_types.encoding) list> encodings
-%type <(Accept_types.q * Accept_types.language) list> languages
+%type <(Accept_types.media_range * Accept_types.p list) Accept_types.qlist> media_ranges
+%type <Accept_types.charset Accept_types.qlist> charsets
+%type <Accept_types.encoding Accept_types.qlist> encodings
+%type <Accept_types.language Accept_types.qlist> languages
 %%
 
 param :
 | SEMI TOK EQUAL QS { Kv ($2, S $4) }
-| SEMI TOK EQUAL TOK { Kv ($2, T $4) }
-| SEMI TOK EQUAL FLOAT {
-  if $2="q" then Q (truncate (1000.*.$4)) else raise Invalid_input
+| SEMI TOK EQUAL TOK {
+  if $2="q" then try Q (truncate (1000.*.(float_of_string $4)))
+    with Failure "float_of_string" -> raise Parsing.Parse_error
+  else Kv ($2, T $4)
 }
 
 params :
@@ -39,9 +35,15 @@ params :
 | { [] }
 
 media_range :
-| STAR SLASH STAR params { (get_q $4, AnyMedia, get_rest $4) }
-| TOK SLASH STAR params { (get_q $4, AnyMediaSubtype $1, get_rest $4) }
-| TOK SLASH TOK params { (get_q $4, MediaType ($1,$3), get_rest $4) }
+| STAR SLASH STAR params {
+  (get_q $4, (AnyMedia, get_rest $4))
+}
+| TOK SLASH STAR params {
+  (get_q $4, (AnyMediaSubtype (String.lowercase $1), get_rest $4))
+}
+| TOK SLASH TOK params {
+  (get_q $4, (MediaType (String.lowercase $1, String.lowercase $3), get_rest $4))
+}
 
 media_ranges :
 | media_range EOI { [$1] }
@@ -49,17 +51,16 @@ media_ranges :
 | EOI { [] }
 
 charset :
-| TOK param { (only_q $2, Charset $1) }
-| STAR param { (only_q $2, AnyCharset) }
+| TOK params { (get_q $2, Charset (String.lowercase $1)) }
+| STAR params { (get_q $2, AnyCharset) }
 
 charsets :
 | charset EOI { [$1] }
 | charset COMMA charsets { $1::$3 }
-| EOI { [] }
 
 encoding :
-| TOK param {
-  (only_q $2, match $1 with
+| TOK params {
+  (get_q $2, match (String.lowercase $1) with
     | "gzip" -> Gzip
     | "compress" -> Compress
     | "deflate" -> Deflate
@@ -67,7 +68,7 @@ encoding :
     | enc -> Encoding enc
   )
 }
-| STAR param { (only_q $2, AnyEncoding) }
+| STAR params { (get_q $2, AnyEncoding) }
 
 encodings :
 | encoding EOI { [$1] }
@@ -75,12 +76,13 @@ encodings :
 | EOI { [] }
 
 language :
-| TOK param { (only_q $2, Language (Str.split (Str.regexp "-") $1)) }
-| STAR param { (only_q $2, AnyLanguage) }
+| TOK params {
+  (get_q $2, Language (Str.split (Str.regexp "-") (String.lowercase $1)))
+}
+| STAR params { (get_q $2, AnyLanguage) }
 
 languages :
 | language EOI { [$1] }
 | language COMMA languages { $1::$3 }
-| EOI { [] }
 
 %%
