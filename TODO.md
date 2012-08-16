@@ -5,3 +5,10 @@ Planned interface-breaking changes before 1.0:
 
 * Make the Lwt response stream bounded (new in lwt-2.4+)
 
+Better HTTP support:
+
+- Range requests need to be fully implemented (206)
+- 100 Continue should be a noop
+- A client interface that deals with redirects
+- Proxy support (manual means a full URI in the request)
+- SSL support
