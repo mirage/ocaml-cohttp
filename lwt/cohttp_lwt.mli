@@ -30,15 +30,6 @@ module Request : sig
 
   val make : ?meth:Code.meth -> ?version:Code.version -> 
     ?encoding:Transfer.encoding -> ?headers:Header.t -> Uri.t -> request
-
-  val read : Lwt_io.input_channel -> request option Lwt.t
-  val read_body : request -> Lwt_io.input_channel -> Transfer.chunk Lwt.t
-
-  val write_header : request -> Lwt_io.output_channel -> unit Lwt.t
-  val write_body : string -> request -> Lwt_io.output_channel -> unit Lwt.t
-  val write_footer : request -> Lwt_io.output_channel -> unit Lwt.t
-  val write : (request -> Lwt_io.output_channel -> unit Lwt.t) -> request -> 
-    Lwt_io.output_channel -> unit Lwt.t
 end
 
 module Response : sig
@@ -49,15 +40,6 @@ module Response : sig
 
   val make : ?version:Code.version -> ?status:Code.status_code -> 
     ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> response
-
-  val read : Lwt_io.input_channel -> response option Lwt.t
-  val read_body : response -> Lwt_io.input_channel -> Transfer.chunk Lwt.t
-
-  val write_header : response -> Lwt_io.output_channel -> unit Lwt.t
-  val write_body : string -> response -> Lwt_io.output_channel -> unit Lwt.t
-  val write_footer : response -> Lwt_io.output_channel -> unit Lwt.t
-  val write : (response -> Lwt_io.output_channel -> unit Lwt.t) -> 
-    response -> Lwt_io.output_channel -> unit Lwt.t
 end
 
 module Client : sig
