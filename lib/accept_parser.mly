@@ -48,11 +48,11 @@ param :
   else Kv ($2, T $4)
 }
 
-    params :
+params :
 | param params { $1::$2 }
 | { [] }
 
-    media_range :
+media_range :
 | STAR SLASH STAR params {
   (get_q $4, (AnyMedia, get_rest $4))
 }
@@ -63,20 +63,20 @@ param :
   (get_q $4, (MediaType (String.lowercase $1, String.lowercase $3), get_rest $4))
 }
 
-    media_ranges :
+media_ranges :
 | media_range EOI { [$1] }
 | media_range COMMA media_ranges { $1::$3 }
 | EOI { [] }
 
-    charset :
+charset :
 | TOK params { (get_q $2, Charset (String.lowercase $1)) }
 | STAR params { (get_q $2, AnyCharset) }
 
-    charsets :
+charsets :
 | charset EOI { [$1] }
 | charset COMMA charsets { $1::$3 }
 
-    encoding :
+encoding :
 | TOK params {
   (get_q $2, match (String.lowercase $1) with
     | "gzip" -> Gzip
@@ -88,18 +88,18 @@ param :
 }
 | STAR params { (get_q $2, AnyEncoding) }
 
-    encodings :
+encodings :
 | encoding EOI { [$1] }
 | encoding COMMA encodings { $1::$3 }
 | EOI { [] }
 
-    language :
+language :
 | TOK params {
   (get_q $2, Language (Str.split (Str.regexp "-") (String.lowercase $1)))
 }
 | STAR params { (get_q $2, AnyLanguage) }
 
-    languages :
+languages :
 | language EOI { [$1] }
 | language COMMA languages { $1::$3 }
 
