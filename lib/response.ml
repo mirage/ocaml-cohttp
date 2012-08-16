@@ -17,7 +17,7 @@
 
 module M (IO:IO.M) = struct
 
-  module Parser = Parser.M(IO)
+  module Header_IO = Header.M(IO)
   module Transfer_IO = Transfer.M(IO)
   open IO
 
@@ -57,7 +57,7 @@ module M (IO:IO.M) = struct
     parse_response_fst_line ic >>= function
     |None -> return None
     |Some (version, status) ->
-       Parser.parse_headers ic >>= fun headers ->
+       Header_IO.parse ic >>= fun headers ->
        let encoding = Transfer.parse_transfer_encoding headers in
        return (Some { encoding; headers; version; status })
 

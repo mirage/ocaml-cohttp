@@ -40,6 +40,5 @@ module IO = struct
 end
 
 module Body  = Transfer.M(IO)
-module Parser = Parser.M(IO)
 module Request = Request.M(IO)
 module Response = Response.M(IO)

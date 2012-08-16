@@ -22,60 +22,39 @@
 open Printf
 open Code
 
-module M (IO:IO.M) = struct
-  open IO
+let parse_content_range s =
+  try
+    let start, fini, total = 
+      Scanf.sscanf s "bytes %d-%d/%d" (fun start fini total -> start, fini, total) in
+    Some (start, fini, total)
+  with Scanf.Scan_failure _ -> None
   
-  let header_sep = Re_str.regexp ": *"
+(* If we see a "Content-Range" header, than we should limit the
+   number of bytes we attempt to read *)
+let parse_content_range headers = 
+  match Header.get headers "content-length" with
+  |clen::_ -> (try Some (int_of_string clen) with _ -> None)
+  |_ -> begin
+    match Header.get headers "content-range" with
+    |range_s::_ -> begin
+      match parse_content_range range_s with
+      |Some (start, fini, total) ->
+        (* some sanity checking before we act on these values *)
+        if fini < total && start <= total && 0 <= start && 0 <= total then (
+          let num_bytes_to_read = fini - start + 1 in
+          Some num_bytes_to_read
+        ) else None
+      |None -> None
+    end
+  |_ -> None
+  end
   
-  let parse_headers ic =
-    (* consume also trailing "^\r\n$" line *)
-    let rec parse_headers' headers =
-      read_line ic >>= function
-      |Some "" | None -> return headers
-      |Some line -> begin
-          match Re_str.bounded_split_delim header_sep line 2 with
-          | [hd;tl] -> 
-              let header = String.lowercase hd in
-              parse_headers' (Header.add headers header tl);
-          | _ -> return headers
-      end
-    in parse_headers' (Header.init ())
+let media_type_re =
+  (* Grab "foo/bar" from " foo/bar ; charset=UTF-8" *)
+  Re_str.regexp "[ \t]*\\([^ \t;]+\\)"
   
-  let parse_content_range s =
-    try
-      let start, fini, total = Scanf.sscanf s "bytes %d-%d/%d" 
-        (fun start fini total -> start, fini, total) in
-      Some (start, fini, total)
-    with Scanf.Scan_failure _ -> None
-  
-  (* If we see a "Content-Range" header, than we should limit the
-     number of bytes we attempt to read *)
-  let parse_content_range headers = 
-    (* assuming header keys were downcased in previous step *)
-    match Header.get headers "content-length" with
-    |clen::_ -> (try Some (int_of_string clen) with _ -> None)
-    |_ -> begin
-      match Header.get headers "content-range" with
-      |range_s::_ -> begin
-        match parse_content_range range_s with
-        |Some (start, fini, total) ->
-          (* some sanity checking before we act on these values *)
-          if fini < total && start <= total && 0 <= start && 0 <= total then (
-            let num_bytes_to_read = fini - start + 1 in
-            Some num_bytes_to_read
-          ) else None
-        |None -> None
-      end
-      |_ -> None
-   end
-  
-  let media_type_re =
-    (* Grab "foo/bar" from " foo/bar ; charset=UTF-8" *)
-    Re_str.regexp "[ \t]*\\([^ \t;]+\\)"
-  
-  let parse_media_type s =
-    if Re_str.string_match media_type_re s 0 then
-      Some (Re_str.matched_group 1 s)
-    else
-      None
-end
+let parse_media_type s =
+  if Re_str.string_match media_type_re s 0 then
+    Some (Re_str.matched_group 1 s)
+  else
+    None

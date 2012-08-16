@@ -17,7 +17,7 @@
 
 module M (IO:IO.M) = struct
 
-  module Parser = Parser.M(IO)
+  module Header_IO = Header.M(IO)
   module Transfer_IO = Transfer.M(IO)
   open IO
 
@@ -77,7 +77,7 @@ module M (IO:IO.M) = struct
     parse_request_fst_line ic >>= function
     |None -> return None
     |Some (meth, uri, version) ->
-      Parser.parse_headers ic >>= fun headers ->
+      Header_IO.parse ic >>= fun headers ->
       let ctype = content_type headers in
       let get = Header.of_list (Uri.query uri) in
       (match meth, ctype with

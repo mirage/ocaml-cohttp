@@ -25,3 +25,7 @@ val map : (string -> string -> string) -> t -> t
 val fold : (string -> string -> 'a -> 'a) -> t -> 'a -> 'a
 val of_list : (string * string) list -> t
 val to_list : t -> (string * string) list
+
+module M(IO:IO.M) : sig
+  val parse: IO.ic -> t IO.t
+end

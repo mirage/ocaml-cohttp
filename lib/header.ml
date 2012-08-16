@@ -27,3 +27,21 @@ let iter fn h = ignore(map fn h)
 let fold fn h acc = StringMap.fold fn h acc
 let of_list l = List.fold_left (fun a (k,v) -> StringMap.add k v a) StringMap.empty l
 let to_list h = StringMap.fold (fun k v acc -> (k,v)::acc) h []
+
+module M(IO:IO.M) = struct
+  open IO
+  let header_sep = Re_str.regexp ": *"
+  let parse ic =
+    (* consume also trailing "^\r\n$" line *)
+    let rec parse_headers' headers =
+      read_line ic >>= function
+      |Some "" | None -> return headers
+      |Some line -> begin
+          match Re_str.bounded_split_delim header_sep line 2 with
+          | [hd;tl] ->
+              let header = String.lowercase hd in
+              parse_headers' (add headers header tl);
+          | _ -> return headers
+      end
+    in parse_headers' (init ())
+end

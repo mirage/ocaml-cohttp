@@ -22,19 +22,10 @@
 
 (** HTTP messages parsing *)
 
-module M(IO:IO.M) : sig
-
-  (** parse HTTP headers. Consumes also trailing CRLF at the end of header list
-  @param inchan input channel from which parse headers
-  @return a list of pairs header_name * header_value
-  @raise Invalid_header if a not well formed header is encountered *)
-  val parse_headers: IO.ic -> Header.t IO.t
-
-  (** parse content-range header in a request
+(** parse content-range header in a request
   @return number of bytes to read, or None if all available should be read
-  *)
-  val parse_content_range: Header.t -> int option
+ *)
+val parse_content_range: Header.t -> int option
 
-  (** parse the media type portion of a header, e.g. foo/bar from "foo/bar ; charset=UTF-8" *)
-  val parse_media_type: string -> string option
-end
+(** parse the media type portion of a header, e.g. foo/bar from "foo/bar ; charset=UTF-8" *)
+val parse_media_type: string -> string option
