@@ -24,21 +24,6 @@
 
 module M(IO:IO.M) : sig
 
-  (** parse 1st line of an HTTP request
-  @param inchan input channel from which parse request
-  @return a triple meth * url * version, meth is the HTTP method invoked, url is
-  the requested url, version is the HTTP version specified or None if no version
-  was specified
-  @raise Malformed_request if request 1st linst isn't well formed
-  @raise Malformed_request_URI if requested URI isn't well formed *)
-  val parse_request_fst_line: IO.ic -> (Code.meth * Uri.t * Code.version) option IO.t
-
-  (** parse 1st line of an HTTP response
-   * @param inchan input channel from which parse response
-   * @raise Malformed_response if first line isn't well formed
-  *)
-  val parse_response_fst_line: IO.ic -> (Code.version * Code.status_code) option IO.t
-
   (** parse HTTP headers. Consumes also trailing CRLF at the end of header list
   @param inchan input channel from which parse headers
   @return a list of pairs header_name * header_value

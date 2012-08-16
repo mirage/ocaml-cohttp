@@ -35,9 +35,26 @@ module M (IO:IO.M) = struct
   let make ?(version=`HTTP_1_1) ?(status=`OK) ?(encoding=Transfer.Chunked) ?headers () =
     let headers = match headers with None -> Header.init () |Some h -> h in
     { encoding; headers; version; status }
+
+  let pieces_sep = Re_str.regexp_string " "
+  let header_sep = Re_str.regexp ": *"
+  
+  let parse_response_fst_line ic =
+    let open Code in
+    read_line ic >>= function
+    |Some response_line -> begin
+      match Re_str.split_delim pieces_sep response_line with
+      | version_raw :: code_raw :: _ -> begin
+         match version_of_string version_raw with
+         |Some v -> return (Some (v, (status_of_code (int_of_string code_raw))))
+         |_ -> return None
+      end
+      | _ -> return None
+    end
+    |None -> return None
  
   let read ic =
-    Parser.parse_response_fst_line ic >>= function
+    parse_response_fst_line ic >>= function
     |None -> return None
     |Some (version, status) ->
        Parser.parse_headers ic >>= fun headers ->

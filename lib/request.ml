@@ -55,9 +55,26 @@ module M (IO:IO.M) = struct
 
   let transfer_encoding req = Transfer.encoding_to_string req.encoding
 
+
+  let url_decode url = Uri.pct_decode url
+
+  let pieces_sep = Re_str.regexp_string " "
+  let parse_request_fst_line ic =
+    let open Code in
+    read_line ic >>= function
+    |Some request_line -> begin
+      match Re_str.split_delim pieces_sep request_line with
+      | [ meth_raw; uri_raw; http_ver_raw ] -> begin
+          match method_of_string meth_raw, version_of_string http_ver_raw with
+          |Some m, Some v -> return (Some (m, (Uri.of_string uri_raw), v))
+          |_ -> return None
+      end
+      | _ -> return None
+    end
+    |None -> return None
+
   let read ic =
-    Parser.parse_request_fst_line ic >>=
-    function
+    parse_request_fst_line ic >>= function
     |None -> return None
     |Some (meth, uri, version) ->
       Parser.parse_headers ic >>= fun headers ->

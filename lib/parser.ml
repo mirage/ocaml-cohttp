@@ -25,38 +25,7 @@ open Code
 module M (IO:IO.M) = struct
   open IO
   
-  let bindings_sep = Re_str.regexp_string "&"
-  let binding_sep = Re_str.regexp_string "="
-  let pieces_sep = Re_str.regexp_string " "
   let header_sep = Re_str.regexp ": *"
-  
-  let url_decode url = Uri.pct_decode url
-  
-  let parse_request_fst_line ic =
-    read_line ic >>= function
-    |Some request_line -> begin
-      match Re_str.split_delim pieces_sep request_line with
-      | [ meth_raw; uri_raw; http_ver_raw ] -> begin
-          match method_of_string meth_raw, version_of_string http_ver_raw with
-          |Some m, Some v -> return (Some (m, (Uri.of_string uri_raw), v))
-          |_ -> return None
-      end
-      | _ -> return None
-    end
-    |None -> return None
-  
-  let parse_response_fst_line ic =
-    read_line ic >>= function
-    |Some response_line -> begin
-      match Re_str.split_delim pieces_sep response_line with
-      | version_raw :: code_raw :: _ -> begin
-         match version_of_string version_raw with
-         |Some v -> return (Some (v, (status_of_code (int_of_string code_raw))))
-         |_ -> return None
-      end
-      | _ -> return None
-    end
-    |None -> return None
   
   let parse_headers ic =
     (* consume also trailing "^\r\n$" line *)
@@ -109,5 +78,4 @@ module M (IO:IO.M) = struct
       Some (Re_str.matched_group 1 s)
     else
       None
-  
 end
