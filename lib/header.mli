@@ -32,3 +32,5 @@ end
 
 val get_content_range : t -> int option
 val get_media_type : t -> string option
+val get_transfer_encoding : t -> Transfer.encoding
+val add_transfer_encoding : t -> Transfer.encoding -> t

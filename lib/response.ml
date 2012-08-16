@@ -58,7 +58,7 @@ module M (IO:IO.M) = struct
     |None -> return None
     |Some (version, status) ->
        Header_IO.parse ic >>= fun headers ->
-       let encoding = Transfer.parse_transfer_encoding headers in
+       let encoding = Header.get_transfer_encoding headers in
        return (Some { encoding; headers; version; status })
 
   let has_body r = Transfer.has_body r.encoding
@@ -67,7 +67,7 @@ module M (IO:IO.M) = struct
   let write_header res oc =
     write oc (Printf.sprintf "%s %s\r\n" (Code.string_of_version res.version) 
       (Code.string_of_status res.status)) >>= fun () ->
-    let headers = Transfer.add_encoding_headers res.headers res.encoding in
+    let headers = Header.add_transfer_encoding res.headers res.encoding in
     let headers = Header.fold (fun k v acc -> 
       Printf.sprintf "%s: %s\r\n" k v :: acc) headers [] in
     iter (IO.write oc) (List.rev headers) >>= fun () ->

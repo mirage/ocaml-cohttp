@@ -38,26 +38,7 @@ let has_body =
   | Unknown -> true
   | Fixed _ -> true
 
-(* Parse the transfer-encoding and content-length headers to
- * determine how to decode a body *)
-let parse_transfer_encoding headers =
-  match Header.get headers "transfer-encoding" with
-  |"chunked"::_ -> Chunked
-  |_ -> begin
-    match Header.get headers "content-length" with
-    |len::_ -> (try Fixed (Int64.of_string len) with _ -> Unknown)
-    |[] -> Unknown
-  end
 
-let add_encoding_headers headers = 
-  function
-  |Chunked ->
-     Header.add headers "transfer-encoding" "chunked"
-  |Fixed len -> 
-     Header.add headers "content-length" (Int64.to_string len)
-  |Unknown -> 
-     headers
- 
 module M(IO:IO.M) = struct
   open IO
 

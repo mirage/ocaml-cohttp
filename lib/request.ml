@@ -81,7 +81,7 @@ module M (IO:IO.M) = struct
           return (post, encoding)
         |`POST, _ ->
           let post = Header.init () in
-          let encoding = Transfer.parse_transfer_encoding headers in
+          let encoding = Header.get_transfer_encoding headers in
           return (post, encoding)
         | _ -> return ((Header.init ()), (Transfer.Fixed 0L)) 
       ) >>= fun (post, encoding) ->
@@ -108,7 +108,7 @@ module M (IO:IO.M) = struct
    let fst_line = Printf.sprintf "%s %s %s\r\n" (Code.string_of_method req.meth)
       (Uri.path_and_query req.uri) (Code.string_of_version req.version) in
     let headers = Header.add req.headers "host" (host_of_uri req.uri) in
-    let headers = Transfer.add_encoding_headers headers req.encoding in
+    let headers = Header.add_transfer_encoding headers req.encoding in
     IO.write oc fst_line >>= fun () ->
     let headers = Header.fold (fun k v acc -> 
       Printf.sprintf "%s: %s\r\n" k v :: acc) headers [] in

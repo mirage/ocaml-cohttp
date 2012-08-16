@@ -86,3 +86,21 @@ let get_media_type =
       else
         None
     |_ -> None
+
+(* Parse the transfer-encoding and content-length headers to
+ * determine how to decode a body *)
+let get_transfer_encoding headers =
+  match get headers "transfer-encoding" with
+  |"chunked"::_ -> Transfer.Chunked
+  |_ -> begin
+    match get_content_range headers with
+    |Some len -> Transfer.Fixed (Int64.of_int len)
+    |None -> Transfer.Unknown
+  end
+
+let add_transfer_encoding headers = 
+  function
+  |Transfer.Chunked -> add headers "transfer-encoding" "chunked"
+  |Transfer.Fixed len -> add headers "content-length" (Int64.to_string len)
+  |Transfer.Unknown -> headers
+ 
