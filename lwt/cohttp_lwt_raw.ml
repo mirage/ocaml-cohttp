@@ -15,13 +15,31 @@
  *
  *)
 
-type t
-val init : unit -> t
-val add : t -> string -> string -> t
-val remove : t -> string -> t
-val get : t -> string -> string list
-val iter : (string -> string -> unit) -> t -> unit
-val map : (string -> string -> string) -> t -> t
-val fold : (string -> string -> 'a -> 'a) -> t -> 'a -> 'a
-val of_list : (string * string) list -> t
-val to_list : t -> (string * string) list
+module IO = struct
+
+  type 'a t = 'a Lwt.t
+  let (>>=) = Lwt.bind
+  let return = Lwt.return
+
+  type ic = Lwt_io.input_channel
+  type oc = Lwt_io.output_channel
+
+  let iter fn x = Lwt_list.iter_s fn x
+
+  let read_line ic = Lwt_io.read_line_opt ic
+  let read ic count = 
+   try_lwt Lwt_io.read ~count ic
+   with End_of_file -> return ""
+
+  let read_exactly ic buf off len =
+    try_lwt Lwt_io.read_into_exactly ic buf off len >> return true
+    with End_of_file -> return false
+
+  let write oc buf = Lwt_io.write oc buf
+  let write_line oc buf = Lwt_io.write_line oc buf
+end
+
+module Body  = Transfer.M(IO)
+module Parser = Parser.M(IO)
+module Request = Request.M(IO)
+module Response = Response.M(IO)

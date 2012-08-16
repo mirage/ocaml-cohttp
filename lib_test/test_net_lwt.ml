@@ -38,11 +38,13 @@ let make_net_req url () =
   Cohttp_lwt.Client.call ~headers `GET (Uri.of_string url) >>= function 
   |None -> assert false
   |Some (res, None) ->
-    lwt () = Cohttp_lwt.Response.write_header res Lwt_io.stderr in
+    let headers = Cohttp_lwt.Response.headers res in
+    Header.iter (fun k v -> Printf.eprintf "%s: %s\n%!" k v) headers;
     Printf.eprintf "<no body>\n%!";
     return ()
   |Some (res, Some body) ->
-    lwt () = Cohttp_lwt.Response.write_header res Lwt_io.stderr in
+    let headers = Cohttp_lwt.Response.headers res in
+    Header.iter (fun k v -> Printf.eprintf "%s: %s\n%!" k v) headers;
     Lwt_stream.iter_s (fun s -> return ()) body
 
 let test_cases =

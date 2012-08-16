@@ -23,6 +23,7 @@ let add h k v = StringMap.add k v h
 let remove h k = StringMap.remove k h
 let get h k = try [StringMap.find k h] with Not_found -> []
 let map fn h = StringMap.mapi fn h
+let iter fn h = ignore(map fn h)
 let fold fn h acc = StringMap.fold fn h acc
 let of_list l = List.fold_left (fun a (k,v) -> StringMap.add k v a) StringMap.empty l
 let to_list h = StringMap.fold (fun k v acc -> (k,v)::acc) h []
