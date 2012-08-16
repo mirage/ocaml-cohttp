@@ -39,16 +39,6 @@ module M (IO:IO.M) = struct
   let header req h = Header.get req.headers h
   let headers req = req.headers
   
-  let content_length headers =
-    match Header.get headers "content-length" with
-    |hd::tl -> (try Int64.of_string hd with _ -> 0L)
-    |[] -> 0L
-  
-  let content_type headers =
-    match Header.get headers "content-type" with
-    |hd::tl -> hd
-    |[] -> ""
-  
   let params_get r = r.get
   let params_post r = r.post
   let param r p = (Header.get r.post p) @ (Header.get r.get p)
@@ -78,13 +68,14 @@ module M (IO:IO.M) = struct
     |None -> return None
     |Some (meth, uri, version) ->
       Header_IO.parse ic >>= fun headers ->
-      let ctype = content_type headers in
+      let ctype = Header.get_media_type headers in
       let get = Header.of_list (Uri.query uri) in
       (match meth, ctype with
-        |`POST, "application/x-www-form-urlencoded" -> 
+        |`POST, Some "application/x-www-form-urlencoded" -> 
           (* If the form is query-encoded, then extract those parameters also *)
-          let bodylen = content_length headers in
-          IO.read ic (Int64.to_int bodylen) >>= fun query ->
+          let bodylen = match Header.get_content_range headers with
+             |None -> 0 |Some x -> x in
+          IO.read ic bodylen >>= fun query ->
           let post = Header.of_list (Uri.query_of_encoded query) in
           let encoding = Transfer.Fixed 0L in
           return (post, encoding)

@@ -29,3 +29,6 @@ val to_list : t -> (string * string) list
 module M(IO:IO.M) : sig
   val parse: IO.ic -> t IO.t
 end
+
+val get_content_range : t -> int option
+val get_media_type : t -> string option
