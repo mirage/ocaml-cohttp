@@ -32,7 +32,7 @@ Library cohttp_async
   Findlibname: async
   FindlibParent: cohttp
   BuildDepends: uri, cohttp, async_core, async_unix, threads, async_extra
-  Modules: Cohttp_async
+  Modules: Cohttp_async_raw, Cohttp_async
 
 Document cohttp
   Title:                Cohttp docs
