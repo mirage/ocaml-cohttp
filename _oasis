@@ -14,16 +14,24 @@ Library cohttp
   Modules: Code, Date, IO, Header, Request, Response, Transfer, Accept, Accept_parser, Accept_lexer
   BuildDepends:	re, lwt.unix, uri (>= 1.2)
 
+Flag lwt
+  Description: build the Lwt library
+  Default: false
+
+Flag async
+  Description: build the Core/Async library
+  Default: false
+
+Flag nettests
+  Description: run the internet-using tests
+  Default: false
+
 Library cohttp_lwt
   Path: lwt
   Findlibname: lwt
   FindlibParent: cohttp
   BuildDepends: lwt.unix, lwt, uri, cohttp, lwt.ssl
   Modules: Cohttp_lwt_raw, Cohttp_lwt, Cohttp_lwt_net
-
-Flag async
-  Description: build the Core/Async library
-  Default: false
 
 Library cohttp_async
   Build$: flag(async)
@@ -48,7 +56,7 @@ Executable test_parser
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2)
+  BuildDepends:       cohttp, oUnit (>= 1.0.2)
 
 Executable test_accept
   Path:               lib_test
@@ -57,12 +65,12 @@ Executable test_accept
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2)
+  BuildDepends:       cohttp, oUnit (>= 1.0.2)
 
 Executable test_net_lwt
   Path:               lib_test
   MainIs:             test_net_lwt.ml
-  Build$:             flag(tests)
+  Build$:             flag(tests) && flag(lwt)
   Custom:             true
   CompiledObject:     best
   Install:            false
@@ -77,10 +85,6 @@ Executable test_net_async
   Install:            false
   BuildDepends:       cohttp, cohttp.async, oUnit (>= 1.0.2)
 
-Flag nettests
-  Description: run the internet-using tests
-  Default: false
-
 Test test_accept
   Run$:               flag(tests)
   Command:            $test_accept
@@ -92,6 +96,11 @@ Test test_parser
   WorkingDirectory:   lib_test
 
 Test test_net_lwt
-  Run$:               flag(nettests)
+  Run$:               flag(nettests) && flag(lwt)
   Command:            $test_net_lwt
+  WorkingDirectory:   lib_test
+
+Test test_net_async
+  Run$:               flag(nettests) && flag(async)
+  Command:            $test_net_async
   WorkingDirectory:   lib_test
