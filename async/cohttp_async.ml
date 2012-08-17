@@ -75,7 +75,59 @@ let port_of_uri uri =
   |Some p -> p
 
 open Deferred
+(* Convert a HTTP body stream into a Pipe *)
+let pipe_of_body read_fn ic =
+  let rd, wr = Pipe.create () in
+  (* Consume from the input channel and write to the new pipe *)
+  let rec write () =
+    read_fn ic >>= function
+    |Transfer.Done ->
+      Pipe.close wr; return ()
+    |Transfer.Final_chunk c -> begin
+      Pipe.with_write wr ~f:(fun wrfn -> wrfn c) >>= 
+        function
+        |`Closed -> return ()
+        |`Ok _ -> Pipe.close wr; return ()
+    end
+    |Transfer.Chunk c -> begin
+      Pipe.with_write wr ~f:(fun wrfn -> wrfn c) >>=
+        function
+        |`Closed -> return ()
+        |`Ok _ -> write () 
+    end
+  in
+  (* TODO: how to run write () as a background task? *)
+  let _ = write () in
+  rd
+
 module Client = struct
+
+  type response = Response.response * string Lwt_stream.t option
+
+  let write_request ?body req oc =
+    Request.write (fun req oc ->
+      match body with
+      |None -> return ()
+      |Some b -> Pipe.iter b ~f:(fun c -> Request.write_body c req oc)
+    ) req oc
+
+  let read_response ?(close=false) ic oc =
+    Response.read ic >>= function
+    |None -> return None
+    |Some res -> begin
+      match Response.has_body res with
+      |false -> return (Some (res, None))
+      |true ->
+        let body_rd = pipe_of_body (Response.read_body res) ic in
+        (* TODO: how to run this as a background task properly? *)
+        let _ = 
+          if close then  (
+            Pipe.closed body_rd >>= fun () -> 
+            Reader.close ic >>= fun () -> 
+            Writer.close oc)
+          else return () in
+        return (Some (res, Some body_rd))
+    end
 
   let call ?headers ?body meth uri =
     let encoding = 
@@ -85,15 +137,7 @@ module Client = struct
     let req = Request.make ~meth ~encoding ?headers uri in
     let host = match Uri.host uri with |None -> "localhost" |Some h -> h in
     let port = port_of_uri uri in
-    let fn ic oc =
-      Request.write (fun _ _ -> return ()) req oc >>= fun () ->
-      Response.read ic >>= function
-      |None ->
-         return None
-      |Some res -> 
-         let r,w = Pipe.create () in
-         return (Some (res,pipe))
-    in
-    Async_extra.Tcp.with_connection ~host ~port fn
-
+    Async_extra.Tcp.connect ~host ~port () >>= fun (ic,oc) ->
+    write_request ?body req oc >>= fun () ->
+    read_response ~close:true ic oc
 end

@@ -21,13 +21,15 @@ open Cohttp_async
 
 let make_net_req () =
   let url = "http://anil.recoil.org/" in
-Printf.fprintf stdout "call %s\n%!" url;
   Client.call `GET (Uri.of_string url) >>= function 
   |None -> assert false
-  |Some (res,body) ->
-    Response.write_header res (Lazy.force Async_unix.Writer.stderr)
-    >>= fun () ->
-    Re
+  |Some (res,Some body) ->
+    prerr_endline "<body present>";
+    Response.write_header res (Lazy.force Async_unix.Writer.stderr) >>= fun () ->
+    Pipe.iter body ~f:(fun c -> return (prerr_endline c))
+  |Some (res,None) ->
+    Response.write_header res (Lazy.force Async_unix.Writer.stderr) >>= fun () ->
+    return (prerr_endline "<null body>")
 
 let test_cases =
   let _ =  Async_core.Scheduler.within' (
