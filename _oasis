@@ -11,7 +11,7 @@ Library cohttp
   Path: lib
   Findlibname: cohttp
   Pack: true
-  Modules: Code, Date, IO, Header, Request, Response, Transfer
+  Modules: Code, Date, IO, Header, Request, Response, Transfer, Accept, Accept_lexer, Accept_parser
   BuildDepends:	re, lwt.unix, uri (>= 1.2)
 
 Library cohttp_lwt
@@ -50,6 +50,15 @@ Executable test_parser
   Install:            false
   BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2)
 
+Executable test_accept
+  Path:               lib_test
+  MainIs:             test_accept.ml
+  Build$:             flag(tests)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2)
+
 Executable test_net_lwt
   Path:               lib_test
   MainIs:             test_net_lwt.ml
@@ -71,6 +80,11 @@ Executable test_net_async
 Flag nettests
   Description: run the internet-using tests
   Default: false
+
+Test test_accept
+  Run$:               flag(tests)
+  Command:            $test_accept
+  WorkingDirectory:   lib_test
 
 Test test_parser
   Run$:               flag(tests)
