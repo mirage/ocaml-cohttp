@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 2c5f8996c8c7ae023d8c5600af915355)
+# DO NOT EDIT (digest: 72916a80066c51fc8ba735fc63326aeb)
 Code
 Date
 IO
@@ -8,6 +8,4 @@ Request
 Response
 Transfer
 Accept
-Accept_lexer
-Accept_parser
 # OASIS_STOP
