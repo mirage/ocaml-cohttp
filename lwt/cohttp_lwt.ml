@@ -51,7 +51,7 @@ module Client = struct
       |Some b -> Lwt_stream.iter_s (fun c -> Request.write_body c req oc) b
     ) req oc
 
-  let read_response ?(close=false) ic =
+  let read_response ?(close=false) ic oc =
     match_lwt Response.read ic with
     |None -> return None
     |Some res -> begin
@@ -59,7 +59,8 @@ module Client = struct
       |true ->
         let body = stream_of_body (Response.read_body res) ic in
         if close then
-          Lwt_stream.on_terminate body (fun () -> Cohttp_lwt_net.close_in ic);
+          Lwt_stream.on_terminate body (fun () ->
+            Cohttp_lwt_net.close' ic oc);
         return (Some (res, Some body))
       |false ->
         return (Some (res, None))
@@ -73,7 +74,7 @@ module Client = struct
     let req = Request.make ~meth ~encoding ?headers uri in
     lwt (ic,oc) = Cohttp_lwt_net.connect_uri uri in
     write_request ?body req oc >>
-    read_response ~close:true ic
+    read_response ~close:true ic oc
 
   let head ?headers uri = call ?headers `HEAD uri 
   let get ?headers uri = call ?headers `GET uri 
@@ -96,7 +97,7 @@ module Client = struct
     Lwt_stream.on_terminate reqs (fun () -> Cohttp_lwt_net.close_out oc);
     let _ = Lwt_stream.iter_s (fun (req,body) -> write_request ?body req oc) reqs in
     (* Read the responses *)
-    let resps = Lwt_stream.from (fun () -> read_response ic) in
+    let resps = Lwt_stream.from (fun () -> read_response ic oc) in
     Lwt_stream.on_terminate resps (fun () -> Cohttp_lwt_net.close_in ic);
     return resps
 end
