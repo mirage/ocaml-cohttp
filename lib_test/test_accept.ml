@@ -18,10 +18,10 @@
 open OUnit
 open Printf
 
-module H = Cohttp.Header
+module A = Cohttp.Accept
 
 let test (parse,printer) s v () =
-  assert_equal ~printer v (parse s)
+  assert_equal ~printer v (parse (Some s))
 let suite_of p = List.map (fun (s,v) -> s >:: (test p s v))
 
 let valid_media_ranges = [
@@ -33,7 +33,7 @@ let valid_media_ranges = [
   "*/*;q=1.", [1000,(A.AnyMedia,[])];
   "*/*;q=1.0", [1000,(A.AnyMedia,[])];
   "*/*;q=.0", [0,(A.AnyMedia,[])];
-  (* TODO invalid test *) "*/*;q=.", [0,(A.AnyMedia,[])];
+  (* TODO invalid test "*/*;q=.", [0,(A.AnyMedia,[])]; *)
   "*/*;q=0.", [0,(A.AnyMedia,[])];
   "*/*;q=0.1", [100,(A.AnyMedia,[])];
   "image/*,text/*", [
