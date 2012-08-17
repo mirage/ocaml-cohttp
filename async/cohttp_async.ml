@@ -18,52 +18,7 @@
 open Core.Std
 open Async_core
 open Async_unix
-
-module IO = struct
-
-  type 'a t = 'a Deferred.t
-  let (>>=) = Deferred.(>>=)
-  let return = Deferred.return
-
-  type ic = Reader.t
-  type oc = Writer.t
-
-  let iter fn x =
-    Deferred.List.iter x ~f:fn 
-
-  let read_line ic =
-    Reader.read_line ic >>=
-      function
-      |`Ok s -> return (Some s)
-      |`Eof -> return None
-  
-  let read = 
-    let buf = String.create 4096 in
-    fun ic len ->
-      Reader.read ic ~len buf >>=
-      function
-      |`Ok len' -> return (String.sub buf 0 len')
-      |`Eof -> return ""
-
-  let read_exactly ic buf pos len =
-    Reader.really_read ic ~pos ~len buf >>=
-    function
-    |`Ok -> return true
-    |`Eof _ -> return false
-
-  let write oc buf =
-    Writer.write oc buf;
-    return ()
-
-  let write_line oc buf =
-    Writer.write oc buf;
-    Writer.write oc "\r\n";
-    return ()
-end
-
-module Body = Transfer.M(IO)
-module Request = Request.M(IO)
-module Response = Response.M(IO)
+include Cohttp_async_raw
 
 let port_of_uri uri =
   match Uri.port uri with
@@ -102,7 +57,7 @@ let pipe_of_body read_fn ic =
 
 module Client = struct
 
-  type response = Response.response * string Lwt_stream.t option
+  type response = Response.response * string Async_core.Pipe.Reader.t option
 
   let write_request ?body req oc =
     Request.write (fun req oc ->

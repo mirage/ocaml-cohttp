@@ -22,21 +22,26 @@ open Cohttp_async
 let make_net_req () =
   let url = "http://anil.recoil.org/" in
   Client.call `GET (Uri.of_string url) >>= function 
-  |None -> assert false
-  |Some (res,Some body) ->
+  |None -> 
+    prerr_endline "<request failed>";
+    assert false
+  |Some (res, Some body) ->
     prerr_endline "<body present>";
-    Response.write_header res (Lazy.force Async_unix.Writer.stderr) >>= fun () ->
+    Header.iter (Printf.eprintf "%s: %s\n%!") (Response.headers res);
     Pipe.iter body ~f:(fun c -> return (prerr_endline c))
-  |Some (res,None) ->
-    Response.write_header res (Lazy.force Async_unix.Writer.stderr) >>= fun () ->
+  |Some (res, None) ->
+    Header.iter (Printf.eprintf "%s: %s\n%!") (Response.headers res);
     return (prerr_endline "<null body>")
 
 let test_cases =
+  (* TODO: can multiple async tests run with separate Schedulers? Is there
+   * an Async-aware oUnit instead? *)
   let _ =  Async_core.Scheduler.within' (
     fun () ->
       Monitor.try_with make_net_req >>=
       function
       |Error exn -> 
+        (* TODO: how to dump out top-level errors in a nicer way? *)
         Printf.fprintf stderr "err %s.\n%!" (Exn.backtrace ()); return ()
       |Ok _ -> return ()
   ) in
