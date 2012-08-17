@@ -1,4 +1,4 @@
-(*
+/*
   Copyright (C) 2012, David Sheets <sheets@alum.mit.edu>
 
   Permission to use, copy, modify, and/or distribute this software for
@@ -14,7 +14,7 @@
   OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
   TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
   PERFORMANCE OF THIS SOFTWARE.
-*)
+*/
 
 %{
   open Accept_types
