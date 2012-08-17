@@ -15,6 +15,9 @@
   TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
   PERFORMANCE OF THIS SOFTWARE.
 *)
+(* TODO: handle exceptions better *)
+(* TODO: sorting? *)
+
 open Printf
 include Accept_types
 module Parser = Accept_parser
@@ -22,10 +25,18 @@ module Lexer = Accept_lexer
 module Str = Re_str
 
 let parse_using p s = p Lexer.header_value (Lexing.from_string s)
-let media_ranges = parse_using Parser.media_ranges
-let charsets = parse_using Parser.charsets
-let encodings = parse_using Parser.encodings
-let languages = parse_using Parser.languages
+let media_ranges = function
+  | Some s -> parse_using Parser.media_ranges s
+  | None -> [1000,(AnyMedia, [])]
+let charsets = function
+  | Some s -> parse_using Parser.charsets s
+  | None -> [1000,AnyCharset]
+let encodings = function
+  | Some s -> parse_using Parser.encodings s
+  | None -> [1000,AnyEncoding]
+let languages = function
+  | Some s -> parse_using Parser.languages s
+  | None -> [1000,AnyLanguage]
 
 let rec string_of_pl = function
   | [] -> ""

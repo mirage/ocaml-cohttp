@@ -23,7 +23,7 @@ module M(IO:IO.M) : sig
   val version : request -> Code.version
 
   val path : request -> string
-  val header : request -> string -> string list
+  val header : request -> string -> string option
   val headers : request -> Header.t
 
   val params_get : request -> Header.t

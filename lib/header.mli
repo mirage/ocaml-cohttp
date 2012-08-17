@@ -19,7 +19,7 @@ type t
 val init : unit -> t
 val add : t -> string -> string -> t
 val remove : t -> string -> t
-val get : t -> string -> string list
+val get : t -> string -> string option
 val iter : (string -> string -> unit) -> t -> unit
 val map : (string -> string -> string) -> t -> t
 val fold : (string -> string -> 'a -> 'a) -> t -> 'a -> 'a
@@ -32,5 +32,9 @@ end
 
 val get_content_range : t -> int option
 val get_media_type : t -> string option
+val get_acceptable_media_ranges : t -> (Accept.media_range * Accept.p list) Accept.qlist
+val get_acceptable_charsets : t -> Accept.charset Accept.qlist
+val get_acceptable_encodings : t -> Accept.encoding Accept.qlist
+val get_acceptable_languages : t -> Accept.language Accept.qlist
 val get_transfer_encoding : t -> Transfer.encoding
 val add_transfer_encoding : t -> Transfer.encoding -> t

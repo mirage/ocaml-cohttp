@@ -41,7 +41,11 @@ module M (IO:IO.M) = struct
   
   let params_get r = r.get
   let params_post r = r.post
-  let param r p = (Header.get r.post p) @ (Header.get r.get p)
+  let param r p = match (Header.get r.post p, Header.get r.get p) with
+    | Some p, Some g -> [p; g]
+    | None, Some g -> [g]
+    | Some p, None -> [p]
+    | None, None -> []
 
   let transfer_encoding req = Transfer.encoding_to_string req.encoding
 

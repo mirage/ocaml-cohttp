@@ -18,7 +18,7 @@
 open OUnit
 open Printf
 
-module A = Cohttp.Accept
+module H = Cohttp.Header
 
 let test (parse,printer) s v () =
   assert_equal ~printer v (parse s)
@@ -33,7 +33,7 @@ let valid_media_ranges = [
   "*/*;q=1.", [1000,(A.AnyMedia,[])];
   "*/*;q=1.0", [1000,(A.AnyMedia,[])];
   "*/*;q=.0", [0,(A.AnyMedia,[])];
-  (* TODO invalid test "*/*;q=.", [0,(A.AnyMedia,[])]; *)
+  (* TODO invalid test *) "*/*;q=.", [0,(A.AnyMedia,[])];
   "*/*;q=0.", [0,(A.AnyMedia,[])];
   "*/*;q=0.1", [100,(A.AnyMedia,[])];
   "image/*,text/*", [

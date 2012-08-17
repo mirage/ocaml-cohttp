@@ -125,9 +125,10 @@ let basic_res_parse res () =
      assert_equal (Response.version res) `HTTP_1_1;
      assert_equal (Response.status res) `OK;
      let headers = Response.headers res in
-     assert_equal (Header.get headers "connection") ["close"];
-     assert_equal (Header.get headers "accept-ranges") ["none"];
-     assert_equal (Header.get headers "content-type") ["text/html; charset=UTF-8"];
+     assert_equal (Header.get headers "connection") (Some "close");
+     assert_equal (Header.get headers "accept-ranges") (Some "none");
+     assert_equal (Header.get headers "content-type")
+       (Some "text/html; charset=UTF-8");
      return ()
   |None -> assert false
 

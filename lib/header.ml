@@ -23,7 +23,7 @@ type t = string StringMap.t
 let init () = StringMap.empty
 let add h k v = StringMap.add k v h
 let remove h k = StringMap.remove k h
-let get h k = try [StringMap.find k h] with Not_found -> []
+let get h k = try Some (StringMap.find k h) with Not_found -> None
 let map fn h = StringMap.mapi fn h
 let iter fn h = ignore(map fn h)
 let fold fn h acc = StringMap.fold fn h acc
@@ -59,20 +59,20 @@ let parse_content_range s =
    number of bytes we attempt to read *)
 let get_content_range headers = 
   match get headers "content-length" with
-  |clen::_ -> (try Some (int_of_string clen) with _ -> None)
-  |_ -> begin
+  | Some clen -> (try Some (int_of_string clen) with _ -> None)
+  | None -> begin
     match get headers "content-range" with
-    |range_s::_ -> begin
+    | Some range_s -> begin
       match parse_content_range range_s with
-      |Some (start, fini, total) ->
+      | Some (start, fini, total) ->
         (* some sanity checking before we act on these values *)
         if fini < total && start <= total && 0 <= start && 0 <= total then (
           let num_bytes_to_read = fini - start + 1 in
           Some num_bytes_to_read
         ) else None
-      |None -> None
+      | None -> None
     end
-  |_ -> None
+    | None -> None
   end
   
 let get_media_type =
@@ -80,19 +80,31 @@ let get_media_type =
   let media_type_re = Re_str.regexp "[ \t]*\\([^ \t;]+\\)" in
   fun headers ->
     match get headers "content-type" with
-    |s::_ ->
+    | Some s ->
       if Re_str.string_match media_type_re s 0 then
         Some (Re_str.matched_group 1 s)
       else
         None
-    |_ -> None
+    | None -> None
+
+let get_acceptable_media_ranges headers =
+  Accept.media_ranges (get headers "accept")
+
+let get_acceptable_charsets headers =
+  Accept.charsets (get headers "accept-charset")
+
+let get_acceptable_encodings headers =
+  Accept.encodings (get headers "accept-encoding")
+
+let get_acceptable_languages headers =
+  Accept.languages (get headers "accept-language")
 
 (* Parse the transfer-encoding and content-length headers to
  * determine how to decode a body *)
 let get_transfer_encoding headers =
   match get headers "transfer-encoding" with
-  |"chunked"::_ -> Transfer.Chunked
-  |_ -> begin
+  | Some "chunked" -> Transfer.Chunked
+  | Some _ | None -> begin
     match get_content_range headers with
     |Some len -> Transfer.Fixed (Int64.of_int len)
     |None -> Transfer.Unknown
