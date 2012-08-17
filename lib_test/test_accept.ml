@@ -20,8 +20,8 @@ open Printf
 
 module A = Cohttp.Accept
 
-let test (parser,printer) s v () =
-  assert_equal ~printer v (parser s)
+let test (parse,printer) s v () =
+  assert_equal ~printer v (parse s)
 let suite_of p = List.map (fun (s,v) -> s >:: (test p s v))
 
 let valid_media_ranges = [
