@@ -22,13 +22,13 @@
 
   type param = Q of int | Kv of (string * pv)
 
-  let get_q = function
+  let rec get_q = function
     | (Q q)::_ -> q
-    | _ -> 1000
+    | _::r -> get_q r
+    | [] -> 1000
 
-  let get_rest = function
-    | (Q _)::r | r -> List.fold_right
-        (function Kv p -> fun l -> p::l | Q _ -> fun l -> l) r []
+  let get_rest pl = List.fold_right
+    (function Kv p -> fun l -> p::l | Q _ -> fun l -> l) pl []
 %}
 
 %token STAR SLASH SEMI COMMA EQUAL EOI

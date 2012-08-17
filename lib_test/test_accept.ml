@@ -40,7 +40,7 @@ let valid_media_ranges = [
     1000,(A.AnyMediaSubtype "image",[]);
     1000,(A.AnyMediaSubtype "text",[]);
   ];
-  "text/plain; q=0.8; charset=utf-8,text/HTML;q=0.9;charset=utf-8", [
+  "text/plain; q=0.8; charset=utf-8,text/HTML;charset=utf-8;q=0.9", [
     800,(A.MediaType ("text","plain"),["charset",A.T"utf-8"]);
     900,(A.MediaType ("text","html"),["charset",A.T"utf-8"]);
   ];
