@@ -11,7 +11,7 @@ Library cohttp
   Path: lib
   Findlibname: cohttp
   Pack: true
-  Modules: Code, Date, IO, Header, Request, Response, Transfer, Accept
+  Modules: Code, Date, IO, Header, Request, Response, Transfer, Accept, Accept_parser, Accept_lexer
   BuildDepends:	re, lwt.unix, uri (>= 1.2)
 
 Library cohttp_lwt
