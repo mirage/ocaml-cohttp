@@ -109,4 +109,19 @@ module M(IO:IO.M) = struct
     | Chunked -> Chunked.write
     | Fixed len -> Fixed.write
     | Unknown -> Unknown.write
+
+  let to_string encoding ic =
+    let buf = Buffer.create 256 in
+    let rec loop () =
+      read encoding ic >>= function
+      |Chunk c ->
+        Buffer.add_string buf c;
+        loop ()
+      |Final_chunk c ->
+        Buffer.add_string buf c;
+        return (Buffer.contents buf)
+      |Done ->
+        return (Buffer.contents buf)
+    in
+    loop ()
 end

@@ -40,4 +40,5 @@ val has_body : encoding -> bool
 module M(IO:IO.M) : sig
   val read : encoding -> IO.ic -> chunk IO.t
   val write : encoding -> IO.oc -> string -> unit IO.t 
+  val to_string : encoding -> IO.ic -> string IO.t
 end
