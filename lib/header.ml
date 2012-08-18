@@ -30,24 +30,6 @@ let fold fn h acc = StringMap.fold fn h acc
 let of_list l = List.fold_left (fun a (k,v) -> StringMap.add k v a) StringMap.empty l
 let to_list h = StringMap.fold (fun k v acc -> (k,v)::acc) h []
 
-module M(IO:IO.M) = struct
-  open IO
-  let header_sep = Re_str.regexp ": *"
-  let parse ic =
-    (* consume also trailing "^\r\n$" line *)
-    let rec parse_headers' headers =
-      read_line ic >>= function
-      |Some "" | None -> return headers
-      |Some line -> begin
-          match Re_str.bounded_split_delim header_sep line 2 with
-          | [hd;tl] ->
-              let header = String.lowercase hd in
-              parse_headers' (add headers header tl);
-          | _ -> return headers
-      end
-    in parse_headers' (init ())
-end
-
 let parse_content_range s =
   try
     let start, fini, total = 
@@ -116,3 +98,31 @@ let add_transfer_encoding headers =
   |Transfer.Fixed len -> add headers "content-length" (Int64.to_string len)
   |Transfer.Unknown -> headers
  
+let is_form headers =
+  get_media_type headers = (Some "application/x-www-form-urlencoded")
+
+module M(IO:IO.M) = struct
+  open IO
+  module Transfer_IO = Transfer.M(IO)
+
+  let header_sep = Re_str.regexp ": *"
+  let parse ic =
+    (* consume also trailing "^\r\n$" line *)
+    let rec parse_headers' headers =
+      read_line ic >>= function
+      |Some "" | None -> return headers
+      |Some line -> begin
+          match Re_str.bounded_split_delim header_sep line 2 with
+          | [hd;tl] ->
+              let header = String.lowercase hd in
+              parse_headers' (add headers header tl);
+          | _ -> return headers
+      end
+    in parse_headers' (init ())
+
+  let parse_form headers ic =
+    (* If the form is query-encoded, then extract those parameters also *)
+    let encoding = get_transfer_encoding headers in
+    Transfer_IO.to_string encoding ic >>= fun body ->
+    return (Uri.query_of_encoded body)
+end
