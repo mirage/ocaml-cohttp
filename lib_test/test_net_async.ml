@@ -19,6 +19,9 @@ open Core.Std
 open Async_core.Std
 open Cohttp_async
 
+let show_headers h =
+  Header.iter (fun k v -> List.iter v ~f:(Printf.eprintf "%s: %s\n" k)) h
+
 let make_net_req () =
   let url = "http://anil.recoil.org/" in
   Client.call `GET (Uri.of_string url) >>= function 
@@ -27,10 +30,10 @@ let make_net_req () =
     assert false
   |Some (res, Some body) ->
     prerr_endline "<body present>";
-    Header.iter (Printf.eprintf "%s: %s\n%!") (Response.headers res);
+    show_headers (Response.headers res);
     Pipe.iter body ~f:(fun c -> return (prerr_endline c))
   |Some (res, None) ->
-    Header.iter (Printf.eprintf "%s: %s\n%!") (Response.headers res);
+    show_headers (Response.headers res);
     return (prerr_endline "<null body>")
 
 let test_cases =
