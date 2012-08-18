@@ -1,6 +1,8 @@
 .PHONY: all clean install build
 all: build test doc
 
+NAME=cohttp
+
 LWT ?= $(shell if ocamlfind query lwt &>/dev/null; then echo --enable-lwt; fi)
 ASYNC ?= $(shell if ocamlfind query async_core &>/dev/null; then echo --enable-async; fi)
 TESTS ?= --enable-tests
