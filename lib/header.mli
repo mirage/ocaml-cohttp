@@ -36,7 +36,7 @@ val get_transfer_encoding : t -> Transfer.encoding
 val add_transfer_encoding : t -> Transfer.encoding -> t
 val is_form : t -> bool
 
-module M(IO:IO.M) : sig
+module Make(IO:IO.Make) : sig
   val parse: IO.ic -> t IO.t
   val parse_form : t -> IO.ic -> (string * string) list IO.t
 end

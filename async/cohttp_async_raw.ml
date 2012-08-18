@@ -61,6 +61,6 @@ module IO = struct
     return ()
 end
 
-module Body = Transfer.M(IO)
-module Request = Request.M(IO)
-module Response = Response.M(IO)
+module Body = Transfer.Make(IO)
+module Request = Request.Make(IO)
+module Response = Response.Make(IO)

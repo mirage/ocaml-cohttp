@@ -15,7 +15,7 @@
  *
  *)
 
-module M(IO:IO.M) : sig
+module Make(IO:IO.Make) : sig
   type response
 
   val version: response -> Code.version

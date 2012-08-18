@@ -15,10 +15,10 @@
  *
  *)
 
-module M (IO:IO.M) = struct
+module Make(IO:IO.Make) = struct
 
-  module Header_IO = Header.M(IO)
-  module Transfer_IO = Transfer.M(IO)
+  module Header_IO = Header.Make(IO)
+  module Transfer_IO = Transfer.Make(IO)
   open IO
 
   type request = { 

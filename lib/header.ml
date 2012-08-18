@@ -101,9 +101,9 @@ let add_transfer_encoding headers =
 let is_form headers =
   get_media_type headers = (Some "application/x-www-form-urlencoded")
 
-module M(IO:IO.M) = struct
+module Make(IO:IO.Make) = struct
   open IO
-  module Transfer_IO = Transfer.M(IO)
+  module Transfer_IO = Transfer.Make(IO)
 
   let header_sep = Re_str.regexp ": *"
   let parse ic =
