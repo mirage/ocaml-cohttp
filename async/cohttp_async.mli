@@ -23,12 +23,13 @@ module Request : sig
   val path : request -> string
   val header : request -> string -> string option
   val headers : request -> Header.t
-  val params_get : request -> Header.t
-  val params_post : request -> Header.t
-  val param : request -> string -> string list
+  val params : request -> (string * string) list
   val transfer_encoding : request -> string
   val make : ?meth:Code.meth -> ?version:Code.version ->
     ?encoding:Transfer.encoding -> ?headers:Header.t -> Uri.t -> request
+
+  val is_form: request -> bool
+  val read_form : request -> Async_unix.Reader.t -> (string * string) list Async_core.Deferred.t
 end
 
 module Response : sig
@@ -38,6 +39,9 @@ module Response : sig
   val headers : response -> Header.t
   val make : ?version:Code.version -> ?status:Code.status_code ->
     ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> response
+
+  val is_form: response -> bool
+  val read_form : response -> Async_unix.Reader.t -> (string * string) list Async_core.Deferred.t
 end
 
 module Client : sig

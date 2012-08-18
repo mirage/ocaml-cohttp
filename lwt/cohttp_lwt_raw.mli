@@ -23,9 +23,7 @@ module Request : sig
   val path : request -> string
   val header : request -> string -> string option
   val headers : request -> Header.t
-  val params_get : request -> Header.t
-  val params_post : request -> Header.t
-  val param : request -> string -> string list
+  val params : request -> (string * string) list
   val transfer_encoding : request -> string
 
   val make : ?meth:Code.meth -> ?version:Code.version -> 
@@ -40,6 +38,9 @@ module Request : sig
   val write_footer : request -> Lwt_io.output_channel -> unit Lwt.t
   val write : (request -> Lwt_io.output_channel -> unit Lwt.t) -> request -> 
     Lwt_io.output_channel -> unit Lwt.t
+
+  val is_form: request -> bool
+  val read_form : request -> Lwt_io.input_channel -> (string * string) list Lwt.t
 end
 
 module Response : sig
@@ -60,4 +61,7 @@ module Response : sig
   val write_footer : response -> Lwt_io.output_channel -> unit Lwt.t
   val write : (response -> Lwt_io.output_channel -> unit Lwt.t) -> 
     response -> Lwt_io.output_channel -> unit Lwt.t
+
+  val is_form: response -> bool
+  val read_form : response -> Lwt_io.input_channel -> (string * string) list Lwt.t
 end
