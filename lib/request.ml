@@ -25,8 +25,6 @@ module M (IO:IO.M) = struct
     headers: Header.t;
     meth: Code.meth;
     uri: Uri.t;
-    get: Header.t;
-    post: Header.t;
     version: Code.version;
     encoding: Transfer.encoding;
   }
@@ -39,16 +37,9 @@ module M (IO:IO.M) = struct
   let header req h = Header.get req.headers h
   let headers req = req.headers
   
-  let params_get r = r.get
-  let params_post r = r.post
-  let param r p = match (Header.get r.post p, Header.get r.get p) with
-    | Some p, Some g -> [p; g]
-    | None, Some g -> [g]
-    | Some p, None -> [p]
-    | None, None -> []
+  let params r = Uri.query r.uri
 
   let transfer_encoding req = Transfer.encoding_to_string req.encoding
-
 
   let url_decode url = Uri.pct_decode url
 
@@ -71,25 +62,9 @@ module M (IO:IO.M) = struct
     parse_request_fst_line ic >>= function
     |None -> return None
     |Some (meth, uri, version) ->
-      Header_IO.parse ic >>= fun headers ->
-      let ctype = Header.get_media_type headers in
-      let get = Header.of_list (Uri.query uri) in
-      (match meth, ctype with
-        |`POST, Some "application/x-www-form-urlencoded" -> 
-          (* If the form is query-encoded, then extract those parameters also *)
-          let bodylen = match Header.get_content_range headers with
-             |None -> 0 |Some x -> x in
-          IO.read ic bodylen >>= fun query ->
-          let post = Header.of_list (Uri.query_of_encoded query) in
-          let encoding = Transfer.Fixed 0L in
-          return (post, encoding)
-        |`POST, _ ->
-          let post = Header.init () in
-          let encoding = Header.get_transfer_encoding headers in
-          return (post, encoding)
-        | _ -> return ((Header.init ()), (Transfer.Fixed 0L)) 
-      ) >>= fun (post, encoding) ->
-      return (Some { headers; meth; uri; version; post; get; encoding })
+      Header_IO.parse ic >>= fun headers -> 
+      let encoding = Header.get_transfer_encoding headers in
+      return (Some { headers; meth; uri; version; encoding })
 
   let has_body req = Transfer.has_body req.encoding
   let read_body req ic = Transfer_IO.read req.encoding ic
@@ -104,9 +79,7 @@ module M (IO:IO.M) = struct
       match headers with
       |None -> Header.init ()
       |Some h -> h in
-    let get = Header.of_list (Uri.query uri) in
-    let post = Header.init () in
-    { meth; version; headers; get; post; uri; encoding }
+    { meth; version; headers; uri; encoding }
 
   let write_header req oc =
    let fst_line = Printf.sprintf "%s %s %s\r\n" (Code.string_of_method req.meth)
@@ -133,4 +106,7 @@ module M (IO:IO.M) = struct
     write_header req oc >>= fun () ->
     fn req oc >>= fun () ->
     write_footer req oc
+
+  let is_form req = Header.is_form req.headers
+  let read_form req ic = Header_IO.parse_form req.headers ic
 end

@@ -87,4 +87,7 @@ module M (IO:IO.M) = struct
     write_header req oc >>= fun () ->
     fn req oc >>= fun () ->
     write_footer req oc
+
+  let is_form req = Header.is_form req.headers
+  let read_form req ic = Header_IO.parse_form req.headers ic
 end

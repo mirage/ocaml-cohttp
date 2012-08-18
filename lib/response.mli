@@ -33,4 +33,7 @@ module M(IO:IO.M) : sig
   val write_body : string -> response -> IO.oc -> unit IO.t
   val write_footer : response -> IO.oc -> unit IO.t
   val write : (response -> IO.oc -> unit IO.t) -> response -> IO.oc -> unit IO.t
+
+  val is_form : response -> bool
+  val read_form : response -> IO.ic -> (string * string) list IO.t
 end

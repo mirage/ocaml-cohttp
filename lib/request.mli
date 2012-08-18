@@ -26,9 +26,7 @@ module M(IO:IO.M) : sig
   val header : request -> string -> string option
   val headers : request -> Header.t
 
-  val params_get : request -> Header.t
-  val params_post : request -> Header.t
-  val param : request -> string -> string list
+  val params : request -> (string * string) list
 
   val transfer_encoding : request -> string
 
@@ -43,5 +41,7 @@ module M(IO:IO.M) : sig
   val write_body : string -> request -> IO.oc -> unit IO.t
   val write_footer : request -> IO.oc -> unit IO.t
   val write : (request -> IO.oc -> unit IO.t) -> request -> IO.oc -> unit IO.t
-end
 
+  val is_form : request -> bool
+  val read_form : request -> IO.ic -> (string * string) list IO.t
+end
