@@ -18,17 +18,42 @@
  *)
 
 module StringMap = Map.Make(String)
-type t = string StringMap.t
+type t = string list StringMap.t
+
+let headers_with_list_values = [
+  "accept";"accept-charset";"accept-encoding";"accept-language";
+  "accept-ranges";"allow";"cache-control";"connection";"content-encoding";
+  "content-language";"expect";"if-match";"if-none-match";"pragma";
+  "proxy-authenticate";"te";"trailer";"transfer-encoding";"upgrade";
+  "vary";"via";"warning";"www-authenticate";
+]
 
 let init () = StringMap.empty
-let add h k v = StringMap.add k v h
+let add h k v =
+  try StringMap.add k (v::(StringMap.find k h)) h
+  with Not_found -> StringMap.add k [v] h
 let remove h k = StringMap.remove k h
-let get h k = try Some (StringMap.find k h) with Not_found -> None
+let get =
+  let lhm = List.fold_left
+    (fun m k -> StringMap.add k () m) StringMap.empty
+    headers_with_list_values
+  in fun h k ->
+    try let v = StringMap.find k h in
+        if StringMap.exists (fun k' () -> k=k') lhm
+        then Some (String.concat "," v)
+        else Some (List.hd v)
+    with Not_found | Failure _ -> None
+let get_multi h k = try StringMap.find k h with Not_found -> []
 let map fn h = StringMap.mapi fn h
 let iter fn h = ignore(map fn h)
-let fold fn h acc = StringMap.fold fn h acc
-let of_list l = List.fold_left (fun a (k,v) -> StringMap.add k v a) StringMap.empty l
-let to_list h = StringMap.fold (fun k v acc -> (k,v)::acc) h []
+let fold fn h acc = StringMap.fold
+  (fun k v acc -> List.fold_left (fun acc v -> fn k v acc) acc v)
+  h acc
+let of_list l = List.fold_left (fun h (k,v) -> add h k v) (init ()) l
+
+let to_list h = List.rev (fold (fun k v acc -> (k,v)::acc) h [])
+let header_line k v = Printf.sprintf "%s: %s\r\n" k v
+let to_lines h = List.rev (fold (fun k v acc -> (header_line k v)::acc) h [])
 
 let parse_content_range s =
   try

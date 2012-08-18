@@ -20,11 +20,13 @@ val init : unit -> t
 val add : t -> string -> string -> t
 val remove : t -> string -> t
 val get : t -> string -> string option
-val iter : (string -> string -> unit) -> t -> unit
-val map : (string -> string -> string) -> t -> t
+val get_multi : t -> string -> string list
+val iter : (string -> string list -> unit) -> t -> unit
+val map : (string -> string list -> string list) -> t -> t
 val fold : (string -> string -> 'a -> 'a) -> t -> 'a -> 'a
 val of_list : (string * string) list -> t
 val to_list : t -> (string * string) list
+val to_lines : t -> string list
 
 val get_content_range : t -> int option
 val get_media_type : t -> string option

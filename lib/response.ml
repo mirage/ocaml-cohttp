@@ -68,9 +68,7 @@ module Make(IO:IO.Make) = struct
     write oc (Printf.sprintf "%s %s\r\n" (Code.string_of_version res.version) 
       (Code.string_of_status res.status)) >>= fun () ->
     let headers = Header.add_transfer_encoding res.headers res.encoding in
-    let headers = Header.fold (fun k v acc -> 
-      Printf.sprintf "%s: %s\r\n" k v :: acc) headers [] in
-    iter (IO.write oc) (List.rev headers) >>= fun () ->
+    iter (IO.write oc) (Header.to_lines headers) >>= fun () ->
     IO.write oc "\r\n"
 
   let write_body buf req oc =

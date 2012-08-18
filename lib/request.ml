@@ -87,9 +87,7 @@ module Make(IO:IO.Make) = struct
     let headers = Header.add req.headers "host" (host_of_uri req.uri) in
     let headers = Header.add_transfer_encoding headers req.encoding in
     IO.write oc fst_line >>= fun () ->
-    let headers = Header.fold (fun k v acc -> 
-      Printf.sprintf "%s: %s\r\n" k v :: acc) headers [] in
-    iter (IO.write oc) (List.rev headers) >>= fun () ->
+    iter (IO.write oc) (Header.to_lines headers) >>= fun () ->
     IO.write oc "\r\n"
 
   let write_body buf req oc =
