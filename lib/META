@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 378e36b8b9af095f86029d542c338403)
+# DO NOT EDIT (digest: 16899fe9cda386c9e58818cebe102082)
 version = "0.9-dev"
 description = "HTTP protocol library for Lwt"
 requires = "re lwt.unix uri"
@@ -22,7 +22,7 @@ package "lwt" (
 package "async" (
  version = "0.9-dev"
  description = "HTTP protocol library for Lwt"
- requires = "uri cohttp async_core async_unix threads async_extra"
+ requires = "uri cohttp async_core async_unix threads async"
  archive(byte) = "cohttp_async.cma"
  archive(byte, plugin) = "cohttp_async.cma"
  archive(native) = "cohttp_async.cmxa"
