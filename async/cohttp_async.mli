@@ -15,6 +15,8 @@
  *
  *)
 
+open Async.Std
+
 module Request : sig
   type request
   val meth : request -> Code.meth
@@ -29,7 +31,7 @@ module Request : sig
     ?encoding:Transfer.encoding -> ?headers:Header.t -> Uri.t -> request
 
   val is_form: request -> bool
-  val read_form : request -> Async_unix.Reader.t -> (string * string) list Async_core.Deferred.t
+  val read_form : request -> Reader.t -> (string * string) list Deferred.t
 end
 
 module Response : sig
@@ -41,11 +43,11 @@ module Response : sig
     ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> response
 
   val is_form: response -> bool
-  val read_form : response -> Async_unix.Reader.t -> (string * string) list Async_core.Deferred.t
+  val read_form : response -> Reader.t -> (string * string) list Deferred.t
 end
 
 module Client : sig
-  type response = Response.response * string Async_core.Pipe.Reader.t option
-  val call : ?headers:Header.t -> ?body:string Async_core.Pipe.Reader.t ->
-    Code.meth -> Uri.t -> response option Async_core.Deferred.t
+  type response = Response.response * string Pipe.Reader.t option
+  val call : ?headers:Header.t -> ?body:string Pipe.Reader.t ->
+    Code.meth -> Uri.t -> response option Deferred.t
 end

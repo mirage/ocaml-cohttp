@@ -16,8 +16,8 @@
  *)
 
 open Core.Std
-open Async_core
-open Async_unix
+open Async.Std
+
 include Cohttp_async_raw
 
 let port_of_uri uri =
