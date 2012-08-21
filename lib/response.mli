@@ -28,6 +28,7 @@ module Make(IO:IO.Make) : sig
   val read: IO.ic -> response option IO.t
   val has_body : response -> bool
   val read_body: response -> IO.ic -> Transfer.chunk IO.t
+  val read_body_to_string : response -> IO.ic -> string IO.t
 
   val write_header : response -> IO.oc -> unit IO.t
   val write_body : string -> response -> IO.oc -> unit IO.t

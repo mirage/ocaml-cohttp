@@ -63,6 +63,7 @@ module Make(IO:IO.Make) = struct
 
   let has_body r = Transfer.has_body r.encoding
   let read_body r ic = Transfer_IO.read r.encoding ic
+  let read_body_to_string r ic = Transfer_IO.to_string r.encoding ic
 
   let write_header res oc =
     write oc (Printf.sprintf "%s %s\r\n" (Code.string_of_version res.version) 
