@@ -30,6 +30,7 @@ let port_of_uri uri =
   |Some p -> p
 
 open Deferred
+
 (* Convert a HTTP body stream into a Pipe *)
 let pipe_of_body read_fn ic =
   let rd, wr = Pipe.create () in
@@ -51,13 +52,12 @@ let pipe_of_body read_fn ic =
         |`Ok _ -> write () 
     end
   in
-  (* TODO: how to run write () as a background task? *)
-  let _ = write () in
+  whenever (write ());
   rd
 
 module Client = struct
 
-  type response = Response.response * string Async_core.Pipe.Reader.t option
+  type response = Response.response * string Pipe.Reader.t option
 
   let write_request ?body req oc =
     Request.write (fun req oc ->
@@ -74,13 +74,11 @@ module Client = struct
       |false -> return (Some (res, None))
       |true ->
         let body_rd = pipe_of_body (Response.read_body res) ic in
-        (* TODO: how to run this as a background task properly? *)
-        let _ = 
-          if close then  (
+        if close then whenever (
             Pipe.closed body_rd >>= fun () -> 
             Reader.close ic >>= fun () -> 
-            Writer.close oc)
-          else return () in
+            Writer.close oc
+        );
         return (Some (res, Some body_rd))
     end
 
@@ -92,7 +90,7 @@ module Client = struct
     let req = Request.make ~meth ~encoding ?headers uri in
     let host = match Uri.host uri with |None -> "localhost" |Some h -> h in
     let port = port_of_uri uri in
-    Async_extra.Tcp.connect ~host ~port () >>= fun (ic,oc) ->
+    Tcp.connect ~host ~port () >>= fun (ic,oc) ->
     write_request ?body req oc >>= fun () ->
     read_response ~close:true ic oc
 end
