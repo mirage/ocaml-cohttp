@@ -29,8 +29,6 @@ let port_of_uri uri =
   end
   |Some p -> p
 
-open Deferred
-
 (* Convert a HTTP body stream into a Pipe *)
 let pipe_of_body read_fn ic =
   let rd, wr = Pipe.create () in
@@ -67,11 +65,11 @@ module Client = struct
     ) req oc
 
   let read_response ?(close=false) ic oc =
-    Response.read ic >>= function
-    |None -> return None
+    Response.read ic >>| function
+    |None -> None
     |Some res -> begin
       match Response.has_body res with
-      |false -> return (Some (res, None))
+      |false -> (Some (res, None))
       |true ->
         let body_rd = pipe_of_body (Response.read_body res) ic in
         if close then whenever (
@@ -79,7 +77,7 @@ module Client = struct
             Reader.close ic >>= fun () -> 
             Writer.close oc
         );
-        return (Some (res, Some body_rd))
+        Some (res, Some body_rd)
     end
 
   let call ?headers ?body meth uri =
