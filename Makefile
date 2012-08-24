@@ -3,8 +3,8 @@ all: build test doc
 
 NAME=cohttp
 
-LWT ?= $(shell if ocamlfind query lwt &>/dev/null; then echo --enable-lwt; fi)
-ASYNC ?= $(shell if ocamlfind query async_core &>/dev/null; then echo --enable-async; fi)
+LWT ?= $(shell if ocamlfind query lwt >/dev/null 2>&1; then echo --enable-lwt; fi)
+ASYNC ?= $(shell if ocamlfind query async_core >/dev/null 2>&1; then echo --enable-async; fi)
 TESTS ?= --enable-tests
 # disabled by default as they hang at the moment for Async
 # NETTESTS ?= --enable-nettests
