@@ -29,16 +29,6 @@ let build_sockaddr addr port =
   with _ -> 
     raise_lwt (Failure ("cant resolve hostname: " ^ addr))
 
-(* TODO move to ocaml-uri as a /etc/services module *)
-let port_of_uri uri =
-  match Uri.port uri with
-  |None -> begin
-     match Uri.scheme uri with 
-     |Some "https" -> 443 (* TODO: actually support https *)
-     |Some "http" | Some _ |None -> 80
-  end
-  |Some p -> p
-
 (* Vanilla TCP connection *)
 module Tcp_client = struct
   let connect sa =
@@ -104,7 +94,9 @@ module Tcp_server = struct
 end
 
 let connect_uri uri =
-  lwt sa = build_sockaddr (Uri.host_with_default uri) (port_of_uri uri) in
+  let port = match Uri_services.tcp_port_of_uri uri with
+    |None -> raise (Failure "unknown scheme") |Some p -> p in
+  lwt sa = build_sockaddr (Uri.host_with_default uri) port in
   match Uri.scheme uri with
   |Some "https" -> Ssl_client.connect sa
   |Some "http" -> Tcp_client.connect sa

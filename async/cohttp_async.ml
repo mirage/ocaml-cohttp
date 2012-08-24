@@ -20,15 +20,6 @@ open Async.Std
 
 include Cohttp_async_raw
 
-let port_of_uri uri =
-  match Uri.port uri with
-  |None -> begin
-     match Uri.scheme uri with 
-     |Some "https" -> 443 (* TODO: actually support https *)
-     |Some "http" | Some _ |None -> 80
-  end
-  |Some p -> p
-
 (* Convert a HTTP body stream into a Pipe *)
 let pipe_of_body read_fn ic =
   let rd, wr = Pipe.create () in
@@ -87,8 +78,10 @@ module Client = struct
       |Some _ -> Transfer.Chunked in
     let req = Request.make ~meth ~encoding ?headers uri in
     let host = match Uri.host uri with |None -> "localhost" |Some h -> h in
-    let port = port_of_uri uri in
-    Tcp.connect ~host ~port () >>= fun (ic,oc) ->
-    write_request ?body req oc >>= fun () ->
-    read_response ~close:true ic oc
+    match Uri_services.tcp_port_of_uri ~default:"http" uri with
+    |None -> return None
+    |Some port ->
+      Tcp.connect ~host ~port () 
+      >>= fun (ic,oc) -> write_request ?body req oc 
+      >>= fun () -> read_response ~close:true ic oc
 end
