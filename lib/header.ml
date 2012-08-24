@@ -81,6 +81,11 @@ let get_content_range headers =
     end
     | None -> None
   end
+
+let get_connection_close headers =
+  match get headers "connection" with
+  | Some "close" -> true
+  | _ -> false
   
 let get_media_type =
   (* Grab "foo/bar" from " foo/bar ; charset=UTF-8" *)

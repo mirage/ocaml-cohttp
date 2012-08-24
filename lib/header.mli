@@ -30,6 +30,7 @@ val to_lines : t -> string list
 
 val get_content_range : t -> int option
 val get_media_type : t -> string option
+val get_connection_close : t -> bool
 val get_acceptable_media_ranges : t -> (Accept.media_range * Accept.p list) Accept.qlist
 val get_acceptable_charsets : t -> Accept.charset Accept.qlist
 val get_acceptable_encodings : t -> Accept.encoding Accept.qlist
