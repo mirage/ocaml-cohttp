@@ -118,7 +118,9 @@ module Server = struct
       let rd_req, wr_req = Pipe.create () in
       let rec read_t () =
         Request.read ic >>= function
-        |None -> return ()
+        |None ->
+          Pipe.close wr_req;
+          return ()
         |Some req -> begin
           (* Ensure the input body has been fully consumed before reading another request *)
           match Request.has_body req with
