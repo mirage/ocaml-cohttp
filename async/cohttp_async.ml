@@ -27,16 +27,16 @@ let pipe_of_body read_fn ic =
   let rec write () =
     read_fn ic >>= function
     |Transfer.Done ->
-      Pipe.close wr; return ()
+      return (Pipe.close wr);
     |Transfer.Final_chunk c -> begin
-      Pipe.with_write wr ~f:(fun wrfn -> wrfn c) >>= 
-        function
-        |`Closed -> return ()
-        |`Ok _ -> Pipe.close wr; return ()
+      Pipe.with_write wr ~f:(fun wrfn -> wrfn c)
+      >>| function
+        |`Closed -> ()
+        |`Ok _ -> Pipe.close wr
     end
     |Transfer.Chunk c -> begin
-      Pipe.with_write wr ~f:(fun wrfn -> wrfn c) >>=
-        function
+      Pipe.with_write wr ~f:(fun wrfn -> wrfn c)
+      >>= function
         |`Closed -> return ()
         |`Ok _ -> write () 
     end
