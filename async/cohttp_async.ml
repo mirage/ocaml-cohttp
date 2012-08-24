@@ -45,8 +45,8 @@ let pipe_of_body read_fn ic =
   rd
 
 let close_all ic oc =
-  Reader.close ic >>= fun () ->
-  Writer.close oc
+  Writer.close oc >>= fun () ->
+  Reader.close ic
 
 module Client = struct
 
@@ -116,26 +116,29 @@ module Server = struct
       let conn_id = incr conn_id; !conn_id in
       (* Read the requests as a Pipe *)
       let rd_req, wr_req = Pipe.create () in
+      let close () = 
+        Pipe.close wr_req; return () in
       let rec read_t () =
         Request.read ic >>= function
-        |None ->
-          Pipe.close wr_req;
-          return ()
-        |Some req -> begin
+        |None -> close ()
+        |Some req ->
           (* Ensure the input body has been fully consumed before reading another request *)
-          match Request.has_body req with
-          |true -> begin
+          (match Request.has_body req with
+           |true ->
              let req_body = pipe_of_body (Request.read_body req) ic in
-             Pipe.closed req_body >>= fun () -> 
-             Pipe.with_write wr_req (fun wrfn -> wrfn (req, (Some req_body))) >>= function
-             |`Closed -> close_all ic oc (* TODO test *)
-             |`Ok _ -> read_t ()
-          end
-          |false ->
-             Pipe.with_write wr_req (fun wrfn -> wrfn (req, None)) >>= function
-             |`Closed -> close_all ic oc (* TODO test *)
-             |`Ok _ -> read_t ()
-        end
+             Pipe.closed req_body 
+             >>= fun () -> return (Some req_body)
+           |false -> return None
+          )
+        >>= fun req_body ->
+        Pipe.with_write wr_req (fun wrfn -> wrfn (req, req_body))
+        >>= function
+        |`Closed -> close_all ic oc (* TODO test *)
+        |`Ok _ ->
+          if Header.get_connection_close (Request.headers req) then 
+            close () 
+          else
+            read_t ()
       in whenever (read_t ());
       (* Map the requsts onto a response stream to serialise out *)
       let rec write_resps () =
@@ -148,8 +151,11 @@ module Server = struct
               match body with
               |None -> return () 
               |Some body ->
-                Pipe.iter body ~f:(fun c -> Response.write_body c res oc)
-            ) res oc >>= write_resps
+                Pipe.iter body ~f:(fun c ->
+                  Response.write_body c res oc
+                )
+            ) res oc >>= fun () ->
+            write_resps ()
       in write_resps ()
      
   let main spec =
