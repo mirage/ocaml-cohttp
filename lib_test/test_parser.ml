@@ -232,14 +232,14 @@ let make_simple_req () =
   let oc = oc_of_buffer buf in
   let req = Request.make ~headers:(Header.of_list [("foo","bar")]) (Uri.of_string "/foo/bar") in
   Request.write_header req oc >>= fun () ->
-  Request.write_body "foobar" req oc >>= fun () ->
+  Request.write_body req oc "foobar" >>= fun () ->
   Request.write_footer req oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
   (* Use the high-level write API. This also tests that req is immutable
    * by re-using it *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
-  Request.write (Request.write_body "foobar") req oc >>= fun () ->
+  Request.write (fun req oc -> Request.write_body req oc "foobar") req oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
   return ()
 
@@ -252,14 +252,14 @@ let make_simple_res () =
   let oc = oc_of_buffer buf in
   let res = Response.make ~headers:(Header.of_list [("foo","bar")]) () in
   Response.write_header res oc >>= fun () ->
-  Response.write_body "foobar" res oc >>= fun () ->
+  Response.write_body res oc "foobar" >>= fun () ->
   Response.write_footer res oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
   (* Use the high-level write API. This also tests that req is immutable
    * by re-using it *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
-  Response.write (Response.write_body "foobar") res oc >>= fun () ->
+  Response.write (fun req oc -> Response.write_body req oc "foobar") res oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
   return ()
 

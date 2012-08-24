@@ -34,7 +34,7 @@ module Request : sig
   val read_body : request -> Lwt_io.input_channel -> Transfer.chunk Lwt.t
 
   val write_header : request -> Lwt_io.output_channel -> unit Lwt.t
-  val write_body : string -> request -> Lwt_io.output_channel -> unit Lwt.t
+  val write_body : request -> Lwt_io.output_channel -> string -> unit Lwt.t
   val write_footer : request -> Lwt_io.output_channel -> unit Lwt.t
   val write : (request -> Lwt_io.output_channel -> unit Lwt.t) -> request -> 
     Lwt_io.output_channel -> unit Lwt.t
@@ -57,7 +57,7 @@ module Response : sig
   val read_body : response -> Lwt_io.input_channel -> Transfer.chunk Lwt.t
 
   val write_header : response -> Lwt_io.output_channel -> unit Lwt.t
-  val write_body : string -> response -> Lwt_io.output_channel -> unit Lwt.t
+  val write_body : response -> Lwt_io.output_channel -> string -> unit Lwt.t
   val write_footer : response -> Lwt_io.output_channel -> unit Lwt.t
   val write : (response -> Lwt_io.output_channel -> unit Lwt.t) -> 
     response -> Lwt_io.output_channel -> unit Lwt.t

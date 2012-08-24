@@ -90,7 +90,7 @@ module Make(IO:IO.Make) = struct
     iter (IO.write oc) (Header.to_lines headers) >>= fun () ->
     IO.write oc "\r\n"
 
-  let write_body buf req oc =
+  let write_body req oc buf =
     Transfer_IO.write req.encoding oc buf
 
   let write_footer req oc =

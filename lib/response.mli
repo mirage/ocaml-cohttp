@@ -31,7 +31,7 @@ module Make(IO:IO.Make) : sig
   val read_body_to_string : response -> IO.ic -> string IO.t
 
   val write_header : response -> IO.oc -> unit IO.t
-  val write_body : string -> response -> IO.oc -> unit IO.t
+  val write_body : response -> IO.oc -> string -> unit IO.t
   val write_footer : response -> IO.oc -> unit IO.t
   val write : (response -> IO.oc -> unit IO.t) -> response -> IO.oc -> unit IO.t
 

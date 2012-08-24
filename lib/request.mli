@@ -38,7 +38,7 @@ module Make(IO:IO.Make) : sig
   val read_body : request -> IO.ic -> Transfer.chunk IO.t
 
   val write_header : request -> IO.oc -> unit IO.t
-  val write_body : string -> request -> IO.oc -> unit IO.t
+  val write_body : request -> IO.oc -> string -> unit IO.t
   val write_footer : request -> IO.oc -> unit IO.t
   val write : (request -> IO.oc -> unit IO.t) -> request -> IO.oc -> unit IO.t
 

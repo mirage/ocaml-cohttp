@@ -56,7 +56,7 @@ module Client = struct
     Request.write (fun req oc ->
       match body with
       |None -> return ()
-      |Some b -> Pipe.iter b ~f:(fun c -> Request.write_body c req oc)
+      |Some b -> Pipe.iter b ~f:(Request.write_body req oc)
     ) req oc
 
   let read_response ?(close=false) ic oc =
@@ -151,9 +151,7 @@ module Server = struct
               match body with
               |None -> return () 
               |Some body ->
-                Pipe.iter body ~f:(fun c ->
-                  Response.write_body c res oc
-                )
+                Pipe.iter body ~f:(Response.write_body res oc)
             ) res oc >>= fun () ->
             write_resps ()
       in write_resps ()

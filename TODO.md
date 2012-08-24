@@ -9,6 +9,7 @@ Better HTTP support:
 
 - Range requests need to be fully implemented (206)
 - 100 Continue should be a noop
+- Lwt Connection: close support
 - A client interface that deals with redirects
 - Proxy support (manual means a full URI in the request)
-- SSL support
+- SSL support for Async?

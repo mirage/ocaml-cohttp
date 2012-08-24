@@ -48,7 +48,7 @@ module Client = struct
     Request.write (fun req oc ->
       match body with
       |None -> return ()
-      |Some b -> Lwt_stream.iter_s (fun c -> Request.write_body c req oc) b
+      |Some b -> Lwt_stream.iter_s (Request.write_body req oc) b
     ) req oc
 
   let read_response ?(close=false) ic oc =
@@ -158,7 +158,7 @@ module Server = struct
         Response.write (fun res oc ->
           match body with
           |None -> return ()
-          |Some b -> Lwt_stream.iter_s (fun c -> Response.write_body c res oc) b
+          |Some b -> Lwt_stream.iter_s (Response.write_body res oc) b
         ) res oc
       ) res_stream
     in daemon_callback
