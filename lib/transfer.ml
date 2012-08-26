@@ -35,7 +35,7 @@ let has_body =
   function
   | Chunked -> true
   | Fixed 0L -> false
-  | Unknown -> true
+  | Unknown -> false
   | Fixed _ -> true
 
 
