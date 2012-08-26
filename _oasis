@@ -85,6 +85,15 @@ Executable test_net_async
   Install:            false
   BuildDepends:       cohttp, cohttp.async, oUnit (>= 1.0.2)
 
+Executable test_net_async_server
+  Path:               lib_test
+  MainIs:             test_net_async_server.ml
+  Build$:             flag(tests) && flag(async)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.async, oUnit (>= 1.0.2)
+
 Test test_accept
   Run$:               flag(tests)
   Command:            $test_accept

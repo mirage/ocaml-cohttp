@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 9ed78401572dccdf1f054bfa758cc5b1)
+# DO NOT EDIT (digest: 79fd7b800e6365088a4bd7c977718441)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -91,6 +91,19 @@
 <lib_test/test_net_async.{native,byte}>: pkg_lwt.unix
 <lib_test/test_net_async.{native,byte}>: pkg_re
 <lib_test/test_net_async.{native,byte}>: pkg_uri.services
+<lib_test/test_net_async.{native,byte}>: custom
+# Executable test_net_async_server
+<lib_test/test_net_async_server.{native,byte}>: use_cohttp_async
+<lib_test/test_net_async_server.{native,byte}>: use_cohttp
+<lib_test/test_net_async_server.{native,byte}>: pkg_oUnit
+<lib_test/test_net_async_server.{native,byte}>: pkg_uri
+<lib_test/test_net_async_server.{native,byte}>: pkg_async_core
+<lib_test/test_net_async_server.{native,byte}>: pkg_async_unix
+<lib_test/test_net_async_server.{native,byte}>: pkg_threads
+<lib_test/test_net_async_server.{native,byte}>: pkg_async
+<lib_test/test_net_async_server.{native,byte}>: pkg_lwt.unix
+<lib_test/test_net_async_server.{native,byte}>: pkg_re
+<lib_test/test_net_async_server.{native,byte}>: pkg_uri.services
 <lib_test/*.ml{,i}>: use_cohttp_async
 <lib_test/*.ml{,i}>: use_cohttp
 <lib_test/*.ml{,i}>: pkg_oUnit
@@ -102,7 +115,7 @@
 <lib_test/*.ml{,i}>: pkg_lwt.unix
 <lib_test/*.ml{,i}>: pkg_re
 <lib_test/*.ml{,i}>: pkg_uri.services
-<lib_test/test_net_async.{native,byte}>: custom
+<lib_test/test_net_async_server.{native,byte}>: custom
 # OASIS_STOP
 <lib/*>: syntax_camlp4o, pkg_lwt.syntax
 <lib_test/*>: syntax_camlp4o, pkg_lwt.syntax
