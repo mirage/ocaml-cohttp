@@ -51,3 +51,18 @@ module Client : sig
   val call : ?headers:Header.t -> ?body:string Pipe.Reader.t ->
     Code.meth -> Uri.t -> response option Deferred.t
 end
+
+module Server : sig
+  type conn_id = int
+  type response = Response.response * string Pipe.Reader.t option
+
+  type config = {
+    callback: conn_id -> ?body:string Pipe.Reader.t -> Request.request -> response Deferred.t;
+    port: int;
+  }
+
+  val respond_string : ?headers:Header.t -> status:Code.status_code -> body:string -> unit -> response Deferred.t
+
+  val main : config -> unit Deferred.t
+end
+
