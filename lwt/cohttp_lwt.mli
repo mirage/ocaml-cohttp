@@ -15,6 +15,8 @@
  *
  *)
 
+val string_of_body : string Lwt_stream.t option -> string Lwt.t
+
 module Request : sig
   type request
   val meth : request -> Code.meth

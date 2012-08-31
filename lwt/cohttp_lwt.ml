@@ -40,6 +40,14 @@ let wait_for_stream st =
   Lwt_stream.on_terminate st (wakeup u);
   t
 
+let string_of_body =
+  function
+  |None -> return ""
+  |Some s ->
+    let b = Buffer.create 1024 in
+    Lwt_stream.iter (Buffer.add_string b) s >>
+    return (Buffer.contents b)
+  
 module Client = struct
 
   type response = (Response.response * string Lwt_stream.t option) option
