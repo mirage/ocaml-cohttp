@@ -236,9 +236,10 @@ let make_simple_req () =
   (* Use the low-level write_header/footer API *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
-  let req = Request.make ~headers:(Header.of_list [("foo","bar")]) (Uri.of_string "/foo/bar") in
+  let body = Lwt_stream.of_list ["foobar"] in
+  let req = Request.make ~headers:(Header.of_list [("foo","bar")]) (Uri.of_string "/foo/bar") ~body in
   Request.write_header req oc >>= fun () ->
-  Request.write_body req oc "foobar" >>= fun () ->
+  Lwt_stream.iter_s (Request.write_body req oc) body >>= fun () ->
   Request.write_footer req oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
   (* Use the high-level write API. This also tests that req is immutable
@@ -271,11 +272,19 @@ let make_simple_res () =
   return ()
 
 let test_cases =
-  let tests = [ basic_req_parse; req_parse; post_form_parse; post_data_parse; 
-    post_chunked_parse; (basic_res_parse basic_res); (basic_res_parse basic_res_plus_crlf);
-    res_content_parse; make_simple_req; make_simple_res;
+  let tests = [
+    "basic_req_parse", basic_req_parse;
+    "req_parse", req_parse;
+    "post_form_parse", post_form_parse;
+    "post_data_parse",  post_data_parse;
+    "post_chunked_parse", post_chunked_parse;
+    "basic_res_parse 1", (basic_res_parse basic_res);
+    "basic_res_parse 2", (basic_res_parse basic_res_plus_crlf);
+    "res_content_parse", res_content_parse;
+    "make_simple_req", make_simple_req; 
+    "make_simple_res", make_simple_res;
   ] in
-  List.map (fun x -> "test" >:: (fun () -> Lwt_unix.run (x ()))) tests
+  List.map (fun (n,x) -> n >:: (fun () -> Lwt_unix.run (x ()))) tests
 
 (* Returns true if the result list contains successes only.
    Copied from oUnit source as it isnt exposed by the mli *)
