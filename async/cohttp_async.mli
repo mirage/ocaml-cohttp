@@ -16,6 +16,7 @@
  *)
 
 open Async.Std
+open Cohttp
 
 module Request : sig
   type request

@@ -17,6 +17,7 @@
 
 open Core.Std
 open Async.Std
+open Cohttp
 
 include Cohttp_async_raw
 
