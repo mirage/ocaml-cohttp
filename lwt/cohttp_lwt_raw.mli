@@ -15,6 +15,8 @@
  *
  *)
 
+open Cohttp
+
 module Request : sig
   type request
   val meth : request -> Code.meth

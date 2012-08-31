@@ -39,6 +39,6 @@ module IO = struct
   let write_line oc buf = Lwt_io.write_line oc buf
 end
 
-module Body  = Transfer.Make(IO)
-module Request = Request.Make(IO)
-module Response = Response.Make(IO)
+module Body  = Cohttp.Transfer.Make(IO)
+module Request = Cohttp.Request.Make(IO)
+module Response = Cohttp.Response.Make(IO)

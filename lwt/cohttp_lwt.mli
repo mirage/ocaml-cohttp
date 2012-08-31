@@ -15,6 +15,7 @@
  *
  *)
 
+open Cohttp
 val string_of_body : string Lwt_stream.t option -> string Lwt.t
 
 module Request : sig

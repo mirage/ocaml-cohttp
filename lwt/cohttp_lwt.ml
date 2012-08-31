@@ -15,8 +15,9 @@
  *
  *)
 
-include Cohttp_lwt_raw
+open Cohttp
 open Lwt
+include Cohttp_lwt_raw
 
 let stream_of_body read_fn ic =
   let fin = ref false in

@@ -105,7 +105,7 @@ let basic_req_parse () =
   let open Cohttp_lwt_raw in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_req) in
-  Request.read ic >>=
+  Cohttp_lwt_raw.Request.read ic >>=
   function
   |Some req ->
     assert_equal (Request.version req) `HTTP_1_1;
@@ -115,6 +115,7 @@ let basic_req_parse () =
   |None -> assert false
 
 let basic_res_parse res () =
+  let open Cohttp in
   let open Cohttp_lwt_raw in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string res) in
@@ -161,6 +162,7 @@ let post_form_parse () =
     return ()
 
 let post_data_parse () =
+  let open Cohttp in
   let open Cohttp_lwt_raw in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_data_req) in
@@ -175,6 +177,7 @@ let post_data_parse () =
     return ()
 
 let post_chunked_parse () =
+  let open Cohttp in
   let open Cohttp_lwt_raw in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_chunked_req) in
@@ -189,6 +192,7 @@ let post_chunked_parse () =
     return ()
 
 let res_content_parse () =
+  let open Cohttp in
   let open Cohttp_lwt_raw in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_res_content) in
@@ -202,6 +206,7 @@ let res_content_parse () =
      return ()
 
 let res_chunked_parse () =
+  let open Cohttp in
   let open Cohttp_lwt_raw in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string chunked_res) in
@@ -224,6 +229,7 @@ let get_substring oc buf =
   b
  
 let make_simple_req () =
+  let open Cohttp in
   let open Cohttp_lwt_raw in
   let open IO in
   let expected = "GET /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
@@ -244,6 +250,7 @@ let make_simple_req () =
   return ()
 
 let make_simple_res () =
+  let open Cohttp in
   let open Cohttp_lwt_raw in
   let open IO in
   let expected = "HTTP/1.1 200 OK\r\nfoo: bar\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
