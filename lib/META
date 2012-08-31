@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 2c88caae23164b562c22c2b199977048)
+# DO NOT EDIT (digest: 859856a1753b2347ba33a04341e04d0e)
 version = "0.9-dev"
 description = "HTTP protocol library for Lwt"
 requires = "re uri uri.services"
@@ -8,6 +8,17 @@ archive(byte, plugin) = "cohttp.cma"
 archive(native) = "cohttp.cmxa"
 archive(native, plugin) = "cohttp.cmxs"
 exists_if = "cohttp.cma"
+package "mirage" (
+ version = "0.9-dev"
+ description = "HTTP protocol library for Lwt"
+ requires = "uri re cohttp lwt.syntax mirage mirage-net"
+ archive(byte) = "cohttp_mirage.cma"
+ archive(byte, plugin) = "cohttp_mirage.cma"
+ archive(native) = "cohttp_mirage.cmxa"
+ archive(native, plugin) = "cohttp_mirage.cmxs"
+ exists_if = "cohttp_mirage.cma"
+)
+
 package "lwt" (
  version = "0.9-dev"
  description = "HTTP protocol library for Lwt"

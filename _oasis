@@ -22,6 +22,10 @@ Flag async
   Description: build the Core/Async library
   Default: false
 
+Flag mirage
+  Description: build the Mirage library
+  Default: false
+
 Flag nettests
   Description: run the internet-using tests
   Default: false
@@ -34,6 +38,15 @@ Library cohttp_lwt
   FindlibParent: cohttp
   BuildDepends: lwt.unix, lwt, uri, cohttp, lwt.ssl, lwt.syntax
   Modules: Cohttp_lwt_raw, Cohttp_lwt, Cohttp_lwt_net
+
+Library cohttp_mirage
+  Build$: flag(mirage)
+  Install$: flag(mirage)
+  Path: mirage
+  Findlibname: mirage
+  FindlibParent: cohttp
+  BuildDepends: uri, re, cohttp, lwt.syntax, mirage, mirage-net
+  Modules: Cohttp_mirage_raw
 
 Library cohttp_async
   Build$: flag(async)
