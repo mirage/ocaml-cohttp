@@ -19,6 +19,8 @@ open Cohttp
 open Lwt
 include Cohttp_lwt_raw
 
+type body = string Lwt_stream.t option
+
 let stream_of_body read_fn ic =
   let fin = ref false in
   Lwt_stream.from (fun () ->
@@ -48,6 +50,9 @@ let string_of_body =
     let b = Buffer.create 1024 in
     Lwt_stream.iter (Buffer.add_string b) s >>
     return (Buffer.contents b)
+
+let body_of_string s =
+  Some (Lwt_stream.of_list [s])
   
 module Client = struct
 

@@ -16,7 +16,10 @@
  *)
 
 open Cohttp
-val string_of_body : string Lwt_stream.t option -> string Lwt.t
+
+type body = string Lwt_stream.t option
+val string_of_body : body -> string Lwt.t
+val body_of_string : string -> body
 
 module Request : sig
   type request
