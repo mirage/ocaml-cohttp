@@ -15,6 +15,13 @@
  *
  *)
 
+let check_debug norm_fn debug_fn =
+  try
+    ignore(Sys.getenv "COHTTP_DEBUG");
+    debug_fn
+  with Not_found ->
+    norm_fn
+    
 module IO = struct
 
   type 'a t = 'a Lwt.t
@@ -26,17 +33,49 @@ module IO = struct
 
   let iter fn x = Lwt_list.iter_s fn x
 
-  let read_line ic = Lwt_io.read_line_opt ic
-  let read ic count = 
-   try_lwt Lwt_io.read ~count ic
-   with End_of_file -> return ""
+  let read_line =
+    check_debug
+      (fun ic -> Lwt_io.read_line_opt ic)
+      (fun ic ->
+        match_lwt Lwt_io.read_line_opt ic with
+        |None as x -> Printf.eprintf "<<< EOF\n"; return x
+        |Some l as x -> Printf.eprintf "<<< %s\n" l; return x)
 
-  let read_exactly ic buf off len =
-    try_lwt Lwt_io.read_into_exactly ic buf off len >> return true
-    with End_of_file -> return false
+  let read =
+   check_debug
+     (fun ic count ->
+       try_lwt Lwt_io.read ~count ic
+       with End_of_file -> return "")
+     (fun ic count ->
+       lwt buf = 
+         try_lwt Lwt_io.read ~count ic
+         with End_of_file -> return "" in
+       Printf.eprintf "<<< %s" buf;
+       return buf)
 
-  let write oc buf = Lwt_io.write oc buf
-  let write_line oc buf = Lwt_io.write_line oc buf
+  let read_exactly =
+    check_debug
+      (fun ic buf off len ->
+        try_lwt Lwt_io.read_into_exactly ic buf off len >> return true
+        with End_of_file -> return false)
+     (fun ic buf off len ->
+        lwt rd =
+          try_lwt Lwt_io.read_into_exactly ic buf off len >> return true
+          with End_of_file -> return false in
+        (match rd with
+        |true -> Printf.eprintf "<<< %S" (String.sub buf off len)
+        |false -> Printf.eprintf "<<< <EOF>\n");
+        return rd)
+
+  let write =
+    check_debug
+      (fun oc buf -> Lwt_io.write oc buf)
+      (fun oc buf -> Printf.eprintf ">>> %s" buf; Lwt_io.write oc buf)
+
+  let write_line =
+    check_debug
+      (fun oc buf -> Lwt_io.write_line oc buf)
+      (fun oc buf -> Printf.eprintf ">>> %s\n" buf; Lwt_io.write_line oc buf)
 end
 
 module Body  = Cohttp.Transfer.Make(IO)
