@@ -5,6 +5,10 @@ Planned interface-breaking changes before 1.0:
 
 * Make the Lwt response stream bounded (new in lwt-2.4+)
 
+* Wrap the `string Lwt_stream.t option` in a LazyString, to make it easier
+  to manipulate from libraries.  This will also remove all the ad-hoc
+  stream<->string functions from the global scope.
+
 Better HTTP support:
 
 - Range requests need to be fully implemented (206)
