@@ -20,18 +20,19 @@ open Async_core.Std
 open Cohttp_async
 
 let show_headers h =
-  Header.iter (fun k v -> List.iter v ~f:(Printf.eprintf "%s: %s\n" k)) h
+  Cohttp.Header.iter (fun k v -> List.iter v ~f:(Printf.eprintf "%s: %s\n" k)) h
 
 let make_net_req () =
+  let headers = Cohttp.Header.of_list ["connection","close"] in
   let url = "http://anil.recoil.org/" in
-  Client.call `GET (Uri.of_string url) >>= function 
+  Client.call ~headers `GET (Uri.of_string url) >>= function 
   |None -> 
     prerr_endline "<request failed>";
     assert false
   |Some (res, Some body) ->
     prerr_endline "<body present>";
     show_headers (Response.headers res);
-    Pipe.iter body ~f:(fun c -> return (prerr_endline c))
+    Pipe.iter body ~f:(fun c -> return ())
   |Some (res, None) ->
     show_headers (Response.headers res);
     return (prerr_endline "<null body>")
