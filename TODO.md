@@ -9,6 +9,8 @@ Planned interface-breaking changes before 1.0:
   to manipulate from libraries.  This will also remove all the ad-hoc
   stream<->string functions from the global scope.
 
+* Server file support and default_spec
+
 Better HTTP support:
 
 - Range requests need to be fully implemented (206)
