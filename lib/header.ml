@@ -122,11 +122,15 @@ let get_transfer_encoding headers =
     |None -> Transfer.Unknown
   end
 
-let add_transfer_encoding headers = 
-  function
-  |Transfer.Chunked -> add headers "transfer-encoding" "chunked"
-  |Transfer.Fixed len -> add headers "content-length" (Int64.to_string len)
-  |Transfer.Unknown -> headers
+let add_transfer_encoding headers enc =
+  let open Transfer in
+  (* Only add a header if one doesnt already exist, e.g. from the app *)
+  match get_transfer_encoding headers, enc with
+  |Fixed _,_  (* App has supplied a content length, so use that *)
+  |Chunked,_ -> headers (* TODO: this is a protocol violation *)
+  |Unknown, Chunked -> add headers "transfer-encoding" "chunked"
+  |Unknown, Fixed len -> add headers "content-length" (Int64.to_string len)
+  |Unknown, Unknown -> headers
  
 let is_form headers =
   get_media_type headers = (Some "application/x-www-form-urlencoded")

@@ -31,7 +31,8 @@ module Make(IO:IO.Make) : sig
   val transfer_encoding : request -> string
 
   val make : ?meth:Code.meth -> ?version:Code.version -> 
-    ?encoding:Transfer.encoding -> ?headers:Header.t -> Uri.t -> request
+    ?encoding:Transfer.encoding -> ?headers:Header.t ->
+    ?body:'a -> Uri.t -> request
 
   val read : IO.ic -> request option IO.t
   val has_body : request -> bool

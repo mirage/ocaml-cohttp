@@ -74,11 +74,25 @@ module Make(IO:IO.Make) = struct
     |None -> "localhost"
     |Some h -> h
 
-  let make ?(meth=`GET) ?(version=`HTTP_1_1) ?(encoding=Transfer.Chunked) ?headers uri =
+  let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers ?body uri =
     let headers = 
       match headers with
       |None -> Header.init ()
       |Some h -> h in
+    let encoding =
+      match encoding with
+      |None -> begin
+        (* Check for a content-length in the supplied headers first *)
+        match Header.get_content_range headers with
+        |Some clen -> Transfer.Fixed (Int64.of_int clen)
+        |None -> begin
+          match body with 
+          |None -> Transfer.Fixed 0L 
+          |Some _ -> Transfer.Chunked 
+        end
+      end
+      |Some e -> e
+    in
     { meth; version; headers; uri; encoding }
 
   let write_header req oc =

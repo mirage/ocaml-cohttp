@@ -29,7 +29,8 @@ module Request : sig
   val params : request -> (string * string) list
   val transfer_encoding : request -> string
   val make : ?meth:Code.meth -> ?version:Code.version ->
-    ?encoding:Transfer.encoding -> ?headers:Header.t -> Uri.t -> request
+    ?encoding:Transfer.encoding -> ?headers:Header.t ->
+    ?body:'a -> Uri.t -> request
 
   val is_form: request -> bool
   val read_form : request -> Reader.t -> (string * string) list Deferred.t

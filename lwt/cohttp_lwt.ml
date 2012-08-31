@@ -81,11 +81,7 @@ module Client = struct
     end
  
   let call ?headers ?body meth uri =
-    let encoding = 
-      match body with 
-      |None -> Transfer.Fixed 0L 
-      |Some _ -> Transfer.Chunked in
-    let req = Request.make ~meth ~encoding ?headers uri in
+    let req = Request.make ~meth ?headers ?body uri in
     lwt (ic,oc) = Cohttp_lwt_net.connect_uri uri in
     write_request ?body req oc >>
     read_response ~close:true ic oc
