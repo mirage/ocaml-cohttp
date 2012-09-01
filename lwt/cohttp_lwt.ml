@@ -56,7 +56,7 @@ let body_of_string s =
   
 module Client = struct
 
-  type response = (Response.response * string Lwt_stream.t option) option
+  type response = (Response.response * body) option
 
   let write_request ?body req oc =
     Request.write (fun req oc ->
