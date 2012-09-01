@@ -37,6 +37,7 @@ val get_acceptable_encodings : t -> Accept.encoding Accept.qlist
 val get_acceptable_languages : t -> Accept.language Accept.qlist
 val get_transfer_encoding : t -> Transfer.encoding
 val add_transfer_encoding : t -> Transfer.encoding -> t
+val add_authorization : t -> Auth.t -> t
 val is_form : t -> bool
 
 module Make(IO:IO.Make) : sig

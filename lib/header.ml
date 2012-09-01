@@ -131,7 +131,10 @@ let add_transfer_encoding headers enc =
   |Unknown, Chunked -> add headers "transfer-encoding" "chunked"
   |Unknown, Fixed len -> add headers "content-length" (Int64.to_string len)
   |Unknown, Unknown -> headers
- 
+
+let add_authorization headers auth =
+  add headers "authorization" (Auth.to_string auth)
+
 let is_form headers =
   get_media_type headers = (Some "application/x-www-form-urlencoded")
 
