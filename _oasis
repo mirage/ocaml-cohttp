@@ -11,7 +11,7 @@ Library cohttp
   Path: lib
   Findlibname: cohttp
   Pack: true
-  Modules: Code, Date, IO, Header, Request, Response, Transfer, Accept, Accept_parser, Accept_lexer
+  Modules: Code, Date, IO, Header, Request, Response, Transfer, Accept, Accept_parser, Accept_lexer, Base64, Auth
   BuildDepends:	re, uri (>= 1.3), uri.services
 
 Flag lwt
@@ -82,6 +82,15 @@ Executable test_accept
   Install:            false
   BuildDepends:       cohttp, oUnit (>= 1.0.2)
 
+Executable test_header
+  Path:               lib_test
+  MainIs:             test_header.ml
+  Build$:             flag(tests)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, oUnit (>= 1.0.2)
+
 Executable test_net_lwt
   Path:               lib_test
   MainIs:             test_net_lwt.ml
@@ -112,6 +121,11 @@ Executable test_net_async_server
 Test test_accept
   Run$:               flag(tests)
   Command:            $test_accept
+  WorkingDirectory:   lib_test
+
+Test test_header
+  Run$:               flag(tests)
+  Command:            $test_header
   WorkingDirectory:   lib_test
 
 Test test_parser

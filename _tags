@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: a1b53f46a128191a8606d25b3cb0974c)
+# DO NOT EDIT (digest: d1af8f51b0029746f377adc3363422ea)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -25,6 +25,8 @@
 "lib/accept.cmx": for-pack(Cohttp)
 "lib/accept_parser.cmx": for-pack(Cohttp)
 "lib/accept_lexer.cmx": for-pack(Cohttp)
+"lib/base64.cmx": for-pack(Cohttp)
+"lib/auth.cmx": for-pack(Cohttp)
 <lib/*.ml{,i}>: pkg_uri
 <lib/*.ml{,i}>: pkg_re
 <lib/*.ml{,i}>: pkg_uri.services
@@ -76,6 +78,13 @@
 <lib_test/test_accept.{native,byte}>: pkg_re
 <lib_test/test_accept.{native,byte}>: pkg_uri.services
 <lib_test/test_accept.{native,byte}>: custom
+# Executable test_header
+<lib_test/test_header.{native,byte}>: use_cohttp
+<lib_test/test_header.{native,byte}>: pkg_oUnit
+<lib_test/test_header.{native,byte}>: pkg_uri
+<lib_test/test_header.{native,byte}>: pkg_re
+<lib_test/test_header.{native,byte}>: pkg_uri.services
+<lib_test/test_header.{native,byte}>: custom
 # Executable test_net_lwt
 <lib_test/test_net_lwt.{native,byte}>: use_cohttp_lwt
 <lib_test/test_net_lwt.{native,byte}>: use_cohttp
