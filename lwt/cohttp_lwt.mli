@@ -83,7 +83,6 @@ module Server : sig
     callback : conn_id -> ?body:string Lwt_stream.t -> Request.request -> response Lwt.t;
     conn_closed : conn_id -> unit -> unit; 
     port : int;
-    root_dir : string option;
     timeout : int option;
   }  
 

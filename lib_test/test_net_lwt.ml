@@ -29,7 +29,7 @@ let make_server () =
   in
   let config = {
     Server.address = "127.0.0.1"; port=8081;
-    callback; conn_closed; root_dir=None; timeout=None
+    callback; conn_closed; timeout=None
   } in
   Server.main config
      

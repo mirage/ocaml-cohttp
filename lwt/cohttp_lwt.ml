@@ -138,7 +138,6 @@ module Server = struct
     callback: conn_id -> ?body:string Lwt_stream.t -> Request.request -> response Lwt.t;
     conn_closed : conn_id -> unit -> unit;
     port: int;
-    root_dir: string option;
     timeout: int option;
   }
 
@@ -189,7 +188,6 @@ module Server = struct
     in daemon_callback
  
   let main spec =
-    let () = match spec.root_dir with Some dir -> Sys.chdir dir | None -> () in
     lwt sockaddr = Cohttp_lwt_net.build_sockaddr spec.address spec.port in
     Cohttp_lwt_net.Tcp_server.init ~sockaddr ~timeout:spec.timeout (daemon_callback spec)
 end
