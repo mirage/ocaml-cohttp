@@ -38,10 +38,6 @@ let stream_of_body read_fn ic =
     end
   )
 
-let wait_for_stream st =
-  let t,u = task () in
-  Lwt_stream.on_terminate st (wakeup u);
-  t
 
 let string_of_body =
   function
@@ -162,7 +158,9 @@ module Server = struct
           match Request.has_body req with
           |true ->
             let req_body = stream_of_body (Request.read_body req) ic in
-            wait_for_stream req_body >>= fun () -> return (Some (req, Some req_body))
+            let th,u = task () in
+            Lwt_stream.on_terminate req_body (wakeup u);
+            th >>= fun () -> return (Some (req, Some req_body))
           |false -> return (Some (req, None))
         end
         |None -> return None
