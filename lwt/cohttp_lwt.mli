@@ -56,14 +56,15 @@ end
 module Client : sig
   type response = (Response.response * string Lwt_stream.t option) option
 
-  val call : ?headers:Header.t -> ?body:string Lwt_stream.t -> 
-    Code.meth -> Uri.t -> response Lwt.t
+  val call : ?headers:Header.t -> ?body:string Lwt_stream.t ->
+    ?chunked:bool -> Code.meth -> Uri.t -> response Lwt.t
 
   val head : ?headers:Header.t -> Uri.t -> response Lwt.t
   val get : ?headers:Header.t -> Uri.t -> response Lwt.t
-  val post : ?headers:Header.t -> ?body:string Lwt_stream.t -> Uri.t -> response Lwt.t
+  val post : ?headers:Header.t -> ?body:string Lwt_stream.t -> ?chunked:bool -> Uri.t -> response Lwt.t
   val post_form : ?headers:Header.t -> params:Header.t -> Uri.t -> response Lwt.t
-  val put : ?headers:Header.t -> ?body:string Lwt_stream.t -> Uri.t -> response Lwt.t
+  val put : ?headers:Header.t -> ?body:string Lwt_stream.t -> ?chunked:bool -> Uri.t -> response Lwt.t
+  val patch : ?headers:Header.t -> ?body:string Lwt_stream.t -> ?chunked:bool -> Uri.t -> response Lwt.t
   val delete : ?headers:Header.t -> Uri.t -> response Lwt.t
 
   val callv : ?ssl:bool -> string -> int ->

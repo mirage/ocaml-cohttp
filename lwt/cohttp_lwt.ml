@@ -80,17 +80,32 @@ module Client = struct
         return (Some (res, None))
     end
  
-  let call ?headers ?body meth uri =
-    let req = Request.make ~meth ?headers ?body uri in
+  let call ?headers ?body ?(chunked=true) meth uri =
     lwt (ic,oc) = Cohttp_lwt_net.connect_uri uri in
-    write_request ?body req oc >>
-    read_response ~close:true ic oc
+    match chunked,body with
+    |true,_ |false,None ->
+       let req = Request.make ~meth ?headers ?body uri in
+       write_request ?body req oc >>
+       read_response ~close:true ic oc
+    |false,Some body ->
+       lwt buf = string_of_body (Some body) in
+       let clen = Int64.of_int (String.length buf) in
+       let body = Lwt_stream.of_list [buf] in
+       let headers =
+         match headers with
+         |None -> Header.(add_transfer_encoding (init ()) (Transfer.Fixed clen))
+         |Some h -> Header.(add_transfer_encoding h (Transfer.Fixed clen))
+       in
+       let req = Request.make ~meth ~headers ~body uri in
+       write_request ~body req oc >>
+       read_response ~close:true ic oc
 
   let head ?headers uri = call ?headers `HEAD uri 
   let get ?headers uri = call ?headers `GET uri 
   let delete ?headers uri = call ?headers `DELETE uri 
-  let post ?headers ?body uri = call ?headers ?body `POST uri 
-  let put ?headers ?body uri = call ?headers ?body `POST uri 
+  let post ?headers ?body ?chunked uri = call ?headers ?body ?chunked `POST uri 
+  let put ?headers ?body ?chunked uri = call ?headers ?body ?chunked `POST uri 
+  let patch ?headers ?body ?chunked uri = call ?headers ?body ?chunked `PATCH uri 
 
   let post_form ?headers ~params uri =
     let headers =
