@@ -33,7 +33,8 @@ module Request : sig
   val make :
     ?meth:Code.meth ->
     ?version:Code.version ->
-    ?encoding:Transfer.encoding -> ?headers:Header.t -> Uri.t -> request
+    ?encoding:Transfer.encoding -> ?headers:Header.t -> 
+    ?body:'a -> Uri.t -> request
   val read : IO.ic -> request option Lwt.t
   val has_body : request -> bool
   val read_body : request -> IO.ic -> Transfer.chunk Lwt.t
@@ -54,7 +55,9 @@ module Response : sig
   val make :
     ?version:Code.version ->
     ?status:Code.status_code ->
-    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> response
+    ?encoding:Transfer.encoding -> 
+    ?headers:Header.t -> 
+    unit -> response
   val read : IO.ic -> response option Lwt.t
   val has_body : response -> bool
   val read_body : response -> IO.ic -> Transfer.chunk Lwt.t
