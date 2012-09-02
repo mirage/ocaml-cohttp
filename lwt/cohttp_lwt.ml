@@ -103,9 +103,9 @@ module Client = struct
   let head ?headers uri = call ?headers `HEAD uri 
   let get ?headers uri = call ?headers `GET uri 
   let delete ?headers uri = call ?headers `DELETE uri 
-  let post ?headers ?body ?chunked uri = call ?headers ?body ?chunked `POST uri 
-  let put ?headers ?body ?chunked uri = call ?headers ?body ?chunked `POST uri 
-  let patch ?headers ?body ?chunked uri = call ?headers ?body ?chunked `PATCH uri 
+  let post ?body ?chunked ?headers uri = call ?headers ?body ?chunked `POST uri 
+  let put ?body ?chunked ?headers uri = call ?headers ?body ?chunked `POST uri 
+  let patch ?body ?chunked ?headers uri = call ?headers ?body ?chunked `PATCH uri 
 
   let post_form ?headers ~params uri =
     let headers =

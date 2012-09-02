@@ -61,10 +61,10 @@ module Client : sig
 
   val head : ?headers:Header.t -> Uri.t -> response Lwt.t
   val get : ?headers:Header.t -> Uri.t -> response Lwt.t
-  val post : ?headers:Header.t -> ?body:string Lwt_stream.t -> ?chunked:bool -> Uri.t -> response Lwt.t
+  val post : ?body:string Lwt_stream.t -> ?chunked:bool -> ?headers:Header.t -> Uri.t -> response Lwt.t
   val post_form : ?headers:Header.t -> params:Header.t -> Uri.t -> response Lwt.t
-  val put : ?headers:Header.t -> ?body:string Lwt_stream.t -> ?chunked:bool -> Uri.t -> response Lwt.t
-  val patch : ?headers:Header.t -> ?body:string Lwt_stream.t -> ?chunked:bool -> Uri.t -> response Lwt.t
+  val put : ?body:string Lwt_stream.t -> ?chunked:bool -> ?headers:Header.t -> Uri.t -> response Lwt.t
+  val patch : ?body:string Lwt_stream.t -> ?chunked:bool -> ?headers:Header.t -> Uri.t -> response Lwt.t
   val delete : ?headers:Header.t -> Uri.t -> response Lwt.t
 
   val callv : ?ssl:bool -> string -> int ->
