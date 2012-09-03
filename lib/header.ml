@@ -118,7 +118,7 @@ let get_transfer_encoding headers =
   | Some "chunked" -> Transfer.Chunked
   | Some _ | None -> begin
     match get_content_range headers with
-    |Some len -> Transfer.Fixed (Int64.of_int len)
+    |Some len -> Transfer.Fixed len
     |None -> Transfer.Unknown
   end
 
@@ -129,7 +129,7 @@ let add_transfer_encoding headers enc =
   |Fixed _,_  (* App has supplied a content length, so use that *)
   |Chunked,_ -> headers (* TODO: this is a protocol violation *)
   |Unknown, Chunked -> add headers "transfer-encoding" "chunked"
-  |Unknown, Fixed len -> add headers "content-length" (Int64.to_string len)
+  |Unknown, Fixed len -> add headers "content-length" (string_of_int len)
   |Unknown, Unknown -> headers
 
 let add_authorization headers auth =

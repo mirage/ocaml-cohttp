@@ -17,7 +17,7 @@
 
 type encoding =
 | Chunked
-| Fixed of int64
+| Fixed of int
 | Unknown
 
 type chunk =
@@ -28,13 +28,13 @@ type chunk =
 let encoding_to_string =
   function
   | Chunked -> "chunked"
-  | Fixed i -> Printf.sprintf "fixed[%Ld]" i
+  | Fixed i -> Printf.sprintf "fixed[%d]" i
   | Unknown -> "unknown"
 
 let has_body =
   function
   | Chunked -> true
-  | Fixed 0L -> false
+  | Fixed 0 -> false
   | Unknown -> false
   | Fixed _ -> true
 
@@ -74,7 +74,6 @@ module Make(IO:IO.Make) = struct
   module Fixed = struct
     let read ~len ic =
       (* TODO functorise string to a bigbuffer *)
-      let len = Int64.to_int len in
       match len with
       |0 -> return Done
       |len ->
