@@ -78,7 +78,6 @@ module IO = struct
       (fun oc buf -> Printf.eprintf ">>> %s\n" buf; Lwt_io.write_line oc buf)
 end
 
-module Body  = Cohttp.Transfer.Make(IO)
 module Request = Cohttp.Request.Make(IO)
 module Response = Cohttp.Response.Make(IO)
 module Net = Cohttp_lwt_net

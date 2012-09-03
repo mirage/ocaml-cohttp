@@ -81,7 +81,6 @@ module Net = struct
   let close ic oc = Lwt.ignore_result (Channel.TCPv4.close ic)
 end
 
-module Body  = Transfer.Make(IO)
 module Request = Request.Make(IO)
 module Response = Response.Make(IO)
 module Client = Cohttp_lwt.Client(Request)(Response)(Net)
