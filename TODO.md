@@ -7,6 +7,8 @@ Planned interface-breaking changes before 1.0:
 
 * Server file support and default_spec
 
+* Make Lwt_ssl optional
+
 Better HTTP support:
 
 - Range requests need to be fully implemented (206)
