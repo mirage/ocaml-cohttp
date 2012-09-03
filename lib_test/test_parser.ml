@@ -102,10 +102,10 @@ let oc_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.output buf
 open Lwt
 
 let basic_req_parse () =
-  let open Cohttp_lwt_raw in
+  let open Cohttp_lwt_unix in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_req) in
-  Cohttp_lwt_raw.Request.read ic >>=
+  Cohttp_lwt_unix.Request.read ic >>=
   function
   |Some req ->
     assert_equal (Request.version req) `HTTP_1_1;
@@ -116,7 +116,7 @@ let basic_req_parse () =
 
 let basic_res_parse res () =
   let open Cohttp in
-  let open Cohttp_lwt_raw in
+  let open Cohttp_lwt_unix in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string res) in
   Response.read ic >>=
@@ -134,7 +134,7 @@ let basic_res_parse res () =
   |None -> assert false
 
 let req_parse () =
-  let open Cohttp_lwt_raw in
+  let open Cohttp_lwt_unix in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_req) in
   Request.read ic >>= function
@@ -146,7 +146,7 @@ let req_parse () =
     return ()
 
 let post_form_parse () =
-  let open Cohttp_lwt_raw in
+  let open Cohttp_lwt_unix in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_req) in
   Request.read ic >>= function
@@ -163,7 +163,7 @@ let post_form_parse () =
 
 let post_data_parse () =
   let open Cohttp in
-  let open Cohttp_lwt_raw in
+  let open Cohttp_lwt_unix in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_data_req) in
   Request.read ic >>= function
@@ -178,7 +178,7 @@ let post_data_parse () =
 
 let post_chunked_parse () =
   let open Cohttp in
-  let open Cohttp_lwt_raw in
+  let open Cohttp_lwt_unix in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_chunked_req) in
   Request.read ic >>= function
@@ -193,7 +193,7 @@ let post_chunked_parse () =
 
 let res_content_parse () =
   let open Cohttp in
-  let open Cohttp_lwt_raw in
+  let open Cohttp_lwt_unix in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_res_content) in
   Response.read ic >>= function
@@ -207,7 +207,7 @@ let res_content_parse () =
 
 let res_chunked_parse () =
   let open Cohttp in
-  let open Cohttp_lwt_raw in
+  let open Cohttp_lwt_unix in
   let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string chunked_res) in
   Response.read ic >>= function
@@ -230,7 +230,7 @@ let get_substring oc buf =
  
 let make_simple_req () =
   let open Cohttp in
-  let open Cohttp_lwt_raw in
+  let open Cohttp_lwt_unix in
   let open IO in
   let expected = "GET /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
   (* Use the low-level write_header/footer API *)
@@ -252,7 +252,7 @@ let make_simple_req () =
 
 let make_simple_res () =
   let open Cohttp in
-  let open Cohttp_lwt_raw in
+  let open Cohttp_lwt_unix in
   let open IO in
   let expected = "HTTP/1.1 200 OK\r\nfoo: bar\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
   (* Use the low-level write_header/footer API *)

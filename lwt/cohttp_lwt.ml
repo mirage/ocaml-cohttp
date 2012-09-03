@@ -17,7 +17,7 @@
 
 open Cohttp
 open Lwt
-include Cohttp_lwt_raw
+include Cohttp_lwt_unix
 
 module Body = struct
   (* For now this is just a stream, but it can also be a direct
