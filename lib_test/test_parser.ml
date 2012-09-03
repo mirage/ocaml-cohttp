@@ -103,7 +103,6 @@ open Lwt
 
 let basic_req_parse () =
   let open Cohttp_lwt_unix in
-  let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_req) in
   Cohttp_lwt_unix.Request.read ic >>=
   function
@@ -117,7 +116,6 @@ let basic_req_parse () =
 let basic_res_parse res () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
-  let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string res) in
   Response.read ic >>=
   function
@@ -135,7 +133,6 @@ let basic_res_parse res () =
 
 let req_parse () =
   let open Cohttp_lwt_unix in
-  let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_req) in
   Request.read ic >>= function
   |None -> assert false
@@ -147,7 +144,6 @@ let req_parse () =
 
 let post_form_parse () =
   let open Cohttp_lwt_unix in
-  let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_req) in
   Request.read ic >>= function
   |None -> assert false
@@ -164,7 +160,6 @@ let post_form_parse () =
 let post_data_parse () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
-  let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_data_req) in
   Request.read ic >>= function
   |None -> assert false
@@ -179,7 +174,6 @@ let post_data_parse () =
 let post_chunked_parse () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
-  let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_chunked_req) in
   Request.read ic >>= function
   |None -> assert false
@@ -194,7 +188,6 @@ let post_chunked_parse () =
 let res_content_parse () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
-  let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_res_content) in
   Response.read ic >>= function
   |None -> assert false
@@ -208,7 +201,6 @@ let res_content_parse () =
 let res_chunked_parse () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
-  let open IO in
   let ic = ic_of_buffer (Lwt_bytes.of_string chunked_res) in
   Response.read ic >>= function
   |None -> assert false
@@ -231,16 +223,15 @@ let get_substring oc buf =
 let make_simple_req () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
-  let open IO in
   let expected = "GET /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
   (* Use the low-level write_header/footer API *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
-  let body = Lwt_stream.of_list ["foobar"] in
-  let req = Request.make ~headers:(Header.of_list [("foo","bar")]) (Uri.of_string "/foo/bar") ~body in
-  Request.write_header req oc >>= fun () ->
-  Lwt_stream.iter_s (Request.write_body req oc) body >>= fun () ->
-  Request.write_footer req oc >>= fun () ->
+  let body = Cohttp_lwt_body.body_of_string "foobar" in
+  let req = Request.make ~headers:(Header.init_with "foo" "bar") (Uri.of_string "/foo/bar") ?body in
+  Request.write (fun req oc ->
+    Cohttp_lwt_body.write_body (Request.write_body req oc) body
+  ) req oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
   (* Use the high-level write API. This also tests that req is immutable
    * by re-using it *)
@@ -253,15 +244,15 @@ let make_simple_req () =
 let make_simple_res () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
-  let open IO in
   let expected = "HTTP/1.1 200 OK\r\nfoo: bar\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
   (* Use the low-level write_header/footer API *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
   let res = Response.make ~headers:(Header.of_list [("foo","bar")]) () in
-  Response.write_header res oc >>= fun () ->
-  Response.write_body res oc "foobar" >>= fun () ->
-  Response.write_footer res oc >>= fun () ->
+  let body = Cohttp_lwt_body.body_of_string "foobar" in
+  Response.write (fun res oc ->
+    Cohttp_lwt_body.write_body (Response.write_body res oc) body
+  ) res oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
   (* Use the high-level write API. This also tests that req is immutable
    * by re-using it *)

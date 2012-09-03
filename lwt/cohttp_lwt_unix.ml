@@ -81,3 +81,10 @@ end
 module Body  = Cohttp.Transfer.Make(IO)
 module Request = Cohttp.Request.Make(IO)
 module Response = Cohttp.Response.Make(IO)
+module Net = Cohttp_lwt_net
+module Client = Cohttp_lwt.Client(Request)(Response)(Net)
+module Server = Cohttp_lwt.Server(Request)(Response)(Net)
+
+let server ?timeout ~address ~port spec =
+  lwt sockaddr = Net.build_sockaddr address port in
+  Net.Tcp_server.init ~sockaddr ?timeout (Server.callback spec)

@@ -20,6 +20,9 @@
 
 open Lwt
 
+type ic = Lwt_io.input_channel
+type oc = Lwt_io.output_channel
+
 (* Perform a DNS lookup on the addr and generate a sockaddr *)
 let build_sockaddr addr port =
   try_lwt
@@ -114,9 +117,9 @@ let close_in ic =
 let close_out oc =
   ignore_result (try_lwt Lwt_io.close oc with _ -> return ())
 
-let close ic oc =
+let close' ic oc =
   let _ = try_lwt Lwt_io.close ic with _ -> return () in
   try_lwt Lwt_io.close oc with _ -> return ()
 
-let close' ic oc =
-  ignore_result (close ic oc)
+let close ic oc =
+  ignore_result (close' ic oc)

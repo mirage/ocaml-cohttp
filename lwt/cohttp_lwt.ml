@@ -17,9 +17,11 @@
 
 open Cohttp
 open Lwt
-include Cohttp_lwt_unix
+open Cohttp_lwt_make
 
-module Client = struct
+module Client(Request:REQUEST)
+             (Response:RESPONSE with type oc = Request.oc and type ic = Request.ic)
+             (Net:NET with type oc = Response.oc and type ic = Response.ic)  = struct
 
   let write_request ?body req oc =
     Request.write (fun req oc ->
@@ -40,8 +42,8 @@ module Client = struct
     end
  
   let call ?headers ?(body:Cohttp_lwt_body.t) ?(chunked=true) meth uri =
-    lwt (ic,oc) = Cohttp_lwt_net.connect_uri uri in
-    let closefn () = Cohttp_lwt_net.close' ic oc in
+    lwt (ic,oc) = Net.connect_uri uri in
+    let closefn () = Net.close ic oc in
     lwt req =
       match chunked with
       |true -> return (Request.make ~meth ?headers ?body uri)
@@ -69,27 +71,26 @@ module Client = struct
     post ~headers ?body uri
 
   let callv ?(ssl=false) host port reqs =
-    lwt (ic, oc) = Cohttp_lwt_net.connect ~ssl host port in
+    lwt (ic, oc) = Net.connect ~ssl host port in
     (* Serialise the requests out to the wire *)
-    Lwt_stream.on_terminate reqs (fun () -> Cohttp_lwt_net.close_out oc);
+    Lwt_stream.on_terminate reqs (fun () -> Net.close_out oc);
     let _ = Lwt_stream.iter_s (fun (req,body) -> write_request ?body req oc) reqs in
     (* Read the responses *)
     let resps = Lwt_stream.from (fun () -> read_response ic oc) in
-    Lwt_stream.on_terminate resps (fun () -> Cohttp_lwt_net.close_in ic);
+    Lwt_stream.on_terminate resps (fun () -> Net.close_in ic);
     return resps
 end
 
-module Server = struct
+module Server(Request:REQUEST)
+             (Response:RESPONSE with type oc = Request.oc and type ic = Request.ic)
+             (Net:NET with type oc = Response.oc and type ic = Response.ic)  = struct
 
   type conn_id = int
   let string_of_conn_id = string_of_int
 
   type config = {
-    address: string;
     callback: conn_id -> ?body:Cohttp_lwt_body.contents -> Request.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed : conn_id -> unit -> unit;
-    port: int;
-    timeout: int option;
   }
 
   let respond_string ?headers ~status ~body () =
@@ -101,7 +102,7 @@ module Server = struct
   let respond_error ~status ~body () =
     respond_string ~status ~body:("Error: "^body) ()
 
-  let daemon_callback spec =
+  let callback spec =
     let conn_id = ref 0 in
     let daemon_callback ic oc =
       let conn_id = incr conn_id; !conn_id in
@@ -138,8 +139,4 @@ module Server = struct
         ) res oc
       done
     in daemon_callback
-
-  let main spec =
-    lwt sockaddr = Cohttp_lwt_net.build_sockaddr spec.address spec.port in
-    Cohttp_lwt_net.Tcp_server.init ~sockaddr ~timeout:spec.timeout (daemon_callback spec)
 end

@@ -19,26 +19,23 @@ open OUnit
 open Printf
 open Lwt
 
+open Cohttp_lwt_unix
 let make_server () =
-  let open Cohttp_lwt in
   let callback conn_id ?body req =
     Server.respond_string ~status:`OK ~body:"helloworld" ()
   in
   let conn_closed conn_id () =
     Printf.eprintf "conn %s closed\n%!" (Server.string_of_conn_id conn_id)
   in
-  let config = {
-    Server.address = "127.0.0.1"; port=8081;
-    callback; conn_closed; timeout=None
-  } in
-  Server.main config
+  let config = { Server.callback; conn_closed } in
+  server ~address:"127.0.0.1" ~port:8081 config
      
 let make_net_req url () =
   let headers = Cohttp.Header.of_list ["connection","close"] in
-  Cohttp_lwt.Client.call ~headers `GET (Uri.of_string url) >>= function 
+  Client.call ~headers `GET (Uri.of_string url) >>= function 
   |None -> assert false
   |Some (res, body) ->
-    let headers = Cohttp_lwt.Response.headers res in
+    let headers = Response.headers res in
     Cohttp.Header.iter
       (fun k v -> List.iter (Printf.eprintf "%s: %s\n%!" k) v) headers;
     Lwt_stream.iter_s (fun s -> return ()) (Cohttp_lwt_body.stream_of_body body)
