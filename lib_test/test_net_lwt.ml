@@ -29,7 +29,7 @@ let make_net_req url () =
     let headers = Response.headers res in
     Cohttp.Header.iter
       (fun k v -> List.iter (Printf.eprintf "%s: %s\n%!" k) v) headers;
-    Lwt_stream.iter_s (fun s -> return ()) (Cohttp_lwt_body.stream_of_body body)
+    Lwt_stream.iter_s (fun s -> return ()) (Body.stream_of_body body)
 
 let test_cases =
   let tests = [

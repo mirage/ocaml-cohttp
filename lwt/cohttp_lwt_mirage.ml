@@ -83,5 +83,6 @@ end
 
 module Request = Request.Make(IO)
 module Response = Response.Make(IO)
+module Body = Cohttp_lwt_body
 module Client = Cohttp_lwt.Client(Request)(Response)(Net)
 module Server = Cohttp_lwt.Server(Request)(Response)(Net)
