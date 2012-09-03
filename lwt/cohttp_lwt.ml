@@ -19,46 +19,80 @@ open Cohttp
 open Lwt
 include Cohttp_lwt_raw
 
-type body = string Lwt_stream.t option
+module Body = struct
+  (* For now this is just a stream, but it can also be a direct
+   * string or byte-buffer eventually, so keep the type abstract
+   * for external applications. *)
+  type contents = [
+   |`Stream of string Lwt_stream.t
+   |`String of string
+  ]
 
-let stream_of_body read_fn ic =
-  let fin = ref false in
-  Lwt_stream.from (fun () ->
-    match !fin with
-    |true -> return None
-    |false -> begin
-      match_lwt read_fn ic with
-      |Transfer.Done -> 
-        return None
-      |Transfer.Final_chunk c ->
-        fin := true;
-        return (Some c);
-      |Transfer.Chunk c ->
-        return (Some c)
-    end
-  )
+  type t = contents option
 
+  let stream_of_input_channel read_fn ic =
+    let fin = ref false in
+    Lwt_stream.from (fun () ->
+      match !fin with
+      |true -> return None
+      |false -> begin
+        match_lwt read_fn ic with
+        |Transfer.Done -> 
+          return None
+        |Transfer.Final_chunk c ->
+          fin := true;
+          return (Some c);
+        |Transfer.Chunk c ->
+          return (Some c)
+      end
+    )
 
-let string_of_body =
-  function
-  |None -> return ""
-  |Some s ->
-    let b = Buffer.create 1024 in
-    Lwt_stream.iter (Buffer.add_string b) s >>
-    return (Buffer.contents b)
+  let string_of_body (body:t) =
+    match body with
+    |None -> return ""
+    |Some (`String s) -> return s
+    |Some (`Stream s) ->
+       let b = Buffer.create 1024 in
+       Lwt_stream.iter (Buffer.add_string b) s >>
+       return (Buffer.contents b)
 
-let body_of_string s =
-  Some (Lwt_stream.of_list [s])
+  let stream_of_body (body:t) =
+    match body with
+    |None -> Lwt_stream.of_list []
+    |Some (`Stream s) -> s
+    |Some (`String s) -> Lwt_stream.of_list [s]
+    
+  let body_of_string s : t =
+    Some (`String s)
+
+  let body_of_string_list l : t =
+    Some (`Stream (Lwt_stream.of_list l))
+
+  let body_of_stream s : t =
+    Some (`Stream s)
+
+  (* This will consume the body and return a length, and a
+   * new body that should be used instead of the input *)
+  let get_length (body:t) : (int * t) Lwt.t =
+    match body with
+    |None ->
+      return (0, body)
+    |Some (`String s) -> 
+      return (String.length s, body)
+    |Some (`Stream s) ->
+      lwt buf = string_of_body body in
+      let len = String.length buf in
+      return (len, (Some (`String buf)))
+end
   
 module Client = struct
-
-  type response = (Response.response * body) option
 
   let write_request ?body req oc =
     Request.write (fun req oc ->
       match body with
       |None -> return ()
-      |Some b -> Lwt_stream.iter_s (Request.write_body req oc) b
+      |Some (`Stream st) -> Lwt_stream.iter_s (Request.write_body req oc) st
+      |Some (`String s) -> Request.write_body req oc s
     ) req oc
 
   let read_response ?(close=false) ic oc =
@@ -67,33 +101,32 @@ module Client = struct
     |Some res -> begin
       match Response.has_body res with
       |true ->
-        let body = stream_of_body (Response.read_body res) ic in
+        let stream = Body.stream_of_input_channel (Response.read_body res) ic in
         if close then
-          Lwt_stream.on_terminate body (fun () ->
+          Lwt_stream.on_terminate stream (fun () ->
             Cohttp_lwt_net.close' ic oc);
-        return (Some (res, Some body))
+        let body = Body.body_of_stream stream in
+        return (Some (res, body))
       |false ->
         return (Some (res, None))
     end
  
-  let call ?headers ?body ?(chunked=true) meth uri =
+  let call ?headers ?(body:Body.t) ?(chunked=true) meth uri =
     lwt (ic,oc) = Cohttp_lwt_net.connect_uri uri in
-    match chunked,body with
-    |true,_ |false,None ->
+    match chunked with
+    |true ->
        let req = Request.make ~meth ?headers ?body uri in
        write_request ?body req oc >>
        read_response ~close:true ic oc
-    |false,Some body ->
-       lwt buf = string_of_body (Some body) in
-       let clen = Int64.of_int (String.length buf) in
-       let body = Lwt_stream.of_list [buf] in
+    |false ->
+       lwt (clen, buf) = Body.get_length body in
        let headers =
          match headers with
          |None -> Header.(add_transfer_encoding (init ()) (Transfer.Fixed clen))
          |Some h -> Header.(add_transfer_encoding h (Transfer.Fixed clen))
        in
        let req = Request.make ~meth ~headers ~body uri in
-       write_request ~body req oc >>
+       write_request ?body req oc >>
        read_response ~close:true ic oc
 
   let head ?headers uri = call ?headers `HEAD uri 
@@ -109,8 +142,8 @@ module Client = struct
       |None -> Header.of_list ["content-type","application/x-www-form-urlencoded"]
       |Some h -> Header.add h "content-type" "application/x-www-form-urlencoded"
     in
-    let body = Lwt_stream.of_list [(Uri.encoded_of_query (Header.to_list params))] in
-    post ~headers ~body uri
+    let body = Body.body_of_string (Uri.encoded_of_query (Header.to_list params)) in
+    post ~headers ?body uri
 
   let callv ?(ssl=false) host port reqs =
     lwt (ic, oc) = Cohttp_lwt_net.connect ~ssl host port in
@@ -127,11 +160,10 @@ module Server = struct
 
   type conn_id = int
   let string_of_conn_id = string_of_int
-  type response = Response.response * string Lwt_stream.t option
 
   type config = {
     address: string;
-    callback: conn_id -> ?body:string Lwt_stream.t -> Request.request -> response Lwt.t;
+    callback: conn_id -> ?body:Body.contents -> Request.t -> (Response.t * Body.t) Lwt.t;
     conn_closed : conn_id -> unit -> unit;
     port: int;
     timeout: int option;
@@ -139,8 +171,8 @@ module Server = struct
 
   let respond_string ?headers ~status ~body () =
     let res = Response.make ~status 
-      ~encoding:(Transfer.Fixed (Int64.of_int (String.length body))) ?headers () in
-    let body = Some (Lwt_stream.of_list [body]) in
+      ~encoding:(Transfer.Fixed (String.length body)) ?headers () in
+    let body = Body.body_of_string body in
     return (res,body)
 
   let respond_error ~status ~body () =
@@ -157,10 +189,11 @@ module Server = struct
           (* Ensure the input body has been fully read before reading again *)
           match Request.has_body req with
           |true ->
-            let req_body = stream_of_body (Request.read_body req) ic in
+            let body_stream = Body.stream_of_input_channel (Request.read_body req) ic in
             let th,u = task () in
-            Lwt_stream.on_terminate req_body (wakeup u);
-            th >>= fun () -> return (Some (req, Some req_body))
+            Lwt_stream.on_terminate body_stream (wakeup u);
+            let body = Body.body_of_stream body_stream in
+            th >>= fun () -> return (Some (req, body))
           |false -> return (Some (req, None))
         end
         |None -> return None
@@ -180,7 +213,8 @@ module Server = struct
         Response.write (fun res oc ->
           match body with
           |None -> return ()
-          |Some b -> Lwt_stream.iter_s (Response.write_body res oc) b
+          |Some (`Stream b) -> Lwt_stream.iter_s (Response.write_body res oc) b
+          |Some (`String s) -> Response.write_body res oc s
         ) res oc
       ) res_stream
     in daemon_callback

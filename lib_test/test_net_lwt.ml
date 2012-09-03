@@ -37,17 +37,11 @@ let make_net_req url () =
   let headers = Cohttp.Header.of_list ["connection","close"] in
   Cohttp_lwt.Client.call ~headers `GET (Uri.of_string url) >>= function 
   |None -> assert false
-  |Some (res, None) ->
+  |Some (res, body) ->
     let headers = Cohttp_lwt.Response.headers res in
     Cohttp.Header.iter
       (fun k v -> List.iter (Printf.eprintf "%s: %s\n%!" k) v) headers;
-    Printf.eprintf "<no body>\n%!";
-    return ()
-  |Some (res, Some body) ->
-    let headers = Cohttp_lwt.Response.headers res in
-    Cohttp.Header.iter
-      (fun k v -> List.iter (Printf.eprintf "%s: %s\n%!" k) v) headers;
-    Lwt_stream.iter_s (fun s -> return ()) body
+    Lwt_stream.iter_s (fun s -> return ()) (Cohttp_lwt.Body.stream_of_body body)
 
 let test_cases =
   let tests = [

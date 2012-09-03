@@ -16,25 +16,25 @@
  *)
 
 module Make(IO:IO.Make) : sig
-  type response
+  type t
 
-  val version: response -> Code.version
-  val status: response -> Code.status_code
-  val headers: response -> Header.t
+  val version: t -> Code.version
+  val status: t -> Code.status_code
+  val headers: t -> Header.t
 
   val make : ?version:Code.version -> ?status:Code.status_code -> 
-    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> response
+    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> t
 
-  val read: IO.ic -> response option IO.t
-  val has_body : response -> bool
-  val read_body: response -> IO.ic -> Transfer.chunk IO.t
-  val read_body_to_string : response -> IO.ic -> string IO.t
+  val read: IO.ic -> t option IO.t
+  val has_body : t -> bool
+  val read_body: t -> IO.ic -> Transfer.chunk IO.t
+  val read_body_to_string : t -> IO.ic -> string IO.t
 
-  val write_header : response -> IO.oc -> unit IO.t
-  val write_body : response -> IO.oc -> string -> unit IO.t
-  val write_footer : response -> IO.oc -> unit IO.t
-  val write : (response -> IO.oc -> unit IO.t) -> response -> IO.oc -> unit IO.t
+  val write_header : t -> IO.oc -> unit IO.t
+  val write_body : t -> IO.oc -> string -> unit IO.t
+  val write_footer : t -> IO.oc -> unit IO.t
+  val write : (t -> IO.oc -> unit IO.t) -> t -> IO.oc -> unit IO.t
 
-  val is_form : response -> bool
-  val read_form : response -> IO.ic -> (string * string) list IO.t
+  val is_form : t -> bool
+  val read_form : t -> IO.ic -> (string * string) list IO.t
 end

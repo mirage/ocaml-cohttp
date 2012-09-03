@@ -51,8 +51,6 @@ let close_all ic oc =
 
 module Client = struct
 
-  type response = Response.response * string Pipe.Reader.t option
-
   let write_request ?body req oc =
     Request.write (fun req oc ->
       match body with
@@ -79,7 +77,7 @@ module Client = struct
   let call ?headers ?body meth uri =
     let encoding =
       match body with 
-      |None -> Transfer.Fixed 0L 
+      |None -> Transfer.Fixed 0
       |Some _ -> Transfer.Chunked in
     let req = Request.make ~meth ~encoding ?headers uri in
     let host = Option.value (Uri.host uri) ~default:"localhost" in
@@ -95,16 +93,15 @@ end
 module Server = struct
   type conn_id = int
   let string_of_conn_id = string_of_int 
-  type response = Response.response * string Pipe.Reader.t option
 
   type config = {
-    callback: conn_id -> ?body:string Pipe.Reader.t -> Request.request -> response Deferred.t;
+    callback: conn_id -> ?body:string Pipe.Reader.t -> Request.t -> (Response.t * string Pipe.Reader.t option) Deferred.t;
     port: int;
   }
 
   let respond_string ?headers ~status ~body () =
     let res = Response.make ~status 
-      ~encoding:(Transfer.Fixed (Int64.of_int (String.length body))) ?headers () in
+      ~encoding:(Transfer.Fixed (String.length body)) ?headers () in
     let body_rd, body_wr = Pipe.create () in
     whenever (
       Pipe.with_write body_wr ~f:(fun wrfn -> wrfn body)

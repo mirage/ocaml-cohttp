@@ -16,33 +16,33 @@
  *)
 
 module Make(IO:IO.Make) : sig
-  type request
+  type t
 
-  val meth : request -> Code.meth
-  val uri : request -> Uri.t
-  val version : request -> Code.version
+  val meth : t -> Code.meth
+  val uri : t -> Uri.t
+  val version : t -> Code.version
 
-  val path : request -> string
-  val header : request -> string -> string option
-  val headers : request -> Header.t
+  val path : t -> string
+  val header : t -> string -> string option
+  val headers : t -> Header.t
 
-  val params : request -> (string * string) list
+  val params : t -> (string * string) list
 
-  val transfer_encoding : request -> string
+  val transfer_encoding : t -> string
 
   val make : ?meth:Code.meth -> ?version:Code.version -> 
     ?encoding:Transfer.encoding -> ?headers:Header.t ->
-    ?body:'a -> Uri.t -> request
+    ?body:'a -> Uri.t -> t
 
-  val read : IO.ic -> request option IO.t
-  val has_body : request -> bool
-  val read_body : request -> IO.ic -> Transfer.chunk IO.t
+  val read : IO.ic -> t option IO.t
+  val has_body : t -> bool
+  val read_body : t -> IO.ic -> Transfer.chunk IO.t
 
-  val write_header : request -> IO.oc -> unit IO.t
-  val write_body : request -> IO.oc -> string -> unit IO.t
-  val write_footer : request -> IO.oc -> unit IO.t
-  val write : (request -> IO.oc -> unit IO.t) -> request -> IO.oc -> unit IO.t
+  val write_header : t -> IO.oc -> unit IO.t
+  val write_body : t -> IO.oc -> string -> unit IO.t
+  val write_footer : t -> IO.oc -> unit IO.t
+  val write : (t -> IO.oc -> unit IO.t) -> t -> IO.oc -> unit IO.t
 
-  val is_form : request -> bool
-  val read_form : request -> IO.ic -> (string * string) list IO.t
+  val is_form : t -> bool
+  val read_form : t -> IO.ic -> (string * string) list IO.t
 end

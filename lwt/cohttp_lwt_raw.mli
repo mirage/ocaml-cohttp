@@ -18,53 +18,53 @@
 open Cohttp
 
 module Request : sig
-  type request
-  val meth : request -> Code.meth
-  val uri : request -> Uri.t
-  val version : request -> Code.version
-  val path : request -> string
-  val header : request -> string -> string option
-  val headers : request -> Header.t
-  val params : request -> (string * string) list
-  val transfer_encoding : request -> string
+  type t
+  val meth : t -> Code.meth
+  val uri : t -> Uri.t
+  val version : t -> Code.version
+  val path : t -> string
+  val header : t -> string -> string option
+  val headers : t -> Header.t
+  val params : t -> (string * string) list
+  val transfer_encoding : t -> string
 
   val make : ?meth:Code.meth -> ?version:Code.version -> 
     ?encoding:Transfer.encoding -> ?headers:Header.t ->
-    ?body:string Lwt_stream.t -> Uri.t -> request
+    ?body:'a -> Uri.t -> t
 
-  val read : Lwt_io.input_channel -> request option Lwt.t
-  val has_body : request -> bool
-  val read_body : request -> Lwt_io.input_channel -> Transfer.chunk Lwt.t
+  val read : Lwt_io.input_channel -> t option Lwt.t
+  val has_body : t -> bool
+  val read_body : t -> Lwt_io.input_channel -> Transfer.chunk Lwt.t
 
-  val write_header : request -> Lwt_io.output_channel -> unit Lwt.t
-  val write_body : request -> Lwt_io.output_channel -> string -> unit Lwt.t
-  val write_footer : request -> Lwt_io.output_channel -> unit Lwt.t
-  val write : (request -> Lwt_io.output_channel -> unit Lwt.t) -> request -> 
+  val write_header : t -> Lwt_io.output_channel -> unit Lwt.t
+  val write_body : t -> Lwt_io.output_channel -> string -> unit Lwt.t
+  val write_footer : t -> Lwt_io.output_channel -> unit Lwt.t
+  val write : (t -> Lwt_io.output_channel -> unit Lwt.t) -> t -> 
     Lwt_io.output_channel -> unit Lwt.t
 
-  val is_form: request -> bool
-  val read_form : request -> Lwt_io.input_channel -> (string * string) list Lwt.t
+  val is_form: t -> bool
+  val read_form : t -> Lwt_io.input_channel -> (string * string) list Lwt.t
 end
 
 module Response : sig
-  type response
-  val version : response -> Code.version
-  val status : response -> Code.status_code
-  val headers: response -> Header.t
+  type t
+  val version : t -> Code.version
+  val status : t -> Code.status_code
+  val headers: t -> Header.t
 
   val make : ?version:Code.version -> ?status:Code.status_code -> 
-    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> response
+    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> t
 
-  val read : Lwt_io.input_channel -> response option Lwt.t
-  val has_body : response -> bool
-  val read_body : response -> Lwt_io.input_channel -> Transfer.chunk Lwt.t
+  val read : Lwt_io.input_channel -> t option Lwt.t
+  val has_body : t -> bool
+  val read_body : t -> Lwt_io.input_channel -> Transfer.chunk Lwt.t
 
-  val write_header : response -> Lwt_io.output_channel -> unit Lwt.t
-  val write_body : response -> Lwt_io.output_channel -> string -> unit Lwt.t
-  val write_footer : response -> Lwt_io.output_channel -> unit Lwt.t
-  val write : (response -> Lwt_io.output_channel -> unit Lwt.t) -> 
-    response -> Lwt_io.output_channel -> unit Lwt.t
+  val write_header : t -> Lwt_io.output_channel -> unit Lwt.t
+  val write_body : t -> Lwt_io.output_channel -> string -> unit Lwt.t
+  val write_footer : t -> Lwt_io.output_channel -> unit Lwt.t
+  val write : (t -> Lwt_io.output_channel -> unit Lwt.t) -> 
+    t -> Lwt_io.output_channel -> unit Lwt.t
 
-  val is_form: response -> bool
-  val read_form : response -> Lwt_io.input_channel -> (string * string) list Lwt.t
+  val is_form: t -> bool
+  val read_form : t -> Lwt_io.input_channel -> (string * string) list Lwt.t
 end

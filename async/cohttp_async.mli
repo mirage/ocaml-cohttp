@@ -19,51 +19,49 @@ open Async.Std
 open Cohttp
 
 module Request : sig
-  type request
-  val meth : request -> Code.meth
-  val uri : request -> Uri.t
-  val version : request -> Code.version
-  val path : request -> string
-  val header : request -> string -> string option
-  val headers : request -> Header.t
-  val params : request -> (string * string) list
-  val transfer_encoding : request -> string
+  type t
+  val meth : t -> Code.meth
+  val uri : t -> Uri.t
+  val version : t -> Code.version
+  val path : t -> string
+  val header : t -> string -> string option
+  val headers : t -> Header.t
+  val params : t -> (string * string) list
+  val transfer_encoding : t -> string
   val make : ?meth:Code.meth -> ?version:Code.version ->
     ?encoding:Transfer.encoding -> ?headers:Header.t ->
-    ?body:'a -> Uri.t -> request
+    ?body:'a -> Uri.t -> t
 
-  val is_form: request -> bool
-  val read_form : request -> Reader.t -> (string * string) list Deferred.t
+  val is_form: t -> bool
+  val read_form : t -> Reader.t -> (string * string) list Deferred.t
 end
 
 module Response : sig
-  type response
-  val version : response -> Code.version
-  val status : response -> Code.status_code
-  val headers : response -> Header.t
+  type t
+  val version : t -> Code.version
+  val status : t -> Code.status_code
+  val headers : t -> Header.t
   val make : ?version:Code.version -> ?status:Code.status_code ->
-    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> response
+    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> t
 
-  val is_form: response -> bool
-  val read_form : response -> Reader.t -> (string * string) list Deferred.t
+  val is_form: t -> bool
+  val read_form : t -> Reader.t -> (string * string) list Deferred.t
 end
 
 module Client : sig
-  type response = Response.response * string Pipe.Reader.t option
   val call : ?headers:Header.t -> ?body:string Pipe.Reader.t ->
-    Code.meth -> Uri.t -> response option Deferred.t
+    Code.meth -> Uri.t -> (Response.t * string Pipe.Reader.t option) option Deferred.t
 end
 
 module Server : sig
   type conn_id = int
-  type response = Response.response * string Pipe.Reader.t option
-
+  
   type config = {
-    callback: conn_id -> ?body:string Pipe.Reader.t -> Request.request -> response Deferred.t;
+    callback: conn_id -> ?body:string Pipe.Reader.t -> Request.t -> (Response.t * string Pipe.Reader.t option) Deferred.t;
     port: int;
   }
 
-  val respond_string : ?headers:Header.t -> status:Code.status_code -> body:string -> unit -> response Deferred.t
+  val respond_string : ?headers:Header.t -> status:Code.status_code -> body:string -> unit -> (Response.t * string Pipe.Reader.t option) Deferred.t
 
   val main : config -> unit Deferred.t
 end

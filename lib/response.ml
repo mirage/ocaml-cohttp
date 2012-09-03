@@ -21,7 +21,7 @@ module Make(IO:IO.Make) = struct
   module Transfer_IO = Transfer.Make(IO)
   open IO
 
-  type response = {
+  type t = {
     encoding: Transfer.encoding;
     headers: Header.t;
     version: Code.version;

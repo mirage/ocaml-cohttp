@@ -21,7 +21,7 @@ module Make(IO:IO.Make) = struct
   module Transfer_IO = Transfer.Make(IO)
   open IO
 
-  type request = { 
+  type t = { 
     headers: Header.t;
     meth: Code.meth;
     uri: Uri.t;
@@ -84,10 +84,10 @@ module Make(IO:IO.Make) = struct
       |None -> begin
         (* Check for a content-length in the supplied headers first *)
         match Header.get_content_range headers with
-        |Some clen -> Transfer.Fixed (Int64.of_int clen)
+        |Some clen -> Transfer.Fixed clen
         |None -> begin
           match body with 
-          |None -> Transfer.Fixed 0L 
+          |None -> Transfer.Fixed 0 
           |Some _ -> Transfer.Chunked 
         end
       end
