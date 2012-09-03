@@ -137,11 +137,7 @@ module Client = struct
   let patch ?body ?chunked ?headers uri = call ?headers ?body ?chunked `PATCH uri 
 
   let post_form ?headers ~params uri =
-    let headers =
-      match headers with
-      |None -> Header.of_list ["content-type","application/x-www-form-urlencoded"]
-      |Some h -> Header.add h "content-type" "application/x-www-form-urlencoded"
-    in
+    let headers = Header.add_opt headers "content-type" "application/x-www-form-urlencoded" in
     let body = Body.body_of_string (Uri.encoded_of_query (Header.to_list params)) in
     post ~headers ?body uri
 
@@ -185,6 +181,7 @@ module Server = struct
       (* Read the requests *)
       let req_stream = Lwt_stream.from (fun () ->
         match_lwt Request.read ic with
+        |None -> return None
         |Some req -> begin
           (* Ensure the input body has been fully read before reading again *)
           match Request.has_body req with
@@ -196,7 +193,6 @@ module Server = struct
             th >>= fun () -> return (Some (req, body))
           |false -> return (Some (req, None))
         end
-        |None -> return None
       ) in
       (* Map the requests onto a response stream to serialise out *)
       let res_stream = Lwt_stream.map_s (fun (req, body) -> 
@@ -209,14 +205,14 @@ module Server = struct
        * the user callback *)
       Lwt_stream.on_terminate res_stream (spec.conn_closed conn_id);
       (* Transmit the responses *)
-      Lwt_stream.iter_s (fun (res, body) ->
+      for_lwt (res,body) in res_stream do
         Response.write (fun res oc ->
           match body with
           |None -> return ()
           |Some (`Stream b) -> Lwt_stream.iter_s (Response.write_body res oc) b
           |Some (`String s) -> Response.write_body res oc s
         ) res oc
-      ) res_stream
+      done
     in daemon_callback
  
   let main spec =
