@@ -15,10 +15,13 @@
  *
  *)
 
-module Make(IO:IO.Make) = struct
+module Make(IO:Make.IO) = struct
 
   module Header_IO = Header.Make(IO)
   module Transfer_IO = Transfer.Make(IO)
+
+  type ic = IO.ic
+  type oc = IO.oc
   open IO
 
   type t = {

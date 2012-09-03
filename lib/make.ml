@@ -15,7 +15,7 @@
  *
  *)
 
-module type Make = sig
+module type IO = sig
   type 'a t
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
   val return : 'a -> 'a t
@@ -28,5 +28,4 @@ module type Make = sig
   val read : ic -> int -> string t
   val read_exactly : ic -> string -> int -> int -> bool t
   val write : oc -> string -> unit t
-  val write_line : oc -> string -> unit t
 end

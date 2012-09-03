@@ -143,7 +143,7 @@ let add_authorization headers auth =
 let is_form headers =
   get_media_type headers = (Some "application/x-www-form-urlencoded")
 
-module Make(IO:IO.Make) = struct
+module Make(IO:Make.IO) = struct
   open IO
   module Transfer_IO = Transfer.Make(IO)
 

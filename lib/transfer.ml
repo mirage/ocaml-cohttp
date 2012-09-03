@@ -39,7 +39,7 @@ let has_body =
   | Fixed _ -> true
 
 
-module Make(IO:IO.Make) = struct
+module Make(IO:Make.IO) = struct
   open IO
 
   module Chunked = struct

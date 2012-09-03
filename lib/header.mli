@@ -42,7 +42,7 @@ val add_transfer_encoding : t -> Transfer.encoding -> t
 val add_authorization : t -> Auth.t -> t
 val is_form : t -> bool
 
-module Make(IO:IO.Make) : sig
+module Make(IO:Make.IO) : sig
   val parse: IO.ic -> t IO.t
   val parse_form : t -> IO.ic -> (string * string) list IO.t
 end
