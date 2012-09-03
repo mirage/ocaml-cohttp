@@ -30,7 +30,7 @@ Flag nettests
   Description: run the internet-using tests
   Default: false
 
-Library cohttp_lwt
+Library cohttp_lwt_unix
   Build$: flag(lwt)
   Install$: flag(lwt)
   Path: lwt
@@ -42,11 +42,11 @@ Library cohttp_lwt
 Library cohttp_mirage
   Build$: flag(mirage)
   Install$: flag(mirage)
-  Path: mirage
+  Path: lwt
   Findlibname: mirage
   FindlibParent: cohttp
   BuildDepends: uri, re, cohttp, lwt.syntax, mirage, mirage-net
-  Modules: Cohttp_mirage_raw
+  Modules: Cohttp_lwt_mirage, Cohttp_lwt, Cohttp_lwt_body, Cohttp_lwt_make
 
 Library cohttp_async
   Build$: flag(async)

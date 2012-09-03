@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 2949f811d5e864da728a70246caceb55)
+# DO NOT EDIT (digest: 6eebedd6344dff0d0b224f1b812d86a5)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -30,25 +30,20 @@
 <lib/*.ml{,i}>: pkg_uri
 <lib/*.ml{,i}>: pkg_re
 <lib/*.ml{,i}>: pkg_uri.services
-# Library cohttp_lwt
-"lwt/cohttp_lwt.cmxs": use_cohttp_lwt
+# Library cohttp_lwt_unix
+"lwt/cohttp_lwt_unix.cmxs": use_cohttp_lwt_unix
+<lwt/*.ml{,i}>: pkg_lwt.unix
+<lwt/*.ml{,i}>: pkg_lwt
+<lwt/*.ml{,i}>: pkg_lwt.ssl
+# Library cohttp_mirage
+"lwt/cohttp_mirage.cmxs": use_cohttp_mirage
 <lwt/*.ml{,i}>: use_cohttp
 <lwt/*.ml{,i}>: pkg_uri
 <lwt/*.ml{,i}>: pkg_re
 <lwt/*.ml{,i}>: pkg_lwt.syntax
-<lwt/*.ml{,i}>: pkg_lwt.unix
-<lwt/*.ml{,i}>: pkg_lwt
-<lwt/*.ml{,i}>: pkg_lwt.ssl
+<lwt/*.ml{,i}>: pkg_mirage
+<lwt/*.ml{,i}>: pkg_mirage-net
 <lwt/*.ml{,i}>: pkg_uri.services
-# Library cohttp_mirage
-"mirage/cohttp_mirage.cmxs": use_cohttp_mirage
-<mirage/*.ml{,i}>: use_cohttp
-<mirage/*.ml{,i}>: pkg_uri
-<mirage/*.ml{,i}>: pkg_re
-<mirage/*.ml{,i}>: pkg_lwt.syntax
-<mirage/*.ml{,i}>: pkg_mirage
-<mirage/*.ml{,i}>: pkg_mirage-net
-<mirage/*.ml{,i}>: pkg_uri.services
 # Library cohttp_async
 "async/cohttp_async.cmxs": use_cohttp_async
 <async/*.ml{,i}>: use_cohttp
@@ -60,7 +55,7 @@
 <async/*.ml{,i}>: pkg_re
 <async/*.ml{,i}>: pkg_uri.services
 # Executable test_parser
-<lib_test/test_parser.{native,byte}>: use_cohttp_lwt
+<lib_test/test_parser.{native,byte}>: use_cohttp_lwt_unix
 <lib_test/test_parser.{native,byte}>: use_cohttp
 <lib_test/test_parser.{native,byte}>: pkg_oUnit
 <lib_test/test_parser.{native,byte}>: pkg_uri
@@ -86,7 +81,7 @@
 <lib_test/test_header.{native,byte}>: pkg_uri.services
 <lib_test/test_header.{native,byte}>: custom
 # Executable test_net_lwt
-<lib_test/test_net_lwt.{native,byte}>: use_cohttp_lwt
+<lib_test/test_net_lwt.{native,byte}>: use_cohttp_lwt_unix
 <lib_test/test_net_lwt.{native,byte}>: use_cohttp
 <lib_test/test_net_lwt.{native,byte}>: pkg_oUnit
 <lib_test/test_net_lwt.{native,byte}>: pkg_uri
@@ -96,7 +91,7 @@
 <lib_test/test_net_lwt.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt.{native,byte}>: pkg_uri.services
-<lib_test/*.ml{,i}>: use_cohttp_lwt
+<lib_test/*.ml{,i}>: use_cohttp_lwt_unix
 <lib_test/*.ml{,i}>: pkg_lwt.syntax
 <lib_test/*.ml{,i}>: pkg_lwt.unix
 <lib_test/*.ml{,i}>: pkg_lwt
@@ -140,5 +135,4 @@
 <lib/*>: syntax_camlp4o, pkg_lwt.syntax
 <lib_test/*>: syntax_camlp4o, pkg_lwt.syntax
 <lwt/*>: syntax_camlp4o, pkg_lwt.syntax
-<mirage/*>: syntax_camlp4o, pkg_lwt.syntax
 true: annot
