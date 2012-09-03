@@ -84,7 +84,7 @@ module Body = struct
       let len = String.length buf in
       return (len, (Some (`String buf)))
 end
-  
+
 module Client = struct
 
   let write_request ?body req oc =
@@ -95,16 +95,14 @@ module Client = struct
       |Some (`String s) -> Request.write_body req oc s
     ) req oc
 
-  let read_response ?(close=false) ic oc =
+  let read_response ?closefn ic oc =
     match_lwt Response.read ic with
     |None -> return None
     |Some res -> begin
       match Response.has_body res with
       |true ->
         let stream = Body.stream_of_input_channel (Response.read_body res) ic in
-        if close then
-          Lwt_stream.on_terminate stream (fun () ->
-            Cohttp_lwt_net.close' ic oc);
+        (match closefn with |Some fn -> Lwt_stream.on_terminate stream fn |None -> ());
         let body = Body.body_of_stream stream in
         return (Some (res, body))
       |false ->
@@ -113,11 +111,12 @@ module Client = struct
  
   let call ?headers ?(body:Body.t) ?(chunked=true) meth uri =
     lwt (ic,oc) = Cohttp_lwt_net.connect_uri uri in
+    let closefn () = Cohttp_lwt_net.close' ic oc in
     match chunked with
     |true ->
        let req = Request.make ~meth ?headers ?body uri in
        write_request ?body req oc >>
-       read_response ~close:true ic oc
+       read_response ~closefn ic oc
     |false ->
        lwt (clen, buf) = Body.get_length body in
        let headers =
@@ -127,7 +126,7 @@ module Client = struct
        in
        let req = Request.make ~meth ~headers ~body uri in
        write_request ?body req oc >>
-       read_response ~close:true ic oc
+       read_response ~closefn ic oc
 
   let head ?headers uri = call ?headers `HEAD uri 
   let get ?headers uri = call ?headers `GET uri 
@@ -214,7 +213,7 @@ module Server = struct
         ) res oc
       done
     in daemon_callback
- 
+
   let main spec =
     lwt sockaddr = Cohttp_lwt_net.build_sockaddr spec.address spec.port in
     Cohttp_lwt_net.Tcp_server.init ~sockaddr ~timeout:spec.timeout (daemon_callback spec)
