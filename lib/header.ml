@@ -29,9 +29,14 @@ let headers_with_list_values = [
 ]
 
 let init () = StringMap.empty
+let init_with k v = StringMap.singleton k [v]
 let add h k v =
   try StringMap.add k (v::(StringMap.find k h)) h
   with Not_found -> StringMap.add k [v] h
+let add_opt h k v =
+  match h with
+  |None -> init_with k v
+  |Some h -> add h k v
 let remove h k = StringMap.remove k h
 let get =
   let lhm = List.fold_left
