@@ -112,21 +112,19 @@ module Client = struct
   let call ?headers ?(body:Body.t) ?(chunked=true) meth uri =
     lwt (ic,oc) = Cohttp_lwt_net.connect_uri uri in
     let closefn () = Cohttp_lwt_net.close' ic oc in
-    match chunked with
-    |true ->
-       let req = Request.make ~meth ?headers ?body uri in
-       write_request ?body req oc >>
-       read_response ~closefn ic oc
-    |false ->
-       lwt (clen, buf) = Body.get_length body in
-       let headers =
-         match headers with
-         |None -> Header.(add_transfer_encoding (init ()) (Transfer.Fixed clen))
-         |Some h -> Header.(add_transfer_encoding h (Transfer.Fixed clen))
-       in
-       let req = Request.make ~meth ~headers ~body uri in
-       write_request ?body req oc >>
-       read_response ~closefn ic oc
+    lwt req =
+      match chunked with
+      |true -> return (Request.make ~meth ?headers ?body uri)
+      |false ->
+         (* If chunked is not allowed, then obtain the body length and insert header *)
+         lwt (clen, buf) = Body.get_length body in
+         let headers = match headers with
+           |None -> Header.(add_transfer_encoding (init ()) (Transfer.Fixed clen))
+           |Some h -> Header.(add_transfer_encoding h (Transfer.Fixed clen)) in
+         return (Request.make ~meth ~headers ~body uri)
+    in
+    write_request ?body req oc >>
+    read_response ~closefn ic oc
 
   let head ?headers uri = call ?headers `HEAD uri 
   let get ?headers uri = call ?headers `GET uri 
