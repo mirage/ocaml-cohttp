@@ -15,6 +15,8 @@
  *
  *)
 
+open Cohttp
+
 module IO = struct
 
   open Net
@@ -63,6 +65,24 @@ module IO = struct
     return ()
 end
 
+module Net = struct
+  open Net
+  type ic = Channel.TCPv4.t
+  type oc = Channel.TCPv4.t
+
+  let connect_uri uri =
+    Lwt.fail (Failure "not implemented")
+
+  let connect ?ssl address port =
+    Lwt.fail (Failure "not implemented")
+
+  let close_in ic = ()
+  let close_out ic = ()
+  let close ic oc = Lwt.ignore_result (Channel.TCPv4.close ic)
+end
+
 module Body  = Transfer.Make(IO)
 module Request = Request.Make(IO)
 module Response = Response.Make(IO)
+module Client = Cohttp_lwt.Client(Request)(Response)(Net)
+module Server = Cohttp_lwt.Server(Request)(Response)(Net)
