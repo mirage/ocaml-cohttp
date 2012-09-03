@@ -61,6 +61,7 @@ Document cohttp
   Title:                Cohttp docs
   Type:                 ocamlbuild (0.2)
   BuildTools+:          ocamldoc
+  Install:		false
   XOCamlbuildPath:      lib
   XOCamlbuildLibraries: cohttp
 
