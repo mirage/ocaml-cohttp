@@ -15,3 +15,8 @@ Better HTTP support:
 - A client interface that deals with redirects
 - Proxy support (manual means a full URI in the request)
 - SSL support for Async?
+
+Tests:
+
+- Test the lib_test server scripts via external invocations of
+  curl and httperf, so that the tests terminate.
