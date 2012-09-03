@@ -100,6 +100,15 @@ Executable test_net_lwt
   Install:            false
   BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2)
 
+Executable test_net_lwt_server
+  Path:               lib_test
+  MainIs:             test_net_lwt_server.ml
+  Build$:             flag(tests) && flag(lwt)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.lwt
+
 Executable test_net_async
   Path:               lib_test
   MainIs:             test_net_async.ml

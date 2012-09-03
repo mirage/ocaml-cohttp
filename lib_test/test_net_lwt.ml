@@ -20,15 +20,6 @@ open Printf
 open Lwt
 
 open Cohttp_lwt_unix
-let make_server () =
-  let callback conn_id ?body req =
-    Server.respond_string ~status:`OK ~body:"helloworld" ()
-  in
-  let conn_closed conn_id () =
-    Printf.eprintf "conn %s closed\n%!" (Server.string_of_conn_id conn_id)
-  in
-  let config = { Server.callback; conn_closed } in
-  server ~address:"127.0.0.1" ~port:8081 config
      
 let make_net_req url () =
   let headers = Cohttp.Header.of_list ["connection","close"] in
@@ -45,9 +36,6 @@ let test_cases =
     make_net_req "http://anil.recoil.org";
     make_net_req "http://anil.recoil.org/";
     make_net_req "https://github.com/";
-(*
-    make_server
-*)
   ] in
   List.map (fun x -> "test" >:: (fun () -> Lwt_unix.run (x ()))) tests
 
