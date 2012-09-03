@@ -83,17 +83,19 @@ module Body = struct
       lwt buf = string_of_body body in
       let len = String.length buf in
       return (len, (Some (`String buf)))
+
+  let write_body fn (body:t) =
+    match body with
+    |None -> return ()
+    |Some (`Stream st) -> Lwt_stream.iter_s fn st
+    |Some (`String s) -> fn s
 end
 
 module Client = struct
 
   let write_request ?body req oc =
     Request.write (fun req oc ->
-      match body with
-      |None -> return ()
-      |Some (`Stream st) -> Lwt_stream.iter_s (Request.write_body req oc) st
-      |Some (`String s) -> Request.write_body req oc s
-    ) req oc
+      Body.write_body (Request.write_body req oc) body) req oc
 
   let read_response ?closefn ic oc =
     match_lwt Response.read ic with
@@ -204,10 +206,7 @@ module Server = struct
       (* Transmit the responses *)
       for_lwt (res,body) in res_stream do
         Response.write (fun res oc ->
-          match body with
-          |None -> return ()
-          |Some (`Stream b) -> Lwt_stream.iter_s (Response.write_body res oc) b
-          |Some (`String s) -> Response.write_body res oc s
+          Body.write_body (Response.write_body res oc) body
         ) res oc
       done
     in daemon_callback
