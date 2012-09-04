@@ -109,6 +109,15 @@ Executable test_net_lwt_server
   Install:            false
   BuildDepends:       cohttp, cohttp.lwt
 
+Executable test_net_mirage_server
+  Path:               lib_test
+  MainIs:             test_net_mirage_server.ml
+  Build$:             flag(tests) && flag(lwt)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.mirage
+
 Executable test_net_async
   Path:               lib_test
   MainIs:             test_net_async.ml
