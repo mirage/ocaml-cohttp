@@ -15,28 +15,16 @@
  *
  *)
 
-module Make(IO:Make.IO) : sig
-  type t
-  type ic = IO.ic
-  type oc = IO.oc
+type contents
+type t = contents option
 
-  val version: t -> Code.version
-  val status: t -> Code.status_code
-  val headers: t -> Header.t
+val string_of_body : t -> string Lwt.t
+val stream_of_body : t -> string Lwt_stream.t
+val create_stream : ('a -> Cohttp.Transfer.chunk Lwt.t) -> 'a -> string Lwt_stream.t
 
-  val make : ?version:Code.version -> ?status:Code.status_code -> 
-    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> t
+val body_of_string : string -> t
+val body_of_string_list : string list -> t
+val body_of_stream : string Lwt_stream.t -> t
 
-  val read: ic -> t option IO.t
-  val has_body : t -> bool
-  val read_body: t -> ic -> Transfer.chunk IO.t
-  val read_body_to_string : t -> ic -> string IO.t
-
-  val write_header : t -> oc -> unit IO.t
-  val write_body : t -> oc -> string -> unit IO.t
-  val write_footer : t -> oc -> unit IO.t
-  val write : (t -> oc -> unit IO.t) -> t -> oc -> unit IO.t
-
-  val is_form : t -> bool
-  val read_form : t -> ic -> (string * string) list IO.t
-end
+val get_length : t -> (int * t) Lwt.t
+val write_body : (string -> unit Lwt.t) -> t -> unit Lwt.t

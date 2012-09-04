@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 6504a916452223bb160624638f1e4dd2) *)
+(* DO NOT EDIT (digest: 9e5dde8ac878bfc416632e0d76b73c0c) *)
 module OASISGettext = struct
 # 21 "/Users/avsm/.opam/3.12.1+mirage-unix-direct/build/oasis.0.3.0/src/oasis/OASISGettext.ml"
 
@@ -480,23 +480,24 @@ let package_default =
      MyOCamlbuildBase.lib_ocaml =
        [
           ("cohttp", ["lib"]);
-          ("cohttp_lwt_client", ["lwt_client"]);
-          ("cohttp_lwt_server", ["lwt_server"])
+          ("cohttp_lwt_unix", ["lwt"]);
+          ("cohttp_mirage", ["lwt"]);
+          ("cohttp_async", ["async"])
        ];
      lib_c = [];
      flags = [];
      includes =
        [
-          ("lwt_server", ["lib"]);
-          ("lwt_client", ["lib"]);
-          ("lib_test", ["lib"])
+          ("lwt", ["lib"]);
+          ("lib_test", ["async"; "lib"; "lwt"]);
+          ("async", ["lib"])
        ];
      }
   ;;
 
 let dispatch_default = MyOCamlbuildBase.dispatch_default package_default;;
 
-# 500 "myocamlbuild.ml"
+# 501 "myocamlbuild.ml"
 (* OASIS_STOP *)
 open Ocamlbuild_plugin
 

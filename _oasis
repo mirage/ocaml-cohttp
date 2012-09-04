@@ -1,7 +1,7 @@
 OASISFormat: 0.3
 Name:        cohttp
-Version:     0.9.0
-Synopsis:    HTTP protocol library for Lwt
+Version:     1.0.0
+Synopsis:    HTTP library for Lwt, Async and Mirage
 Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire
 License:     LGPL-2.0 with OCaml linking exception
 Plugins:     META (0.2)
@@ -11,41 +11,153 @@ Library cohttp
   Path: lib
   Findlibname: cohttp
   Pack: true
-  Modules: Base64, Common, Constants, Cookie, Misc, Parser, Request, Response, Types, Message, Transfer
-  BuildDepends:	lwt.syntax, lwt, re, lwt.unix, uri
+  Modules: Code, Header, Request, Response, Transfer, Accept, Accept_parser, Accept_lexer, Base64, Auth, Make
+  BuildDepends:	re, uri (>= 1.3), uri.services
 
-Library cohttp_lwt_client
-  Path: lwt_client
-  Findlibname: lwt_client
-  FindlibParent: cohttp
-  BuildDepends: lwt.unix, lwt, uri, cohttp, lwt.ssl
-  Modules: Cohttp_lwt_client
+Flag lwt
+  Description: build the Lwt library
+  Default: false
 
-Library cohttp_lwt_server
-  Path: lwt_server
-  Findlibname: lwt_server
+Flag async
+  Description: build the Core/Async library
+  Default: false
+
+Flag mirage
+  Description: build the Mirage library
+  Default: false
+
+Flag nettests
+  Description: run the internet-using tests
+  Default: false
+
+Library cohttp_lwt_unix
+  Build$: flag(lwt)
+  Install$: flag(lwt)
+  Path: lwt
+  Findlibname: lwt
   FindlibParent: cohttp
-  BuildDepends: lwt.unix, lwt, uri, cohttp
-  Modules: Cohttp_lwt_server
+  BuildDepends: lwt.unix, lwt, uri, cohttp, lwt.ssl, lwt.syntax
+  Modules: Cohttp_lwt_unix, Cohttp_lwt, Cohttp_lwt_net, Cohttp_lwt_body, Cohttp_lwt_make
+
+Library cohttp_mirage
+  Build$: flag(mirage)
+  Install$: flag(mirage)
+  Path: lwt
+  Findlibname: mirage
+  FindlibParent: cohttp
+  BuildDepends: uri, re, cohttp, lwt.syntax, mirage, mirage-net
+  Modules: Cohttp_lwt_mirage, Cohttp_lwt, Cohttp_lwt_body, Cohttp_lwt_make
+
+Library cohttp_async
+  Build$: flag(async)
+  Install$: flag(async)
+  Path: async
+  Findlibname: async
+  FindlibParent: cohttp
+  BuildDepends: uri, cohttp, async_core, async_unix, threads, async
+  Modules: Cohttp_async_raw, Cohttp_async
 
 Document cohttp
   Title:                Cohttp docs
   Type:                 ocamlbuild (0.2)
   BuildTools+:          ocamldoc
+  Install:		false
   XOCamlbuildPath:      lib
   XOCamlbuildLibraries: cohttp
 
-Executable test_base64
+Executable test_parser
   Path:               lib_test
-  MainIs:             test_base64.ml
+  MainIs:             test_parser.ml
+  Build$:             flag(tests) && flag(lwt)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2)
+
+Executable test_accept
+  Path:               lib_test
+  MainIs:             test_accept.ml
   Build$:             flag(tests)
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp,oUnit (>= 1.0.2)
+  BuildDepends:       cohttp, oUnit (>= 1.0.2)
 
-Test test_base64
+Executable test_header
+  Path:               lib_test
+  MainIs:             test_header.ml
+  Build$:             flag(tests)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, oUnit (>= 1.0.2)
+
+Executable test_net_lwt
+  Path:               lib_test
+  MainIs:             test_net_lwt.ml
+  Build$:             flag(tests) && flag(lwt)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2)
+
+Executable test_net_lwt_server
+  Path:               lib_test
+  MainIs:             test_net_lwt_server.ml
+  Build$:             flag(tests) && flag(lwt)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.lwt
+
+Executable test_net_mirage_server
+  Path:               lib_test
+  MainIs:             test_net_mirage_server.ml
+  Build$:             flag(tests) && flag(lwt)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.mirage
+
+Executable test_net_async
+  Path:               lib_test
+  MainIs:             test_net_async.ml
+  Build$:             flag(tests) && flag(async)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.async, oUnit (>= 1.0.2)
+
+Executable test_net_async_server
+  Path:               lib_test
+  MainIs:             test_net_async_server.ml
+  Build$:             flag(tests) && flag(async)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.async, oUnit (>= 1.0.2)
+
+Test test_accept
   Run$:               flag(tests)
-  Command:            $test_base64
+  Command:            $test_accept
   WorkingDirectory:   lib_test
 
+Test test_header
+  Run$:               flag(tests)
+  Command:            $test_header
+  WorkingDirectory:   lib_test
+
+Test test_parser
+  Run$:               flag(tests) && flag(lwt)
+  Command:            $test_parser
+  WorkingDirectory:   lib_test
+
+Test test_net_lwt
+  Run$:               flag(nettests) && flag(lwt)
+  Command:            $test_net_lwt
+  WorkingDirectory:   lib_test
+
+Test test_net_async
+  Run$:               flag(nettests) && flag(async)
+  Command:            $test_net_async
+  WorkingDirectory:   lib_test

@@ -15,28 +15,30 @@
  *
  *)
 
-module Make(IO:Make.IO) : sig
-  type t
-  type ic = IO.ic
-  type oc = IO.oc
+open OUnit
+open Printf
+open Lwt
+open Cohttp_lwt_mirage
 
-  val version: t -> Code.version
-  val status: t -> Code.status_code
-  val headers: t -> Header.t
+let ip =
+  let open Net.Nettypes in
+  ( ipv4_addr_of_tuple (10l,0l,0l,2l),
+    ipv4_addr_of_tuple (255l,255l,255l,0l),
+   [ipv4_addr_of_tuple (10l,0l,0l,1l)]
+  )
 
-  val make : ?version:Code.version -> ?status:Code.status_code -> 
-    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> t
-
-  val read: ic -> t option IO.t
-  val has_body : t -> bool
-  val read_body: t -> ic -> Transfer.chunk IO.t
-  val read_body_to_string : t -> ic -> string IO.t
-
-  val write_header : t -> oc -> unit IO.t
-  val write_body : t -> oc -> string -> unit IO.t
-  val write_footer : t -> oc -> unit IO.t
-  val write : (t -> oc -> unit IO.t) -> t -> oc -> unit IO.t
-
-  val is_form : t -> bool
-  val read_form : t -> ic -> (string * string) list IO.t
-end
+let make_server () =
+  let callback conn_id ?body req =
+    Server.respond_string ~status:`OK ~body:"helloworld" ()
+  in
+  let conn_closed conn_id () =
+    Printf.eprintf "conn %s closed\n%!" (Server.string_of_conn_id conn_id)
+  in
+  let spec = { Server.callback; conn_closed } in
+  Net.Manager.create (fun mgr interface id ->
+    let src = None, 8081 in
+    Net.Manager.configure interface (`IPv4 ip) >>
+    listen mgr src spec
+  )
+    
+let _ = OS.Main.run (make_server ()) 

@@ -1,126 +1,126 @@
 (*
-  OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
+ * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *)
 
-  Copyright (C) <2002-2005> Stefano Zacchiroli <zack@cs.unibo.it>
-  Copyright (C) <2009-2011> Anil Madhavapeddy <anil@recoil.org>
-  Copyright (C) <2009> David Sheets <sheets@alum.mit.edu>
+module Make(IO:Make.IO) = struct
 
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Library General Public License as
-  published by the Free Software Foundation, version 2.
+  module Header_IO = Header.Make(IO)
+  module Transfer_IO = Transfer.Make(IO)
+  open IO
+  type ic = IO.ic
+  type oc = IO.oc
 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Library General Public License for more details.
+  type t = { 
+    headers: Header.t;
+    meth: Code.meth;
+    uri: Uri.t;
+    version: Code.version;
+    encoding: Transfer.encoding;
+  }
+  
+  let meth r = r.meth
+  let uri r = r.uri
+  let version r = r.version
+  let path r = Uri.path r.uri
+  
+  let header req h = Header.get req.headers h
+  let headers req = req.headers
+  
+  let params r = Uri.query r.uri
 
-  You should have received a copy of the GNU Library General Public
-  License along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
-  USA
-*)
+  let transfer_encoding req = Transfer.encoding_to_string req.encoding
 
-open Printf
-open Lwt
+  let url_decode url = Uri.pct_decode url
 
-open Common
-open Types
-
-type request = {
-  r_msg: Message.message;
-  r_params: (string, string) Hashtbl.t;
-  r_get_params: (string * string) list;
-  r_post_params: (string * string) list;
-  r_meth: meth;
-  r_uri: Uri.t;
-  r_version: version;
-  r_path: string;
-}
-
-exception Length_required (* HTTP 411 *)
-
-let media_type_re =
-  (* Grab "foo/bar" from " foo/bar ; charset=UTF-8" *)
-  Re_str.regexp "[ \t]*\\([^ \t;]+\\)"
-
-let extract_media_type s =
-  if Re_str.string_match media_type_re s 0 then
-    Re_str.matched_group 1 s
-  else
-    ""
-
-let init_request ~clisockaddr ~srvsockaddr finished ic =
-  lwt meth, uri, version = Parser.parse_request_fst_line ic in
-  let path = Uri.path uri in
-  let query_get_params = Uri.query uri in
-  lwt headers = Parser.parse_headers ic in
-  let headers = List.map (fun (h,v) -> (String.lowercase h, v)) headers in
-  lwt body = 
-    match meth with
-    |`POST -> begin
-      let limit =
-        try Some (Int64.of_string (List.assoc "content-length" headers))
-        with Not_found -> None 
-      in
-      match limit with 
-      |None -> Lwt_io.read ic >|= (fun s -> Lwt.wakeup finished (); [`String s])
-      |Some count -> return [`Inchan (count, ic, finished)]
+  let pieces_sep = Re_str.regexp_string " "
+  let parse_request_fst_line ic =
+    let open Code in
+    read_line ic >>= function
+    |Some request_line -> begin
+      match Re_str.split_delim pieces_sep request_line with
+      | [ meth_raw; uri_raw; http_ver_raw ] -> begin
+          match method_of_string meth_raw, version_of_string http_ver_raw with
+          |Some m, Some v -> return (Some (m, (Uri.of_string uri_raw), v))
+          |_ -> return None
+      end
+      | _ -> return None
     end
-    |_ ->  (* TODO empty body for methods other than POST, is ok? *)
-      Lwt.wakeup finished ();
-      return [`String ""]
-  in
-  lwt query_post_params, body =
-    match meth with
-    | `POST -> begin
-         try
-           let mt = extract_media_type (List.assoc "content-type" headers) in
-           if mt = "application/x-www-form-urlencoded" then
-             Message.string_of_body body >|=
-             (fun s -> Uri.query_of_encoded s, [`String s])
-           else return ([], body)
-         with Not_found ->
-           return ([], body)
-    end
-    | _ -> return ([], body)
-  in
-  let params = query_post_params @ query_get_params in (* prefers POST params *)
-  let msg = Message.init ~body ~headers ~version ~clisockaddr ~srvsockaddr in
-  let params_tbl =
-    let tbl = Hashtbl.create (List.length params) in
-    List.iter (fun (n,v) -> Hashtbl.add tbl n v) params;
-    tbl
-  in
-  return { r_msg=msg; r_params=params_tbl; r_get_params = query_get_params; 
-    r_post_params = query_post_params; r_uri=uri; r_meth=meth; 
-    r_version=version; r_path=path }
+    |None -> return None
 
-let meth r = r.r_meth
-let uri r = r.r_uri
-let path r = r.r_path
-let body r = Message.body r.r_msg
-let header r ~name = Message.header r.r_msg ~name
-let client_addr r = Message.client_addr r.r_msg
+  let read ic =
+    parse_request_fst_line ic >>= function
+    |None -> return None
+    |Some (meth, uri, version) ->
+      Header_IO.parse ic >>= fun headers -> 
+      let encoding = Header.get_transfer_encoding headers in
+      return (Some { headers; meth; uri; version; encoding })
 
-let param ?meth ?default r name =
-  try
-    (match meth with
-     | None -> Hashtbl.find r.r_params name
-     | Some `GET -> List.assoc name r.r_get_params
-     | Some `POST -> List.assoc name r.r_post_params)
-   with Not_found ->
-        (match default with
-        | None -> raise (Param_not_found name)
-        | Some value -> value)
+  let has_body req = Transfer.has_body req.encoding
+  let read_body req ic = Transfer_IO.read req.encoding ic
 
-let param_all ?meth r name =
-  (match (meth: meth option) with
-   | None -> List.rev (Hashtbl.find_all r.r_params name)
-   | Some `DELETE
-   | Some `HEAD
-   | Some `GET -> Misc.list_assoc_all name r.r_get_params
-   | Some `POST -> Misc.list_assoc_all name r.r_post_params)
+  let host_of_uri uri = 
+    match Uri.host uri with
+    |None -> "localhost"
+    |Some h -> h
 
-let params r = r.r_params
-let params_get r = r.r_get_params
-let params_post r = r.r_post_params
+  let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers ?body uri =
+    let headers = 
+      match headers with
+      |None -> Header.init ()
+      |Some h -> h in
+    let encoding =
+      match encoding with
+      |None -> begin
+        (* Check for a content-length in the supplied headers first *)
+        match Header.get_content_range headers with
+        |Some clen -> Transfer.Fixed clen
+        |None -> begin
+          match body with 
+          |None -> Transfer.Fixed 0 
+          |Some _ -> Transfer.Chunked 
+        end
+      end
+      |Some e -> e
+    in
+    { meth; version; headers; uri; encoding }
+
+  let write_header req oc =
+   let fst_line = Printf.sprintf "%s %s %s\r\n" (Code.string_of_method req.meth)
+      (Uri.path_and_query req.uri) (Code.string_of_version req.version) in
+    let headers = Header.add req.headers "host" (host_of_uri req.uri) in
+    let headers = Header.add_transfer_encoding headers req.encoding in
+    IO.write oc fst_line >>= fun () ->
+    iter (IO.write oc) (Header.to_lines headers) >>= fun () ->
+    IO.write oc "\r\n"
+
+  let write_body req oc buf =
+    Transfer_IO.write req.encoding oc buf
+
+  let write_footer req oc =
+    match req.encoding with
+    |Transfer.Chunked ->
+       (* TODO Trailer header support *)
+       IO.write oc "0\r\n\r\n"
+    |Transfer.Fixed _ | Transfer.Unknown -> return ()
+
+  let write fn req oc =
+    write_header req oc >>= fun () ->
+    fn req oc >>= fun () ->
+    write_footer req oc
+
+  let is_form req = Header.is_form req.headers
+  let read_form req ic = Header_IO.parse_form req.headers ic
+end

@@ -15,28 +15,19 @@
  *
  *)
 
-module Make(IO:Make.IO) : sig
-  type t
-  type ic = IO.ic
-  type oc = IO.oc
+open OUnit
+open Printf
+open Lwt
 
-  val version: t -> Code.version
-  val status: t -> Code.status_code
-  val headers: t -> Header.t
-
-  val make : ?version:Code.version -> ?status:Code.status_code -> 
-    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> t
-
-  val read: ic -> t option IO.t
-  val has_body : t -> bool
-  val read_body: t -> ic -> Transfer.chunk IO.t
-  val read_body_to_string : t -> ic -> string IO.t
-
-  val write_header : t -> oc -> unit IO.t
-  val write_body : t -> oc -> string -> unit IO.t
-  val write_footer : t -> oc -> unit IO.t
-  val write : (t -> oc -> unit IO.t) -> t -> oc -> unit IO.t
-
-  val is_form : t -> bool
-  val read_form : t -> ic -> (string * string) list IO.t
-end
+open Cohttp_lwt_unix
+let make_server () =
+  let callback conn_id ?body req =
+    Server.respond_string ~status:`OK ~body:"helloworld" ()
+  in
+  let conn_closed conn_id () =
+    Printf.eprintf "conn %s closed\n%!" (Server.string_of_conn_id conn_id)
+  in
+  let config = { Server.callback; conn_closed } in
+  server ~address:"127.0.0.1" ~port:8081 config
+    
+let _ = Lwt_unix.run (make_server ()) 
