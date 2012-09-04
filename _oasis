@@ -1,6 +1,6 @@
 OASISFormat: 0.3
 Name:        cohttp
-Version:     0.9-dev
+Version:     0.9.0
 Synopsis:    HTTP protocol library for Lwt
 Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire
 License:     LGPL-2.0 with OCaml linking exception
