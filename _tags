@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: f763cc28602d59cb9e24912d57c32ce9)
+# DO NOT EDIT (digest: c3db0711031c2729d42a55edc0fe756f)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -54,95 +54,95 @@
 <async/*.ml{,i}>: pkg_re
 <async/*.ml{,i}>: pkg_uri.services
 # Executable test_parser
-<lib_test/test_parser.{native,byte}>: use_cohttp_lwt_unix
-<lib_test/test_parser.{native,byte}>: use_cohttp
-<lib_test/test_parser.{native,byte}>: pkg_oUnit
-<lib_test/test_parser.{native,byte}>: pkg_uri
-<lib_test/test_parser.{native,byte}>: pkg_re
-<lib_test/test_parser.{native,byte}>: pkg_lwt.syntax
-<lib_test/test_parser.{native,byte}>: pkg_lwt.unix
-<lib_test/test_parser.{native,byte}>: pkg_lwt
-<lib_test/test_parser.{native,byte}>: pkg_lwt.ssl
-<lib_test/test_parser.{native,byte}>: pkg_uri.services
-<lib_test/test_parser.{native,byte}>: custom
+<lib_test/test_parser.{native,byte,nobj.o}>: use_cohttp_lwt_unix
+<lib_test/test_parser.{native,byte,nobj.o}>: use_cohttp
+<lib_test/test_parser.{native,byte,nobj.o}>: pkg_oUnit
+<lib_test/test_parser.{native,byte,nobj.o}>: pkg_uri
+<lib_test/test_parser.{native,byte,nobj.o}>: pkg_re
+<lib_test/test_parser.{native,byte,nobj.o}>: pkg_lwt.syntax
+<lib_test/test_parser.{native,byte,nobj.o}>: pkg_lwt.unix
+<lib_test/test_parser.{native,byte,nobj.o}>: pkg_lwt
+<lib_test/test_parser.{native,byte,nobj.o}>: pkg_lwt.ssl
+<lib_test/test_parser.{native,byte,nobj.o}>: pkg_uri.services
+<lib_test/test_parser.{native,byte,nobj.o}>: custom
 # Executable test_accept
-<lib_test/test_accept.{native,byte}>: use_cohttp
-<lib_test/test_accept.{native,byte}>: pkg_oUnit
-<lib_test/test_accept.{native,byte}>: pkg_uri
-<lib_test/test_accept.{native,byte}>: pkg_re
-<lib_test/test_accept.{native,byte}>: pkg_uri.services
-<lib_test/test_accept.{native,byte}>: custom
+<lib_test/test_accept.{native,byte,nobj.o}>: use_cohttp
+<lib_test/test_accept.{native,byte,nobj.o}>: pkg_oUnit
+<lib_test/test_accept.{native,byte,nobj.o}>: pkg_uri
+<lib_test/test_accept.{native,byte,nobj.o}>: pkg_re
+<lib_test/test_accept.{native,byte,nobj.o}>: pkg_uri.services
+<lib_test/test_accept.{native,byte,nobj.o}>: custom
 # Executable test_header
-<lib_test/test_header.{native,byte}>: use_cohttp
-<lib_test/test_header.{native,byte}>: pkg_oUnit
-<lib_test/test_header.{native,byte}>: pkg_uri
-<lib_test/test_header.{native,byte}>: pkg_re
-<lib_test/test_header.{native,byte}>: pkg_uri.services
-<lib_test/test_header.{native,byte}>: custom
+<lib_test/test_header.{native,byte,nobj.o}>: use_cohttp
+<lib_test/test_header.{native,byte,nobj.o}>: pkg_oUnit
+<lib_test/test_header.{native,byte,nobj.o}>: pkg_uri
+<lib_test/test_header.{native,byte,nobj.o}>: pkg_re
+<lib_test/test_header.{native,byte,nobj.o}>: pkg_uri.services
+<lib_test/test_header.{native,byte,nobj.o}>: custom
 # Executable test_net_lwt
-<lib_test/test_net_lwt.{native,byte}>: use_cohttp_lwt_unix
-<lib_test/test_net_lwt.{native,byte}>: use_cohttp
-<lib_test/test_net_lwt.{native,byte}>: pkg_oUnit
-<lib_test/test_net_lwt.{native,byte}>: pkg_uri
-<lib_test/test_net_lwt.{native,byte}>: pkg_re
-<lib_test/test_net_lwt.{native,byte}>: pkg_lwt.syntax
-<lib_test/test_net_lwt.{native,byte}>: pkg_lwt.unix
-<lib_test/test_net_lwt.{native,byte}>: pkg_lwt
-<lib_test/test_net_lwt.{native,byte}>: pkg_lwt.ssl
-<lib_test/test_net_lwt.{native,byte}>: pkg_uri.services
-<lib_test/test_net_lwt.{native,byte}>: custom
+<lib_test/test_net_lwt.{native,byte,nobj.o}>: use_cohttp_lwt_unix
+<lib_test/test_net_lwt.{native,byte,nobj.o}>: use_cohttp
+<lib_test/test_net_lwt.{native,byte,nobj.o}>: pkg_oUnit
+<lib_test/test_net_lwt.{native,byte,nobj.o}>: pkg_uri
+<lib_test/test_net_lwt.{native,byte,nobj.o}>: pkg_re
+<lib_test/test_net_lwt.{native,byte,nobj.o}>: pkg_lwt.syntax
+<lib_test/test_net_lwt.{native,byte,nobj.o}>: pkg_lwt.unix
+<lib_test/test_net_lwt.{native,byte,nobj.o}>: pkg_lwt
+<lib_test/test_net_lwt.{native,byte,nobj.o}>: pkg_lwt.ssl
+<lib_test/test_net_lwt.{native,byte,nobj.o}>: pkg_uri.services
+<lib_test/test_net_lwt.{native,byte,nobj.o}>: custom
 # Executable test_net_lwt_server
-<lib_test/test_net_lwt_server.{native,byte}>: use_cohttp_lwt_unix
-<lib_test/test_net_lwt_server.{native,byte}>: use_cohttp
-<lib_test/test_net_lwt_server.{native,byte}>: pkg_uri
-<lib_test/test_net_lwt_server.{native,byte}>: pkg_re
-<lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt.syntax
-<lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt.unix
-<lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt
-<lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt.ssl
-<lib_test/test_net_lwt_server.{native,byte}>: pkg_uri.services
+<lib_test/test_net_lwt_server.{native,byte,nobj.o}>: use_cohttp_lwt_unix
+<lib_test/test_net_lwt_server.{native,byte,nobj.o}>: use_cohttp
+<lib_test/test_net_lwt_server.{native,byte,nobj.o}>: pkg_uri
+<lib_test/test_net_lwt_server.{native,byte,nobj.o}>: pkg_re
+<lib_test/test_net_lwt_server.{native,byte,nobj.o}>: pkg_lwt.syntax
+<lib_test/test_net_lwt_server.{native,byte,nobj.o}>: pkg_lwt.unix
+<lib_test/test_net_lwt_server.{native,byte,nobj.o}>: pkg_lwt
+<lib_test/test_net_lwt_server.{native,byte,nobj.o}>: pkg_lwt.ssl
+<lib_test/test_net_lwt_server.{native,byte,nobj.o}>: pkg_uri.services
 <lib_test/*.ml{,i}>: use_cohttp_lwt_unix
 <lib_test/*.ml{,i}>: pkg_lwt.unix
 <lib_test/*.ml{,i}>: pkg_lwt
 <lib_test/*.ml{,i}>: pkg_lwt.ssl
-<lib_test/test_net_lwt_server.{native,byte}>: custom
+<lib_test/test_net_lwt_server.{native,byte,nobj.o}>: custom
 # Executable test_net_mirage_server
-<lib_test/test_net_mirage_server.{native,byte}>: use_cohttp_mirage
-<lib_test/test_net_mirage_server.{native,byte}>: use_cohttp
-<lib_test/test_net_mirage_server.{native,byte}>: pkg_uri
-<lib_test/test_net_mirage_server.{native,byte}>: pkg_re
-<lib_test/test_net_mirage_server.{native,byte}>: pkg_lwt.syntax
-<lib_test/test_net_mirage_server.{native,byte}>: pkg_mirage
-<lib_test/test_net_mirage_server.{native,byte}>: pkg_mirage-net
-<lib_test/test_net_mirage_server.{native,byte}>: pkg_uri.services
+<lib_test/test_net_mirage_server.{native,byte,nobj.o}>: use_cohttp_mirage
+<lib_test/test_net_mirage_server.{native,byte,nobj.o}>: use_cohttp
+<lib_test/test_net_mirage_server.{native,byte,nobj.o}>: pkg_uri
+<lib_test/test_net_mirage_server.{native,byte,nobj.o}>: pkg_re
+<lib_test/test_net_mirage_server.{native,byte,nobj.o}>: pkg_lwt.syntax
+<lib_test/test_net_mirage_server.{native,byte,nobj.o}>: pkg_mirage
+<lib_test/test_net_mirage_server.{native,byte,nobj.o}>: pkg_mirage-net
+<lib_test/test_net_mirage_server.{native,byte,nobj.o}>: pkg_uri.services
 <lib_test/*.ml{,i}>: use_cohttp_mirage
 <lib_test/*.ml{,i}>: pkg_lwt.syntax
 <lib_test/*.ml{,i}>: pkg_mirage
 <lib_test/*.ml{,i}>: pkg_mirage-net
-<lib_test/test_net_mirage_server.{native,byte}>: custom
+<lib_test/test_net_mirage_server.{native,byte,nobj.o}>: custom
 # Executable test_net_async
-<lib_test/test_net_async.{native,byte}>: use_cohttp_async
-<lib_test/test_net_async.{native,byte}>: use_cohttp
-<lib_test/test_net_async.{native,byte}>: pkg_oUnit
-<lib_test/test_net_async.{native,byte}>: pkg_uri
-<lib_test/test_net_async.{native,byte}>: pkg_async_core
-<lib_test/test_net_async.{native,byte}>: pkg_async_unix
-<lib_test/test_net_async.{native,byte}>: pkg_threads
-<lib_test/test_net_async.{native,byte}>: pkg_async
-<lib_test/test_net_async.{native,byte}>: pkg_re
-<lib_test/test_net_async.{native,byte}>: pkg_uri.services
-<lib_test/test_net_async.{native,byte}>: custom
+<lib_test/test_net_async.{native,byte,nobj.o}>: use_cohttp_async
+<lib_test/test_net_async.{native,byte,nobj.o}>: use_cohttp
+<lib_test/test_net_async.{native,byte,nobj.o}>: pkg_oUnit
+<lib_test/test_net_async.{native,byte,nobj.o}>: pkg_uri
+<lib_test/test_net_async.{native,byte,nobj.o}>: pkg_async_core
+<lib_test/test_net_async.{native,byte,nobj.o}>: pkg_async_unix
+<lib_test/test_net_async.{native,byte,nobj.o}>: pkg_threads
+<lib_test/test_net_async.{native,byte,nobj.o}>: pkg_async
+<lib_test/test_net_async.{native,byte,nobj.o}>: pkg_re
+<lib_test/test_net_async.{native,byte,nobj.o}>: pkg_uri.services
+<lib_test/test_net_async.{native,byte,nobj.o}>: custom
 # Executable test_net_async_server
-<lib_test/test_net_async_server.{native,byte}>: use_cohttp_async
-<lib_test/test_net_async_server.{native,byte}>: use_cohttp
-<lib_test/test_net_async_server.{native,byte}>: pkg_oUnit
-<lib_test/test_net_async_server.{native,byte}>: pkg_uri
-<lib_test/test_net_async_server.{native,byte}>: pkg_async_core
-<lib_test/test_net_async_server.{native,byte}>: pkg_async_unix
-<lib_test/test_net_async_server.{native,byte}>: pkg_threads
-<lib_test/test_net_async_server.{native,byte}>: pkg_async
-<lib_test/test_net_async_server.{native,byte}>: pkg_re
-<lib_test/test_net_async_server.{native,byte}>: pkg_uri.services
+<lib_test/test_net_async_server.{native,byte,nobj.o}>: use_cohttp_async
+<lib_test/test_net_async_server.{native,byte,nobj.o}>: use_cohttp
+<lib_test/test_net_async_server.{native,byte,nobj.o}>: pkg_oUnit
+<lib_test/test_net_async_server.{native,byte,nobj.o}>: pkg_uri
+<lib_test/test_net_async_server.{native,byte,nobj.o}>: pkg_async_core
+<lib_test/test_net_async_server.{native,byte,nobj.o}>: pkg_async_unix
+<lib_test/test_net_async_server.{native,byte,nobj.o}>: pkg_threads
+<lib_test/test_net_async_server.{native,byte,nobj.o}>: pkg_async
+<lib_test/test_net_async_server.{native,byte,nobj.o}>: pkg_re
+<lib_test/test_net_async_server.{native,byte,nobj.o}>: pkg_uri.services
 <lib_test/*.ml{,i}>: use_cohttp_async
 <lib_test/*.ml{,i}>: use_cohttp
 <lib_test/*.ml{,i}>: pkg_oUnit
@@ -153,7 +153,7 @@
 <lib_test/*.ml{,i}>: pkg_async
 <lib_test/*.ml{,i}>: pkg_re
 <lib_test/*.ml{,i}>: pkg_uri.services
-<lib_test/test_net_async_server.{native,byte}>: custom
+<lib_test/test_net_async_server.{native,byte,nobj.o}>: custom
 # OASIS_STOP
 <lib/*>: syntax_camlp4o, pkg_lwt.syntax
 <lib_test/*>: syntax_camlp4o, pkg_lwt.syntax
