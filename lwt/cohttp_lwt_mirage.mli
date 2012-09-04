@@ -135,6 +135,8 @@ module Server : sig
       conn_closed : conn_id -> unit -> unit;
     }
 
+    val callback : config -> Net.Channel.t -> Net.Channel.t -> unit Lwt.t
+
     val respond_string :
       ?headers:Cohttp.Header.t ->
       status:Cohttp.Code.status_code ->
@@ -143,8 +145,9 @@ module Server : sig
     val respond_error :
       status:Cohttp.Code.status_code ->
       body:string -> unit -> (Response.t * Body.t) Lwt.t
-    val callback : config -> Net.Channel.t -> Net.Channel.t -> unit Lwt.t
 
+   val respond_not_found :
+      uri:Uri.t -> unit -> (Response.t * Body.t) Lwt.t
 end
 
 val listen :
