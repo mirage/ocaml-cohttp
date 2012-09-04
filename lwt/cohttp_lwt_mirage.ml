@@ -25,19 +25,19 @@ module IO = struct
   let (>>=) = Lwt.bind
   let return = Lwt.return
 
-  type ic = Channel.TCPv4.t
-  type oc = Channel.TCPv4.t
+  type ic = Channel.t
+  type oc = Channel.t
 
   let iter fn x = Lwt_list.iter_s fn x
 
   let read_line ic =
-    match_lwt Channel.TCPv4.read_line ic with
+    match_lwt Channel.read_line ic with
     |[] -> return None
     |bufs -> return (Some (Cstruct.copy_buffers bufs))
 
   let read ic len = 
    try_lwt
-     lwt iop = Channel.TCPv4.read_some ~len ic in
+     lwt iop = Channel.read_some ~len ic in
      return (Cstruct.to_string iop)
    with End_of_file -> return ""
 
@@ -47,7 +47,7 @@ module IO = struct
       |0 -> 
         return (List.rev acc)
       |len ->
-        lwt iop = Channel.TCPv4.read_some ~len ic in
+        lwt iop = Channel.read_some ~len ic in
         read (iop::acc) (left - (Cstruct.len iop))
     in
     lwt iov = read [] len in
@@ -57,32 +57,50 @@ module IO = struct
     return true
 
   let write oc buf = 
-    Channel.TCPv4.write_string oc buf 0 (String.length buf);
-    return ()
+    Channel.write_string oc buf 0 (String.length buf);
+    Channel.flush oc
 
   let write_line oc buf =
-    Channel.TCPv4.write_line oc buf;
-    return ()
+    Channel.write_line oc buf;
+    Channel.flush oc
 end
 
-module Net = struct
+open Lwt
+
+module Net_IO = struct
   open Net
-  type ic = Channel.TCPv4.t
-  type oc = Channel.TCPv4.t
+  type ic = Channel.t
+  type oc = Channel.t
 
   let connect_uri uri =
-    Lwt.fail (Failure "not implemented")
+    fail (Failure "not implemented")
 
   let connect ?ssl address port =
-    Lwt.fail (Failure "not implemented")
+    fail (Failure "not implemented")
 
   let close_in ic = ()
   let close_out ic = ()
-  let close ic oc = Lwt.ignore_result (Channel.TCPv4.close ic)
+  let close ic oc = ignore_result (Channel.close ic)
 end
 
 module Request = Request.Make(IO)
 module Response = Response.Make(IO)
 module Body = Cohttp_lwt_body
-module Client = Cohttp_lwt.Client(Request)(Response)(Net)
-module Server = Cohttp_lwt.Server(Request)(Response)(Net)
+module Client = Cohttp_lwt.Client(Request)(Response)(Net_IO)
+module Server = Cohttp_lwt.Server(Request)(Response)(Net_IO)
+
+let listen ?timeout mgr src spec =
+  (* TODO XXX the cancel-based timeout is almost certainly broken as the
+   * thread wont issue a Response *)
+  let cb = 
+    match timeout with 
+    |None -> 
+      fun dst ch ->
+        Server.callback spec ch ch
+    |Some tm ->
+      fun dst ch ->
+        let tmout = OS.Time.sleep tm in
+        let cb_t = Server.callback spec ch ch in
+        tmout <?> cb_t
+  in
+  Net.Channel.listen mgr (`TCPv4 (src, cb))
