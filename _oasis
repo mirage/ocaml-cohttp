@@ -113,7 +113,7 @@ Executable test_net_lwt_server
 Executable test_net_mirage_server
   Path:               lib_test
   MainIs:             test_net_mirage_server.ml
-  Build$:             flag(tests) && flag(lwt)
+  Build$:             flag(tests) && flag(mirage)
   Custom:             true
   CompiledObject:     best
   Install:            false
