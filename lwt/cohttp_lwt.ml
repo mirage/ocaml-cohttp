@@ -93,6 +93,11 @@ module Server(Request:REQUEST)
     conn_closed : conn_id -> unit -> unit;
   }
 
+  let respond ?headers ~status ~body () =
+    let encoding = Cohttp_lwt_body.get_transfer_encoding body in
+    let res = Response.make ~status ~encoding ?headers () in
+    return (res, body)
+
   let respond_string ?headers ~status ~body () =
     let res = Response.make ~status 
       ~encoding:(Transfer.Fixed (String.length body)) ?headers () in

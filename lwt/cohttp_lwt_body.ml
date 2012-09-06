@@ -66,6 +66,12 @@ let body_of_string_list l : t =
 let body_of_stream s : t =
   Some (`Stream s)
 
+let get_transfer_encoding (t:t) =
+  match t with
+  |None -> Transfer.Fixed 0
+  |Some (`Stream _) -> Transfer.Chunked
+  |Some (`String s) -> Transfer.Fixed (String.length s)
+
 (* This will consume the body and return a length, and a
  * new body that should be used instead of the input *)
 let get_length (body:t) : (int * t) Lwt.t =

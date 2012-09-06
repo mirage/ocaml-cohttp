@@ -135,6 +135,11 @@ module Server : sig
       conn_closed : conn_id -> unit -> unit;
     }
 
+    val respond :
+      ?headers:Cohttp.Header.t ->
+      status:Cohttp.Code.status_code ->
+      body:Body.t -> unit -> (Response.t * Body.t) Lwt.t
+
     val respond_string :
       ?headers:Cohttp.Header.t ->
       status:Cohttp.Code.status_code ->

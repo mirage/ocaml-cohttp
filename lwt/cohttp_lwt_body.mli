@@ -26,5 +26,6 @@ val body_of_string : string -> t
 val body_of_string_list : string list -> t
 val body_of_stream : string Lwt_stream.t -> t
 
+val get_transfer_encoding : t -> Cohttp.Transfer.encoding
 val get_length : t -> (int * t) Lwt.t
 val write_body : (string -> unit Lwt.t) -> t -> unit Lwt.t
