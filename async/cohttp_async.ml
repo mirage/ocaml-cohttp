@@ -155,7 +155,6 @@ module Server = struct
       in write_resps ()
      
   let main spec =
-    let on_handler_error = `Raise in (* TODO just for debug *)
     let listen_on = Tcp.on_port spec.port in
     Tcp.Server.create listen_on (callback spec)
 end
