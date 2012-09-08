@@ -19,15 +19,18 @@ open OUnit
 open Printf
 open Lwt
 
+open Cohttp
 open Cohttp_lwt_unix
 let make_server () =
   let callback conn_id ?body req =
-    Server.respond_string ~status:`OK ~body:"helloworld" ()
+    match Request.path req with
+    |""|"/" -> Server.respond_string ~status:`OK ~body:"helloworld" ()
+    |path -> Server.respond_file ~docroot:"./" ~fname:path ()
   in
   let conn_closed conn_id () =
     Printf.eprintf "conn %s closed\n%!" (Server.string_of_conn_id conn_id)
   in
   let config = { Server.callback; conn_closed } in
-  server ~address:"127.0.0.1" ~port:8081 config
+  server ~address:"0.0.0.0" ~port:8081 config
     
 let _ = Lwt_unix.run (make_server ()) 
