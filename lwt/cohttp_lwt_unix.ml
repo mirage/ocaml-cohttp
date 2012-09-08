@@ -90,17 +90,22 @@ module Server = struct
   
   let respond_file ?headers ~docroot ~fname () =
     (* TODO XXX this is temporary, need to normalise docroot *)
-    let fname = "./"^ docroot ^ fname in
+    let fname = docroot ^ fname in
     try_lwt
-      lwt ic = Lwt_io.open_file ~mode:Lwt_io.input fname in
+      lwt ic = Lwt_io.open_file ~buffer_size:16384 ~mode:Lwt_io.input fname in
       lwt len = Lwt_io.length ic in
       let encoding = Cohttp.Transfer.Fixed (Int64.to_int len) in
       let count = 16384 in
       let stream = Lwt_stream.from (fun () ->
-        Lwt_io.read ~count ic >|=
-           function
-           |"" -> None
-           |buf -> Some buf
+        try_lwt 
+          Lwt_io.read ~count ic >|=
+             function
+             |"" -> None
+             |buf -> Some buf
+        with
+         exn ->
+           prerr_endline ("exn: " ^ (Printexc.to_string exn));
+           return None
       ) in
       Lwt_stream.on_terminate stream (fun () -> 
         ignore_result (Lwt_io.close ic));
