@@ -155,7 +155,6 @@
 <lib_test/*.ml{,i}>: pkg_uri.services
 <lib_test/test_net_async_server.{native,byte}>: custom
 # OASIS_STOP
-<lib/*>: syntax_camlp4o, pkg_lwt.syntax
 <lib_test/*>: syntax_camlp4o, pkg_lwt.syntax
 <lwt/*>: syntax_camlp4o, pkg_lwt.syntax
 true: annot
