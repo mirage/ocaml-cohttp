@@ -86,7 +86,8 @@ module Tcp_server = struct
     let events = match timeout with
       |None -> [c]
       |Some t -> [c; (Lwt_unix.sleep (float_of_int t)) ] in
-    Lwt.pick events >> close (ic,oc)
+    let _ = Lwt.pick events >> close (ic,oc) in
+    return ()
   
   let init ~sockaddr ~timeout callback =
     let s = init_socket sockaddr in
