@@ -147,7 +147,7 @@ module Server : sig
       body:string -> unit -> (Response.t * Body.t) Lwt.t
 
    val respond_not_found :
-      uri:Uri.t -> unit -> (Response.t * Body.t) Lwt.t
+      ?uri:Uri.t -> unit -> (Response.t * Body.t) Lwt.t
 end
 
 val listen :
