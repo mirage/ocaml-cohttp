@@ -63,6 +63,5 @@ module Server : sig
 
   val respond_string : ?headers:Header.t -> status:Code.status_code -> body:string -> unit -> (Response.t * string Pipe.Reader.t option) Deferred.t
 
-  val main : config -> unit Deferred.t
+  val main : config -> (Socket.Address.Inet.t, int) Tcp.Server.t Deferred.t
 end
-
