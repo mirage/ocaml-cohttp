@@ -1,6 +1,7 @@
 .PHONY: all clean install build
 all: build test doc
 
+PREFIX ?= /usr/local
 NAME=cohttp
 
 LWT ?= $(shell if ocamlfind query lwt.ssl >/dev/null 2>&1; then echo --enable-lwt; fi)
@@ -17,7 +18,7 @@ setup.bin: setup.ml
 	rm -f setup.cmx setup.cmi setup.o setup.cmo
 
 setup.data: setup.bin
-	./setup.bin -configure $(LWT) $(ASYNC) $(MIRAGE) $(TESTS) $(NETTESTS)
+	./setup.bin -configure $(LWT) $(ASYNC) $(MIRAGE) $(TESTS) $(NETTESTS) --prefix $(PREFIX)
 
 build: setup.data setup.bin
 	./setup.bin -build
