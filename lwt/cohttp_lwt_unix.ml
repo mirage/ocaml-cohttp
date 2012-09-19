@@ -87,10 +87,15 @@ module Client = Cohttp_lwt.Client(Request)(Response)(Net)
 module Server = struct
   open Lwt
   include Cohttp_lwt.Server(Request)(Response)(Net)
-  
-  let respond_file ?headers ~docroot ~fname () =
-    (* TODO XXX this is temporary, need to normalise docroot *)
-    let fname = docroot ^ fname in
+
+  let blank_uri = Uri.of_string "" 
+
+  let resolve_file ~docroot ~uri =
+    (* This normalises the Uri and strips out .. characters *)
+    let frag = Uri.path (Uri.resolve "" blank_uri uri) in
+    Filename.concat docroot frag
+
+  let respond_file ?headers ~fname () =
     try_lwt
       lwt ic = Lwt_io.open_file ~buffer_size:16384 ~mode:Lwt_io.input fname in
       lwt len = Lwt_io.length ic in

@@ -25,7 +25,9 @@ let make_server () =
   let callback conn_id ?body req =
     match Request.path req with
     |""|"/" -> Server.respond_string ~status:`OK ~body:"helloworld" ()
-    |path -> Server.respond_file ~docroot:"./" ~fname:path ()
+    |_ -> 
+       let fname = Server.resolve_file ~docroot:"." ~uri:(Request.uri req) in
+       Server.respond_file ~fname ()
   in
   let conn_closed conn_id () =
     Printf.eprintf "conn %s closed\n%!" (Server.string_of_conn_id conn_id)

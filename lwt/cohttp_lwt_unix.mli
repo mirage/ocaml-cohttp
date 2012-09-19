@@ -152,9 +152,10 @@ module Server : sig
     val respond_not_found :
       ?uri:Uri.t -> unit -> (Response.t * Body.t) Lwt.t
 
+    val resolve_file : docroot:string -> uri:Uri.t -> string
+
     val respond_file :
       ?headers:Cohttp.Header.t ->
-      docroot:string ->
       fname:string -> unit -> (Response.t * Body.t) Lwt.t
 
     val callback : 
