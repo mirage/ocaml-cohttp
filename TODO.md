@@ -1,5 +1,8 @@
 Planned interface-breaking changes before 1.0:
 
+* The callback API must guarantee that the request body has been consumed
+  somehow...
+
 * Make the Header.t header parsing more efficient by only lazily parsing them
   instead of copying into a Map as we do now.
 
