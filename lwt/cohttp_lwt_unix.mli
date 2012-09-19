@@ -152,6 +152,11 @@ module Server : sig
     val respond_not_found :
       ?uri:Uri.t -> unit -> (Response.t * Body.t) Lwt.t
 
+    val respond_file :
+      ?headers:Cohttp.Header.t ->
+      docroot:string ->
+      fname:string -> unit -> (Response.t * Body.t) Lwt.t
+
     val callback : 
       config -> Lwt_io.input_channel -> Lwt_io.output_channel -> unit Lwt.t
 end
