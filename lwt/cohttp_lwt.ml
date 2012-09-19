@@ -107,8 +107,11 @@ module Server(Request:REQUEST)
   let respond_error ~status ~body () =
     respond_string ~status ~body:("Error: "^body) ()
 
-  let respond_not_found ~uri () =
-    respond_string ~status:`Not_found ~body:("Not found: " ^ (Uri.to_string uri)) ()
+  let respond_not_found ?uri () =
+    let body = match uri with
+     |None -> "Not found"
+     |Some uri -> "Not found: " ^ (Uri.to_string uri) in
+    respond_string ~status:`Not_found ~body ()
 
   let callback spec =
     let conn_id = ref 0 in

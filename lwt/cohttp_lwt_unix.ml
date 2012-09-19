@@ -83,7 +83,37 @@ module Response = Cohttp.Response.Make(IO)
 module Body = Cohttp_lwt_body
 module Net = Cohttp_lwt_net
 module Client = Cohttp_lwt.Client(Request)(Response)(Net)
-module Server = Cohttp_lwt.Server(Request)(Response)(Net)
+
+module Server = struct
+  open Lwt
+  include Cohttp_lwt.Server(Request)(Response)(Net)
+  
+  let respond_file ?headers ~docroot ~fname () =
+    (* TODO XXX this is temporary, need to normalise docroot *)
+    let fname = "./"^ docroot ^ fname in
+    try_lwt
+      lwt ic = Lwt_io.open_file ~mode:Lwt_io.input fname in
+      lwt len = Lwt_io.length ic in
+      let encoding = Cohttp.Transfer.Fixed (Int64.to_int len) in
+      let count = 16384 in
+      let stream = Lwt_stream.from (fun () ->
+        Lwt_io.read ~count ic >|=
+           function
+           |"" -> None
+           |buf -> Some buf
+      ) in
+      Lwt_stream.on_terminate stream (fun () -> 
+        ignore_result (Lwt_io.close ic));
+      let body = Body.body_of_stream stream in
+      let res = Response.make ~status:`OK ~encoding ?headers () in
+      return (res, body)
+    with
+     | Unix.Unix_error(Unix.ENOENT,_,_) ->
+         respond_not_found ()
+     | exn ->
+         let body = Printexc.to_string exn in
+         respond_error ~status:`Internal_server_error ~body ()
+end
 
 let server ?timeout ~address ~port spec =
   lwt sockaddr = Net.build_sockaddr address port in
