@@ -25,3 +25,5 @@ Tests:
 
 - Test the lib_test server scripts via external invocations of
   curl and httperf, so that the tests terminate.
+
+- Test the HTTP timeout support
