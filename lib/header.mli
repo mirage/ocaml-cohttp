@@ -44,5 +44,5 @@ val is_form : t -> bool
 
 module Make(IO:Make.IO) : sig
   val parse: IO.ic -> t IO.t
-  val parse_form : t -> IO.ic -> (string * string) list IO.t
+  val parse_form : t -> IO.ic -> (string * string list) list IO.t
 end

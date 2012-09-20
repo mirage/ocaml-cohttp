@@ -28,7 +28,7 @@ module Make(IO:Make.IO) : sig
   val header : t -> string -> string option
   val headers : t -> Header.t
 
-  val params : t -> (string * string) list
+  val params : t -> (string * string list) list
 
   val transfer_encoding : t -> string
 
@@ -46,5 +46,5 @@ module Make(IO:Make.IO) : sig
   val write : (t -> oc -> unit IO.t) -> t -> oc -> unit IO.t
 
   val is_form : t -> bool
-  val read_form : t -> ic -> (string * string) list IO.t
+  val read_form : t -> ic -> (string * string list) list IO.t
 end

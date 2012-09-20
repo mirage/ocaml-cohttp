@@ -67,7 +67,8 @@ module Client(Request:REQUEST)
 
   let post_form ?headers ~params uri =
     let headers = Header.add_opt headers "content-type" "application/x-www-form-urlencoded" in
-    let body = Cohttp_lwt_body.body_of_string (Uri.encoded_of_query (Header.to_list params)) in
+    let q = List.map (fun (k,v) -> k, [v]) (Header.to_list params) in
+    let body = Cohttp_lwt_body.body_of_string (Uri.encoded_of_query q) in
     post ~headers ?body uri
 
   let callv ?(ssl=false) host port reqs =

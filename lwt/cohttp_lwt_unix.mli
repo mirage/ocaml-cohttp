@@ -41,7 +41,7 @@ module Request : sig
   val path : t -> string
   val header : t -> string -> string option
   val headers : t -> Header.t
-  val params : t -> (string * string) list
+  val params : t -> (string * string list) list
   val transfer_encoding : t -> string
 
   val make : ?meth:Code.meth -> ?version:Code.version -> 
@@ -51,7 +51,7 @@ module Request : sig
   val is_form: t -> bool
 
   val read : Lwt_io.input_channel -> t option Lwt.t
-  val read_form : t -> Lwt_io.input_channel -> (string * string) list Lwt.t
+  val read_form : t -> Lwt_io.input_channel -> (string * string list) list Lwt.t
   val read_body : t -> Lwt_io.input_channel -> Cohttp.Transfer.chunk Lwt.t
   val write : (t -> Lwt_io.output_channel -> unit Lwt.t) -> t -> Lwt_io.output_channel -> unit Lwt.t
   val write_body : t -> Lwt_io.output_channel -> string -> unit Lwt.t

@@ -150,11 +150,11 @@ let post_form_parse () =
   |Some req ->
     assert_equal true (Request.is_form req);
     Request.read_form req ic >>= fun params ->
-    assert_equal "Cosby" (List.assoc "home" params);
-    assert_equal "flies" (List.assoc "favorite flavor" params);
+    assert_equal ["Cosby"] (List.assoc "home" params);
+    assert_equal ["flies"] (List.assoc "favorite flavor" params);
     assert_raises Not_found (fun () -> List.assoc "nonexistent" params);
     (* multiple requests should still work *)
-    assert_equal "Cosby" (List.assoc "home" params);
+    assert_equal ["Cosby"] (List.assoc "home" params);
     return ()
 
 let post_data_parse () =

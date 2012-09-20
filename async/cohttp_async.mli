@@ -26,14 +26,14 @@ module Request : sig
   val path : t -> string
   val header : t -> string -> string option
   val headers : t -> Header.t
-  val params : t -> (string * string) list
+  val params : t -> (string * string list) list
   val transfer_encoding : t -> string
   val make : ?meth:Code.meth -> ?version:Code.version ->
     ?encoding:Transfer.encoding -> ?headers:Header.t ->
     ?body:'a -> Uri.t -> t
 
   val is_form: t -> bool
-  val read_form : t -> Reader.t -> (string * string) list Deferred.t
+  val read_form : t -> Reader.t -> (string * string list) list Deferred.t
 end
 
 module Response : sig
@@ -45,7 +45,7 @@ module Response : sig
     ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> t
 
   val is_form: t -> bool
-  val read_form : t -> Reader.t -> (string * string) list Deferred.t
+  val read_form : t -> Reader.t -> (string * string list) list Deferred.t
 end
 
 module Client : sig

@@ -26,7 +26,7 @@ module type REQUEST = sig
   val path : t -> string
   val header : t -> string -> string option
   val headers : t -> Header.t
-  val params : t -> (string * string) list
+  val params : t -> (string * string list) list
   val transfer_encoding : t -> string
 
   val make : ?meth:Code.meth -> ?version:Code.version ->
@@ -44,7 +44,7 @@ module type REQUEST = sig
     oc -> unit Lwt.t
 
   val is_form: t -> bool
-  val read_form : t -> ic -> (string * string) list Lwt.t
+  val read_form : t -> ic -> (string * string list) list Lwt.t
 end
 
 module type RESPONSE = sig
@@ -69,7 +69,7 @@ module type RESPONSE = sig
     t -> oc -> unit Lwt.t
 
   val is_form: t -> bool
-  val read_form : t -> ic -> (string * string) list Lwt.t
+  val read_form : t -> ic -> (string * string list) list Lwt.t
 end
 
 module type NET = sig
