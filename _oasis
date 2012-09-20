@@ -59,11 +59,38 @@ Library cohttp_async
 
 Document cohttp
   Title:                Cohttp docs
-  Type:                 ocamlbuild (0.2)
+  Type:                 ocamlbuild (0.3)
   BuildTools+:          ocamldoc
-  Install:		false
+  Install:		true
   XOCamlbuildPath:      lib
   XOCamlbuildLibraries: cohttp
+
+Document cohttp_lwt_unix
+  Title:                Cohttp Lwt UNIX docs
+  Type:                 ocamlbuild (0.3)
+  BuildTools+:          ocamldoc
+  Build$:               flag(lwt)
+  Install:		true
+  XOCamlbuildPath:      lwt
+  XOCamlbuildLibraries: cohttp.lwt
+
+Document cohttp_async
+  Title:                Cohttp Async docs
+  Type:                 ocamlbuild (0.3)
+  BuildTools+:          ocamldoc
+  Build$:               flag(async)
+  Install:		true
+  XOCamlbuildPath:      async
+  XOCamlbuildLibraries: cohttp.async
+
+Document cohttp_mirage
+  Title:                Cohttp Mirage docs
+  Type:                 ocamlbuild (0.3)
+  BuildTools+:          ocamldoc
+  Build$:               flag(mirage)
+  Install:		true
+  XOCamlbuildPath:      lwt
+  XOCamlbuildLibraries: cohttp.mirage
 
 Executable test_parser
   Path:               lib_test
