@@ -57,9 +57,13 @@ module Make(IO:Make.IO) = struct
         match chunk_size with
         |None | Some 0 -> return Done
         |Some count -> begin
-          read ic count >>= fun buf ->
-          read_line ic >>= fun _ -> (* Junk the CRLF at end of chunk *)
-          return (Chunk buf)
+          let buf = String.create count in
+          read_exactly ic buf 0 count >>=
+          function
+          |false -> return Done
+          |true ->
+            read_line ic >>= fun _ -> (* Junk the CRLF at end of chunk *)
+            return (Chunk buf)
         end
       end
       |None -> return Done
