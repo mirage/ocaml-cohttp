@@ -4,7 +4,7 @@ Version:     0.9.2
 Synopsis:    HTTP library for Lwt, Async and Mirage
 Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire
 License:     LGPL-2.0 with OCaml linking exception
-Plugins:     META (0.2)
+Plugins:     META (0.3)
 BuildTools:  ocamlbuild
 
 Library cohttp
@@ -127,6 +127,15 @@ Executable test_net_lwt
   CompiledObject:     best
   Install:            false
   BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2)
+
+Executable test_net_lwt_google
+  Path:               lib_test
+  MainIs:             test_net_lwt_google.ml
+  Build$:             flag(tests) && flag(lwt)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp.lwt
 
 Executable test_net_lwt_server
   Path:               lib_test

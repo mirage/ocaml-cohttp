@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: f763cc28602d59cb9e24912d57c32ce9)
+# DO NOT EDIT (digest: a44df5bd7eb250a4f309c1f543502267)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -91,6 +91,17 @@
 <lib_test/test_net_lwt.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt.{native,byte}>: pkg_uri.services
 <lib_test/test_net_lwt.{native,byte}>: custom
+# Executable test_net_lwt_google
+<lib_test/test_net_lwt_google.{native,byte}>: use_cohttp_lwt_unix
+<lib_test/test_net_lwt_google.{native,byte}>: use_cohttp
+<lib_test/test_net_lwt_google.{native,byte}>: pkg_uri
+<lib_test/test_net_lwt_google.{native,byte}>: pkg_re
+<lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt.syntax
+<lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt.unix
+<lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt
+<lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt.ssl
+<lib_test/test_net_lwt_google.{native,byte}>: pkg_uri.services
+<lib_test/test_net_lwt_google.{native,byte}>: custom
 # Executable test_net_lwt_server
 <lib_test/test_net_lwt_server.{native,byte}>: use_cohttp_lwt_unix
 <lib_test/test_net_lwt_server.{native,byte}>: use_cohttp
