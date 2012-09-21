@@ -50,7 +50,7 @@ module IO = struct
        lwt buf = 
          try_lwt Lwt_io.read ~count ic
          with End_of_file -> return "" in
-       Printf.eprintf "<<< %s" buf;
+       Printf.eprintf "<<<[%d] %s" count buf;
        return buf)
 
   let read_exactly =
