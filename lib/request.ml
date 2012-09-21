@@ -40,6 +40,9 @@ module Make(IO:Make.IO) = struct
   let headers req = req.headers
   
   let params r = Uri.query r.uri
+  let get_param r k =
+    try Some (List.(hd (assoc k (params r))))
+    with _ -> None
 
   let transfer_encoding req = Transfer.encoding_to_string req.encoding
 

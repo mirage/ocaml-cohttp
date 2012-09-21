@@ -29,6 +29,7 @@ module Make(IO:Make.IO) : sig
   val headers : t -> Header.t
 
   val params : t -> (string * string list) list
+  val get_param : t -> string -> string option
 
   val transfer_encoding : t -> string
 
