@@ -19,7 +19,7 @@
 *)
 
 type version = [ `HTTP_1_0 | `HTTP_1_1 ]
-type meth = [ `GET | `POST | `HEAD | `DELETE | `PATCH ]
+type meth = [ `GET | `POST | `HEAD | `DELETE | `PATCH | `PUT ]
 
 type informational_status =
   [ `Continue

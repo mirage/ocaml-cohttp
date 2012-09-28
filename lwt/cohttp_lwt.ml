@@ -62,7 +62,7 @@ module Client(Request:REQUEST)
   let get ?headers uri = call ?headers `GET uri 
   let delete ?headers uri = call ?headers `DELETE uri 
   let post ?body ?chunked ?headers uri = call ?headers ?body ?chunked `POST uri 
-  let put ?body ?chunked ?headers uri = call ?headers ?body ?chunked `POST uri 
+  let put ?body ?chunked ?headers uri = call ?headers ?body ?chunked `PUT uri 
   let patch ?body ?chunked ?headers uri = call ?headers ?body ?chunked `PATCH uri 
 
   let post_form ?headers ~params uri =

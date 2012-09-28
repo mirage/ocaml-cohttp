@@ -22,7 +22,7 @@
 (** Type definitions *)
 
 type version = [ `HTTP_1_0 | `HTTP_1_1 ]
-type meth = [ `GET | `POST | `HEAD | `DELETE |`PATCH ]
+type meth = [ `GET | `POST | `HEAD | `DELETE |`PATCH |`PUT ]
 
 type informational_status =
   [ `Continue
@@ -105,6 +105,7 @@ let string_of_method = function
   | `HEAD -> "HEAD"
   | `DELETE -> "DELETE"
   | `PATCH -> "PATCH"
+  | `PUT -> "PUT"
 
 let method_of_string = function
   | "GET" -> Some `GET
@@ -112,6 +113,7 @@ let method_of_string = function
   | "HEAD" -> Some `HEAD
   | "DELETE" -> Some `DELETE
   | "PATCH" -> Some `PATCH
+  | "PUT" -> Some `PUT
   | _ -> None
 
 let status_of_code (x:int) : status_code = match x with
