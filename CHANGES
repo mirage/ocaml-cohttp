@@ -1,5 +1,7 @@
 ===== 0.9.3 (unreleased) =====
 
+* Map the `put` functions to HTTP PUT instead of POST.
+
 ===== 0.9.2 (2012-09-20) =====
 
 * Add Request.get_param to extract a singleton key from queries.
