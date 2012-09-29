@@ -19,10 +19,10 @@ type q = int
 type 'a qlist = (q * 'a) list
 
 val media_ranges :
-  string option -> (media_range * Accept_types.p list) Accept_types.qlist
-val charsets : string option -> charset Accept_types.qlist
-val encodings : string option -> encoding Accept_types.qlist
-val languages : string option -> language Accept_types.qlist
+  string option -> (media_range * p list) qlist
+val charsets : string option -> charset qlist
+val encodings : string option -> encoding qlist
+val languages : string option -> language qlist
 
 val string_of_media_range : media_range * (string * pv) list -> q -> string
 val string_of_charset : charset -> q -> string
