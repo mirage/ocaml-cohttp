@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: a44df5bd7eb250a4f309c1f543502267)
+# DO NOT EDIT (digest: d63c7c4304d0cbcd64edcde785c512b6)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -112,11 +112,22 @@
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_uri.services
+<lib_test/test_net_lwt_server.{native,byte}>: custom
+# Executable test_net_lwt_client_and_server
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: use_cohttp_lwt_unix
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: use_cohttp
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_uri
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_re
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt.syntax
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt.unix
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt.ssl
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_uri.services
 <lib_test/*.ml{,i}>: use_cohttp_lwt_unix
 <lib_test/*.ml{,i}>: pkg_lwt.unix
 <lib_test/*.ml{,i}>: pkg_lwt
 <lib_test/*.ml{,i}>: pkg_lwt.ssl
-<lib_test/test_net_lwt_server.{native,byte}>: custom
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: custom
 # Executable test_net_mirage_server
 <lib_test/test_net_mirage_server.{native,byte}>: use_cohttp_mirage
 <lib_test/test_net_mirage_server.{native,byte}>: use_cohttp
@@ -166,6 +177,6 @@
 <lib_test/*.ml{,i}>: pkg_uri.services
 <lib_test/test_net_async_server.{native,byte}>: custom
 # OASIS_STOP
-<lib_test/{test_parser,test_net_lwt,test_net_lwt_server,test_net_mirage_server}.ml>: syntax_camlp4o, pkg_lwt.syntax
+<lib_test/{test_parser,test_net_lwt,test_net_lwt_server,test_net_mirage_server,test_net_lwt_client_and_server}.ml>: syntax_camlp4o, pkg_lwt.syntax
 <lwt/*>: syntax_camlp4o, pkg_lwt.syntax
 true: annot
