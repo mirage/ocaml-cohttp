@@ -42,8 +42,8 @@ module Tcp_client = struct
     return (ic, oc)
 
   let close (ic,oc) =
-    let _ = try_lwt Lwt_io.close ic with _ -> return () in
-    try_lwt Lwt_io.close oc with _ -> return ()
+    let _ = try_lwt Lwt_io.close oc with _ -> return () in
+    try_lwt Lwt_io.close ic with _ -> return ()
 end
 
 (* SSL TCP connection *)
@@ -68,8 +68,8 @@ end
 module Tcp_server = struct
 
   let close (ic,oc) =
-    let _ = try_lwt Lwt_io.close ic with _ -> return () in
-    try_lwt Lwt_io.close oc with _ -> return ()
+    try_lwt Lwt_io.close oc with _ -> return () >>
+    try_lwt Lwt_io.close ic with _ -> return ()
 
   let init_socket sockaddr =
     let suck = Lwt_unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
