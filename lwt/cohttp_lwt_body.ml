@@ -56,6 +56,12 @@ let stream_of_body (body:t) =
   |None -> Lwt_stream.of_list []
   |Some (`Stream s) -> s
   |Some (`String s) -> Lwt_stream.of_list [s]
+
+let drain_body (body:t) =
+  match body with
+  |None
+  |Some (`String _) -> return ()
+  |Some (`Stream s) -> Lwt_stream.junk_while (fun _ -> true) s
   
 let body_of_string s : t =
   Some (`String s)
