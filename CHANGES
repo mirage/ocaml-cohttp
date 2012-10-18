@@ -1,5 +1,6 @@
 ===== 0.9.3 (unreleased) =====
 
+* Fix handling of Lwt server non-empty POST bodies.
 * Map the `put` functions to HTTP PUT instead of POST.
 
 ===== 0.9.2 (2012-09-20) =====
