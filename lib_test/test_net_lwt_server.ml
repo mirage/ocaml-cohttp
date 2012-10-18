@@ -25,6 +25,10 @@ let make_server () =
   let callback conn_id ?body req =
     match Request.path req with
     |""|"/" -> Server.respond_string ~status:`OK ~body:"helloworld" ()
+    |"/post" -> begin
+       lwt body = Body.string_of_body body in
+       Server.respond_string ~status:`OK ~body ()
+    end  
     |_ -> 
        let fname = Server.resolve_file ~docroot:"." ~uri:(Request.uri req) in
        Server.respond_file ~fname ()
