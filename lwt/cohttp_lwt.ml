@@ -147,6 +147,7 @@ module Server(Request:REQUEST)
           spec.callback conn_id ?body req
         with exn ->
           respond_error ~status:`Internal_server_error ~body:(Printexc.to_string exn) ()
+        finally Cohttp_lwt_body.drain_body body
       ) req_stream in
       (* Clean up resources when the response stream terminates and call
        * the user callback *)
