@@ -118,20 +118,26 @@ module Server(Request:REQUEST)
     let conn_id = ref 0 in
     let daemon_callback ic oc =
       let conn_id = incr conn_id; !conn_id in
+      let read_m = Lwt_mutex.create () in
       (* Read the requests *)
       let req_stream = Lwt_stream.from (fun () ->
+        lwt () = Lwt_mutex.lock read_m in
         match_lwt Request.read ic with
-        |None -> return None
+        |None ->
+          Lwt_mutex.unlock read_m;
+          return None
         |Some req -> begin
           (* Ensure the input body has been fully read before reading again *)
           match Request.has_body req with
           |true ->
             let body_stream = Cohttp_lwt_body.create_stream (Request.read_body req) ic in
-            let th,u = task () in
-            Lwt_stream.on_terminate body_stream (wakeup u);
+            Lwt_stream.on_terminate body_stream (fun () -> Lwt_mutex.unlock read_m);
             let body = Cohttp_lwt_body.body_of_stream body_stream in
-            th >>= fun () -> return (Some (req, body))
-          |false -> return (Some (req, None))
+            (* The read_m remains locked until the caller reads the body *)
+            return (Some (req, body))
+          |false ->
+            Lwt_mutex.unlock read_m;
+            return (Some (req, None))
         end
       ) in
       (* Map the requests onto a response stream to serialise out *)
