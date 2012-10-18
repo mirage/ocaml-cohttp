@@ -38,6 +38,7 @@ module Client(Request:REQUEST)
         let body = Cohttp_lwt_body.body_of_stream stream in
         return (Some (res, body))
       |false ->
+        (match closefn with |Some fn -> fn () |None -> ());
         return (Some (res, None))
     end
  
