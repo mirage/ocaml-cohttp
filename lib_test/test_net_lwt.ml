@@ -31,11 +31,43 @@ let make_net_req url () =
       (fun k v -> List.iter (Printf.eprintf "%s: %s\n%!" k) v) headers;
     Lwt_stream.iter_s (fun s -> return ()) (Body.stream_of_body body)
 
+let make_net_reqv () =
+  let last_header = Cohttp.Header.of_list ["connection","close"] in
+  let reqs = [
+      Request.make ~meth:`GET (Uri.of_string "/foo"), None;
+      Request.make ~meth:`GET (Uri.of_string "/foo2"), None;
+      Request.make ~meth:`GET ~headers:last_header (Uri.of_string "/foo3"), None;
+    ] in
+  lwt resp = Client.callv "89.16.177.154" 80 (Lwt_stream.of_list reqs) in
+  (* Consume the bodies, and we should get 3 responses *)
+  let num = ref 0 in
+  Lwt_stream.iter_s (fun (res,body) ->
+    (* Consume the body *)
+    incr num;
+    lwt body = Body.string_of_body body in
+    assert_equal (Response.status res) `Not_found;
+    return ()
+  ) resp >>= fun () ->
+  assert_equal !num 3;
+  (* Run the callv without consuming bodies (i.e. a bug), and we only
+     get one *)
+  lwt resp = Client.callv "89.16.177.154" 80 (Lwt_stream.of_list reqs) in
+  let num = ref 0 in
+  Lwt_stream.iter_s (fun (res,body) ->
+    (* Do not consume the body *)
+    incr num;
+    assert_equal (Response.status res) `Not_found;
+    return ()
+  ) resp >>= fun () ->
+  assert_equal !num 1;
+  return ()
+
 let test_cases =
   let tests = [
     make_net_req "http://anil.recoil.org";
     make_net_req "http://anil.recoil.org/";
     make_net_req "https://github.com/";
+    make_net_reqv;
   ] in
   List.map (fun x -> "test" >:: (fun () -> Lwt_unix.run (x ()))) tests
 
