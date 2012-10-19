@@ -75,11 +75,16 @@ module Client(Request:REQUEST)
   let callv ?(ssl=false) host port reqs =
     lwt (ic, oc) = Net.connect ~ssl host port in
     (* Serialise the requests out to the wire *)
-    Lwt_stream.on_terminate reqs (fun () -> Net.close_out oc);
     let _ = Lwt_stream.iter_s (fun (req,body) -> write_request ?body req oc) reqs in
-    (* Read the responses *)
-    let resps = Lwt_stream.from (fun () -> read_response ic oc) in
-    Lwt_stream.on_terminate resps (fun () -> Net.close_in ic);
+    (* Read the responses. For each response, ensure that the previous response
+     * has consumed the body before continuing to the next response, since HTTP/1.1
+     * pipelining cannot be interleaved. *)
+    let read_m = Lwt_mutex.create () in
+    let resps = Lwt_stream.from (fun () ->
+       let closefn () = Lwt_mutex.unlock read_m in
+       Lwt_mutex.with_lock read_m (fun () -> read_response ~closefn ic oc) 
+     ) in
+    Lwt_stream.on_terminate resps (fun () -> Net.close ic oc);
     return resps
 end
 
