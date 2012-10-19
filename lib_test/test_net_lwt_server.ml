@@ -29,6 +29,9 @@ let make_server () =
        lwt body = Body.string_of_body body in
        Server.respond_string ~status:`OK ~body ()
     end  
+    |"/postnodrain" -> begin
+       Server.respond_string ~status:`OK ~body:"nodrain" ()
+    end
     |_ -> 
        let fname = Server.resolve_file ~docroot:"." ~uri:(Request.uri req) in
        Server.respond_file ~fname ()
