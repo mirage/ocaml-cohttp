@@ -1,5 +1,8 @@
 ===== 0.9.3 (unreleased) =====
 
+* Cohttp_lwt.Client.post_form now uses non-chunked encoding for
+  the POST instead of chunked.
+
 * Various improvements and tests for the pipelined Lwt Client.callv
 
 * If an Lwt callback does not consume a body, ensure it has
