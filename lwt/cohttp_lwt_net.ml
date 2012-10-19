@@ -119,8 +119,8 @@ let close_out oc =
   ignore_result (try_lwt Lwt_io.close oc with _ -> return ())
 
 let close' ic oc =
-  let _ = try_lwt Lwt_io.close ic with _ -> return () in
-  try_lwt Lwt_io.close oc with _ -> return ()
+  try_lwt Lwt_io.close oc with _ -> return () >>
+  try_lwt Lwt_io.close ic with _ -> return ()
 
 let close ic oc =
   ignore_result (close' ic oc)
