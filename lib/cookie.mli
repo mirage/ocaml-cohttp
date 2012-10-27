@@ -10,4 +10,5 @@ val make :
 val serialize :
   ?version:[ `HTTP_1_0 | `HTTP_1_1 ] ->
   string * cookie -> string * string
-val extract : Request.request -> (string * string) list
+val extract : Header.t -> (string * string) list
+

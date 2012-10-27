@@ -84,7 +84,7 @@ let serialize ?(version=`HTTP_1_0) cp =
 let cookie_re = Re_str.regexp "(\\?:;\\|,)([ \t])"
 let equals_re = Re_str.regexp_string "="
 
-let extract req =
+let extract hdr =
   List.fold_left
     (fun acc header ->
         let comps = Re_str.split_delim cookie_re header in
@@ -95,4 +95,4 @@ let extract req =
           | n :: [] -> (n, "")
           | n :: v :: _ -> (n, v)
         in (List.map split_pair cookies) @ acc
-    ) [] (Request.header req "Cookie")
+    ) [] (Header.get_multi hdr "Cookie")
