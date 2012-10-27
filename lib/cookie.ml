@@ -70,13 +70,26 @@ module Set_cookie_hdr = struct
 end
 
 module Cookie_hdr = struct
-	let cookie_re = Re_str.regexp "(\\?:;\\|,)([ \t])"
+		(* RFC 2965 has
+cookie          =  "Cookie:" cookie-version 1*((";" | ",") cookie-value)
+cookie-value    =  NAME "=" VALUE [";" path] [";" domain] [";" port]
+cookie-version  =  "$Version" "=" value
+NAME            =  attr
+VALUE           =  value
+path            =  "$Path" "=" value
+domain          =  "$Domain" "=" value
+port            =  "$Port" [ "=" <"> value <"> ]
+		*)
+
+	let cookie_re = Re_str.regexp "[;,][ \t]*"
 	let equals_re = Re_str.regexp_string "="
 
 	let extract hdr =
 	  List.fold_left
 	    (fun acc header ->
 	        let comps = Re_str.split_delim cookie_re header in
+	        (* We don't handle $Path, $Domain, $Port, $Version (or $anything
+	           $else) *)
 	        let cookies = List.filter (fun s -> s.[0] != '$') comps in
 	        let split_pair nvp =
 	          match Re_str.split_delim equals_re nvp with
