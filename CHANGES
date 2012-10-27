@@ -1,3 +1,8 @@
+===== 0.9.4 (unreleased) =====
+
+* Port Async interface to 108.07.00 or higher (incompatible
+  with earlier versions).
+
 ===== 0.9.3 (2012-10-27) =====
 
 * Add basic cookie support back to the portable library.
