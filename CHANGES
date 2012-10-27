@@ -1,4 +1,6 @@
-===== 0.9.3 (unreleased) =====
+===== 0.9.3 (2012-10-27) =====
+
+* Add basic cookie support back to the portable library.
 
 * Cohttp_lwt.Client.post_form now uses non-chunked encoding for
   the POST instead of chunked.
