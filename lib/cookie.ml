@@ -19,80 +19,86 @@
   USA
 *)
 
-type time = [ `Day of int | `Hour of int | `Minute of int | `Second of int ] list
-type expiration = [ `Discard | `Session | `Age of time | `Until of float ]
+(* We need a non-Unix date/time implementation to support other expiration
+   types *)
+type expiration = [ `Session ]
 
-type cookie = { value : string;
+type cookie = string * string
+
+module Set_cookie_hdr = struct
+	type t = {
+		cookie: cookie;
 		expiration : expiration;
 		domain : string option;
 		path : string option;
 		secure : bool }
 
-(* Does not check the contents of name or value for ';', ',', '\s', or name[0]='$' *)
-let make ?(expiry=`Session) ?path ?domain ?(secure=false) n v =
-  (n, { value = v;
-	expiration = expiry; domain = domain;
-	path = path; secure = secure })
+	(* Does not check the contents of name or value for ';', ',', '\s', or name[0]='$' *)
+	let make ?(expiry=`Session) ?path ?domain ?(secure=false) cookie =
+	  { cookie = cookie;
+		expiration = expiry; domain = domain;
+		path = path; secure = secure }
     
-let duration tml =
-  let tval = function
-    | `Day d -> 86400*d
-    | `Hour h -> 3600*h
-    | `Minute m -> 60*m
-    | `Second s -> s
-  in List.fold_left (fun a t -> a + (tval t)) 0 tml
-
-let serialize_1_1 (n, c) =
-  let attrs = ["Version=1"] in
-  let attrs = if c.secure then ("Secure" :: attrs) else attrs in
-  let attrs = match c.path with None -> attrs
-    | Some p -> ("Path=" ^ p) :: attrs in
-  let attrs = match c.expiration with
-    | `Discard -> "Max-Age=0" :: attrs
-    | `Session -> "Discard" :: attrs
-    | `Until stamp ->
-	let offset = int_of_float (stamp -. (Unix.gettimeofday ())) in
-	  ("Max-Age=" ^ (string_of_int (min 0 offset))) :: attrs
-    | `Age tml -> ("Max-Age=" ^ (string_of_int (duration tml))) :: attrs in
-  let attrs = match c.domain with None -> attrs
-    | Some d -> ("Domain=" ^ d) :: attrs in
-    ("Set-Cookie2", String.concat "; " attrs)
+	let serialize_1_1 c =
+	  let attrs = ["Version=1"] in
+	  let attrs = if c.secure then ("Secure" :: attrs) else attrs in
+	  let attrs = match c.path with None -> attrs
+	    | Some p -> ("Path=" ^ p) :: attrs in
+	  let attrs = match c.expiration with
+	    | `Session -> "Discard" :: attrs in
+	  let attrs = match c.domain with None -> attrs
+	    | Some d -> ("Domain=" ^ d) :: attrs in
+	    ("Set-Cookie2", String.concat "; " attrs)
   
-let serialize_1_0 (n, c) =
-  let fmt_time a = Misc.rfc822_of_float a in
-  let attrs = if c.secure then ["secure"] else [] in
-  let attrs = match c.path with None -> attrs
-    | Some p -> ("path=" ^ p) :: attrs in
-  let attrs = match c.domain with None -> attrs
-    | Some d -> ("domain=" ^ d) :: attrs in
-  let attrs = match c.expiration with
-    | `Discard -> ("expires=" ^ (fmt_time 0.)) :: attrs
-    | `Session -> attrs
-    | `Until stamp -> ("expires=" ^ (fmt_time stamp)) :: attrs
-    | `Age tml ->
-	let age = float (duration tml) in
-	  ("expires=" ^ (fmt_time ((Unix.gettimeofday ()) +. age))) :: attrs in
-  let attrs = (n ^ (match c.value with "" -> ""
-		      | v -> "=" ^ v)) :: attrs in
-    ("Set-Cookie", String.concat "; " attrs)
+	let serialize_1_0 c =
+	  let attrs = if c.secure then ["secure"] else [] in
+	  let attrs = match c.path with None -> attrs
+	    | Some p -> ("path=" ^ p) :: attrs in
+	  let attrs = match c.domain with None -> attrs
+	    | Some d -> ("domain=" ^ d) :: attrs in
+	  let attrs = match c.expiration with
+	    | `Session -> attrs in
+	  let n, c = c.cookie in
+	  let attrs = (n ^ (match c with "" -> ""
+			      | v -> "=" ^ v)) :: attrs in
+	    ("Set-Cookie", String.concat "; " attrs)
 
-let serialize ?(version=`HTTP_1_0) cp =
-  match version with
-    | `HTTP_1_0 -> serialize_1_0 cp
-    | `HTTP_1_1 -> serialize_1_1 cp
+	let serialize ?(version=`HTTP_1_0) c =
+	  match version with
+	    | `HTTP_1_0 -> serialize_1_0 c
+	    | `HTTP_1_1 -> serialize_1_1 c
+end
 
-let cookie_re = Re_str.regexp "(\\?:;\\|,)([ \t])"
-let equals_re = Re_str.regexp_string "="
+module Cookie_hdr = struct
+		(* RFC 2965 has
+cookie          =  "Cookie:" cookie-version 1*((";" | ",") cookie-value)
+cookie-value    =  NAME "=" VALUE [";" path] [";" domain] [";" port]
+cookie-version  =  "$Version" "=" value
+NAME            =  attr
+VALUE           =  value
+path            =  "$Path" "=" value
+domain          =  "$Domain" "=" value
+port            =  "$Port" [ "=" <"> value <"> ]
+		*)
 
-let extract req =
-  List.fold_left
-    (fun acc header ->
-        let comps = Re_str.split_delim cookie_re header in
-        let cookies = List.filter (fun s -> s.[0] != '$') comps in
-        let split_pair nvp =
-          match Re_str.split_delim equals_re nvp with
-          | [] -> ("","")
-          | n :: [] -> (n, "")
-          | n :: v :: _ -> (n, v)
-        in (List.map split_pair cookies) @ acc
-    ) [] (Request.header req "Cookie")
+	let cookie_re = Re_str.regexp "[;,][ \t]*"
+	let equals_re = Re_str.regexp_string "="
+
+	let extract hdr =
+	  List.fold_left
+	    (fun acc header ->
+	        let comps = Re_str.split_delim cookie_re header in
+	        (* We don't handle $Path, $Domain, $Port, $Version (or $anything
+	           $else) *)
+	        let cookies = List.filter (fun s -> s.[0] != '$') comps in
+	        let split_pair nvp =
+	          match Re_str.split_delim equals_re nvp with
+	          | [] -> ("","")
+	          | n :: [] -> (n, "")
+	          | n :: v :: _ -> (n, v)
+	        in (List.map split_pair cookies) @ acc
+	    ) [] (Header.get_multi hdr "Cookie")
+
+	let serialize cookies =
+		"Cookie", String.concat "; " (List.map (fun (k, v) -> k ^ "=" ^ v) cookies)
+end
