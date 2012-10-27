@@ -5,27 +5,27 @@ type cookie = string * string
 
 module Set_cookie_hdr : sig
 
-	type t
-	(** A header which a server sends to a client to request that the client
-		returns the cookie in future requests, under certain conditions. *)
+  type t
+  (** A header which a server sends to a client to request that the client
+    returns the cookie in future requests, under certain conditions. *)
 
-	val make :
-		?expiry:expiration ->
-		?path:string ->
-		?domain:string -> ?secure:bool -> cookie -> t
+  val make :
+    ?expiry:expiration ->
+    ?path:string ->
+    ?domain:string -> ?secure:bool -> cookie -> t
 
-	val serialize :
-		?version:[ `HTTP_1_0 | `HTTP_1_1 ] ->
-		t -> string * string
-	(** Return an HTTP header *)
+  val serialize :
+    ?version:[ `HTTP_1_0 | `HTTP_1_1 ] ->
+    t -> string * string
+  (** Return an HTTP header *)
 
 end
 
 module Cookie_hdr : sig
 
-	val extract : Header.t -> cookie list
-	(** Return the list of cookies sent by the client *)
+  val extract : Header.t -> cookie list
+  (** Return the list of cookies sent by the client *)
 
-	val serialize : cookie list -> string * string
-	(** [serialize cookies] returns an HTTP header containing [cookies] *)
+  val serialize : cookie list -> string * string
+  (** [serialize cookies] returns an HTTP header containing [cookies] *)
 end
