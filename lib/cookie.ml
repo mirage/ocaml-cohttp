@@ -19,8 +19,9 @@
   USA
 *)
 
-type time = [ `Day of int | `Hour of int | `Minute of int | `Second of int ] list
-type expiration = [ `Discard | `Session | `Age of time | `Until of float ]
+(* We need a non-Unix date/time implementation to support other expiration
+   types *)
+type expiration = [ `Session ]
 
 type cookie = { value : string;
 		expiration : expiration;
@@ -34,44 +35,25 @@ let make ?(expiry=`Session) ?path ?domain ?(secure=false) n v =
 	expiration = expiry; domain = domain;
 	path = path; secure = secure })
     
-let duration tml =
-  let tval = function
-    | `Day d -> 86400*d
-    | `Hour h -> 3600*h
-    | `Minute m -> 60*m
-    | `Second s -> s
-  in List.fold_left (fun a t -> a + (tval t)) 0 tml
-
 let serialize_1_1 (n, c) =
   let attrs = ["Version=1"] in
   let attrs = if c.secure then ("Secure" :: attrs) else attrs in
   let attrs = match c.path with None -> attrs
     | Some p -> ("Path=" ^ p) :: attrs in
   let attrs = match c.expiration with
-    | `Discard -> "Max-Age=0" :: attrs
-    | `Session -> "Discard" :: attrs
-    | `Until stamp ->
-	let offset = int_of_float (stamp -. (Unix.gettimeofday ())) in
-	  ("Max-Age=" ^ (string_of_int (min 0 offset))) :: attrs
-    | `Age tml -> ("Max-Age=" ^ (string_of_int (duration tml))) :: attrs in
+    | `Session -> "Discard" :: attrs in
   let attrs = match c.domain with None -> attrs
     | Some d -> ("Domain=" ^ d) :: attrs in
     ("Set-Cookie2", String.concat "; " attrs)
   
 let serialize_1_0 (n, c) =
-  let fmt_time a = Misc.rfc822_of_float a in
   let attrs = if c.secure then ["secure"] else [] in
   let attrs = match c.path with None -> attrs
     | Some p -> ("path=" ^ p) :: attrs in
   let attrs = match c.domain with None -> attrs
     | Some d -> ("domain=" ^ d) :: attrs in
   let attrs = match c.expiration with
-    | `Discard -> ("expires=" ^ (fmt_time 0.)) :: attrs
-    | `Session -> attrs
-    | `Until stamp -> ("expires=" ^ (fmt_time stamp)) :: attrs
-    | `Age tml ->
-	let age = float (duration tml) in
-	  ("expires=" ^ (fmt_time ((Unix.gettimeofday ()) +. age))) :: attrs in
+    | `Session -> attrs in
   let attrs = (n ^ (match c.value with "" -> ""
 		      | v -> "=" ^ v)) :: attrs in
     ("Set-Cookie", String.concat "; " attrs)

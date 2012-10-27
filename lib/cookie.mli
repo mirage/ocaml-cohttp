@@ -1,6 +1,4 @@
-type time =
-    [ `Day of int | `Hour of int | `Minute of int | `Second of int ] list
-type expiration = [ `Age of time | `Discard | `Session | `Until of float ]
+type expiration = [ `Session ]
 type cookie
 
 val make :
