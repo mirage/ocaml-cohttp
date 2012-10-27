@@ -35,7 +35,11 @@ let valid_set_cookie () =
   assert_equal ~printer:(fun x -> x) ~msg:"header value" "key=value; domain=ocaml.org; path=/foo/bar; secure" v
 
 let valid_cookie () =
-  let h = Cohttp.Header.of_list [ "Cookie", "foo=bar; a=b" ] in
+  let cookies = [ "foo", "bar"; "a", "b" ] in
+  let k, v = Cohttp.Cookie.Cookie_hdr.serialize cookies in
+  assert_equal ~msg:"key" "Cookie" k;
+  assert_equal ~msg:"value" "foo=bar; a=b" v;
+  let h = Cohttp.Header.of_list [ k, v ] in
   let cookies = Cohttp.Cookie.Cookie_hdr.extract h in
   let printer x = String.concat "; " (List.map (fun (x, y) -> x ^ ":" ^ y) x) in
   assert_equal ~printer ~msg:"headers" [ "foo", "bar"; "a", "b" ] cookies

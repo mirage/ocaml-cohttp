@@ -26,4 +26,6 @@ module Cookie_hdr : sig
 	val extract : Header.t -> cookie list
 	(** Return the list of cookies sent by the client *)
 
+	val serialize : cookie list -> string * string
+	(** [serialize cookies] returns an HTTP header containing [cookies] *)
 end

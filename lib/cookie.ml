@@ -98,4 +98,7 @@ port            =  "$Port" [ "=" <"> value <"> ]
 	          | n :: v :: _ -> (n, v)
 	        in (List.map split_pair cookies) @ acc
 	    ) [] (Header.get_multi hdr "Cookie")
+
+	let serialize cookies =
+		"Cookie", String.concat "; " (List.map (fun (k, v) -> k ^ "=" ^ v) cookies)
 end
