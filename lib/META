@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: f82660d90a357b6caaab71414db0e3d1)
-version = "0.9.3"
+# DO NOT EDIT (digest: eee94318aea62b6ae4d9c49a436060a6)
+version = "0.9.4"
 description = "HTTP library for Lwt, Async and Mirage"
 requires = "re uri uri.services"
 archive(byte) = "cohttp.cma"
@@ -9,7 +9,7 @@ archive(native) = "cohttp.cmxa"
 archive(native, plugin) = "cohttp.cmxs"
 exists_if = "cohttp.cma"
 package "mirage" (
- version = "0.9.3"
+ version = "0.9.4"
  description = "HTTP library for Lwt, Async and Mirage"
  requires = "uri re cohttp lwt.syntax mirage mirage-net"
  archive(byte) = "cohttp_mirage.cma"
@@ -20,7 +20,7 @@ package "mirage" (
 )
 
 package "lwt" (
- version = "0.9.3"
+ version = "0.9.4"
  description = "HTTP library for Lwt, Async and Mirage"
  requires = "lwt.unix lwt uri cohttp lwt.ssl lwt.syntax"
  archive(byte) = "cohttp_lwt_unix.cma"
@@ -31,7 +31,7 @@ package "lwt" (
 )
 
 package "async" (
- version = "0.9.3"
+ version = "0.9.4"
  description = "HTTP library for Lwt, Async and Mirage"
  requires = "uri cohttp async_core async_unix threads async"
  archive(byte) = "cohttp_async.cma"
