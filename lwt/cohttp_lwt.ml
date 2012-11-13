@@ -125,26 +125,33 @@ module Server(Request:REQUEST)
     let daemon_callback ic oc =
       let conn_id = incr conn_id; !conn_id in
       let read_m = Lwt_mutex.create () in
+      (* If the request is HTTP version 1.0 then the request stream should be
+         considered closed after the first request/response. *)
+      let early_close = ref false in
       (* Read the requests *)
       let req_stream = Lwt_stream.from (fun () ->
-        lwt () = Lwt_mutex.lock read_m in
-        match_lwt Request.read ic with
-        |None ->
-          Lwt_mutex.unlock read_m;
-          return None
-        |Some req -> begin
-          (* Ensure the input body has been fully read before reading again *)
-          match Request.has_body req with
-          |true ->
-            let body_stream = Cohttp_lwt_body.create_stream (Request.read_body req) ic in
-            Lwt_stream.on_terminate body_stream (fun () -> Lwt_mutex.unlock read_m);
-            let body = Cohttp_lwt_body.body_of_stream body_stream in
-            (* The read_m remains locked until the caller reads the body *)
-            return (Some (req, body))
-          |false ->
+        if !early_close
+        then return None
+        else
+          lwt () = Lwt_mutex.lock read_m in
+          match_lwt Request.read ic with
+          |None ->
             Lwt_mutex.unlock read_m;
-            return (Some (req, None))
-        end
+            return None
+          |Some req -> begin
+            early_close := Request.version req = `HTTP_1_0;
+            (* Ensure the input body has been fully read before reading again *)
+            match Request.has_body req with
+            |true ->
+              let body_stream = Cohttp_lwt_body.create_stream (Request.read_body req) ic in
+              Lwt_stream.on_terminate body_stream (fun () -> Lwt_mutex.unlock read_m);
+              let body = Cohttp_lwt_body.body_of_stream body_stream in
+              (* The read_m remains locked until the caller reads the body *)
+              return (Some (req, body))
+            |false ->
+              Lwt_mutex.unlock read_m;
+              return (Some (req, None))
+          end
       ) in
       (* Map the requests onto a response stream to serialise out *)
       let res_stream = Lwt_stream.map_s (fun (req, body) -> 
