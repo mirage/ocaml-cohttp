@@ -114,6 +114,19 @@ module Server(Request:REQUEST)
   let respond_error ~status ~body () =
     respond_string ~status ~body:("Error: "^body) ()
 
+  let respond_redirect ?headers ~uri () =
+    let headers = 
+      match headers with
+      |None -> Header.init_with "location" (Uri.to_string uri)
+      |Some h -> Header.add h "location" (Uri.to_string uri)
+    in
+    respond ~headers ~status:`Found ~body:None ()
+
+  let respond_need_auth ?headers ~auth () =
+    let headers = match headers with |None -> Header.init () |Some h -> h in
+    let headers = Header.add_authorization_req headers auth in
+    respond ~headers ~status:`Unauthorized ~body:None ()
+
   let respond_not_found ?uri () =
     let body = match uri with
      |None -> "Not found"

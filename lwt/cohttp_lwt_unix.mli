@@ -150,6 +150,14 @@ module Server : sig
       status:Cohttp.Code.status_code ->
       body:string -> unit -> (Response.t * Body.t) Lwt.t
 
+    val respond_redirect :
+      ?headers:Cohttp.Header.t ->
+      uri:Uri.t -> unit -> (Response.t * Body.t) Lwt.t
+
+    val respond_need_auth :
+      ?headers:Cohttp.Header.t ->
+      auth:Cohttp.Auth.req -> unit -> (Response.t * Body.t) Lwt.t
+
     val respond_not_found :
       ?uri:Uri.t -> unit -> (Response.t * Body.t) Lwt.t
 
