@@ -1,4 +1,6 @@
-0.9.4 (unreleased):
+0.9.4 (2012-12-19):
+* Add enough Basic authorization support to serve a password-protected website.
+* Fix Lwt file serving to not throw exception on trying to serve a directory.
 * Port Async interface to 108.07.00 or higher (incompatible
   with earlier versions).
 
