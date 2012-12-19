@@ -24,7 +24,8 @@ let valid_auth () =
   let auth = Cohttp.Auth.Basic ("Aladdin", "open sesame") in
   let h = H.add_authorization (H.init ()) auth in
   let digest = H.get h "authorization" in
-  assert_equal digest (Some "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")
+  assert_equal digest (Some "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==");
+  assert_equal (H.get_authorization h) (Some auth)
 
 let valid_set_cookie () =
   let c = Cohttp.Cookie.Set_cookie_hdr.make ~expiry:`Session

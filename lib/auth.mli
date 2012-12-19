@@ -15,7 +15,14 @@
  *
  *)
 
+type req = [
+ | `Basic of string (* realm *)
+]
+
 type t =
   | Basic of string * string (* username, password *)
 
 val to_string : t -> string
+val of_string : string -> t option
+
+val req_to_string : req -> string

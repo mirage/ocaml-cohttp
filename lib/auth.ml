@@ -15,10 +15,28 @@
  *
  *)
 
+open Printf
+
+type req = [
+ | `Basic of string (* realm *)
+]
+
 type t =
   | Basic of string * string (* username, password *)
 
 let to_string =
   function
   |Basic (user, pass) ->
-    "Basic " ^ (Base64.encode (Printf.sprintf "%s:%s" user pass))
+    "Basic " ^ (Base64.encode (sprintf "%s:%s" user pass))
+
+let of_string v =
+  try
+    let b64 = Scanf.sscanf v "Basic %s" (fun b -> b) in
+    match Re_str.bounded_split (Re_str.regexp_string ":") (Base64.decode b64) 2 with
+    |[user;pass] -> Some (Basic (user,pass))
+    |_ -> None
+  with _ -> None
+
+let req_to_string (ty:req) =
+  match ty with
+  |`Basic realm -> sprintf "Basic realm=\"%s\"" realm
