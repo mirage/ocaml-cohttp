@@ -95,8 +95,12 @@ module Server = struct
     let frag = Uri.path (Uri.resolve "" blank_uri uri) in
     Filename.concat docroot frag
 
+  exception Isnt_a_file
   let respond_file ?headers ~fname () =
     try_lwt
+      (* Check this isnt a directory first *)
+      lwt () = wrap (fun () -> 
+       if Unix.((stat fname).st_kind <> S_REG) then raise Isnt_a_file) in
       lwt ic = Lwt_io.open_file ~buffer_size:16384 ~mode:Lwt_io.input fname in
       lwt len = Lwt_io.length ic in
       let encoding = Cohttp.Transfer.Fixed (Int64.to_int len) in
@@ -118,7 +122,7 @@ module Server = struct
       let res = Response.make ~status:`OK ~encoding ?headers () in
       return (res, body)
     with
-     | Unix.Unix_error(Unix.ENOENT,_,_) ->
+     | Unix.Unix_error(Unix.ENOENT,_,_) | Isnt_a_file ->
          respond_not_found ()
      | exn ->
          let body = Printexc.to_string exn in
