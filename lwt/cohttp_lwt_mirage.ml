@@ -33,7 +33,7 @@ module IO = struct
   let read_line ic =
     match_lwt Channel.read_line ic with
     |[] -> return None
-    |bufs -> return (Some (Cstruct.copy_buffers bufs))
+    |bufs -> return (Some (Cstruct.copyv bufs))
 
   let read ic len = 
    try_lwt
@@ -52,7 +52,7 @@ module IO = struct
     in
     lwt iov = read [] len in
     (* XXX TODO this is hyper slow! *)
-    let srcbuf = Cstruct.copy_buffers iov in
+    let srcbuf = Cstruct.copyv iov in
     String.blit srcbuf 0 buf off (String.length srcbuf);
     return true
 
