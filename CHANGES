@@ -1,3 +1,6 @@
+0.9.5 (2012-12-20)
+* Update to new mirage-net 0.5.0 API (based on cstruct 0.6.0)
+
 0.9.4 (2012-12-19):
 * Add Lwt `respond_redirect` and `respond_need_auth` helpers.
 * Add enough Basic authorization support to serve a password-protected website.
