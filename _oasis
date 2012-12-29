@@ -1,6 +1,6 @@
 OASISFormat: 0.3
 Name:        cohttp
-Version:     0.9.5
+Version:     0.9.6
 Synopsis:    HTTP library for Lwt, Async and Mirage
 Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire, David Scott
 License:     LGPL-2.0 with OCaml linking exception
