@@ -38,7 +38,7 @@ let valid_set_cookie () =
 let valid_cookie () =
   let cookies = [ "foo", "bar"; "a", "b" ] in
   let k, v = Cohttp.Cookie.Cookie_hdr.serialize cookies in
-  assert_equal ~msg:"key" "Cookie" k;
+  assert_equal ~msg:"key" "cookie" k;
   assert_equal ~msg:"value" "foo=bar; a=b" v;
   let h = Cohttp.Header.of_list [ k, v ] in
   let cookies = Cohttp.Cookie.Cookie_hdr.extract h in

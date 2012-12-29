@@ -97,8 +97,8 @@ module Cookie_hdr = struct
             | n :: [] -> (n, "")
             | n :: v :: _ -> (n, v)
           in (List.map split_pair cookies) @ acc
-      ) [] (Header.get_multi hdr "Cookie")
+      ) [] (Header.get_multi hdr "cookie")
 
   let serialize cookies =
-    "Cookie", String.concat "; " (List.map (fun (k, v) -> k ^ "=" ^ v) cookies)
+    "cookie", String.concat "; " (List.map (fun (k, v) -> k ^ "=" ^ v) cookies)
 end
