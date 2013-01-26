@@ -1,7 +1,7 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: b5f8cf5fd47eec6340590009fe899c35) *)
+(* DO NOT EDIT (digest: d18ae3e4634218b063930bac4c8d8990) *)
 module OASISGettext = struct
-(* # 21 "/Users/avsm/.opam/4.01.0dev+endian/build/oasis-mirage.0.3.0a/src/oasis/OASISGettext.ml" *)
+(* # 21 "/home/avsm/.opam/4.01.0dev+mirage-unix/build/oasis-mirage.0.3.0a/src/oasis/OASISGettext.ml" *)
 
   let ns_ str =
     str
@@ -24,7 +24,7 @@ module OASISGettext = struct
 end
 
 module OASISExpr = struct
-(* # 21 "/Users/avsm/.opam/4.01.0dev+endian/build/oasis-mirage.0.3.0a/src/oasis/OASISExpr.ml" *)
+(* # 21 "/home/avsm/.opam/4.01.0dev+mirage-unix/build/oasis-mirage.0.3.0a/src/oasis/OASISExpr.ml" *)
 
 
 
@@ -116,7 +116,7 @@ end
 
 # 117 "myocamlbuild.ml"
 module BaseEnvLight = struct
-(* # 21 "/Users/avsm/.opam/4.01.0dev+endian/build/oasis-mirage.0.3.0a/src/base/BaseEnvLight.ml" *)
+(* # 21 "/home/avsm/.opam/4.01.0dev+mirage-unix/build/oasis-mirage.0.3.0a/src/base/BaseEnvLight.ml" *)
 
   module MapString = Map.Make(String)
 
@@ -214,7 +214,7 @@ end
 
 # 215 "myocamlbuild.ml"
 module MyOCamlbuildFindlib = struct
-(* # 21 "/Users/avsm/.opam/4.01.0dev+endian/build/oasis-mirage.0.3.0a/src/plugins/ocamlbuild/MyOCamlbuildFindlib.ml" *)
+(* # 21 "/home/avsm/.opam/4.01.0dev+mirage-unix/build/oasis-mirage.0.3.0a/src/plugins/ocamlbuild/MyOCamlbuildFindlib.ml" *)
 
   (** OCamlbuild extension, copied from 
     * http://brion.inria.fr/gallium/index.php/Using_ocamlfind_with_ocamlbuild
@@ -335,7 +335,7 @@ module MyOCamlbuildFindlib = struct
 end
 
 module MyOCamlbuildBase = struct
-(* # 21 "/Users/avsm/.opam/4.01.0dev+endian/build/oasis-mirage.0.3.0a/src/plugins/ocamlbuild/MyOCamlbuildBase.ml" *)
+(* # 21 "/home/avsm/.opam/4.01.0dev+mirage-unix/build/oasis-mirage.0.3.0a/src/plugins/ocamlbuild/MyOCamlbuildBase.ml" *)
 
   (** Base functions for writing myocamlbuild.ml
       @author Sylvain Le Gall
@@ -351,7 +351,7 @@ module MyOCamlbuildBase = struct
   type name = string 
   type tag = string 
 
-(* # 56 "/Users/avsm/.opam/4.01.0dev+endian/build/oasis-mirage.0.3.0a/src/plugins/ocamlbuild/MyOCamlbuildBase.ml" *)
+(* # 56 "/home/avsm/.opam/4.01.0dev+mirage-unix/build/oasis-mirage.0.3.0a/src/plugins/ocamlbuild/MyOCamlbuildBase.ml" *)
 
   type t =
       {
@@ -509,7 +509,7 @@ let package_default =
   {
      MyOCamlbuildBase.lib_ocaml =
        [
-          ("cohttp", ["lib"]);
+          ("cohttp", ["cohttp"]);
           ("cohttp_lwt_unix", ["lwt"]);
           ("cohttp_mirage", ["lwt"]);
           ("cohttp_async", ["async"])
@@ -518,9 +518,9 @@ let package_default =
      flags = [];
      includes =
        [
-          ("lwt", ["lib"]);
-          ("lib_test", ["async"; "lib"; "lwt"]);
-          ("async", ["lib"])
+          ("lwt", ["cohttp"]);
+          ("lib_test", ["async"; "cohttp"; "lwt"]);
+          ("async", ["cohttp"])
        ];
      }
   ;;

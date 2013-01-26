@@ -131,4 +131,4 @@ end
 
 let server ?timeout ~address ~port spec =
   lwt sockaddr = Net.build_sockaddr address port in
-  Net.Tcp_server.init ~sockaddr ?timeout (Server.callback spec)
+  Net.Tcp_server.init ~sockaddr ~timeout (Server.callback spec)
