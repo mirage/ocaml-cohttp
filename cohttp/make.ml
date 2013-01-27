@@ -30,12 +30,19 @@ module type IO = sig
   val write : oc -> string -> unit t
 end
 
+module type BODY = sig
+  type ic
+  type oc
+  type 'a io
+  val read : Transfer.encoding -> (string option -> unit) -> ic -> unit io
+  val write : Transfer.encoding -> (unit -> string option) -> oc -> unit io
+end
+
 module type REQUEST = sig
   type t
   type ic
   type oc
   type 'a io
-  val (>>=) : 'a io -> ('a -> 'b io) -> 'b io
 
   val meth : t -> Code.meth
   val uri : t -> Uri.t
@@ -65,7 +72,7 @@ module type RESPONSE = sig
   type ic
   type oc
   type 'a io
-  val (>>=) : 'a io -> ('a -> 'b io) -> 'b io
+
   val version : t -> Code.version
   val status : t -> Code.status_code
   val headers: t -> Header.t

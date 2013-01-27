@@ -15,7 +15,7 @@
  *
  *)
 
-module Client(IO:Make.IO)
+module Make(IO:Make.IO)
              (Request:Make.REQUEST with type oc = IO.oc and type ic = IO.ic and type 'a io = 'a IO.t)
              (Response:Make.RESPONSE with type oc = Request.oc and type ic = Request.ic and type 'a io = 'a Request.io) = struct
   open IO
@@ -61,13 +61,12 @@ module Client(IO:Make.IO)
            Request.write body req oc >>= fun () ->
            read_response res_fn ic
     end
-(*
+
   let head ?headers uri = call ?headers `HEAD uri 
   let get ?headers uri = call ?headers `GET uri 
   let delete ?headers uri = call ?headers `DELETE uri 
   let post ?body ?chunked ?headers uri = call ?headers ?body ?chunked `POST uri 
   let put ?body ?chunked ?headers uri = call ?headers ?body ?chunked `PUT uri 
   let patch ?body ?chunked ?headers uri = call ?headers ?body ?chunked `PATCH uri 
-*)
 end
 

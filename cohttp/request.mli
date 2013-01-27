@@ -20,7 +20,6 @@ module Make(IO:Make.IO) : sig
   type ic = IO.ic
   type oc = IO.oc
   type 'a io = 'a IO.t
-  val (>>=) : 'a io -> ('a -> 'b io) -> 'b io
 
   val meth : t -> Code.meth
   val uri : t -> Uri.t
