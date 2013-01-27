@@ -23,6 +23,7 @@ module Make(IO:Make.IO) = struct
   type oc = IO.oc
   type 'a io = 'a IO.t
   open IO
+  let (>>=) = (>>=)
 
   type t = { 
     headers: Header.t;
@@ -73,7 +74,14 @@ module Make(IO:Make.IO) = struct
       return (Some { headers; meth; uri; version; encoding })
 
   let has_body req = Transfer.has_body req.encoding
-  let read_body req ic = Transfer_IO.read req.encoding ic
+  let read_body req fn ic = 
+    let rec aux () =
+      Transfer_IO.read req.encoding ic
+      >>= function
+      |Transfer.Done -> fn None; return ()
+      |Transfer.Final_chunk b -> fn (Some b); fn None; return ()
+      |Transfer.Chunk b -> fn (Some b); aux () 
+    in aux () 
 
   let host_of_uri uri = 
     match Uri.host uri with
@@ -122,7 +130,7 @@ module Make(IO:Make.IO) = struct
 
   let write fn req oc =
     let rec aux () =
-      match fn req with
+      match fn () with
       |Some buf ->
          IO.write oc buf >>= fun () ->
          aux ()
@@ -131,7 +139,4 @@ module Make(IO:Make.IO) = struct
     write_header req oc >>= fun () ->
     aux () >>= fun () ->
     write_footer req oc
-
-  let is_form req = Header.is_form req.headers
-  let read_form req ic = Header_IO.parse_form req.headers ic
 end

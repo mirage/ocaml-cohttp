@@ -24,6 +24,7 @@ module Make(IO:Make.IO) = struct
   type oc = IO.oc
   type 'a io = 'a IO.t
   open IO
+  let (>>=) = (>>=)
 
   type t = {
     encoding: Transfer.encoding;
@@ -66,8 +67,14 @@ module Make(IO:Make.IO) = struct
        return (Some { encoding; headers; version; status })
 
   let has_body r = Transfer.has_body r.encoding
-  let read_body r ic = Transfer_IO.read r.encoding ic
-  let read_body_to_string r ic = Transfer_IO.to_string r.encoding ic
+  let read_body req fn ic = 
+    let rec aux () =
+      Transfer_IO.read req.encoding ic
+      >>= function
+      |Transfer.Done -> fn None; return ()
+      |Transfer.Final_chunk b -> fn (Some b); fn None; return ()
+      |Transfer.Chunk b -> fn (Some b); aux () 
+    in aux () 
 
   let write_header res oc =
     write oc (Printf.sprintf "%s %s\r\n" (Code.string_of_version res.version) 
@@ -88,7 +95,7 @@ module Make(IO:Make.IO) = struct
 
   let write fn req oc =
     let rec aux () =
-      match fn req with
+      match fn () with
       |Some buf ->
          IO.write oc buf >>= fun () ->
          aux ()
@@ -97,7 +104,4 @@ module Make(IO:Make.IO) = struct
     write_header req oc >>= fun () ->
     aux () >>= fun () ->
     write_footer req oc
-
-  let is_form req = Header.is_form req.headers
-  let read_form req ic = Header_IO.parse_form req.headers ic
 end

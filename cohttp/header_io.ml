@@ -17,10 +17,8 @@
  *
  *)
 
-open Header
 module Make(IO:Make.IO) = struct
   open IO
-  module Transfer_IO = Transfer_io.Make(IO)
 
   let header_sep = Re_str.regexp ": *"
   let parse ic =
@@ -32,14 +30,8 @@ module Make(IO:Make.IO) = struct
           match Re_str.bounded_split_delim header_sep line 2 with
           | [hd;tl] ->
               let header = String.lowercase hd in
-              parse_headers' (add headers header tl);
+              parse_headers' (Header.add headers header tl);
           | _ -> return headers
       end
-    in parse_headers' (init ())
-
-  let parse_form headers ic =
-    (* If the form is query-encoded, then extract those parameters also *)
-    let encoding = get_transfer_encoding headers in
-    Transfer_IO.to_string encoding ic >>= fun body ->
-    return (Uri.query_of_encoded body)
+    in parse_headers' (Header.init ())
 end

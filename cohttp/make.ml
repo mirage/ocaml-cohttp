@@ -35,6 +35,8 @@ module type REQUEST = sig
   type ic
   type oc
   type 'a io
+  val (>>=) : 'a io -> ('a -> 'b io) -> 'b io
+
   val meth : t -> Code.meth
   val uri : t -> Uri.t
   val version : t -> Code.version
@@ -50,16 +52,12 @@ module type REQUEST = sig
 
   val read : ic -> t option io
   val has_body : t -> bool
-  val read_body : t -> ic -> Transfer.chunk io
+  val read_body : t -> (string option -> unit) -> ic -> unit io
 
   val write_header : t -> oc -> unit io
   val write_body : t -> oc -> string -> unit io
   val write_footer : t -> oc -> unit io
-  val write : (t -> oc -> unit io) -> t ->
-    oc -> unit io
-
-  val is_form: t -> bool
-  val read_form : t -> ic -> (string * string list) list io
+  val write : (unit -> string option) -> t -> oc -> unit io
 end
 
 module type RESPONSE = sig
@@ -67,6 +65,7 @@ module type RESPONSE = sig
   type ic
   type oc
   type 'a io
+  val (>>=) : 'a io -> ('a -> 'b io) -> 'b io
   val version : t -> Code.version
   val status : t -> Code.status_code
   val headers: t -> Header.t
@@ -76,14 +75,10 @@ module type RESPONSE = sig
 
   val read : ic -> t option io
   val has_body : t -> bool
-  val read_body : t -> ic -> Transfer.chunk io
+  val read_body : t -> (string option -> unit) -> ic -> unit io
 
   val write_header : t -> oc -> unit io
   val write_body : t -> oc -> string -> unit io
   val write_footer : t -> oc -> unit io
-  val write : (t -> oc -> unit io) ->
-    t -> oc -> unit io
-
-  val is_form: t -> bool
-  val read_form : t -> ic -> (string * string list) list io
+  val write : (unit -> string option) -> t -> oc -> unit io
 end
