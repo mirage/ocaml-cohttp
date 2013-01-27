@@ -15,6 +15,7 @@
  *
  *)
 
+open Transfer
 module Make(IO:Make.IO) : sig
   val read : encoding -> IO.ic -> chunk IO.t
   val write : encoding -> IO.oc -> string -> unit IO.t 
