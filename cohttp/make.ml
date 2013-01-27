@@ -29,3 +29,61 @@ module type IO = sig
   val read_exactly : ic -> string -> int -> int -> bool t
   val write : oc -> string -> unit t
 end
+
+module type REQUEST = sig
+  type t
+  type ic
+  type oc
+  type 'a io
+  val meth : t -> Code.meth
+  val uri : t -> Uri.t
+  val version : t -> Code.version
+  val path : t -> string
+  val header : t -> string -> string option
+  val headers : t -> Header.t
+  val params : t -> (string * string list) list
+  val transfer_encoding : t -> string
+
+  val make : ?meth:Code.meth -> ?version:Code.version ->
+    ?encoding:Transfer.encoding -> ?headers:Header.t ->
+    ?body:'a -> Uri.t -> t
+
+  val read : ic -> t option io
+  val has_body : t -> bool
+  val read_body : t -> ic -> Transfer.chunk io
+
+  val write_header : t -> oc -> unit io
+  val write_body : t -> oc -> string -> unit io
+  val write_footer : t -> oc -> unit io
+  val write : (t -> oc -> unit io) -> t ->
+    oc -> unit io
+
+  val is_form: t -> bool
+  val read_form : t -> ic -> (string * string list) list io
+end
+
+module type RESPONSE = sig
+  type t
+  type ic
+  type oc
+  type 'a io
+  val version : t -> Code.version
+  val status : t -> Code.status_code
+  val headers: t -> Header.t
+
+  val make : ?version:Code.version -> ?status:Code.status_code ->
+    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> t
+
+  val read : ic -> t option io
+  val has_body : t -> bool
+  val read_body : t -> ic -> Transfer.chunk io
+
+  val write_header : t -> oc -> unit io
+  val write_body : t -> oc -> string -> unit io
+  val write_footer : t -> oc -> unit io
+  val write : (t -> oc -> unit io) ->
+    t -> oc -> unit io
+
+  val is_form: t -> bool
+  val read_form : t -> ic -> (string * string list) list io
+end

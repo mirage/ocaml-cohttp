@@ -19,6 +19,7 @@ module Make(IO:Make.IO) : sig
   type t
   type ic = IO.ic
   type oc = IO.oc
+  type io = IO.t
 
   val version: t -> Code.version
   val status: t -> Code.status_code
@@ -27,16 +28,16 @@ module Make(IO:Make.IO) : sig
   val make : ?version:Code.version -> ?status:Code.status_code -> 
     ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> t
 
-  val read: ic -> t option IO.t
+  val read: ic -> t option io
   val has_body : t -> bool
-  val read_body: t -> ic -> Transfer.chunk IO.t
-  val read_body_to_string : t -> ic -> string IO.t
+  val read_body: t -> ic -> Transfer.chunk io
+  val read_body_to_string : t -> ic -> string io
 
-  val write_header : t -> oc -> unit IO.t
-  val write_body : t -> oc -> string -> unit IO.t
-  val write_footer : t -> oc -> unit IO.t
-  val write : (t -> oc -> unit IO.t) -> t -> oc -> unit IO.t
+  val write_header : t -> oc -> unit io
+  val write_body : t -> oc -> string -> unit io
+  val write_footer : t -> oc -> unit io
+  val write : (t -> oc -> unit io) -> t -> oc -> unit io
 
   val is_form : t -> bool
-  val read_form : t -> ic -> (string * string list) list IO.t
+  val read_form : t -> ic -> (string * string list) list io
 end

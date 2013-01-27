@@ -15,26 +15,9 @@
  *
  *)
 
-type encoding =
-| Chunked
-| Fixed of int
-| Unknown
-
-type chunk =
-| Chunk of string
-| Final_chunk of string
-| Done
-
-let encoding_to_string =
-  function
-  | Chunked -> "chunked"
-  | Fixed i -> Printf.sprintf "fixed[%d]" i
-  | Unknown -> "unknown"
-
-let has_body =
-  function
-  | Chunked -> true
-  | Fixed 0 -> false
-  | Unknown -> false
-  | Fixed _ -> true
+module Make(IO:Make.IO) : sig
+  val read : encoding -> IO.ic -> chunk IO.t
+  val write : encoding -> IO.oc -> string -> unit IO.t 
+  val to_string : encoding -> IO.ic -> string IO.t
+end
 

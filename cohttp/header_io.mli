@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,26 +15,7 @@
  *
  *)
 
-type encoding =
-| Chunked
-| Fixed of int
-| Unknown
-
-type chunk =
-| Chunk of string
-| Final_chunk of string
-| Done
-
-let encoding_to_string =
-  function
-  | Chunked -> "chunked"
-  | Fixed i -> Printf.sprintf "fixed[%d]" i
-  | Unknown -> "unknown"
-
-let has_body =
-  function
-  | Chunked -> true
-  | Fixed 0 -> false
-  | Unknown -> false
-  | Fixed _ -> true
-
+module Make(IO:Make.IO) : sig
+  val parse: IO.ic -> Header.t IO.t
+  val parse_form : Header.t -> IO.ic -> (string * string list) list IO.t
+end
