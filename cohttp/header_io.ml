@@ -20,7 +20,7 @@
 open Header
 module Make(IO:Make.IO) = struct
   open IO
-  module Transfer_IO = Transfer.Make(IO)
+  module Transfer_IO = Transfer_io.Make(IO)
 
   let header_sep = Re_str.regexp ": *"
   let parse ic =

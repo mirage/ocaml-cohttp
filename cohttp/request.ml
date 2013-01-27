@@ -19,9 +19,10 @@ module Make(IO:Make.IO) = struct
 
   module Header_IO = Header_io.Make(IO)
   module Transfer_IO = Transfer_io.Make(IO)
-  open IO
   type ic = IO.ic
   type oc = IO.oc
+  type 'a io = 'a IO.t
+  open IO
 
   type t = { 
     headers: Header.t;
@@ -120,8 +121,15 @@ module Make(IO:Make.IO) = struct
     |Transfer.Fixed _ | Transfer.Unknown -> return ()
 
   let write fn req oc =
+    let rec aux () =
+      match fn req with
+      |Some buf ->
+         IO.write oc buf >>= fun () ->
+         aux ()
+      |None -> IO.return ()
+    in 
     write_header req oc >>= fun () ->
-    fn req oc >>= fun () ->
+    aux () >>= fun () ->
     write_footer req oc
 
   let is_form req = Header.is_form req.headers
