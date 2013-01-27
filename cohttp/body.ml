@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2013 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,22 +15,37 @@
  *
  *)
 
-module Make(IO:Make.IO) : sig
-  type t
+module Make (IO:Make.IO) = struct
+  module TIO = Transfer_io.Make(IO)
   type ic = IO.ic
   type oc = IO.oc
   type 'a io = 'a IO.t
+  open IO
 
-  val version: t -> Code.version
-  val status: t -> Code.status_code
-  val headers: t -> Header.t
+  let read encoding fn ic = 
+    let rec aux () =
+      TIO.read encoding ic
+      >>= function
+      |Transfer.Done -> fn None; return ()
+      |Transfer.Final_chunk b -> fn (Some b); fn None; return ()
+      |Transfer.Chunk b -> fn (Some b); aux () 
+    in aux () 
 
-  val make : ?version:Code.version -> ?status:Code.status_code -> 
-    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> t
-
-  val read: ic -> t option io
-  val has_body : t -> bool
-  val read_body: t -> (string option -> unit) -> ic -> unit io
-
-  val write : t -> (unit -> string option) -> oc -> unit io
+  let write fn encoding oc =
+    let rec aux () =
+      match fn () with
+      |Some buf ->
+         IO.write oc buf >>= fun () ->
+         aux ()
+      |None -> IO.return ()
+    in 
+    aux () >>= fun () ->
+    match encoding with
+    |Transfer.Chunked ->
+       (* TODO Trailer header support *)
+       IO.write oc "0\r\n\r\n"
+    |Transfer.Fixed _ 
+    |Transfer.Unknown -> return ()
 end
+
+

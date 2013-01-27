@@ -17,14 +17,15 @@
 
 module Make(IO:Make.IO) = struct
 
-  module Header_IO = Header_io.Make(IO)
-  module Transfer_IO = Transfer_io.Make(IO)
   type ic = IO.ic
   type oc = IO.oc
   type 'a io = 'a IO.t
   open IO
   let (>>=) = (>>=)
 
+  module Header_IO = Header_io.Make(IO)
+  module Body_IO = Body.Make(IO)
+  
   type t = { 
     headers: Header.t;
     meth: Code.meth;
@@ -74,14 +75,7 @@ module Make(IO:Make.IO) = struct
       return (Some { headers; meth; uri; version; encoding })
 
   let has_body req = Transfer.has_body req.encoding
-  let read_body req fn ic = 
-    let rec aux () =
-      Transfer_IO.read req.encoding ic
-      >>= function
-      |Transfer.Done -> fn None; return ()
-      |Transfer.Final_chunk b -> fn (Some b); fn None; return ()
-      |Transfer.Chunk b -> fn (Some b); aux () 
-    in aux () 
+  let read_body req fn ic = Body_IO.read req.encoding fn ic
 
   let host_of_uri uri = 
     match Uri.host uri with
@@ -118,25 +112,8 @@ module Make(IO:Make.IO) = struct
     iter (IO.write oc) (Header.to_lines headers) >>= fun () ->
     IO.write oc "\r\n"
 
-  let write_body req oc buf =
-    Transfer_IO.write req.encoding oc buf
-
-  let write_footer req oc =
-    match req.encoding with
-    |Transfer.Chunked ->
-       (* TODO Trailer header support *)
-       IO.write oc "0\r\n\r\n"
-    |Transfer.Fixed _ | Transfer.Unknown -> return ()
-
-  let write fn req oc =
-    let rec aux () =
-      match fn () with
-      |Some buf ->
-         IO.write oc buf >>= fun () ->
-         aux ()
-      |None -> IO.return ()
-    in 
+  let write req fn oc =
     write_header req oc >>= fun () ->
-    aux () >>= fun () ->
-    write_footer req oc
+    Body_IO.write fn req.encoding oc
+   
 end

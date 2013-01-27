@@ -15,9 +15,10 @@
  *
  *)
 
-module Make(IO:Make.IO)
-             (Request:Make.REQUEST with type oc = IO.oc and type ic = IO.ic and type 'a io = 'a IO.t)
-             (Response:Make.RESPONSE with type oc = Request.oc and type ic = Request.ic and type 'a io = 'a Request.io) = struct
+module Make
+  (IO:Make.IO)
+  (Request:Make.REQUEST with type oc = IO.oc and type ic = IO.ic and type 'a io = 'a IO.t)
+  (Response:Make.RESPONSE with type oc = Request.oc and type ic = Request.ic and type 'a io = 'a Request.io) = struct
   open IO
 
   let read_response res_fn ic =
@@ -37,13 +38,13 @@ module Make(IO:Make.IO)
     match body with
     |None ->
        let req = Request.make ~meth ?headers ~body uri in
-       Request.write (fun _ -> None) req oc >>= fun () ->
+       Request.write req (fun _ -> None) oc >>= fun () ->
        read_response res_fn ic
     |Some body -> begin
        match chunked with
        |true ->
          let req = Request.make ~meth ?headers ~body uri in
-         Request.write body req oc >>= fun () ->
+         Request.write req body oc >>= fun () ->
          read_response res_fn ic
        |false ->
          (* If chunked is not allowed, then call [body_fn] once insert length header *)
@@ -52,13 +53,13 @@ module Make(IO:Make.IO)
          |None ->
            let headers = Header.add_transfer_encoding headers (Transfer.Fixed 0) in
            let req = Request.make ~meth ~headers ~body uri in
-           Request.write body req oc >>= fun () ->
+           Request.write req body oc >>= fun () ->
            read_response res_fn ic
          |Some buf ->
            let clen = String.length buf in
            let headers = Header.add_transfer_encoding headers (Transfer.Fixed clen) in
            let req = Request.make ~meth ~headers ~body uri in
-           Request.write body req oc >>= fun () ->
+           Request.write req body oc >>= fun () ->
            read_response res_fn ic
     end
 
