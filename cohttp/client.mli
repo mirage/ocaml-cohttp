@@ -21,37 +21,46 @@ module Make
   (Response:Make.RESPONSE with type oc=Request.oc and type ic=Request.ic and type 'a io='a Request.io) 
   : sig
 
+  type input_signal = [
+    | `Failure
+    | `Response of Response.t
+    | `Body of string
+    | `Body_end
+  ]
+
+  type signal_handler = (input_signal -> unit)
+
   val call :
     ?headers:Header.t ->
     ?chunked:bool -> ?body:(unit -> string option) ->
-    Code.meth -> Uri.t -> (string option -> unit) ->
-    Response.ic -> Request.oc -> Response.t option IO.t
+    Code.meth -> Uri.t -> signal_handler ->
+    Response.ic -> Request.oc -> unit IO.t
 
   val head :
-    ?headers:Header.t -> Uri.t -> (string option -> unit) -> 
-    Response.ic -> Request.oc -> Response.t option IO.t
+    ?headers:Header.t -> Uri.t -> signal_handler -> 
+    Response.ic -> Request.oc -> unit IO.t
 
   val get :
-    ?headers:Header.t -> Uri.t -> (string option -> unit) ->
-    Response.ic -> Request.oc -> Response.t option IO.t
+    ?headers:Header.t -> Uri.t -> signal_handler ->
+    Response.ic -> Request.oc -> unit IO.t
 
   val delete :
-    ?headers:Header.t -> Uri.t -> (string option -> unit) ->
-    Response.ic -> Request.oc -> Response.t option IO.t
+    ?headers:Header.t -> Uri.t -> signal_handler ->
+    Response.ic -> Request.oc -> unit IO.t
 
   val post :
     ?body:(unit -> string option) -> ?chunked:bool ->
-    ?headers:Header.t -> Uri.t -> (string option -> unit) ->
-    Response.ic -> Request.oc -> Response.t option IO.t
+    ?headers:Header.t -> Uri.t -> signal_handler ->
+    Response.ic -> Request.oc -> unit IO.t
 
   val put :
     ?body:(unit -> string option) -> ?chunked:bool ->
-    ?headers:Header.t -> Uri.t -> (string option -> unit) ->
-    Response.ic -> Request.oc -> Response.t option IO.t
+    ?headers:Header.t -> Uri.t -> signal_handler ->
+    Response.ic -> Request.oc -> unit IO.t
 
   val patch :
     ?body:(unit -> string option) -> ?chunked:bool ->
-    ?headers:Header.t -> Uri.t -> (string option -> unit) ->
-    Response.ic -> Request.oc -> Response.t option IO.t
+    ?headers:Header.t -> Uri.t -> signal_handler ->
+    Response.ic -> Request.oc -> unit IO.t
 
 end

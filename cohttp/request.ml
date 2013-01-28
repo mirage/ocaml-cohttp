@@ -115,5 +115,4 @@ module Make(IO:Make.IO) = struct
   let write req fn oc =
     write_header req oc >>= fun () ->
     Body_IO.write fn req.encoding oc
-   
 end

@@ -46,6 +46,5 @@ module Make (IO:Make.IO) = struct
        IO.write oc "0\r\n\r\n"
     |Transfer.Fixed _ 
     |Transfer.Unknown -> return ()
+
 end
-
-
