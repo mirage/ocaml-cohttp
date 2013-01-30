@@ -28,7 +28,7 @@ Library cohttp
   Library lwt
     Path: lwt
     Buildable: $lwt
-    BuildDepends: lwt.unix, lwt, uri, cohttp, lwt.ssl, lwt.syntax
+    BuildDepends: lwt.unix, lwt, uri, cohttp, lwt.syntax
     pp: camlp4o
     Modules: Cohttp_lwt_unix, Cohttp_lwt, Cohttp_lwt_net, Cohttp_lwt_body, Cohttp_lwt_make
 
@@ -43,7 +43,7 @@ Library cohttp
     Path: async
     Buildable: $async
     BuildDepends: uri, cohttp, async_core >= 108.07.00, async_unix, threads, async
-    Modules: Cohttp_async_raw, Cohttp_async
+    Modules: Cohttp_async
 
 Test parser
   Path:               lib_test

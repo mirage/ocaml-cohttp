@@ -59,7 +59,7 @@ module type REQUEST = sig
 
   val read : ic -> t option io
   val has_body : t -> bool
-  val read_body : t -> (string option -> unit) -> ic -> unit io
+  val read_body : t -> (string option -> unit io) -> ic -> unit io
 
   val write : t -> (unit -> string option) -> oc -> unit io
 end
@@ -79,7 +79,7 @@ module type RESPONSE = sig
 
   val read : ic -> t option io
   val has_body : t -> bool
-  val read_body : t -> (string option -> unit) -> ic -> unit io
+  val read_body : t -> (string option -> unit io) -> ic -> unit io
 
   val write : t -> (unit -> string option) -> oc -> unit io
 end

@@ -28,7 +28,7 @@ module Make
     | `Body_end
   ]
 
-  type signal_handler = (input_signal -> unit)
+  type signal_handler = (input_signal -> unit IO.t)
 
   val call :
     ?headers:Header.t ->

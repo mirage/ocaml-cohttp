@@ -35,26 +35,25 @@ module Make
     Response.read ic
     >>= function
     |None -> 
-      signal `Failure;
-      return ()
+      signal `Failure
     |Some res -> begin
-      signal (`Response res);
+      signal (`Response res) >>= fun () ->
       match Response.has_body res with
       |false -> 
-        signal `Body_end;
-        return ()
+        signal `Body_end
       |true -> 
         Response.read_body res
-            (function 
-             |None -> signal `Body_end
-             |Some b -> signal (`Body b)
-            ) ic
+          (function 
+           |None -> signal `Body_end
+           |Some b -> signal (`Body b)
+          ) ic
     end
 
-  let call ?headers ?(chunked=false) ?body meth uri signal ic oc =
+  let call ?headers ?(chunked=false) ?body meth uri (signal:signal_handler) ic oc =
     match body with
     |None ->
-       let req = Request.make ~meth ?headers ~body uri in
+       let encoding = Transfer.Fixed 0 in
+       let req = Request.make ~meth ~encoding ?headers ~body uri in
        Request.write req (fun _ -> None) oc >>= fun () ->
        read_response signal ic
     |Some body -> begin
@@ -65,17 +64,16 @@ module Make
          read_response signal ic
        |false ->
          (* If chunked is not allowed, then call [body_fn] once insert length header *)
-         let headers = match headers with |None -> Header.init () |Some h -> h in
          match body () with
          |None ->
-           let headers = Header.add_transfer_encoding headers (Transfer.Fixed 0) in
-           let req = Request.make ~meth ~headers ~body uri in
+           let encoding = Transfer.Fixed 0 in
+           let req = Request.make ~meth ~encoding ?headers ~body uri in
            Request.write req body oc >>= fun () ->
            read_response signal ic
          |Some buf ->
            let clen = String.length buf in
-           let headers = Header.add_transfer_encoding headers (Transfer.Fixed clen) in
-           let req = Request.make ~meth ~headers ~body uri in
+           let encoding = Transfer.Fixed clen in
+           let req = Request.make ~meth ~encoding ?headers ~body uri in
            Request.write req body oc >>= fun () ->
            read_response signal ic
     end

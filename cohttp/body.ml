@@ -26,9 +26,9 @@ module Make (IO:Make.IO) = struct
     let rec aux () =
       TIO.read encoding ic
       >>= function
-      |Transfer.Done -> fn None; return ()
-      |Transfer.Final_chunk b -> fn (Some b); fn None; return ()
-      |Transfer.Chunk b -> fn (Some b); aux () 
+      |Transfer.Done -> fn None
+      |Transfer.Final_chunk b -> fn (Some b) >>= fun () -> fn None
+      |Transfer.Chunk b -> fn (Some b) >>= fun () -> aux () 
     in aux () 
 
   let write fn encoding oc =

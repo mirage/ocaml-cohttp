@@ -24,26 +24,21 @@ let show_headers h =
 
 let make_net_req () =
   let headers = Cohttp.Header.of_list ["connection","close"] in
-  let uri = Uri.of_string "http://anil.recoil.org/" in
-  let res_fn b =
-    match b with
-    |None -> Printf.printf "end\n%!";
-    |Some b ->  Printf.printf "res: %s\n%!" b
-  in
+  let uri = Uri.of_string "http://anil.recoil.org/index.html" in
   let host = Option.value (Uri.host uri) ~default:"localhost" in
   match Uri_services.tcp_port_of_uri ~default:"http" uri with
   |None -> failwith "unable to resolve"
   |Some port ->
     Tcp.with_connection (Tcp.to_host_and_port host port)
      (fun ic oc ->
-       Client.call ~headers `GET uri res_fn ic oc 
+       Client.call ~headers `GET uri 
        >>= function
        |None -> 
          prerr_endline "<request failed>";
          assert false
-       |Some res ->
+       |Some (res, body) ->
          show_headers (Response.headers res);
-         Deferred.return ()
+         Pipe.iter body ~f:(fun b -> prerr_endline ("XX " ^ b); return ())
      )
 
 let test_cases =
