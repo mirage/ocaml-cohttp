@@ -32,10 +32,10 @@ module IO = struct
 
   let read_line ic =
     Reader.read_line ic >>=
-      function
-      |`Ok s -> return (Some s)
-      |`Eof -> return None
-  
+    function
+    |`Ok s -> return (Some s)
+    |`Eof -> return None
+
   let read = 
     let buf = String.create 4096 in
     fun ic len ->
@@ -60,55 +60,64 @@ module IO = struct
     return ()
 end
 
-module Request = Cohttp.Request.Make(IO) 
-module Response = Cohttp.Response.Make(IO)
-module Client = struct
-  include Cohttp.Client.Make(IO)(Request)(Response)
-
-  let call ?headers ?(chunked=false) ?body meth uri =
+module Net = struct
+  let connect ~uri ~f =
     let host = Option.value (Uri.host uri) ~default:"localhost" in
     match Uri_services.tcp_port_of_uri ~default:"http" uri with
-    |None -> return None
+    |None -> f `Unknown_service
     |Some port ->
-      let ivar = Ivar.create () in
-      let state = ref `Waiting_for_response in
-      let signal_handler s =
-        match !state,s with
-        |`Waiting_for_response, `Response resp ->
-           let rd,wr = Pipe.create () in
-           state := `Getting_body wr;
-           Ivar.fill ivar (resp, rd);
-           return ()
-        |`Getting_body wr, `Body buf ->
-           Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
-             >>= (function
-             |`Closed -> (* Junk rest of the body *)
-                state := `Junking_body;
-                return ()
-             |`Ok _ -> return ())
-        |`Getting_body wr, `Body_end ->
-           state := `Complete;
-           Pipe.close wr;
-           return ()
-        |`Junking_body, `Body _ -> return ()
-        |`Junking_body, `Body_end ->
-           state := `Complete;
-           return ()
-        |`Waiting_for_response, `Body _
-        |`Waiting_for_response, `Body_end
-        |_, `Failure
-        |`Junking_body, `Response _
-        |`Getting_body _, `Response _ ->
-           (* TODO warning and non-fatal *)
-           assert false
-        |`Complete, _ -> return ()
-      in 
       Tcp.with_connection (Tcp.to_host_and_port host port)
-        (fun ic oc ->
-          (* Establish the remote HTTP connection *)
-          call ?headers ~chunked ?body meth uri signal_handler ic oc
-          >>= fun () ->
-          Ivar.read ivar >>= fun x -> 
-          return (Some x)
-        )
+        (fun ic oc -> f (`Ok (ic,oc)))
+end
+
+module Client = struct
+
+  include Cohttp.Client.Make
+      (IO)
+      (Cohttp.Request.Make(IO))
+      (Cohttp.Response.Make(IO))
+
+  let call ?headers ?(chunked=false) ?body meth uri =
+    let ivar = Ivar.create () in
+    let state = ref `Waiting_for_response in
+    let signal_handler s =
+      match !state,s with
+      |`Waiting_for_response, `Response resp ->
+        let rd,wr = Pipe.create () in
+        state := `Getting_body wr;
+        Ivar.fill ivar (resp, rd);
+        return ()
+      |`Getting_body wr, `Body buf ->
+        Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
+        >>= (function
+        |`Closed -> (* Junk rest of the body *)
+          state := `Junking_body;
+          return ()
+        |`Ok _ -> return ())
+      |`Getting_body wr, `Body_end ->
+        state := `Complete;
+        Pipe.close wr;
+        return ()
+      |`Junking_body, `Body _ -> return ()
+      |`Junking_body, `Body_end ->
+        state := `Complete;
+        return ()
+      |`Waiting_for_response, `Body _
+      |`Waiting_for_response, `Body_end
+      |_, `Failure
+      |`Junking_body, `Response _
+      |`Getting_body _, `Response _ ->
+        (* TODO warning and non-fatal *)
+        assert false
+      |`Complete, _ -> return ()
+    in 
+    Net.connect ~uri ~f:(function
+    |`Unknown_service -> return None
+    |`Ok (ic,oc) ->
+      (* Establish the remote HTTP connection *)
+      call ?headers ~chunked ?body meth uri signal_handler ic oc
+      >>= fun () ->
+      Ivar.read ivar >>= fun x -> 
+      return (Some x)
+    )
 end
