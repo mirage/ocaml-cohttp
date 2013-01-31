@@ -16,11 +16,10 @@
  *)
 
 module Make (IO:Make.IO) = struct
-  module IO = IO
   open IO
   module TIO = Transfer_io.Make(IO)
 
-  let read encoding fn ic = 
+  let read_body encoding fn ic = 
     let rec aux () =
       TIO.read encoding ic
       >>= function
@@ -29,7 +28,7 @@ module Make (IO:Make.IO) = struct
       |Transfer.Chunk b -> fn (Some b) >>= fun () -> aux () 
     in aux () 
 
-  let write fn encoding oc =
+  let write_body fn encoding oc =
     let rec aux () =
       match fn () with
       |Some buf ->
@@ -44,5 +43,4 @@ module Make (IO:Make.IO) = struct
        IO.write oc "0\r\n\r\n"
     |Transfer.Fixed _ 
     |Transfer.Unknown -> return ()
-
 end

@@ -20,7 +20,7 @@ module Make(IO:Make.IO) = struct
   open IO
 
   module Header_IO = Header_io.Make(IO)
-  module Body_IO = Body.Make(IO)
+  include Body.Make(IO)
 
   type t = {
     encoding: Transfer.encoding;
@@ -63,7 +63,7 @@ module Make(IO:Make.IO) = struct
        return (Some { encoding; headers; version; status })
 
   let has_body r = Transfer.has_body r.encoding
-  let read_body req fn ic = Body_IO.read req.encoding fn ic
+  let read_body req fn ic = read_body req.encoding fn ic
 
   let write_header res oc =
     write oc (Printf.sprintf "%s %s\r\n" (Code.string_of_version res.version) 
@@ -74,5 +74,5 @@ module Make(IO:Make.IO) = struct
 
   let write req fn oc =
     write_header req oc >>= fun () ->
-    Body_IO.write fn req.encoding oc
+    write_body fn req.encoding oc
 end
