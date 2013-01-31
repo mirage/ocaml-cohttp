@@ -52,17 +52,15 @@ module IO = struct
 
   let write oc buf =
     Writer.write oc buf;
-Printf.printf "%s%!" buf;
     return ()
 
   let write_line oc buf =
     Writer.write oc buf;
     Writer.write oc "\r\n";
-Printf.printf "%s\n%!" buf;
     return ()
 end
 
-module Request = Cohttp.Request.Make(IO)
+module Request = Cohttp.Request.Make(IO) 
 module Response = Cohttp.Response.Make(IO)
 module Client = struct
   include Cohttp.Client.Make(IO)(Request)(Response)

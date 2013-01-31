@@ -15,32 +15,4 @@
  *
  *)
 
-module Make(IO:Make.IO) : sig
-  type t
-  type ic = IO.ic
-  type oc = IO.oc
-  type 'a io = 'a IO.t
-
-  val meth : t -> Code.meth
-  val uri : t -> Uri.t
-  val version : t -> Code.version
-
-  val path : t -> string
-  val header : t -> string -> string option
-  val headers : t -> Header.t
-
-  val params : t -> (string * string list) list
-  val get_param : t -> string -> string option
-
-  val transfer_encoding : t -> string
-
-  val make : ?meth:Code.meth -> ?version:Code.version -> 
-    ?encoding:Transfer.encoding -> ?headers:Header.t ->
-    ?body:'a -> Uri.t -> t
-
-  val read : ic -> t option io
-  val has_body : t -> bool
-  val read_body : t -> (string option -> unit io) -> ic -> unit io
-
-  val write : t -> (unit -> string option) -> oc -> unit io
-end
+module Make(IO:Make.IO) : Make.REQUEST with module IO=IO

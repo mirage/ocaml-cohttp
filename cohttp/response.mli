@@ -15,22 +15,4 @@
  *
  *)
 
-module Make(IO:Make.IO) : sig
-  type t
-  type ic = IO.ic
-  type oc = IO.oc
-  type 'a io = 'a IO.t
-
-  val version: t -> Code.version
-  val status: t -> Code.status_code
-  val headers: t -> Header.t
-
-  val make : ?version:Code.version -> ?status:Code.status_code -> 
-    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> t
-
-  val read: ic -> t option io
-  val has_body : t -> bool
-  val read_body: t -> (string option -> unit io) -> ic -> unit io
-
-  val write : t -> (unit -> string option) -> oc -> unit io
-end
+module Make(IO:Make.IO) : Make.RESPONSE with module IO=IO

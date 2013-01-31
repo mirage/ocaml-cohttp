@@ -31,44 +31,41 @@ module type IO = sig
 end
 
 module type BODY = sig
-  type ic
-  type oc
-  type 'a io
-  val read : Transfer.encoding -> (string option -> unit) -> ic -> unit io
-  val write : Transfer.encoding -> (unit -> string option) -> oc -> unit io
+  module IO : IO
+  val read : Transfer.encoding -> (string option -> unit) -> IO.ic -> unit IO.t
+  val write : Transfer.encoding -> (unit -> string option) -> IO.oc -> unit IO.t
 end
 
 module type REQUEST = sig
+  module IO : IO
   type t
-  type ic
-  type oc
-  type 'a io
-
   val meth : t -> Code.meth
   val uri : t -> Uri.t
   val version : t -> Code.version
+
   val path : t -> string
   val header : t -> string -> string option
   val headers : t -> Header.t
+
   val params : t -> (string * string list) list
+  val get_param : t -> string -> string option
+
   val transfer_encoding : t -> string
 
-  val make : ?meth:Code.meth -> ?version:Code.version ->
+  val make : ?meth:Code.meth -> ?version:Code.version -> 
     ?encoding:Transfer.encoding -> ?headers:Header.t ->
     ?body:'a -> Uri.t -> t
 
-  val read : ic -> t option io
+  val read : IO.ic -> t option IO.t
   val has_body : t -> bool
-  val read_body : t -> (string option -> unit io) -> ic -> unit io
+  val read_body : t -> (string option -> unit IO.t) -> IO.ic -> unit IO.t
 
-  val write : t -> (unit -> string option) -> oc -> unit io
+  val write : t -> (unit -> string option) -> IO.oc -> unit IO.t
 end
 
 module type RESPONSE = sig
+  module IO : IO
   type t
-  type ic
-  type oc
-  type 'a io
 
   val version : t -> Code.version
   val status : t -> Code.status_code
@@ -77,9 +74,9 @@ module type RESPONSE = sig
   val make : ?version:Code.version -> ?status:Code.status_code ->
     ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> t
 
-  val read : ic -> t option io
+  val read : IO.ic -> t option IO.t
   val has_body : t -> bool
-  val read_body : t -> (string option -> unit io) -> ic -> unit io
+  val read_body : t -> (string option -> unit IO.t) -> IO.ic -> unit IO.t
 
-  val write : t -> (unit -> string option) -> oc -> unit io
+  val write : t -> (unit -> string option) -> IO.oc -> unit IO.t
 end

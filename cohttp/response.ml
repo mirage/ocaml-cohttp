@@ -16,15 +16,11 @@
  *)
 
 module Make(IO:Make.IO) = struct
+  module IO=IO
+  open IO
 
   module Header_IO = Header_io.Make(IO)
   module Body_IO = Body.Make(IO)
-
-  type ic = IO.ic
-  type oc = IO.oc
-  type 'a io = 'a IO.t
-  open IO
-  let (>>=) = (>>=)
 
   type t = {
     encoding: Transfer.encoding;

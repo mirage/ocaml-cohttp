@@ -16,12 +16,8 @@
  *)
 
 module Make(IO:Make.IO) = struct
-
-  type ic = IO.ic
-  type oc = IO.oc
-  type 'a io = 'a IO.t
+  module IO = IO
   open IO
-  let (>>=) = (>>=)
 
   module Header_IO = Header_io.Make(IO)
   module Body_IO = Body.Make(IO)

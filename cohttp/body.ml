@@ -16,11 +16,9 @@
  *)
 
 module Make (IO:Make.IO) = struct
-  module TIO = Transfer_io.Make(IO)
-  type ic = IO.ic
-  type oc = IO.oc
-  type 'a io = 'a IO.t
+  module IO = IO
   open IO
+  module TIO = Transfer_io.Make(IO)
 
   let read encoding fn ic = 
     let rec aux () =

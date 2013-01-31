@@ -17,10 +17,9 @@
 
 module Make
   (IO:Make.IO)
-  (Request:Make.REQUEST with type oc = IO.oc and type ic = IO.ic and type 'a io = 'a IO.t)
-  (Response:Make.RESPONSE with type oc = Request.oc and type ic = Request.ic and type 'a io = 'a Request.io) = struct
+  (Request:Make.REQUEST with module IO=IO)
+  (Response:Make.RESPONSE with module IO=IO) = struct
   open IO
-
 
   type input_signal = [
     | `Failure
