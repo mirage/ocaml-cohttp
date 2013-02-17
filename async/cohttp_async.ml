@@ -70,12 +70,10 @@ module Net = struct
         (fun ic oc -> f (`Ok (ic,oc)))
 end
 
+module Response = Cohttp.Response.Make(IO)
+module Request = Cohttp.Request.Make(IO)
 module Client = struct
-
-  include Cohttp.Client.Make
-      (IO)
-      (Cohttp.Request.Make(IO))
-      (Cohttp.Response.Make(IO))
+  include Cohttp.Client.Make(IO)(Request)(Response)
 
   let call ?headers ?(chunked=false) ?body meth uri =
     let ivar = Ivar.create () in
