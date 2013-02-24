@@ -26,7 +26,7 @@ module type IO = sig
   val iter : ('a -> unit t) -> 'a list -> unit t
   val read_line : ic -> string option t
   val read : ic -> int -> string t
-  val read_exactly : ic -> string -> int -> int -> bool t
+  val read_exactly : ic -> int -> string option t
   val write : oc -> string -> unit t
 end
 
