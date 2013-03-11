@@ -67,7 +67,7 @@ module Net = struct
     |None -> f `Unknown_service
     |Some port ->
       Tcp.with_connection (Tcp.to_host_and_port host port)
-        (fun ic oc -> f (`Ok (ic,oc)))
+        (fun _ ic oc -> f (`Ok (ic,oc)))
 end
 
 module Response = Cohttp.Response.Make(IO)
