@@ -35,10 +35,11 @@ module Make(IO:Make.IO) = struct
         match chunk_size with
         |None | Some 0 -> return Done
         |Some count -> begin
-          read_exactly ic count >>=
+          let buf = String.create count in
+          read_exactly ic buf 0 count >>=
           function
-          |None -> return Done
-          |Some buf ->
+          |false -> return Done
+          |true ->
             read_line ic >>= fun _ -> (* Junk the CRLF at end of chunk *)
             return (Chunk buf)
         end
@@ -58,9 +59,10 @@ module Make(IO:Make.IO) = struct
       match len with
       |0 -> return Done
       |len ->
-        read_exactly ic len >>= function
-        |None -> return Done
-        |Some buf -> return (Final_chunk buf)
+        let buf = String.create len in
+        read_exactly ic buf 0 len >>= function
+        |false -> return Done
+        |true -> return (Final_chunk buf)
 
     (* TODO enforce that the correct length is written? *)
     let write oc buf =
