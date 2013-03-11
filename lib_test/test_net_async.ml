@@ -30,7 +30,7 @@ let make_net_req () =
   |None -> failwith "unable to resolve"
   |Some port ->
     Tcp.with_connection (Tcp.to_host_and_port host port)
-     (fun ic oc ->
+     (fun _ ic oc ->
        Client.call ~headers `GET uri 
        >>= function
        |None -> 
