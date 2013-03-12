@@ -1,5 +1,6 @@
-(* open Core.Std *)
 
+
+(* This should be Monad.Basic from core, once Monad.Basic.t is covariant. *)
 module type Monad =
 sig
   type +'a t
