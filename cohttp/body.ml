@@ -25,15 +25,13 @@ module Make (IO:Make.IO) = struct
       >>= function
       |Transfer.Done -> fn None
       |Transfer.Final_chunk b -> fn (Some b) >>= fun () -> fn None
-      |Transfer.Chunk b -> fn (Some b) >>= fun () -> aux () 
+      |Transfer.Chunk b -> fn (Some b) >>= aux
     in aux () 
 
   let write_body fn encoding oc =
     let rec aux () =
       match fn () with
-      |Some buf ->
-         IO.write oc buf >>= fun () ->
-         aux ()
+      |Some buf -> IO.write oc buf >>= aux
       |None -> IO.return ()
     in 
     aux () >>= fun () ->
