@@ -39,8 +39,8 @@ module type S = sig
   val read : IO.ic -> t option IO.t
   val has_body : t -> bool
   val read_body :
-    t -> StateTypes.chunk_handler -> IO.ic ->
-    ([ `Working ], [> `Finished ], unit) StateTypes.PStateIO.t
+    t -> ('a, 'a) StateTypes.chunk_handler -> IO.ic ->
+    ('a, 'a, unit) StateTypes.PStateIO.t
 
   val write : t -> (unit -> string option) -> IO.oc -> unit IO.t
 end

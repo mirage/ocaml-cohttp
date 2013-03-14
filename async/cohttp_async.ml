@@ -77,44 +77,42 @@ module Client = struct
   include Cohttp.Client.Make(IO)(Request)(Response)
 
   let call ?headers ?(chunked=false) ?body meth uri =
+    let response_body = body in
+    let open Response.StateTypes.PStateIO in
     let ivar = Ivar.create () in
-    let state = ref `Waiting_for_response in
-    let signal_handler s =
-      match !state,s with
-      |`Waiting_for_response, `Response resp ->
-        let rd,wr = Pipe.create () in
-        state := `Getting_body wr;
-        Ivar.fill ivar (resp, rd);
-        return ()
-      |`Getting_body wr, `Body buf ->
-        Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
+    let response resp =
+      get >>= fun `Waiting_for_response ->
+      let rd,wr = Pipe.create () in
+      Ivar.fill ivar (resp, rd);
+      put (`Getting_body wr)
+    and body buf =
+      get >>= function
+      | `Getting_body wr ->
+        lift (Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf))
         >>= (function
-        |`Closed -> (* Junk rest of the body *)
-          state := `Junking_body;
-          return ()
-        |`Ok _ -> return ())
-      |`Getting_body wr, `Body_end ->
-        state := `Complete;
+          |`Closed -> (* Junk rest of the body *)
+            put `Junking_body
+          |`Ok _ ->
+            return ())
+      | `Junking_body ->
+        return ()
+    and body_end =
+      get >>= function
+      | `Getting_body wr ->
         Pipe.close wr;
-        return ()
-      |`Junking_body, `Body _ -> return ()
-      |`Junking_body, `Body_end ->
-        state := `Complete;
-        return ()
-      |`Waiting_for_response, `Body _
-      |`Waiting_for_response, `Body_end
-      |_, `Failure
-      |`Junking_body, `Response _
-      |`Getting_body _, `Response _ ->
-        (* TODO warning and non-fatal *)
-        assert false
-      |`Complete, _ -> return ()
-    in 
+        put `Complete
+      |`Junking_body ->
+        put `Complete
+    and failure =
+      put `Die
+    in
+    let open IO in
     Net.connect ~uri ~f:(function
     |`Unknown_service -> return None
     |`Ok (ic,oc) ->
       (* Establish the remote HTTP connection *)
-      call ?headers ~chunked ?body meth uri signal_handler ic oc
+      call ?headers ~chunked ?body:response_body meth uri
+        {body; body_end; failure; response} ic oc
       >>= fun () ->
       Ivar.read ivar >>= fun x -> 
       return (Some x)

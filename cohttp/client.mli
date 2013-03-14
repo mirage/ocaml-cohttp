@@ -32,35 +32,35 @@ module Make
 
   val call :
     ?headers:Header.t ->
-    ?chunked:bool -> ?body:(unit -> string option) ->
-    Code.meth -> Uri.t -> signal_handler ->
+    ?chunked:bool -> ?body:(unit -> string option) -> Code.meth -> 
+    Uri.t -> (Response.t, 'a) Response.StateTypes.response_handler ->
     IO.ic -> IO.oc -> unit IO.t
 
   val head :
-    ?headers:Header.t -> Uri.t -> signal_handler -> 
+    ?headers:Header.t -> Uri.t -> (Response.t, 'a) Response.StateTypes.response_handler -> 
     IO.ic -> IO.oc -> unit IO.t
 
   val get :
-    ?headers:Header.t -> Uri.t -> signal_handler ->
+    ?headers:Header.t -> Uri.t -> (Response.t, 'a) Response.StateTypes.response_handler ->
     IO.ic -> IO.oc -> unit IO.t
 
   val delete :
-    ?headers:Header.t -> Uri.t -> signal_handler ->
+    ?headers:Header.t -> Uri.t -> (Response.t, 'a) Response.StateTypes.response_handler ->
     IO.ic -> IO.oc -> unit IO.t
 
   val post :
     ?body:(unit -> string option) -> ?chunked:bool ->
-    ?headers:Header.t -> Uri.t -> signal_handler ->
+    ?headers:Header.t -> Uri.t -> (Response.t, 'a) Response.StateTypes.response_handler ->
     IO.ic -> IO.oc -> unit IO.t
 
   val put :
     ?body:(unit -> string option) -> ?chunked:bool ->
-    ?headers:Header.t -> Uri.t -> signal_handler ->
+    ?headers:Header.t -> Uri.t -> (Response.t, 'a) Response.StateTypes.response_handler ->
     IO.ic -> IO.oc -> unit IO.t
 
   val patch :
     ?body:(unit -> string option) -> ?chunked:bool ->
-    ?headers:Header.t -> Uri.t -> signal_handler ->
+    ?headers:Header.t -> Uri.t -> (Response.t, 'a) Response.StateTypes.response_handler ->
     IO.ic -> IO.oc -> unit IO.t
 
 end

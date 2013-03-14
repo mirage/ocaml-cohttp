@@ -3,9 +3,13 @@ module type S = sig
 
   module PStateIO : module type of Parameterised_monads.PStateT(IO)
 
-  type chunk_handler = {
-    chunk : 'a. string -> ([`Working], [>`Working] as 'a, unit) PStateIO.t ;
-    all_done : 'a. ([`Working], [>`Finished] as 'a, unit) PStateIO.t ;
+  type ('a, 'b) chunk_handler = string -> ('a, 'b, unit) PStateIO.t
+
+  type ('response, 'writer) response_handler = {
+    failure : 'r. ([`Waiting_for_response], [>`Die] as 'r, unit) PStateIO.t ;
+    response : 'r. 'response -> ([`Waiting_for_response], [>`Getting_body of 'writer] as 'r, unit) PStateIO.t ;
+    body : string -> ([`Getting_body of 'writer|`Junking_body], [`Getting_body of 'writer|`Junking_body], unit) PStateIO.t ;
+    body_end : 'r. ([`Getting_body of 'writer|`Junking_body], [>`Complete] as 'r, unit) PStateIO.t ;
   }
 end
 
@@ -15,8 +19,12 @@ struct
 
   module PStateIO = Parameterised_monads.PStateT(IO)
 
-  type chunk_handler = {
-    chunk : 'a. string -> ([`Working], [>`Working] as 'a, unit) PStateIO.t ;
-    all_done : 'a. ([`Working], [>`Finished] as 'a, unit) PStateIO.t ;
+  type ('a, 'b) chunk_handler = string -> ('a, 'b, unit) PStateIO.t
+
+  type ('response, 'writer) response_handler = {
+    failure : 'r. ([`Waiting_for_response], [>`Die] as 'r, unit) PStateIO.t ;
+    response : 'r. 'response -> ([`Waiting_for_response], [>`Getting_body of 'writer] as 'r, unit) PStateIO.t ;
+    body : string -> ([`Getting_body of 'writer|`Junking_body], [`Getting_body of 'writer|`Junking_body], unit) PStateIO.t ;
+    body_end : 'r. ([`Getting_body of 'writer|`Junking_body], [>`Complete] as 'r, unit) PStateIO.t ;
   }
 end
