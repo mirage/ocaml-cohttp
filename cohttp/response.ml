@@ -17,7 +17,7 @@
 
 module type S = sig
   module IO : IO.S
-  module StateTypes : StateTypes.S with module IO = IO
+  module State_types : State_types.S with module IO = IO
   type t
 
   val version : t -> Code.version
@@ -30,8 +30,8 @@ module type S = sig
   val read : IO.ic -> t option IO.t
   val has_body : t -> bool
   val read_body :
-    t -> ('a, 'a) StateTypes.chunk_handler -> IO.ic ->
-    ('a, 'a, unit) StateTypes.PStateIO.t
+    t -> ('a, 'a) State_types.chunk_handler -> IO.ic ->
+    ('a, 'a, unit) State_types.PStateIO.t
 
   val write : t -> (unit -> string option) -> IO.oc -> unit IO.t
 end
@@ -42,7 +42,7 @@ module Make(IO : IO.S) = struct
 
   module Header_IO = Header_io.Make(IO)
   module Body_IO = Body.Make(IO)
-  module StateTypes = Body_IO.StateTypes
+  module State_types = Body_IO.State_types
 
   type t = {
     encoding: Transfer.encoding;

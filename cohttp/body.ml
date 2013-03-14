@@ -17,9 +17,9 @@
 
 module type S = sig
   module IO : IO.S
-  module StateTypes : StateTypes.S with module IO = IO
-  val read : Transfer.encoding -> IO.ic -> ('a, 'a) StateTypes.chunk_handler ->
-             ('a, 'a, unit) StateTypes.PStateIO.t
+  module State_types : State_types.S with module IO = IO
+  val read : Transfer.encoding -> IO.ic -> ('a, 'a) State_types.chunk_handler ->
+             ('a, 'a, unit) State_types.PStateIO.t
   val write : Transfer.encoding -> (unit -> string option) -> IO.oc -> unit IO.t
 end
 
@@ -28,8 +28,8 @@ module Make (IO : IO.S) : S with module IO = IO = struct
   open IO
   module TIO = Transfer_io.Make(IO)
 
-  module StateTypes = StateTypes.Make(IO)
-  open StateTypes
+  module State_types = State_types.Make(IO)
+  open State_types
 
   let read encoding ic chunk = 
     let open PStateIO in

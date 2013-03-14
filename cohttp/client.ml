@@ -21,8 +21,8 @@ module Make
   (Response:Response.S with module IO=IO) = struct
   open IO
 
-  let read_response {Response.StateTypes.body; body_end; failure; response} ic =
-    let open Response.StateTypes.PStateIO in
+  let read_response {Response.State_types.body; body_end; failure; response} ic =
+    let open Response.State_types.PStateIO in
     lift (Response.read ic)
     >>= function
     |None -> failure
@@ -38,10 +38,10 @@ module Make
     end
 
   let run_response response = 
-    Response.StateTypes.PStateIO.run response `Waiting_for_response >>=
+    Response.State_types.PStateIO.run response `Waiting_for_response >>=
     fun (result, _) -> return result
 
-  let call ?headers ?(chunked=false) ?body meth uri (signal:(_, _) Response.StateTypes.response_handler) ic oc =
+  let call ?headers ?(chunked=false) ?body meth uri (signal:(_, _) Response.State_types.response_handler) ic oc =
     match body with
     |None ->
        let encoding = Transfer.Fixed 0 in

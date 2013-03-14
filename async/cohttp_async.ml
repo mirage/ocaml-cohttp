@@ -78,7 +78,7 @@ module Client = struct
 
   let call ?headers ?(chunked=false) ?body meth uri =
     let response_body = body in
-    let open Response.StateTypes.PStateIO in
+    let open Response.State_types.PStateIO in
     let ivar = Ivar.create () in
     let response resp =
       get >>= fun `Waiting_for_response ->
