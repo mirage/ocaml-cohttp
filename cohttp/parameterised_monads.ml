@@ -6,6 +6,7 @@ sig
   type +'a t
   val return : 'a -> 'a t
   val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val (>>)  : 'a t -> 'b t -> 'b t
 end
 
 (* The parameterised monad interface [Atkey, 2009].
@@ -35,6 +36,11 @@ sig
      that transforms the state from 'l' to 'n' from computations that
      transform 'l' to 'm' and 'm' to 'n'.  *)
   val (>>=) :  ('l, 'm, 'a) t -> ('a -> ('m, 'n, 'b) t) -> ('l, 'n, 'b) t
+
+  (* "Then" composes state-transforming computations.  It builds a computation
+     that transforms the state from 'l' to 'n' from computations that
+     transform 'l' to 'm' and 'm' to 'n'.  *)
+  val (>>) :  ('l, 'm, 'a) t -> ('m, 'n, 'b) t -> ('l, 'n, 'b) t
 end
 
 (* The parameterised state monad interface.  As with the vanilla state monad,
@@ -77,6 +83,7 @@ struct
   type (-'initial, +'final, +'a) t = 'initial -> ('a * 'final) M.t
   let return v s = M.return (v, s)
   let (>>=) m k s = M.(m s >>= fun (a, s') -> k a s')
+  let (>>) m n = m >>= fun _ -> n
   let lift m s = M.(m >>= fun a -> M.return (a, s))
   let get s = M.return (s, s)
   let put s _ = M.return ((), s)

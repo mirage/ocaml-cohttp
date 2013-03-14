@@ -37,7 +37,7 @@ module Make (IO : IO.S) : S with module IO = IO = struct
       lift (TIO.read encoding ic)
       >>= function
       | Transfer.Done -> all_done
-      | Transfer.Final_chunk b -> chunk b >>= fun () -> all_done
+      | Transfer.Final_chunk b -> chunk b >> all_done
       | Transfer.Chunk b -> chunk b >>= aux
     in aux () 
 
@@ -47,7 +47,7 @@ module Make (IO : IO.S) : S with module IO = IO = struct
       |Some buf -> IO.write oc buf >>= aux
       |None -> IO.return ()
     in 
-    aux () >>= fun () ->
+    aux () >>
     match encoding with
     |Transfer.Chunked ->
        (* TODO Trailer header support *)

@@ -55,13 +55,13 @@ module Make
     |None ->
        let encoding = Transfer.Fixed 0 in
        let req = Request.make ~meth ~encoding ?headers ~body uri in
-       Request.write req (fun _ -> None) oc >>= fun () ->
+       Request.write req (fun _ -> None) oc >>
        read_response signal ic
     |Some body -> begin
        match chunked with
        |true ->
          let req = Request.make ~meth ?headers ~body uri in
-         Request.write req body oc >>= fun () ->
+         Request.write req body oc >>
          read_response signal ic
        |false ->
          (* If chunked is not allowed, then call [body_fn] once insert length header *)
@@ -69,13 +69,13 @@ module Make
          |None ->
            let encoding = Transfer.Fixed 0 in
            let req = Request.make ~meth ~encoding ?headers ~body uri in
-           Request.write req body oc >>= fun () ->
+           Request.write req body oc >>
            read_response signal ic
          |Some buf ->
            let clen = String.length buf in
            let encoding = Transfer.Fixed clen in
            let req = Request.make ~meth ~encoding ?headers ~body uri in
-           Request.write req body oc >>= fun () ->
+           Request.write req body oc >>
            read_response signal ic
     end
 

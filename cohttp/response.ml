@@ -89,12 +89,12 @@ module Make(IO : IO.S) = struct
 
   let write_header res oc =
     write oc (Printf.sprintf "%s %s\r\n" (Code.string_of_version res.version) 
-      (Code.string_of_status res.status)) >>= fun () ->
+      (Code.string_of_status res.status)) >>
     let headers = Header.add_transfer_encoding res.headers res.encoding in
-    iter (IO.write oc) (Header.to_lines headers) >>= fun () ->
+    iter (IO.write oc) (Header.to_lines headers) >>
     IO.write oc "\r\n"
 
   let write req fn oc =
-    write_header req oc >>= fun () ->
+    write_header req oc >>
     Body_IO.write req.encoding fn oc
 end
