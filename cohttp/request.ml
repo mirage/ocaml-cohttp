@@ -20,7 +20,7 @@ module Make(IO:Make.IO) = struct
   open IO
 
   module Header_IO = Header_io.Make(IO)
-  include Body.Make(IO) 
+  module Body_IO = Body.Make(IO) 
   
   type t = { 
     headers: Header.t;
@@ -71,7 +71,7 @@ module Make(IO:Make.IO) = struct
       return (Some { headers; meth; uri; version; encoding })
 
   let has_body req = Transfer.has_body req.encoding
-  let read_body req fn ic = read_body req.encoding fn ic
+  let read_body req fn ic = Body_IO.read req.encoding fn ic
 
   let host_of_uri uri = 
     match Uri.host uri with
@@ -110,5 +110,5 @@ module Make(IO:Make.IO) = struct
 
   let write req fn oc =
     write_header req oc >>= fun () ->
-    write_body fn req.encoding oc
+    Body_IO.write req.encoding fn oc
 end

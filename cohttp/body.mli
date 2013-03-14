@@ -15,31 +15,4 @@
  *
  *)
 
-module Make (IO:Make.IO) = struct
-  module IO = IO
-  open IO
-  module TIO = Transfer_io.Make(IO)
-
-  let read encoding fn ic = 
-    let rec aux () =
-      TIO.read encoding ic
-      >>= function
-      |Transfer.Done -> fn None
-      |Transfer.Final_chunk b -> fn (Some b) >>= fun () -> fn None
-      |Transfer.Chunk b -> fn (Some b) >>= aux
-    in aux () 
-
-  let write encoding fn oc =
-    let rec aux () =
-      match fn () with
-      |Some buf -> IO.write oc buf >>= aux
-      |None -> IO.return ()
-    in 
-    aux () >>= fun () ->
-    match encoding with
-    |Transfer.Chunked ->
-       (* TODO Trailer header support *)
-       IO.write oc "0\r\n\r\n"
-    |Transfer.Fixed _ 
-    |Transfer.Unknown -> return ()
-end
+module Make(IO:Make.IO) : Make.BODY with module IO=IO

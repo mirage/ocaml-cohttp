@@ -33,7 +33,7 @@ end
 
 module type BODY = sig
   module IO : IO
-  val read : Transfer.encoding -> (string option -> unit) -> IO.ic -> unit IO.t
+  val read : Transfer.encoding -> (string option -> unit IO.t) -> IO.ic -> unit IO.t
   val write : Transfer.encoding -> (unit -> string option) -> IO.oc -> unit IO.t
 end
 
