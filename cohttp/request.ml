@@ -17,6 +17,7 @@
 
 module type S = sig
   module IO : IO.S
+  module StateTypes : StateTypes.S with module IO = IO
   type t
   val meth : t -> Code.meth
   val uri : t -> Uri.t
@@ -37,7 +38,9 @@ module type S = sig
 
   val read : IO.ic -> t option IO.t
   val has_body : t -> bool
-  val read_body : t -> (string option -> unit IO.t) -> IO.ic -> unit IO.t
+  val read_body :
+    t -> StateTypes.chunk_reader -> IO.ic ->
+    ([ `Working ], [> `Finished ], unit) StateTypes.PStateIO.t
 
   val write : t -> (unit -> string option) -> IO.oc -> unit IO.t
 end
@@ -48,6 +51,7 @@ module Make(IO : IO.S) = struct
 
   module Header_IO = Header_io.Make(IO)
   module Body_IO = Body.Make(IO) 
+  module StateTypes = Body_IO.StateTypes
   
   type t = { 
     headers: Header.t;
@@ -98,7 +102,7 @@ module Make(IO : IO.S) = struct
       return (Some { headers; meth; uri; version; encoding })
 
   let has_body req = Transfer.has_body req.encoding
-  let read_body req fn ic = Body_IO.read req.encoding fn ic
+  let read_body req fn ic = Body_IO.read req.encoding ic fn
 
   let host_of_uri uri = 
     match Uri.host uri with

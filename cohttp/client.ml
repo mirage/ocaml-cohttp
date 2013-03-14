@@ -41,11 +41,18 @@ module Make
       |false -> 
         signal `Body_end
       |true -> 
-        Response.read_body res
-          (function 
-           |None -> signal `Body_end
-           |Some b -> signal (`Body b)
-          ) ic
+       (let open Response.StateTypes in
+        PStateIO.run (Response.read_body res PStateIO.(
+	  { process = fun (type a) (type b) chunk -> match chunk with
+           |(StateTypes.Done : (a, b) StateTypes.chunk_state) -> 
+	     lift (signal `Body_end) >>= fun () ->
+             put (`Finished : b)
+           |StateTypes.Chunk b ->
+	     PStateIO.lift (signal (`Body b)) >>= fun () ->
+	     put `Working
+          }) ic) `Working >>= fun _ ->
+         return ())
+	  
     end
 
   let call ?headers ?(chunked=false) ?body meth uri (signal:signal_handler) ic oc =

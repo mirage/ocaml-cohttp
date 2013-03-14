@@ -17,22 +17,32 @@
 
 module type S = sig
   module IO : IO.S
-  val read : Transfer.encoding -> (string option -> unit IO.t) -> IO.ic -> unit IO.t
+  module StateTypes : StateTypes.S with module IO = IO
+  val read : Transfer.encoding -> IO.ic -> StateTypes.chunk_reader ->
+             ([ `Working ], [> `Finished ], unit) StateTypes.PStateIO.t
   val write : Transfer.encoding -> (unit -> string option) -> IO.oc -> unit IO.t
 end
 
-module Make (IO : IO.S) = struct
+module Make (IO : IO.S) : S with module IO = IO = struct
   module IO = IO
   open IO
   module TIO = Transfer_io.Make(IO)
 
-  let read encoding fn ic = 
+  module StateTypes = StateTypes.Make(IO)
+  open StateTypes
+
+  let read encoding ic {process} = 
+    let open PStateIO in
     let rec aux () =
-      TIO.read encoding ic
-      >>= function
-      |Transfer.Done -> fn None
-      |Transfer.Final_chunk b -> fn (Some b) >>= fun () -> fn None
-      |Transfer.Chunk b -> fn (Some b) >>= aux
+      lift (TIO.read encoding ic)
+      >>= fun chunk -> match chunk with
+      | Transfer.Done ->
+	process Done
+      | Transfer.Final_chunk b ->
+	process (Chunk b) >>= fun () ->
+	process Done
+      | Transfer.Chunk b ->
+	process (Chunk b) >>= aux
     in aux () 
 
   let write encoding fn oc =

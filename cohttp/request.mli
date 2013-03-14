@@ -17,6 +17,7 @@
 
 module type S = sig
   module IO : IO.S
+  module StateTypes : StateTypes.S with module IO = IO
   type t
   val meth : t -> Code.meth
   val uri : t -> Uri.t
@@ -37,7 +38,9 @@ module type S = sig
 
   val read : IO.ic -> t option IO.t
   val has_body : t -> bool
-  val read_body : t -> (string option -> unit IO.t) -> IO.ic -> unit IO.t
+  val read_body :
+    t -> StateTypes.chunk_reader -> IO.ic ->
+    ([ `Working ], [> `Finished ], unit) StateTypes.PStateIO.t
 
   val write : t -> (unit -> string option) -> IO.oc -> unit IO.t
 end
