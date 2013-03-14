@@ -1,14 +1,11 @@
-type (_, _) chunk_state =
-    Done : ([<`Working], [>`Finished]) chunk_state
-  | Chunk : string -> ([<`Working], [>`Working]) chunk_state
-
 module type S = sig
   module IO : IO.S
 
   module PStateIO : module type of Parameterised_monads.PStateT(IO)
 
-  type chunk_reader = {
-    process : 'a 'b. ('a, 'b) chunk_state -> ('a, 'b, unit) PStateIO.t
+  type chunk_handler = {
+    chunk : 'a. string -> ([`Working], [>`Working] as 'a, unit) PStateIO.t ;
+    all_done : 'a. ([`Working], [>`Finished] as 'a, unit) PStateIO.t ;
   }
 end
 
@@ -18,7 +15,8 @@ struct
 
   module PStateIO = Parameterised_monads.PStateT(IO)
 
-  type chunk_reader = {
-    process : 'a 'b. ('a, 'b) chunk_state -> ('a, 'b, unit) PStateIO.t
+  type chunk_handler = {
+    chunk : 'a. string -> ([`Working], [>`Working] as 'a, unit) PStateIO.t ;
+    all_done : 'a. ([`Working], [>`Finished] as 'a, unit) PStateIO.t ;
   }
 end

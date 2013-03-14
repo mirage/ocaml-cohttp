@@ -18,7 +18,7 @@
 module type S = sig
   module IO : IO.S
   module StateTypes : StateTypes.S with module IO = IO
-  val read : Transfer.encoding -> IO.ic -> StateTypes.chunk_reader ->
+  val read : Transfer.encoding -> IO.ic -> StateTypes.chunk_handler ->
              ([ `Working ], [> `Finished ], unit) StateTypes.PStateIO.t
   val write : Transfer.encoding -> (unit -> string option) -> IO.oc -> unit IO.t
 end
