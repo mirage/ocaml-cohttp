@@ -21,15 +21,6 @@ module Make
   (Response:Response.S with module IO=IO) = struct
   open IO
 
-  type input_signal = [
-    | `Failure
-    | `Response of Response.t
-    | `Body of string
-    | `Body_end
-  ]
-
-  type signal_handler = (input_signal -> unit IO.t)
-
   let read_response {Response.StateTypes.body; body_end; failure; response} ic =
     let open Response.StateTypes.PStateIO in
     lift (Response.read ic)

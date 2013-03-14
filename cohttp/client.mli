@@ -21,15 +21,6 @@ module Make
   (Response:Response.S with module IO=IO)
   : sig
 
-  type input_signal = [
-    | `Failure
-    | `Response of Response.t
-    | `Body of string
-    | `Body_end
-  ]
-
-  type signal_handler = (input_signal -> unit IO.t)
-
   val call :
     ?headers:Header.t ->
     ?chunked:bool -> ?body:(unit -> string option) -> Code.meth -> 
