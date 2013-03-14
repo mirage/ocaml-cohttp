@@ -17,7 +17,7 @@
  *
  *)
 
-module Make(IO:Make.IO) = struct
+module Make(IO : IO.S) = struct
   open IO
 
   let header_sep = Re_str.regexp ": *"

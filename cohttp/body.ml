@@ -15,7 +15,13 @@
  *
  *)
 
-module Make (IO:Make.IO) = struct
+module type S = sig
+  module IO : IO.S
+  val read : Transfer.encoding -> (string option -> unit IO.t) -> IO.ic -> unit IO.t
+  val write : Transfer.encoding -> (unit -> string option) -> IO.oc -> unit IO.t
+end
+
+module Make (IO : IO.S) = struct
   module IO = IO
   open IO
   module TIO = Transfer_io.Make(IO)

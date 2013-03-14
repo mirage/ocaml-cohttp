@@ -16,9 +16,9 @@
  *)
 
 module Make
-  (IO:Make.IO)
-  (Request:Make.REQUEST with module IO=IO)
-  (Response:Make.RESPONSE with module IO=IO) = struct
+  (IO : IO.S)
+  (Request:Request.S with module IO=IO)
+  (Response:Response.S with module IO=IO) = struct
   open IO
 
   type input_signal = [

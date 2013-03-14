@@ -15,4 +15,10 @@
  *
  *)
 
-module Make(IO:Make.IO) : Make.BODY with module IO=IO
+module type S = sig
+  module IO : IO.S
+  val read : Transfer.encoding -> (string option -> unit IO.t) -> IO.ic -> unit IO.t
+  val write : Transfer.encoding -> (unit -> string option) -> IO.oc -> unit IO.t
+end
+
+module Make(IO : IO.S) : S with module IO = IO

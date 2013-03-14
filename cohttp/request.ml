@@ -15,7 +15,34 @@
  *
  *)
 
-module Make(IO:Make.IO) = struct
+module type S = sig
+  module IO : IO.S
+  type t
+  val meth : t -> Code.meth
+  val uri : t -> Uri.t
+  val version : t -> Code.version
+
+  val path : t -> string
+  val header : t -> string -> string option
+  val headers : t -> Header.t
+
+  val params : t -> (string * string list) list
+  val get_param : t -> string -> string option
+
+  val transfer_encoding : t -> string
+
+  val make : ?meth:Code.meth -> ?version:Code.version -> 
+    ?encoding:Transfer.encoding -> ?headers:Header.t ->
+    ?body:'a -> Uri.t -> t
+
+  val read : IO.ic -> t option IO.t
+  val has_body : t -> bool
+  val read_body : t -> (string option -> unit IO.t) -> IO.ic -> unit IO.t
+
+  val write : t -> (unit -> string option) -> IO.oc -> unit IO.t
+end
+
+module Make(IO : IO.S) = struct
   module IO = IO
   open IO
 

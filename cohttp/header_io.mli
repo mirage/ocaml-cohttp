@@ -15,6 +15,6 @@
  *
  *)
 
-module Make(IO:Make.IO) : sig
+module Make(IO : IO.S) : sig
   val parse: IO.ic -> Header.t IO.t
 end

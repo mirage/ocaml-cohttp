@@ -16,9 +16,9 @@
  *)
 
 module Make
-  (IO:Make.IO)
-  (Request:Make.REQUEST with module IO=IO)
-  (Response:Make.RESPONSE with module IO=IO)
+  (IO : IO.S)
+  (Request:Request.S with module IO=IO)
+  (Response:Response.S with module IO=IO)
   : sig
 
   type input_signal = [
