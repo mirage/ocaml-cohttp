@@ -54,7 +54,7 @@ Library cohttp_async
   Path: async
   Findlibname: async
   FindlibParent: cohttp
-  BuildDepends: uri, cohttp, async_core (>= 108.07.00), async_unix, threads, async
+  BuildDepends: uri, cohttp, async_core (>= 109.12.00), async_unix, threads, async
   Modules: Cohttp_async_raw, Cohttp_async
 
 Document cohttp
