@@ -86,7 +86,7 @@ module Client = struct
     |None -> return None
     |Some port ->
       Tcp.(connect (to_host_and_port host port) )
-      >>= fun (ic,oc) -> write_request ?body req oc 
+      >>= fun (_,ic,oc) -> write_request ?body req oc 
       >>= fun () -> read_response ~close:true ic oc
 end
 
