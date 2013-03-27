@@ -18,6 +18,9 @@
 open Core.Std
 open Async.Std
 
+(* IO implementation that uses Fable Cstruct Pipes. It still goes out
+ * to string since that's all that the scanner supports, but when we
+ * port ocaml-re to use string, that'll improve *)
 module IO = struct
 
   type 'a t = 'a Deferred.t
@@ -25,54 +28,172 @@ module IO = struct
   let (>>) m n = m >>= fun _ -> n
   let return = Deferred.return
 
-  type ic = Reader.t
-  type oc = Writer.t
+  type ic = {
+    mutable ibuf: Cstruct.t option; (* Queue of incoming buf *)
+    rd: Cstruct.t Pipe.Reader.t;
+  }
+
+  type oc = {
+    mutable obufq: Cstruct.t list;  (* Queue of completed writebuf *)
+    mutable obuf: Cstruct.t option; (* Active write buffer *)
+    mutable opos: int;              (* Position in active write buffer *)
+    wr: Cstruct.t Pipe.Writer.t;
+  }
+
+  (* Initialise buffered input and output from a Pipe pair *)
+  let create rd wr =
+    { ibuf=None; rd }, { obufq=[]; obuf=None; opos=0; wr }
+
+  (* Refill the input buffer from the Pipe *)
+  let refill_input ic =
+    Pipe.read ic.rd
+    >>= function
+    |`Eof -> 
+      return false
+    |`Ok buf -> 
+      ic.ibuf <- Some buf;
+      return true
+
+  (* Get an input buffer, refilling if needed *)
+  let rec get_input ic =
+    match ic.ibuf with
+    |None ->  begin
+       refill_input ic
+       >>= function
+       |true -> get_input ic
+       |false -> return None
+    end
+    |Some buf when Cstruct.len buf = 0 -> begin
+      refill_input ic
+       >>= function
+       |true -> get_input ic
+       |false -> return None
+    end
+    |Some buf ->
+      return (Some buf)
+
+  (* Read one character from the input channel *)
+  let read_char ic =
+    get_input ic
+    >>= function
+    |None -> return None
+    |Some buf ->
+      let c = Cstruct.get_char buf 0 in
+      ic.ibuf <- Some (Cstruct.shift buf 1);
+      return (Some c)
+
+  (* Read a chunk and scan for a character.
+   * TODO XXX this would be _way_ faster to do in cstruct *)
+  let read_until ic ch =
+    get_input ic 
+    >>= function
+    |None -> return `Eof
+    |Some buf -> begin
+      let len = Cstruct.len buf in
+      let rec scan off =
+        if off = len then None else begin
+          if Cstruct.get_char buf off = ch then
+            Some off else scan (off+1)
+        end
+      in
+      match scan 0 with
+      |None -> (* not found, return what we have until EOF *)
+        ic.ibuf <- None;
+        return (`Not_found buf)
+      |Some off -> (* found, so split the buffer *)
+        let hd = Cstruct.sub buf 0 off in
+        ic.ibuf <- Some (Cstruct.shift buf (off+1));
+        return (`Found hd)
+    end
+
+  (* This reads a line of input, which is terminated either by a CRLF
+     sequence, or the end of the channel (which counts as a line). *)
+  let read_line ic =
+    let rec get acc =
+      read_until ic '\n'
+      >>= function
+      |`Eof -> return None
+      |`Not_found buf ->
+         get (buf :: acc)
+      |`Found buf -> begin
+         (* chop the CR if present *)
+         let vlen = Cstruct.len buf in
+         let buf =
+           if vlen > 0 && (Cstruct.get_char buf (vlen-1) = '\r') then
+             Cstruct.sub buf 0 (vlen-1) 
+           else buf in
+         return (Some (buf :: acc))
+      end
+    in
+    get []
+    >>= fun l -> return (Option.map l (fun l -> Cstruct.copyv (List.rev l)))
+
+  let read_buf ic len =
+    get_input ic
+    >>= function
+    |None -> return None
+    |Some buf ->
+      let avail = Cstruct.len buf in
+      if len < avail then begin
+        let hd,tl = Cstruct.split buf len in
+        ic.ibuf <- Some tl;
+        return (Some hd)
+    end else begin
+      ic.ibuf <- None;
+      return (Some buf)
+    end
+
+  let read ic len =
+    read_buf ic len
+    >>= function
+    |None -> return ""
+    |Some buf -> return (Cstruct.to_string buf)
+
+  let read_exactly' ic len =
+    let rec get acc need =
+      match need with
+      |0 -> return (Some (Cstruct.copyv (List.rev acc)))
+      |need -> begin
+         read_buf ic need
+         >>= function
+         |None -> return None
+         |Some buf -> get (buf::acc) (need - (Cstruct.len buf))
+       end
+     in
+     get [] len     
+
+  let read_exactly ic dst dst_pos len =
+    read_exactly' ic len >>= function
+      | Some src ->
+	StringLabels.blit ~src ~src_pos:0 ~dst ~dst_pos ~len;
+	return true
+      | None ->
+	return false
+
+  let write oc buf =
+    Pipe.write oc.wr (Cstruct.of_string buf)
+
+  let write_line oc buf =
+    Pipe.write oc.wr (Cstruct.of_string buf)
+    >>= fun () ->
+    Pipe.write oc.wr (Cstruct.of_string "\r\n")
 
   let iter fn x =
     Deferred.List.iter x ~f:fn 
-
-  let read_line ic =
-    Reader.read_line ic >>=
-    function
-    |`Ok s -> return (Some s)
-    |`Eof -> return None
-
-  let read = 
-    let buf = String.create 4096 in
-    fun ic len ->
-      Reader.read ic ~len buf >>=
-      function
-      |`Ok len' -> return (String.sub buf 0 len')
-      |`Eof -> return ""
-
-  let read_exactly ic buf pos len =
-    Reader.really_read ic ~pos ~len buf >>=
-    function
-    |`Ok -> return true
-    |`Eof _ -> return false
-
-  let write oc buf =
-    Writer.write oc buf;
-    return ()
-
-  let write_line oc buf =
-    Writer.write oc buf;
-    Writer.write oc "\r\n";
-    return ()
-end
-
-module Net = struct
-  let connect ~uri ~f =
-    let host = Option.value (Uri.host uri) ~default:"localhost" in
-    match Uri_services.tcp_port_of_uri ~default:"http" uri with
-    |None -> f `Unknown_service
-    |Some port ->
-      Tcp.with_connection (Tcp.to_host_and_port host port)
-        (fun _ ic oc -> f (`Ok (ic,oc)))
 end
 
 module Response = Cohttp.Response.Make(IO)
 module Request = Cohttp.Request.Make(IO)
+
+module Net =
+struct
+  let connect ~uri ~f =
+    let ctx = Fable_async.init () in
+    Monitor.try_with (fun () -> Fable_async.connect ~ctx ~uri) >>= function
+      | Error exn -> f `Unknown_service (* TODO: propagate the error *)
+      | Ok (flow_state, reader, writer) -> f (`Ok (reader, writer))
+end
+
 module Client = struct
   include Cohttp.Client.Make(IO)(Request)(Response)
 
@@ -110,10 +231,10 @@ module Client = struct
     Net.connect ~uri ~f:(function
     |`Unknown_service -> return None
     |`Ok (ic,oc) ->
+      let ic, oc = IO.create ic oc in
       (* Establish the remote HTTP connection *)
       call ?headers ~chunked ?body:response_body meth uri
-        {body; body_end; failure; response} ic oc
-      >>= fun () ->
+        {body; body_end; failure; response} ic oc >>
       Ivar.read ivar >>= fun x -> 
       return (Some x)
     )

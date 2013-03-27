@@ -135,11 +135,11 @@ module Make(IO : IO.S) = struct
       (Uri.path_and_query req.uri) (Code.string_of_version req.version) in
     let headers = Header.add req.headers "host" (host_of_uri req.uri) in
     let headers = Header.add_transfer_encoding headers req.encoding in
-    IO.write oc fst_line >>
-    iter (IO.write oc) (Header.to_lines headers) >>
+    IO.write oc fst_line >>= fun _ ->
+    iter (IO.write oc) (Header.to_lines headers) >>= fun _ ->
     IO.write oc "\r\n"
 
   let write req fn oc =
-    write_header req oc >>
+    write_header req oc >>= fun _ ->
     Body_IO.write req.encoding fn oc
 end

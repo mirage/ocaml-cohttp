@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 77c697eb6aee4e55ee06c7a47d1ae6c5)
+# DO NOT EDIT (digest: 28ffc1742ee4118d2829491c7e4edf24)
 version = "0.9.6"
 description = "HTTP library for Lwt, Async and Mirage"
 requires = "re uri uri.services cstruct"
@@ -33,7 +33,7 @@ package "lwt" (
 package "async" (
  version = "0.9.6"
  description = "HTTP library for Lwt, Async and Mirage"
- requires = "uri cohttp async_core async_unix threads async"
+ requires = "uri cohttp async_core async_unix threads async fable_async"
  archive(byte) = "cohttp_async.cma"
  archive(byte, plugin) = "cohttp_async.cma"
  archive(native) = "cohttp_async.cmxa"
