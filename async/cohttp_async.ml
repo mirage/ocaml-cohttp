@@ -80,7 +80,7 @@ module IO = struct
   (* Read a chunk and scan for a character.
    * TODO XXX this would be _way_ faster to do in cstruct *)
   let read_until ic ch =
-    get_input ic 
+    get_input ic
     >>= function
     |None -> return `Eof
     |Some buf -> begin
@@ -144,7 +144,7 @@ module IO = struct
     |None -> return ""
     |Some buf -> return (Cstruct.to_string buf)
 
-  let read_exactly' ic len =
+  let read_exactly ic len =
     let rec get acc need =
       match need with
       |0 -> return (Some (Cstruct.copyv (List.rev acc)))
@@ -156,14 +156,6 @@ module IO = struct
        end
      in
      get [] len     
-
-  let read_exactly ic dst dst_pos len =
-    read_exactly' ic len >>= function
-      | Some src ->
-	StringLabels.blit ~src ~src_pos:0 ~dst ~dst_pos ~len;
-	return true
-      | None ->
-	return false
 
   let write oc buf =
     Pipe.write oc (Cstruct.of_string buf)
