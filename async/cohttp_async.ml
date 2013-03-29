@@ -33,16 +33,11 @@ module IO = struct
     rd: Cstruct.t Pipe.Reader.t;
   }
 
-  type oc = {
-    mutable obufq: Cstruct.t list;  (* Queue of completed writebuf *)
-    mutable obuf: Cstruct.t option; (* Active write buffer *)
-    mutable opos: int;              (* Position in active write buffer *)
-    wr: Cstruct.t Pipe.Writer.t;
-  }
+  type oc = Cstruct.t Pipe.Writer.t
 
   (* Initialise buffered input and output from a Pipe pair *)
   let create rd wr =
-    { ibuf=None; rd }, { obufq=[]; obuf=None; opos=0; wr }
+    { ibuf=None; rd }, wr
 
   (* Refill the input buffer from the Pipe *)
   let refill_input ic =
@@ -171,12 +166,12 @@ module IO = struct
 	return false
 
   let write oc buf =
-    Pipe.write oc.wr (Cstruct.of_string buf)
+    Pipe.write oc (Cstruct.of_string buf)
 
   let write_line oc buf =
-    Pipe.write oc.wr (Cstruct.of_string buf)
+    Pipe.write oc (Cstruct.of_string buf)
     >>= fun () ->
-    Pipe.write oc.wr (Cstruct.of_string "\r\n")
+    Pipe.write oc (Cstruct.of_string "\r\n")
 
   let iter fn x =
     Deferred.List.iter x ~f:fn 
