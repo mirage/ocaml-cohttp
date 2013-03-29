@@ -43,11 +43,11 @@ module IO = struct
   let refill_input ic =
     Pipe.read ic.rd
     >>= function
-    |`Eof -> 
-      return false
     |`Ok buf -> 
       ic.ibuf <- Some buf;
-      return true
+      return `Ok
+    |`Eof -> 
+      return `Eof
 
   (* Get an input buffer, refilling if needed *)
   let rec get_input ic =
@@ -55,14 +55,14 @@ module IO = struct
     |None ->  begin
        refill_input ic
        >>= function
-       |true -> get_input ic
-       |false -> return None
+       |`Ok -> get_input ic
+       |`Eof -> return None
     end
     |Some buf when Cstruct.len buf = 0 -> begin
       refill_input ic
        >>= function
-       |true -> get_input ic
-       |false -> return None
+       |`Ok -> get_input ic
+       |`Eof -> return None
     end
     |Some buf ->
       return (Some buf)
