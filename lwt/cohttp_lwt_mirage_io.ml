@@ -55,6 +55,12 @@ let read_exactly ic buf off len =
   String.blit srcbuf 0 buf off (String.length srcbuf);
   return true
 
+let read_exactly ic len =
+  let buf = String.create len in
+  read_exactly ic buf 0 len >>= function
+    | true -> return (Some buf)
+    | false -> return None
+
 let write oc buf = 
   Channel.write_string oc buf 0 (String.length buf);
   Channel.flush oc

@@ -39,8 +39,8 @@ end
 module Request = Request.Make(IO)
 module Response = Response.Make(IO)
 module Body = Cohttp_lwt_body
-module Client = Cohttp_lwt.Client(Request)(Response)(Net_IO)
-module Server = Cohttp_lwt.Server(Request)(Response)(Net_IO)
+module Client = Cohttp_lwt.Client(IO)(Request)(Response)(Net_IO)
+module Server = Cohttp_lwt.Server(IO)(Request)(Response)(Net_IO)
 
 let listen ?timeout mgr src spec =
   (* TODO XXX the cancel-based timeout is almost certainly broken as the
