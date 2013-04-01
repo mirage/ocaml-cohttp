@@ -20,6 +20,8 @@
 module Make(IO : IO.S) = struct
   open IO
 
+  module Transfer_IO = Transfer_io.Make(IO)
+
   let header_sep = Re_str.regexp ": *"
   let parse ic =
     (* consume also trailing "^\r\n$" line *)
@@ -34,4 +36,10 @@ module Make(IO : IO.S) = struct
           | _ -> return headers
       end
     in parse_headers' (Header.init ())
+
+  let parse_form headers ic =
+    (* If the form is query-encoded, then extract those parameters also *)
+    let encoding = Header.get_transfer_encoding headers in
+    Transfer_IO.to_string encoding ic >>= fun body ->
+    return (Uri.query_of_encoded body)
 end
