@@ -72,7 +72,7 @@ module Client = struct
       let ic, oc = IO.create ic oc in
       (* Establish the remote HTTP connection *)
       call ?headers ~chunked ?body:response_body meth uri
-        {body; body_end; failure; response} ic oc >>
+      Response.State_types.({body; body_end; failure; response}) ic oc >>= fun () ->
       Ivar.read ivar >>= fun x -> 
       return (Some x)
     )
