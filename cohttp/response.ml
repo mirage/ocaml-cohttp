@@ -32,8 +32,17 @@ module type S = sig
   val read_body :
     t -> ('a, 'a) State_types.chunk_handler -> IO.ic ->
     ('a, 'a, unit) State_types.PStateIO.t
+  val read_body_chunk :
+    t -> IO.ic -> Transfer.chunk IO.t
 
+  val is_form: t -> bool
+  val read_form : t -> IO.ic -> (string * string list) list IO.t
+
+  val write_header : t -> IO.oc -> unit IO.t
+  val write_body : t -> IO.oc -> string -> unit IO.t
+  val write_footer : t -> IO.oc -> unit IO.t
   val write : t -> (unit -> string option) -> IO.oc -> unit IO.t
+  val write' : (t -> IO.oc -> unit IO.t) -> t -> IO.oc -> unit IO.t
 end
 
 module Make(IO : IO.S) = struct
@@ -42,6 +51,7 @@ module Make(IO : IO.S) = struct
 
   module Header_IO = Header_io.Make(IO)
   module Body_IO = Body.Make(IO)
+  module Transfer_IO = Transfer_io.Make(IO)
   module State_types = Body_IO.State_types
 
   type t = {
@@ -84,17 +94,38 @@ module Make(IO : IO.S) = struct
        let encoding = Header.get_transfer_encoding headers in
        return (Some { encoding; headers; version; status })
 
-  let has_body r = Transfer.has_body r.encoding
-  let read_body req fn ic = Body_IO.read req.encoding ic fn
+  let has_body {encoding} = Transfer.has_body encoding
+  let read_body {encoding} fn ic = Body_IO.read encoding ic fn
+  let read_body_chunk {encoding} ic = Transfer_IO.read encoding ic
 
   let write_header res oc =
     write oc (Printf.sprintf "%s %s\r\n" (Code.string_of_version res.version) 
-      (Code.string_of_status res.status)) >>
+      (Code.string_of_status res.status)) >>= fun () ->
     let headers = Header.add_transfer_encoding res.headers res.encoding in
-    iter (IO.write oc) (Header.to_lines headers) >>
+    iter (IO.write oc) (Header.to_lines headers) >>= fun () ->
     IO.write oc "\r\n"
 
+  let write_body {encoding} oc buf =
+    Transfer_IO.write encoding oc buf
+
+  let write_footer {encoding} oc =
+    match encoding with
+    |Transfer.Chunked ->
+       (* TODO Trailer header support *)
+       IO.write oc "0\r\n\r\n"
+    |Transfer.Fixed _ | Transfer.Unknown -> return ()
+
   let write req fn oc =
-    write_header req oc >>
-    Body_IO.write req.encoding fn oc
+    write_header req oc >>= fun () ->
+    Body_IO.write req.encoding fn oc >>= fun () ->
+    write_footer req oc
+
+  (* TODO: remove either write' or write *)
+  let write' fn req oc =
+    write_header req oc >>= fun () ->
+    fn req oc >>= fun () ->
+    write_footer req oc
+
+  let is_form req = Header.is_form req.headers
+  let read_form req ic = Header_IO.parse_form req.headers ic
 end

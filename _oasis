@@ -37,7 +37,7 @@ Library cohttp_lwt_unix
   Findlibname: lwt
   FindlibParent: cohttp
   BuildDepends: lwt.unix, lwt, uri, cohttp, lwt.ssl, lwt.syntax
-  Modules: Cohttp_lwt_unix, Cohttp_lwt, Cohttp_lwt_net, Cohttp_lwt_body, Cohttp_lwt_make
+  Modules: Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt, Cohttp_lwt_net, Cohttp_lwt_body, Cohttp_lwt_make
 
 Library cohttp_mirage
   Build$: flag(mirage)
@@ -46,7 +46,7 @@ Library cohttp_mirage
   Findlibname: mirage
   FindlibParent: cohttp
   BuildDepends: uri, re, cohttp, lwt.syntax, mirage, mirage-net
-  Modules: Cohttp_lwt_mirage, Cohttp_lwt, Cohttp_lwt_body, Cohttp_lwt_make
+  Modules: Cohttp_lwt_mirage_io, Cohttp_lwt_mirage, Cohttp_lwt, Cohttp_lwt_body, Cohttp_lwt_make
 
 Library cohttp_async
   Build$: flag(async)
@@ -55,7 +55,7 @@ Library cohttp_async
   Findlibname: async
   FindlibParent: cohttp
   BuildDepends: uri, cohttp, async_core (>= 109.12.00), async_unix, threads, async, fable_async
-  Modules: Cohttp_async
+  Modules: Cohttp_async_io, Cohttp_async
 
 Document cohttp
   Title:                Cohttp docs

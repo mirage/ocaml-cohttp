@@ -48,7 +48,7 @@ let string_of_body (body:t) =
   |Some (`String s) -> return s
   |Some (`Stream s) ->
      let b = Buffer.create 1024 in
-     Lwt_stream.iter (Buffer.add_string b) s >>
+     Lwt_stream.iter (Buffer.add_string b) s >>= fun () ->
      return (Buffer.contents b)
 
 let stream_of_body (body:t) =

@@ -47,8 +47,8 @@ module Make(IO : IO.S) = struct
  
     let write oc buf =
       let len = String.length buf in
-      write oc (Printf.sprintf "%x\r\n" len) >>
-      write oc buf >>
+      write oc (Printf.sprintf "%x\r\n" len) >>= fun () ->
+      write oc buf >>= fun () ->
       write oc "\r\n"
   end
   

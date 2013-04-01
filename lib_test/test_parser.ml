@@ -164,10 +164,10 @@ let post_data_parse () =
   Request.read ic >>= function
   |None -> assert false
   |Some req ->
-    Request.read_body req ic >>= fun body ->
+    Request.read_body_chunk req ic >>= fun body ->
     assert_equal (Transfer.Final_chunk "home=Cosby&favorite+flavor=flies") body;
     (* A subsequent request for the body will have consumed it, therefore None *)
-    Request.read_body req ic >>= fun body ->
+    Request.read_body_chunk req ic >>= fun body ->
     assert_equal Transfer.Done body;
     return ()
 
@@ -179,9 +179,9 @@ let post_chunked_parse () =
   |None -> assert false
   |Some req ->
     assert_equal (Request.transfer_encoding req) "chunked";
-    Request.read_body req ic >>= fun chunk ->
+    Request.read_body_chunk req ic >>= fun chunk ->
     assert_equal chunk (Transfer.Chunk "abcdefghijklmnopqrstuvwxyz");
-    Request.read_body req ic >>= fun chunk ->
+    Request.read_body_chunk req ic >>= fun chunk ->
     assert_equal chunk (Transfer.Chunk "1234567890abcdef");
     return ()
 
@@ -194,7 +194,7 @@ let res_content_parse () =
   |Some res ->
      assert_equal `HTTP_1_1 (Response.version res);
      assert_equal `OK (Response.status res);
-     Response.read_body res ic >>= fun body ->
+     Response.read_body_chunk res ic >>= fun body ->
      assert_equal (Transfer.Final_chunk "home=Cosby&favorite+flavor=flies") body;
      return ()
 
@@ -207,9 +207,9 @@ let res_chunked_parse () =
   |Some res ->
      assert_equal `HTTP_1_1 (Response.version res);
      assert_equal `OK (Response.status res);
-     Response.read_body res ic >>= fun chunk ->
+     Response.read_body_chunk res ic >>= fun chunk ->
      assert_equal chunk (Transfer.Chunk "abcdefghijklmnopqrstuvwxyz");
-     Response.read_body res ic >>= fun chunk ->
+     Response.read_body_chunk res ic >>= fun chunk ->
      assert_equal chunk (Transfer.Chunk "1234567890abcdef");
      return ()
 
@@ -229,7 +229,7 @@ let make_simple_req () =
   let oc = oc_of_buffer buf in
   let body = Body.body_of_string "foobar" in
   let req = Request.make ~headers:(Header.init_with "foo" "bar") (Uri.of_string "/foo/bar") ?body in
-  Request.write (fun req oc ->
+  Request.write' (fun req oc ->
     Body.write_body (Request.write_body req oc) body
   ) req oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
@@ -237,7 +237,7 @@ let make_simple_req () =
    * by re-using it *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
-  Request.write (fun req oc -> Request.write_body req oc "foobar") req oc >>= fun () ->
+  Request.write' (fun req oc -> Request.write_body req oc "foobar") req oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
   return ()
 
@@ -250,7 +250,7 @@ let make_simple_res () =
   let oc = oc_of_buffer buf in
   let res = Response.make ~headers:(Header.of_list [("foo","bar")]) () in
   let body = Body.body_of_string "foobar" in
-  Response.write (fun res oc ->
+  Response.write' (fun res oc ->
     Body.write_body (Response.write_body res oc) body
   ) res oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
@@ -258,7 +258,7 @@ let make_simple_res () =
    * by re-using it *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
-  Response.write (fun req oc -> Response.write_body req oc "foobar") res oc >>= fun () ->
+  Response.write' (fun req oc -> Response.write_body req oc "foobar") res oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
   return ()
 

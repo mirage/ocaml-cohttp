@@ -32,8 +32,17 @@ module type S = sig
   val read_body :
     t -> ('a, 'a) State_types.chunk_handler -> IO.ic ->
     ('a, 'a, unit) State_types.PStateIO.t
+  val read_body_chunk :
+    t -> IO.ic -> Transfer.chunk IO.t
 
+  val is_form: t -> bool
+  val read_form : t -> IO.ic -> (string * string list) list IO.t
+
+  val write_header : t -> IO.oc -> unit IO.t
+  val write_body : t -> IO.oc -> string -> unit IO.t
+  val write_footer : t -> IO.oc -> unit IO.t
   val write : t -> (unit -> string option) -> IO.oc -> unit IO.t
+  val write' : (t -> IO.oc -> unit IO.t) -> t -> IO.oc -> unit IO.t
 end
 
 module Make(IO : IO.S) : S with module IO = IO

@@ -20,6 +20,7 @@ module type S = sig
   module State_types : State_types.S with module IO = IO
   val read : Transfer.encoding -> IO.ic -> ('a, 'a) State_types.chunk_handler ->
              ('a, 'a, unit) State_types.PStateIO.t
+  val read_chunk : Transfer.encoding -> IO.ic -> Transfer.chunk IO.t
   val write : Transfer.encoding -> (unit -> string option) -> IO.oc -> unit IO.t
 end
 
@@ -31,10 +32,12 @@ module Make (IO : IO.S) : S with module IO = IO = struct
   module State_types = State_types.Make(IO)
   open State_types
 
+  let read_chunk = TIO.read
+
   let read encoding ic chunk = 
     let open PStateIO in
     let rec aux () =
-      lift (TIO.read encoding ic)
+      lift (read_chunk encoding ic)
       >>= function
       | Transfer.Done -> return ()
       | Transfer.Final_chunk b -> chunk b
@@ -47,7 +50,7 @@ module Make (IO : IO.S) : S with module IO = IO = struct
       |Some buf -> IO.write oc buf >>= aux
       |None -> IO.return ()
     in 
-    aux () >>
+    aux () >>= fun () ->
     match encoding with
     |Transfer.Chunked ->
        (* TODO Trailer header support *)

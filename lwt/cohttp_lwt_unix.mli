@@ -33,7 +33,9 @@ module Body : sig
   val write_body : (string -> unit Lwt.t) -> t -> unit Lwt.t
 end
 
-module Request : sig
+module Request : Cohttp.Request.S 
+  with module IO = Cohttp_lwt_unix_io
+(*sig
   type t
   val meth : t -> Code.meth
   val uri : t -> Uri.t
@@ -56,9 +58,11 @@ module Request : sig
   val read_body : t -> Lwt_io.input_channel -> Cohttp.Transfer.chunk Lwt.t
   val write : (t -> Lwt_io.output_channel -> unit Lwt.t) -> t -> Lwt_io.output_channel -> unit Lwt.t
   val write_body : t -> Lwt_io.output_channel -> string -> unit Lwt.t
-end
+end*)
 
-module Response : sig
+module Response : Cohttp.Response.S 
+  with module IO = Cohttp_lwt_unix_io
+(*module Response : sig
   type t
   val version : t -> Code.version
   val status : t -> Code.status_code
@@ -73,7 +77,7 @@ module Response : sig
   val read_body : t -> Lwt_io.input_channel -> Cohttp.Transfer.chunk Lwt.t
   val write : (t -> Lwt_io.output_channel -> unit Lwt.t) -> t -> Lwt_io.output_channel -> unit Lwt.t
   val write_body : t -> Lwt_io.output_channel -> string -> unit Lwt.t
-end
+end*)
 
 module Client : sig
   val call :
