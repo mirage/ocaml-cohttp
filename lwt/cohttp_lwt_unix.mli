@@ -35,49 +35,9 @@ end
 
 module Request : Cohttp.Request.S 
   with module IO = Cohttp_lwt_unix_io
-(*sig
-  type t
-  val meth : t -> Code.meth
-  val uri : t -> Uri.t
-  val version : t -> Code.version
-  val path : t -> string
-  val header : t -> string -> string option
-  val headers : t -> Header.t
-  val params : t -> (string * string list) list
-  val get_param : t -> string -> string option
-  val transfer_encoding : t -> string
-
-  val make : ?meth:Code.meth -> ?version:Code.version -> 
-    ?encoding:Transfer.encoding -> ?headers:Header.t ->
-    ?body:Body.contents -> Uri.t -> t
-
-  val is_form: t -> bool
-
-  val read : Lwt_io.input_channel -> t option Lwt.t
-  val read_form : t -> Lwt_io.input_channel -> (string * string list) list Lwt.t
-  val read_body : t -> Lwt_io.input_channel -> Cohttp.Transfer.chunk Lwt.t
-  val write : (t -> Lwt_io.output_channel -> unit Lwt.t) -> t -> Lwt_io.output_channel -> unit Lwt.t
-  val write_body : t -> Lwt_io.output_channel -> string -> unit Lwt.t
-end*)
 
 module Response : Cohttp.Response.S 
   with module IO = Cohttp_lwt_unix_io
-(*module Response : sig
-  type t
-  val version : t -> Code.version
-  val status : t -> Code.status_code
-  val headers: t -> Header.t
-
-  val make : ?version:Code.version -> ?status:Code.status_code -> 
-    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> t
-
-  val is_form: t -> bool
-
-  val read : Lwt_io.input_channel -> t option Lwt.t
-  val read_body : t -> Lwt_io.input_channel -> Cohttp.Transfer.chunk Lwt.t
-  val write : (t -> Lwt_io.output_channel -> unit Lwt.t) -> t -> Lwt_io.output_channel -> unit Lwt.t
-  val write_body : t -> Lwt_io.output_channel -> string -> unit Lwt.t
-end*)
 
 module Client : sig
   val call :
