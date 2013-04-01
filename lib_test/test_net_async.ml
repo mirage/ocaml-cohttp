@@ -51,7 +51,8 @@ let test_cases =
       |Error exn -> 
         (* TODO: how to dump out top-level errors in a nicer way? *)
         Printf.fprintf stderr "err %s.\n%!" (Exn.backtrace ()); return ()
-      |Ok _ -> return ()
+      |Ok _ ->
+	Async_unix.Shutdown.exit 0
   ) in
   Async_unix.Scheduler.go ()
 
