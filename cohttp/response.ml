@@ -41,8 +41,7 @@ module type S = sig
   val write_header : t -> IO.oc -> unit IO.t
   val write_body : t -> IO.oc -> string -> unit IO.t
   val write_footer : t -> IO.oc -> unit IO.t
-  val write : t -> (unit -> string option) -> IO.oc -> unit IO.t
-  val write' : (t -> IO.oc -> unit IO.t) -> t -> IO.oc -> unit IO.t
+  val write : (t -> IO.oc -> unit IO.t) -> t -> IO.oc -> unit IO.t
 end
 
 module Make(IO : IO.S) = struct
@@ -115,13 +114,7 @@ module Make(IO : IO.S) = struct
        IO.write oc "0\r\n\r\n"
     |Transfer.Fixed _ | Transfer.Unknown -> return ()
 
-  let write req fn oc =
-    write_header req oc >>= fun () ->
-    Body_IO.write req.encoding fn oc >>= fun () ->
-    write_footer req oc
-
-  (* TODO: remove either write' or write *)
-  let write' fn req oc =
+  let write fn req oc =
     write_header req oc >>= fun () ->
     fn req oc >>= fun () ->
     write_footer req oc

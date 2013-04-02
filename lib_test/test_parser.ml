@@ -229,7 +229,7 @@ let make_simple_req () =
   let oc = oc_of_buffer buf in
   let body = Body.body_of_string "foobar" in
   let req = Request.make ~headers:(Header.init_with "foo" "bar") (Uri.of_string "/foo/bar") ?body in
-  Request.write' (fun req oc ->
+  Request.write (fun req oc ->
     Body.write_body (Request.write_body req oc) body
   ) req oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
@@ -237,7 +237,7 @@ let make_simple_req () =
    * by re-using it *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
-  Request.write' (fun req oc -> Request.write_body req oc "foobar") req oc >>= fun () ->
+  Request.write (fun req oc -> Request.write_body req oc "foobar") req oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
   return ()
 
@@ -250,7 +250,7 @@ let make_simple_res () =
   let oc = oc_of_buffer buf in
   let res = Response.make ~headers:(Header.of_list [("foo","bar")]) () in
   let body = Body.body_of_string "foobar" in
-  Response.write' (fun res oc ->
+  Response.write (fun res oc ->
     Body.write_body (Response.write_body res oc) body
   ) res oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
@@ -258,7 +258,7 @@ let make_simple_res () =
    * by re-using it *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
-  Response.write' (fun req oc -> Response.write_body req oc "foobar") res oc >>= fun () ->
+  Response.write (fun req oc -> Response.write_body req oc "foobar") res oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
   return ()
 

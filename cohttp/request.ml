@@ -47,8 +47,8 @@ module type S = sig
   val write_header : t -> IO.oc -> unit IO.t
   val write_body : t -> IO.oc -> string -> unit IO.t
   val write_footer : t -> IO.oc -> unit IO.t
-  val write : t -> (unit -> string option) -> IO.oc -> unit IO.t
-  val write' : (t -> IO.oc -> unit IO.t) -> t -> IO.oc -> unit IO.t
+  val write' : t -> (unit -> string option) -> IO.oc -> unit IO.t
+  val write : (t -> IO.oc -> unit IO.t) -> t -> IO.oc -> unit IO.t
 
   val is_form: t -> bool
   val read_form : t -> IO.ic -> (string * string list) list IO.t
@@ -132,7 +132,7 @@ module Make(IO : IO.S) = struct
         match Header.get_content_range headers with
         |Some clen -> Transfer.Fixed clen
         |None -> begin
-          match body with 
+          match body with
           |None -> Transfer.Fixed 0 
           |Some _ -> Transfer.Chunked 
         end
@@ -160,16 +160,14 @@ module Make(IO : IO.S) = struct
        IO.write oc "0\r\n\r\n"
     |Transfer.Fixed _ | Transfer.Unknown -> return ()
 
-  let write req fn oc =
-    write_header req oc >>= fun _ ->
-    Body_IO.write req.encoding fn oc >>= fun () ->
+  (* TODO: remove either write' or write *)
+  let write write_body req oc =
+    write_header req oc >>= fun () ->
+    write_body req oc >>= fun () ->
     write_footer req oc
 
-  (* TODO: remove either write' or write *)
-  let write' fn req oc =
-    write_header req oc >>= fun () ->
-    fn req oc >>= fun () ->
-    write_footer req oc
+  let write' req fn oc =
+    write (fun req oc -> Body_IO.write req.encoding fn oc) req oc
 
   let is_form req = Header.is_form req.headers
   let read_form req ic = Header_IO.parse_form req.headers ic

@@ -52,7 +52,7 @@ module Client(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
            |Some h -> Header.(add_transfer_encoding h (Transfer.Fixed clen)) in
          return (Request.make ~meth ~headers ~body uri)
     in
-    Request.write' (fun req oc ->
+    Request.write (fun req oc ->
     Cohttp_lwt_body.write_body (Request.write_body req oc) body) req oc >>= fun () ->
     read_response ~closefn ic oc
 
@@ -75,7 +75,7 @@ module Client(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
     lwt (ic, oc) = Net.connect ~ssl host port in
     (* Serialise the requests out to the wire *)
     let _ = Lwt_stream.iter_s (fun (req,body) -> 
-      Request.write' (fun req oc ->
+      Request.write (fun req oc ->
         Cohttp_lwt_body.write_body (Request.write_body req oc) body) req oc)
       reqs in
     (* Read the responses. For each response, ensure that the previous response
@@ -183,7 +183,7 @@ module Server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
       Lwt_stream.on_terminate res_stream (spec.conn_closed conn_id);
       (* Transmit the responses *)
       for_lwt (res,body) in res_stream do
-        Response.write' (fun res oc ->
+        Response.write (fun res oc ->
           Cohttp_lwt_body.write_body (Response.write_body res oc) body
         ) res oc
       done

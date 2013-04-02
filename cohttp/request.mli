@@ -47,8 +47,8 @@ module type S = sig
   val write_header : t -> IO.oc -> unit IO.t
   val write_body : t -> IO.oc -> string -> unit IO.t
   val write_footer : t -> IO.oc -> unit IO.t
-  val write : t -> (unit -> string option) -> IO.oc -> unit IO.t
-  val write' : (t -> IO.oc -> unit IO.t) -> t -> IO.oc -> unit IO.t
+  val write' : t -> (unit -> string option) -> IO.oc -> unit IO.t
+  val write : (t -> IO.oc -> unit IO.t) -> t -> IO.oc -> unit IO.t
 
   val is_form: t -> bool
   val read_form : t -> IO.ic -> (string * string list) list IO.t

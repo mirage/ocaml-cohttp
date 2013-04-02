@@ -55,11 +55,11 @@ let read =
 let read_exactly =
   check_debug
     (fun (ic : ic) buf off len ->
-      try_lwt Lwt_io.read_into_exactly ic buf off len >> return true
+      try_lwt Lwt_io.read_into_exactly ic buf off len >>= fun () ->  return true
       with End_of_file -> return false)
    (fun ic buf off len ->
       lwt rd =
-        try_lwt Lwt_io.read_into_exactly ic buf off len >> return true
+        try_lwt Lwt_io.read_into_exactly ic buf off len >>= fun () ->  return true
         with End_of_file -> return false in
       (match rd with
       |true -> Printf.eprintf "%4d <<< %S" (Unix.getpid ()) (String.sub buf off len)

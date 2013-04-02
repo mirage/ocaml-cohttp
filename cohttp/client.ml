@@ -27,13 +27,13 @@ module Make
     >>= function
     |None -> failure
     |Some res -> begin
-      response res >>
+      response res >>= fun () -> 
       match Response.has_body res with
       |false -> 
         body_end
       |true -> 
-        Response.read_body res body ic >>
-        body_end >>
+        Response.read_body res body ic >>= fun () -> 
+        body_end >>= fun () -> 
         put `Complete
     end
 
@@ -46,13 +46,13 @@ module Make
     |None ->
        let encoding = Transfer.Fixed 0 in
        let req = Request.make ~meth ~encoding ?headers ~body uri in
-       Request.write req (fun _ -> None) oc >>
+       Request.write' req (fun () -> None) oc >>= fun () -> 
        run_response (read_response signal ic)
     |Some body -> begin
        match chunked with
        |true ->
          let req = Request.make ~meth ?headers ~body uri in
-         Request.write req body oc >>
+         Request.write' req (fun () -> None) oc >>= fun () ->
          run_response (read_response signal ic)
        |false ->
          (* If chunked is not allowed, then call [body_fn] once insert length header *)
@@ -60,13 +60,13 @@ module Make
          |None ->
            let encoding = Transfer.Fixed 0 in
            let req = Request.make ~meth ~encoding ?headers ~body uri in
-           Request.write req body oc >>
+           Request.write' req body oc >>= fun () -> 
            run_response (read_response signal ic)
          |Some buf ->
            let clen = String.length buf in
            let encoding = Transfer.Fixed clen in
            let req = Request.make ~meth ~encoding ?headers ~body uri in
-           Request.write req body oc >>
+           Request.write' req body oc >>= fun () -> 
            run_response (read_response signal ic)
     end
 

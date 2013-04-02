@@ -37,7 +37,7 @@ let make_server () =
   let spec = { Server.callback; conn_closed } in
   Net.Manager.create (fun mgr interface id ->
     let src = None, 8081 in
-    Net.Manager.configure interface (`IPv4 ip) >>
+    Net.Manager.configure interface (`IPv4 ip) >>= fun () ->
     listen mgr src spec
   )
     

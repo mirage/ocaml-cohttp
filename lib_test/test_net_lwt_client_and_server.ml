@@ -57,14 +57,14 @@ let not_none_s n t fn =
 let client () =
   (* Do a set of single calls first *)
   for_lwt i = 0 to 1 do
-    not_none "get 1" (Client.get url) (fun (r,b) -> assert(b = None)) >>
+    not_none "get 1" (Client.get url) (fun (r,b) -> assert(b = None)) >>= fun () -> 
     not_none_s "post 1" (Client.post ?body:(Body.body_of_string "foobar") url)
      (fun (r,b) ->
        lwt b = Body.string_of_body b in
        assert (b = "foobar");
        return ()
      ) 
-  done >>
+  done >>= fun () -> 
   (* Do a callv *)
   let body () = Body.body_of_string "foobar" in
   let body1 = body () in
@@ -79,7 +79,7 @@ let client () =
     lwt body = Body.string_of_body body in 
     assert(body="foobar");
     return ()
-  ) resp >>
+  ) resp >>= fun () -> 
   lwt _ =  Client.get url_shutdown in
   return (exit 1) 
   
