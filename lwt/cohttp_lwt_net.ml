@@ -68,7 +68,7 @@ end
 module Tcp_server = struct
 
   let close (ic,oc) =
-    try_lwt Lwt_io.close oc with _ -> return () >>
+    try_lwt Lwt_io.close oc with _ -> return () >>= fun () ->
     try_lwt Lwt_io.close ic with _ -> return ()
 
   let init_socket sockaddr =
@@ -86,7 +86,7 @@ module Tcp_server = struct
     let events = match timeout with
       |None -> [c]
       |Some t -> [c; (Lwt_unix.sleep (float_of_int t)) ] in
-    let _ = Lwt.pick events >> close (ic,oc) in
+    let _ = Lwt.pick events >>= fun () -> close (ic,oc) in
     return ()
   
   let init ~sockaddr ~timeout callback =
@@ -119,7 +119,7 @@ let close_out oc =
   ignore_result (try_lwt Lwt_io.close oc with _ -> return ())
 
 let close' ic oc =
-  try_lwt Lwt_io.close oc with _ -> return () >>
+  try_lwt Lwt_io.close oc with _ -> return () >>= fun () ->
   try_lwt Lwt_io.close ic with _ -> return ()
 
 let close ic oc =

@@ -15,14 +15,43 @@
  *
  *)
 
-module Make(IO:Make.IO) = struct
+module type S = sig
+  module IO : IO.S
+  module State_types : State_types.S with module IO = IO
+  type t
 
-  module Header_IO = Header.Make(IO)
-  module Transfer_IO = Transfer.Make(IO)
+  val version : t -> Code.version
+  val status : t -> Code.status_code
+  val headers: t -> Header.t
 
-  type ic = IO.ic
-  type oc = IO.oc
+  val make : ?version:Code.version -> ?status:Code.status_code ->
+    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> t
+
+  val read : IO.ic -> t option IO.t
+  val has_body : t -> bool
+  val read_body :
+    t -> ('a, 'a) State_types.chunk_handler -> IO.ic ->
+    ('a, 'a, unit) State_types.PStateIO.t
+  val read_body_chunk :
+    t -> IO.ic -> Transfer.chunk IO.t
+
+  val is_form: t -> bool
+  val read_form : t -> IO.ic -> (string * string list) list IO.t
+
+  val write_header : t -> IO.oc -> unit IO.t
+  val write_body : t -> IO.oc -> string -> unit IO.t
+  val write_footer : t -> IO.oc -> unit IO.t
+  val write : (t -> IO.oc -> unit IO.t) -> t -> IO.oc -> unit IO.t
+end
+
+module Make(IO : IO.S) = struct
+  module IO = IO
   open IO
+
+  module Header_IO = Header_io.Make(IO)
+  module Body_IO = Body.Make(IO)
+  module Transfer_IO = Transfer_io.Make(IO)
+  module State_types = Body_IO.State_types
 
   type t = {
     encoding: Transfer.encoding;
@@ -64,9 +93,9 @@ module Make(IO:Make.IO) = struct
        let encoding = Header.get_transfer_encoding headers in
        return (Some { encoding; headers; version; status })
 
-  let has_body r = Transfer.has_body r.encoding
-  let read_body r ic = Transfer_IO.read r.encoding ic
-  let read_body_to_string r ic = Transfer_IO.to_string r.encoding ic
+  let has_body {encoding} = Transfer.has_body encoding
+  let read_body {encoding} fn ic = Body_IO.read encoding ic fn
+  let read_body_chunk {encoding} ic = Transfer_IO.read encoding ic
 
   let write_header res oc =
     write oc (Printf.sprintf "%s %s\r\n" (Code.string_of_version res.version) 
@@ -75,11 +104,11 @@ module Make(IO:Make.IO) = struct
     iter (IO.write oc) (Header.to_lines headers) >>= fun () ->
     IO.write oc "\r\n"
 
-  let write_body req oc buf =
-    Transfer_IO.write req.encoding oc buf
+  let write_body {encoding} oc buf =
+    Transfer_IO.write encoding oc buf
 
-  let write_footer req oc =
-    match req.encoding with
+  let write_footer {encoding} oc =
+    match encoding with
     |Transfer.Chunked ->
        (* TODO Trailer header support *)
        IO.write oc "0\r\n\r\n"

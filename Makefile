@@ -4,9 +4,7 @@ all: build test doc
 PREFIX ?= /usr/local
 NAME=cohttp
 
-LWT ?= $(shell if ocamlfind query lwt.ssl >/dev/null 2>&1; then echo --enable-lwt; fi)
-ASYNC ?= $(shell if ocamlfind query async_core >/dev/null 2>&1; then echo --enable-async; fi)
-MIRAGE ?= $(shell if ocamlfind query mirage-net >/dev/null 2>&1; then echo --enable-mirage; fi)
+ASYNC=--enable-async
 ifneq ($(MIRAGE_OS),xen)
 TESTS ?= --enable-tests
 endif
@@ -21,7 +19,7 @@ setup.data: setup.bin
 	./setup.bin -configure $(LWT) $(ASYNC) $(MIRAGE) $(TESTS) $(NETTESTS) --prefix $(PREFIX)
 
 build: setup.data setup.bin
-	./setup.bin -build
+	./setup.bin -build -classic-display
 
 doc: setup.data setup.bin
 	./setup.bin -doc

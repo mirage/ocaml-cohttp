@@ -36,9 +36,3 @@ type chunk =
 val encoding_to_string : encoding -> string
 
 val has_body : encoding -> bool
-
-module Make(IO:Make.IO) : sig
-  val read : encoding -> IO.ic -> chunk IO.t
-  val write : encoding -> IO.oc -> string -> unit IO.t 
-  val to_string : encoding -> IO.ic -> string IO.t
-end

@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2013 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,12 +15,13 @@
  *
  *)
 
-module type NET = sig
-  type ic
-  type oc
-  val connect_uri : Uri.t -> (ic * oc) Lwt.t
-  val connect : ?ssl:bool -> string -> int -> (ic * oc) Lwt.t
-  val close_in : ic -> unit
-  val close_out : oc -> unit
-  val close : ic -> oc -> unit
+module type S = sig
+  module IO : IO.S
+  module State_types : State_types.S with module IO = IO
+  val read : Transfer.encoding -> IO.ic -> ('a, 'a) State_types.chunk_handler ->
+             ('a, 'a, unit) State_types.PStateIO.t
+  val read_chunk : Transfer.encoding -> IO.ic -> Transfer.chunk IO.t
+  val write : Transfer.encoding -> (unit -> string option) -> IO.oc -> unit IO.t
 end
+
+module Make(IO : IO.S) : S with module IO = IO

@@ -15,28 +15,33 @@
  *
  *)
 
-module Make(IO:Make.IO) : sig
+module type S = sig
+  module IO : IO.S
+  module State_types : State_types.S with module IO = IO
   type t
-  type ic = IO.ic
-  type oc = IO.oc
 
-  val version: t -> Code.version
-  val status: t -> Code.status_code
+  val version : t -> Code.version
+  val status : t -> Code.status_code
   val headers: t -> Header.t
 
-  val make : ?version:Code.version -> ?status:Code.status_code -> 
+  val make : ?version:Code.version -> ?status:Code.status_code ->
     ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> t
 
-  val read: ic -> t option IO.t
+  val read : IO.ic -> t option IO.t
   val has_body : t -> bool
-  val read_body: t -> ic -> Transfer.chunk IO.t
-  val read_body_to_string : t -> ic -> string IO.t
+  val read_body :
+    t -> ('a, 'a) State_types.chunk_handler -> IO.ic ->
+    ('a, 'a, unit) State_types.PStateIO.t
+  val read_body_chunk :
+    t -> IO.ic -> Transfer.chunk IO.t
 
-  val write_header : t -> oc -> unit IO.t
-  val write_body : t -> oc -> string -> unit IO.t
-  val write_footer : t -> oc -> unit IO.t
-  val write : (t -> oc -> unit IO.t) -> t -> oc -> unit IO.t
+  val is_form: t -> bool
+  val read_form : t -> IO.ic -> (string * string list) list IO.t
 
-  val is_form : t -> bool
-  val read_form : t -> ic -> (string * string list) list IO.t
+  val write_header : t -> IO.oc -> unit IO.t
+  val write_body : t -> IO.oc -> string -> unit IO.t
+  val write_footer : t -> IO.oc -> unit IO.t
+  val write : (t -> IO.oc -> unit IO.t) -> t -> IO.oc -> unit IO.t
 end
+
+module Make(IO : IO.S) : S with module IO = IO

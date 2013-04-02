@@ -16,56 +16,9 @@
  *)
 
 open Cohttp
-
-module IO = struct
-
-  open Net
-
-  type 'a t = 'a Lwt.t
-  let (>>=) = Lwt.bind
-  let return = Lwt.return
-
-  type ic = Channel.t
-  type oc = Channel.t
-
-  let iter fn x = Lwt_list.iter_s fn x
-
-  let read_line ic =
-    match_lwt Channel.read_line ic with
-    |[] -> return None
-    |bufs -> return (Some (Cstruct.copyv bufs))
-
-  let read ic len = 
-   try_lwt
-     lwt iop = Channel.read_some ~len ic in
-     return (Cstruct.to_string iop)
-   with End_of_file -> return ""
-
-  let read_exactly ic buf off len =
-    let rec read acc left =
-      match left with
-      |0 -> 
-        return (List.rev acc)
-      |len ->
-        lwt iop = Channel.read_some ~len ic in
-        read (iop::acc) (left - (Cstruct.len iop))
-    in
-    lwt iov = read [] len in
-    (* XXX TODO this is hyper slow! *)
-    let srcbuf = Cstruct.copyv iov in
-    String.blit srcbuf 0 buf off (String.length srcbuf);
-    return true
-
-  let write oc buf = 
-    Channel.write_string oc buf 0 (String.length buf);
-    Channel.flush oc
-
-  let write_line oc buf =
-    Channel.write_line oc buf;
-    Channel.flush oc
-end
-
 open Lwt
+
+module IO = Cohttp_lwt_mirage_io
 
 module Net_IO = struct
   open Net
@@ -86,12 +39,12 @@ end
 module Request = Request.Make(IO)
 module Response = Response.Make(IO)
 module Body = Cohttp_lwt_body
-module Client = Cohttp_lwt.Client(Request)(Response)(Net_IO)
-module Server = Cohttp_lwt.Server(Request)(Response)(Net_IO)
+module Client = Cohttp_lwt.Client(IO)(Request)(Response)(Net_IO)
+module Server = Cohttp_lwt.Server(IO)(Request)(Response)(Net_IO)
 
 let listen ?timeout mgr src spec =
   (* TODO XXX the cancel-based timeout is almost certainly broken as the
-   * thread wont issue a Response *)
+   * thread won't issue a Response *)
   let cb = 
     match timeout with 
     |None -> 

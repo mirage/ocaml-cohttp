@@ -15,30 +15,10 @@
  *
  *)
 
-open OUnit
-open Printf
-open Lwt
-open Cohttp_lwt_mirage
+open Transfer
+module Make(IO : IO.S) : sig
+  val read : encoding -> IO.ic -> chunk IO.t
+  val write : encoding -> IO.oc -> string -> unit IO.t 
+  val to_string : encoding -> IO.ic -> string IO.t
+end
 
-let ip =
-  let open Net.Nettypes in
-  ( ipv4_addr_of_tuple (10l,0l,0l,2l),
-    ipv4_addr_of_tuple (255l,255l,255l,0l),
-   [ipv4_addr_of_tuple (10l,0l,0l,1l)]
-  )
-
-let make_server () =
-  let callback conn_id ?body req =
-    Server.respond_string ~status:`OK ~body:"helloworld" ()
-  in
-  let conn_closed conn_id () =
-    Printf.eprintf "conn %s closed\n%!" (Server.string_of_conn_id conn_id)
-  in
-  let spec = { Server.callback; conn_closed } in
-  Net.Manager.create (fun mgr interface id ->
-    let src = None, 8081 in
-    Net.Manager.configure interface (`IPv4 ip) >>= fun () ->
-    listen mgr src spec
-  )
-    
-let _ = OS.Main.run (make_server ()) 
