@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,26 +16,30 @@
  *)
 
 open Core.Std
-open Async_core.Std
+open Async.Std
 open Cohttp_async
 
 let show_headers h =
-  Cohttp.Header.iter (fun k v -> List.iter v ~f:(Printf.eprintf "%s: %s\n" k)) h
+  Cohttp.Header.iter (fun k v -> List.iter v ~f:(Printf.eprintf "%s: %s\n%!" k)) h
 
 let make_net_req () =
   let headers = Cohttp.Header.of_list ["connection","close"] in
-  let url = "http://anil.recoil.org/" in
-  Client.call ~headers `GET (Uri.of_string url) >>= function 
-  |None -> 
-    prerr_endline "<request failed>";
-    assert false
-  |Some (res, Some body) ->
-    prerr_endline "<body present>";
-    show_headers (Response.headers res);
-    Pipe.iter body ~f:(fun c -> return ())
-  |Some (res, None) ->
-    show_headers (Response.headers res);
-    return (prerr_endline "<null body>")
+  let uri = Uri.of_string "http://anil.recoil.org/index.html" in
+  let host = Option.value (Uri.host uri) ~default:"localhost" in
+  match Uri_services.tcp_port_of_uri ~default:"http" uri with
+  |None -> failwith "unable to resolve"
+  |Some port ->
+    Tcp.with_connection (Tcp.to_host_and_port host port)
+     (fun _ ic oc ->
+       Client.call ~headers `GET uri 
+       >>= function
+       |None -> 
+         prerr_endline "<request failed>";
+         assert false
+       |Some (res, body) ->
+         show_headers (Response.headers res);
+         Pipe.iter body ~f:(fun b -> prerr_endline ("XX " ^ b); return ())
+     )
 
 let test_cases =
   (* TODO: can multiple async tests run with separate Schedulers? Is there
@@ -47,7 +51,8 @@ let test_cases =
       |Error exn -> 
         (* TODO: how to dump out top-level errors in a nicer way? *)
         Printf.fprintf stderr "err %s.\n%!" (Exn.backtrace ()); return ()
-      |Ok _ -> return ()
+      |Ok _ ->
+	Async_unix.Shutdown.exit 0
   ) in
   Async_unix.Scheduler.go ()
 

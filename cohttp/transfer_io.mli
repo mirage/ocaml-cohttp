@@ -15,30 +15,10 @@
  *
  *)
 
-(** Module to read and write the HTTP/1.1 transfer-encoding formats.
-  * Currently supported are [chunked] and [content-length].
-  *)
-
-(** The encoding format detected from the [transfer-encoding] and
-  * [content-length] headers *)
-type encoding = 
- | Chunked         (** dynamic chunked encoding *)
- | Fixed of int    (** fixed size content *)
- | Unknown         (** unknown body size, which leads to best-effort *)
-
-(** A chunk of body that also signals if there to more to arrive *)
-type chunk =
- | Chunk of string (** chunk of data and not the end of stream *)
- | Final_chunk of string (** the last chunk of data, so no more should be read *)
- | Done (** no more body data is present *)
-
-(** Convert the encoding format to a human-readable string *)
-val encoding_to_string : encoding -> string
-
-val has_body : encoding -> bool
-
-module Make(IO:Make.IO) : sig
+open Transfer
+module Make(IO : IO.S) : sig
   val read : encoding -> IO.ic -> chunk IO.t
   val write : encoding -> IO.oc -> string -> unit IO.t 
   val to_string : encoding -> IO.ic -> string IO.t
 end
+

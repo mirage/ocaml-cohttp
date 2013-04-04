@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,17 +15,7 @@
  *
  *)
 
-module type IO = sig
-  type 'a t
-  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-  val return : 'a -> 'a t
-
-  type ic
-  type oc
-
-  val iter : ('a -> unit t) -> 'a list -> unit t
-  val read_line : ic -> string option t
-  val read : ic -> int -> string t
-  val read_exactly : ic -> string -> int -> int -> bool t
-  val write : oc -> string -> unit t
+module Make(IO : IO.S) : sig
+  val parse: IO.ic -> Header.t IO.t
+  val parse_form : Header.t -> IO.ic -> (string * string list) list IO.t
 end

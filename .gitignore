@@ -1,5 +1,6 @@
 *.swp
 _build/
+dist/
 setup.data
 setup.log
 setup.bin

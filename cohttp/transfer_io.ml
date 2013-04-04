@@ -15,31 +15,9 @@
  *
  *)
 
-type encoding =
-| Chunked
-| Fixed of int
-| Unknown
+open Transfer
 
-type chunk =
-| Chunk of string
-| Final_chunk of string
-| Done
-
-let encoding_to_string =
-  function
-  | Chunked -> "chunked"
-  | Fixed i -> Printf.sprintf "fixed[%d]" i
-  | Unknown -> "unknown"
-
-let has_body =
-  function
-  | Chunked -> true
-  | Fixed 0 -> false
-  | Unknown -> false
-  | Fixed _ -> true
-
-
-module Make(IO:Make.IO) = struct
+module Make(IO : IO.S) = struct
   open IO
 
   module Chunked = struct
@@ -57,11 +35,10 @@ module Make(IO:Make.IO) = struct
         match chunk_size with
         |None | Some 0 -> return Done
         |Some count -> begin
-          let buf = String.create count in
-          read_exactly ic buf 0 count >>=
+          read_exactly ic count >>=
           function
-          |false -> return Done
-          |true ->
+          |None -> return Done
+          |Some buf ->
             read_line ic >>= fun _ -> (* Junk the CRLF at end of chunk *)
             return (Chunk buf)
         end
@@ -81,10 +58,9 @@ module Make(IO:Make.IO) = struct
       match len with
       |0 -> return Done
       |len ->
-        let buf = String.create len in
-        read_exactly ic buf 0 len >>= function
-        |false -> return Done
-        |true -> return (Final_chunk buf)
+        read_exactly ic len >>= function
+        |None -> return Done
+        |Some buf -> return (Final_chunk buf)
 
     (* TODO enforce that the correct length is written? *)
     let write oc buf =

@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2013 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +15,8 @@
  *
  *)
 
-type t =
-  | Basic of string * string (* username, password *)
+include Cohttp.IO.S
+ with type 'a t = 'a Lwt.t
+ and type ic = Lwt_io.input_channel
+ and type oc = Lwt_io.output_channel
 
-val to_string : t -> string

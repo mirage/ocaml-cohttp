@@ -15,65 +15,13 @@
  *
  *)
 
-open Cohttp
+module Body : module type of Cohttp_lwt_body
 
-module Body : sig
-  type contents
-  type t = contents option
+module Request : Cohttp.Request.S 
+  with module IO = Cohttp_lwt_unix_io
 
-  val string_of_body : t -> string Lwt.t
-  val stream_of_body : t -> string Lwt_stream.t
-  val create_stream : ('a -> Cohttp.Transfer.chunk Lwt.t) -> 'a -> string Lwt_stream.t
-
-  val body_of_string : string -> t
-  val body_of_string_list : string list -> t
-  val body_of_stream : string Lwt_stream.t -> t
-
-  val get_length : t -> (int * t) Lwt.t
-  val write_body : (string -> unit Lwt.t) -> t -> unit Lwt.t
-end
-
-module Request : sig
-  type t
-  val meth : t -> Code.meth
-  val uri : t -> Uri.t
-  val version : t -> Code.version
-  val path : t -> string
-  val header : t -> string -> string option
-  val headers : t -> Header.t
-  val params : t -> (string * string list) list
-  val get_param : t -> string -> string option
-  val transfer_encoding : t -> string
-
-  val make : ?meth:Code.meth -> ?version:Code.version -> 
-    ?encoding:Transfer.encoding -> ?headers:Header.t ->
-    ?body:Body.contents -> Uri.t -> t
-
-  val is_form: t -> bool
-
-  val read : Lwt_io.input_channel -> t option Lwt.t
-  val read_form : t -> Lwt_io.input_channel -> (string * string list) list Lwt.t
-  val read_body : t -> Lwt_io.input_channel -> Cohttp.Transfer.chunk Lwt.t
-  val write : (t -> Lwt_io.output_channel -> unit Lwt.t) -> t -> Lwt_io.output_channel -> unit Lwt.t
-  val write_body : t -> Lwt_io.output_channel -> string -> unit Lwt.t
-end
-
-module Response : sig
-  type t
-  val version : t -> Code.version
-  val status : t -> Code.status_code
-  val headers: t -> Header.t
-
-  val make : ?version:Code.version -> ?status:Code.status_code -> 
-    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> t
-
-  val is_form: t -> bool
-
-  val read : Lwt_io.input_channel -> t option Lwt.t
-  val read_body : t -> Lwt_io.input_channel -> Cohttp.Transfer.chunk Lwt.t
-  val write : (t -> Lwt_io.output_channel -> unit Lwt.t) -> t -> Lwt_io.output_channel -> unit Lwt.t
-  val write_body : t -> Lwt_io.output_channel -> string -> unit Lwt.t
-end
+module Response : Cohttp.Response.S 
+  with module IO = Cohttp_lwt_unix_io
 
 module Client : sig
   val call :
@@ -149,6 +97,14 @@ module Server : sig
     val respond_error :
       status:Cohttp.Code.status_code ->
       body:string -> unit -> (Response.t * Body.t) Lwt.t
+
+    val respond_redirect :
+      ?headers:Cohttp.Header.t ->
+      uri:Uri.t -> unit -> (Response.t * Body.t) Lwt.t
+
+    val respond_need_auth :
+      ?headers:Cohttp.Header.t ->
+      auth:Cohttp.Auth.req -> unit -> (Response.t * Body.t) Lwt.t
 
     val respond_not_found :
       ?uri:Uri.t -> unit -> (Response.t * Body.t) Lwt.t

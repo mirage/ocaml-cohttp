@@ -1,18 +1,18 @@
 OASISFormat: 0.3
 Name:        cohttp
-Version:     0.9.3
+Version:     0.9.7
 Synopsis:    HTTP library for Lwt, Async and Mirage
-Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire
+Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire, David Scott
 License:     LGPL-2.0 with OCaml linking exception
 Plugins:     META (0.3)
 BuildTools:  ocamlbuild
 
 Library cohttp
-  Path: lib
+  Path: cohttp
   Findlibname: cohttp
   Pack: true
-  Modules: Code, Header, Request, Response, Transfer, Accept, Accept_parser, Accept_lexer, Base64, Auth, Make
-  BuildDepends:	re, uri (>= 1.3.2), uri.services
+  Modules: IO, State_types, Code, Header, Cookie, Request, Response, Transfer, Accept, Accept_parser, Accept_lexer, Base64, Auth, Header_io, Transfer_io, Client, Body
+  BuildDepends:	re, uri (>= 1.3.2), uri.services, cstruct
 
 Flag lwt
   Description: build the Lwt library
@@ -37,7 +37,7 @@ Library cohttp_lwt_unix
   Findlibname: lwt
   FindlibParent: cohttp
   BuildDepends: lwt.unix, lwt, uri, cohttp, lwt.ssl, lwt.syntax
-  Modules: Cohttp_lwt_unix, Cohttp_lwt, Cohttp_lwt_net, Cohttp_lwt_body, Cohttp_lwt_make
+  Modules: Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt, Cohttp_lwt_net, Cohttp_lwt_body, Cohttp_lwt_make
 
 Library cohttp_mirage
   Build$: flag(mirage)
@@ -46,7 +46,7 @@ Library cohttp_mirage
   Findlibname: mirage
   FindlibParent: cohttp
   BuildDepends: uri, re, cohttp, lwt.syntax, mirage, mirage-net
-  Modules: Cohttp_lwt_mirage, Cohttp_lwt, Cohttp_lwt_body, Cohttp_lwt_make
+  Modules: Cohttp_lwt_mirage_io, Cohttp_lwt_mirage, Cohttp_lwt, Cohttp_lwt_body, Cohttp_lwt_make
 
 Library cohttp_async
   Build$: flag(async)
@@ -54,15 +54,15 @@ Library cohttp_async
   Path: async
   Findlibname: async
   FindlibParent: cohttp
-  BuildDepends: uri, cohttp, async_core, async_unix, threads, async
-  Modules: Cohttp_async_raw, Cohttp_async
+  BuildDepends: uri, cohttp, async_core (>= 109.12.00), async_unix, threads, async, fable_async
+  Modules: Cohttp_async_io, Cohttp_async
 
 Document cohttp
   Title:                Cohttp docs
   Type:                 ocamlbuild (0.3)
   BuildTools+:          ocamldoc
   Install:		true
-  XOCamlbuildPath:      lib
+  XOCamlbuildPath:      cohttp
   XOCamlbuildLibraries: cohttp
 
 Document cohttp_lwt_unix
@@ -140,6 +140,15 @@ Executable test_net_lwt_google
 Executable test_net_lwt_server
   Path:               lib_test
   MainIs:             test_net_lwt_server.ml
+  Build$:             flag(tests) && flag(lwt)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.lwt
+
+Executable test_net_lwt_client_and_server
+  Path:               lib_test
+  MainIs:             test_net_lwt_client_and_server.ml
   Build$:             flag(tests) && flag(lwt)
   Custom:             true
   CompiledObject:     best

@@ -137,34 +137,17 @@ let add_transfer_encoding headers enc =
   |Unknown, Fixed len -> add headers "content-length" (string_of_int len)
   |Unknown, Unknown -> headers
 
+let add_authorization_req headers req =
+  add headers "www-authenticate" (Auth.req_to_string req)
+
 let add_authorization headers auth =
   add headers "authorization" (Auth.to_string auth)
+
+let get_authorization headers =
+  match get headers "authorization" with
+  |None -> None
+  |Some v -> Auth.of_string v
 
 let is_form headers =
   get_media_type headers = (Some "application/x-www-form-urlencoded")
 
-module Make(IO:Make.IO) = struct
-  open IO
-  module Transfer_IO = Transfer.Make(IO)
-
-  let header_sep = Re_str.regexp ": *"
-  let parse ic =
-    (* consume also trailing "^\r\n$" line *)
-    let rec parse_headers' headers =
-      read_line ic >>= function
-      |Some "" | None -> return headers
-      |Some line -> begin
-          match Re_str.bounded_split_delim header_sep line 2 with
-          | [hd;tl] ->
-              let header = String.lowercase hd in
-              parse_headers' (add headers header tl);
-          | _ -> return headers
-      end
-    in parse_headers' (init ())
-
-  let parse_form headers ic =
-    (* If the form is query-encoded, then extract those parameters also *)
-    let encoding = get_transfer_encoding headers in
-    Transfer_IO.to_string encoding ic >>= fun body ->
-    return (Uri.query_of_encoded body)
-end
