@@ -62,6 +62,7 @@ type client_error_status =
   | `Unsupported_media_type
   | `Requested_range_not_satisfiable
   | `Expectation_failed
+  | `Unprocessable_entity
   ]
 type server_error_status =
   [ `Internal_server_error
