@@ -65,6 +65,7 @@ type client_error_status =
   | `Unsupported_media_type
   | `Requested_range_not_satisfiable
   | `Expectation_failed
+  | `Unprocessable_entity
   ]
 type server_error_status =
   [ `Internal_server_error
@@ -151,6 +152,7 @@ let status_of_code (x:int) : status_code = match x with
   | 415 -> `Unsupported_media_type
   | 416 -> `Requested_range_not_satisfiable
   | 417 -> `Expectation_failed
+  | 422 -> `Unprocessable_entity
   | 500 -> `Internal_server_error
   | 501 -> `Not_implemented
   | 502 -> `Bad_gateway
@@ -194,6 +196,7 @@ let code_of_status = function
   | `Unsupported_media_type -> 415
   | `Requested_range_not_satisfiable -> 416
   | `Expectation_failed -> 417
+  | `Unprocessable_entity -> 422
   | `Internal_server_error -> 500
   | `Not_implemented -> 501
   | `Bad_gateway -> 502
@@ -237,6 +240,7 @@ let string_of_status = function
   | `Unsupported_media_type -> "415 Unsupported Media Type"
   | `Requested_range_not_satisfiable -> "416 Requested Range Not Satisfiable"
   | `Expectation_failed -> "417 Expectation Failed"
+  | `Unprocessable_entity -> "422 Unprocessable Entity"
   | `Internal_server_error -> "500 Internal Server Error"
   | `Not_implemented -> "501 Not Implemented"
   | `Bad_gateway -> "502 Bad Gateway"
@@ -280,6 +284,7 @@ let reason_phrase_of_code = function
   | 415 -> "Unsupported media type"
   | 416 -> "Requested range not satisfiable"
   | 417 -> "Expectation failed"
+  | 422 -> "Unprocessable entity"
   | 500 -> "Internal server error"
   | 501 -> "Not implemented"
   | 502 -> "Bad gateway"
