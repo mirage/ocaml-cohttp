@@ -21,6 +21,7 @@ val init_with  : string -> string -> t
 val add : t -> string -> string -> t
 val add_opt : t option -> string -> string -> t
 val remove : t -> string -> t
+val replace : t -> string -> string -> t
 val get : t -> string -> string option
 val get_multi : t -> string -> string list
 val iter : (string -> string list -> unit) -> t -> unit
@@ -44,3 +45,5 @@ val get_authorization : t -> Auth.t option
 val add_authorization_req : t -> Auth.req -> t
 val is_form : t -> bool
 
+val user_agent : string
+val prepend_user_agent : t -> string -> t
