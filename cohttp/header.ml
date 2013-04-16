@@ -20,7 +20,7 @@
 module StringMap = Map.Make(String)
 type t = string list StringMap.t
 
-let user_agent = "ocaml-cohttp/0.9.7"
+let user_agent = "ocaml-cohttp" (* TODO: include version from build system *)
 
 let headers_with_list_values = [
   "accept";"accept-charset";"accept-encoding";"accept-language";
@@ -40,6 +40,7 @@ let add_opt h k v =
   |None -> init_with k v
   |Some h -> add h k v
 let remove h k = StringMap.remove k h
+let replace h k v = StringMap.add k [v] h
 let get =
   let lhm = List.fold_left
     (fun m k -> StringMap.add k () m) StringMap.empty
@@ -156,5 +157,5 @@ let is_form headers =
 let prepend_user_agent headers user_agent =
   let k = "user-agent" in
   match get headers k with
-    | Some ua -> add (remove headers k) k (user_agent^" "^ua)
+    | Some ua -> replace headers k (user_agent^" "^ua)
     | None -> add headers k user_agent
