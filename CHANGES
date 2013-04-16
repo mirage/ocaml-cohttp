@@ -1,10 +1,10 @@
-0.9.7 (trunk):
+0.9.7 (2013-04-16):
 * Add 422 Unprocessable Entity code.
-* Refactor modules better across Lwt/Async, but incompatible with earlier releases.
+* Refactor modules better across Lwt/Async, but incompatible with earlier releases for Async (Lwt is unchanged at present).
 * Async depends on the Fable library now (http://github.com/mirage/ocaml-fable).
 * Add user agent string and User-Agent header helper function
 
-0.9.6 (2012-03-18):
+0.9.6 (2013-03-18):
 * Depend on Async (>= 109.12.00), which has an incompatible API with earlier versions.
 * Rearrange core library files for `obuild` support.
 
