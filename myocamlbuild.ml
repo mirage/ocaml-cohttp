@@ -539,5 +539,8 @@ let () =
          | After_rules ->
              flag [ "ocaml"; "compile"; "lwt_debug" ] & S[A"-ppopt"; A"-lwt-debug"];
              flag [ "ocaml"; "ocamldep"; "lwt_debug" ] & S[A"-ppopt"; A"-lwt-debug"];
+             (* Quick hack to support short-paths if available *)
+             if String.sub Sys.ocaml_version 0 4 = "4.01" then
+               flag [ "ocaml"; "compile" ] & S[A"-short-paths"];
          | _ -> ()
     )

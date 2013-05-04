@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 39b4e91c3baccf87559beea269c5aca6)
+# DO NOT EDIT (digest: b4b8a425076a4d68c097c1442031ace5)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -59,7 +59,6 @@
 <async/*.ml{,i}>: pkg_async_unix
 <async/*.ml{,i}>: pkg_threads
 <async/*.ml{,i}>: pkg_async
-<async/*.ml{,i}>: pkg_fable_async
 <async/*.ml{,i}>: pkg_re
 <async/*.ml{,i}>: pkg_uri.services
 <async/*.ml{,i}>: pkg_cstruct
@@ -169,7 +168,6 @@
 <lib_test/test_net_async.{native,byte}>: pkg_async_unix
 <lib_test/test_net_async.{native,byte}>: pkg_threads
 <lib_test/test_net_async.{native,byte}>: pkg_async
-<lib_test/test_net_async.{native,byte}>: pkg_fable_async
 <lib_test/test_net_async.{native,byte}>: pkg_re
 <lib_test/test_net_async.{native,byte}>: pkg_uri.services
 <lib_test/test_net_async.{native,byte}>: pkg_cstruct
@@ -183,7 +181,6 @@
 <lib_test/test_net_async_server.{native,byte}>: pkg_async_unix
 <lib_test/test_net_async_server.{native,byte}>: pkg_threads
 <lib_test/test_net_async_server.{native,byte}>: pkg_async
-<lib_test/test_net_async_server.{native,byte}>: pkg_fable_async
 <lib_test/test_net_async_server.{native,byte}>: pkg_re
 <lib_test/test_net_async_server.{native,byte}>: pkg_uri.services
 <lib_test/test_net_async_server.{native,byte}>: pkg_cstruct
@@ -195,7 +192,6 @@
 <lib_test/*.ml{,i}>: pkg_async_unix
 <lib_test/*.ml{,i}>: pkg_threads
 <lib_test/*.ml{,i}>: pkg_async
-<lib_test/*.ml{,i}>: pkg_fable_async
 <lib_test/*.ml{,i}>: pkg_re
 <lib_test/*.ml{,i}>: pkg_uri.services
 <lib_test/*.ml{,i}>: pkg_cstruct
