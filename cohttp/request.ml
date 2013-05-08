@@ -15,10 +15,18 @@
  *
  *)
 
+type r = { 
+  headers: Header.t;
+  meth: Code.meth;
+  uri: Uri.t;
+  version: Code.version;
+  encoding: Transfer.encoding;
+}
+
 module type S = sig
   module IO : IO.S
   module State_types : State_types.S with module IO = IO
-  type t
+  type t = r 
   val meth : t -> Code.meth
   val uri : t -> Uri.t
   val version : t -> Code.version
@@ -63,13 +71,7 @@ module Make(IO : IO.S) = struct
   module Transfer_IO = Transfer_io.Make(IO)
   module State_types = Body_IO.State_types
   
-  type t = { 
-    headers: Header.t;
-    meth: Code.meth;
-    uri: Uri.t;
-    version: Code.version;
-    encoding: Transfer.encoding;
-  }
+  type t = r 
   
   let meth r = r.meth
   let uri r = r.uri
