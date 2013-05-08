@@ -15,6 +15,17 @@
  *
  *)
 
+module type S = sig
+  module IO : IO.S
+  val call :
+    ?headers:Header.t ->
+    ?chunked:bool ->
+    ?body:(unit -> string option) ->
+    Code.meth ->
+    Uri.t ->
+    IO.ic -> IO.oc -> Response.r
+end
+
 module Make
   (IO : IO.S)
   (Request:Request.S with module IO=IO)

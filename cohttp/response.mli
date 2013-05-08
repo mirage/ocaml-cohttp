@@ -15,10 +15,17 @@
  *
  *)
 
+type r = {
+  encoding: Transfer.encoding;
+  headers: Header.t;
+  version: Code.version;
+  status: Code.status_code;
+}
+
 module type S = sig
   module IO : IO.S
   module State_types : State_types.S with module IO = IO
-  type t
+  type t = r
 
   val version : t -> Code.version
   val status : t -> Code.status_code
