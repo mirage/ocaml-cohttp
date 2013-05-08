@@ -23,6 +23,50 @@ type r = {
   encoding: Transfer.encoding;
 }
 
+let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers ?body uri =
+  let headers = 
+    match headers with
+    | None -> Header.init ()
+    | Some h -> h in
+  let encoding =
+    match encoding with
+    | None -> begin
+       (* Check for a content-length in the supplied headers first *)
+       match Header.get_content_range headers with
+       | Some clen -> Transfer.Fixed clen
+       | None -> begin
+           match body with
+           | None -> Transfer.Fixed 0 
+           | Some _ -> Transfer.Chunked 
+       end
+     end
+    | Some e -> e
+  in
+  { meth; version; headers; uri; encoding }
+
+(* Figure out a transfer encoding given some parameters.
+   @param chunked Forces chunked encoding
+ *)
+let make_request_with_encoding ?headers ?(chunked=true) ~body meth uri =
+  (* Call body once to try and get a chunk *)
+  let body = body () in
+  let req = match body with
+  | None ->
+     (* No body, so content-length is 0 *)
+     let encoding = Transfer.Fixed 0 in
+     make ~meth ~encoding ?headers ~body uri
+  | Some body -> begin
+     match chunked with
+     | true ->
+       let encoding = Transfer.Chunked in
+       make ~meth ~encoding ?headers ~body uri
+     | false ->
+       let clen = String.length body in
+       let encoding = Transfer.Fixed clen in
+       make ~meth ~encoding ?headers ~body uri
+  end in
+  req, body
+
 module type S = sig
   module IO : IO.S
   type t = r 
@@ -38,10 +82,6 @@ module type S = sig
   val get_param : t -> string -> string option
 
   val transfer_encoding : t -> string
-
-  val make : ?meth:Code.meth -> ?version:Code.version -> 
-    ?encoding:Transfer.encoding -> ?headers:Header.t ->
-    ?body:'a -> Uri.t -> t
 
   val read : IO.ic -> t option IO.t
   val has_body : t -> bool
@@ -116,27 +156,6 @@ module Make(IO : IO.S) = struct
     |None -> "localhost"
     |Some h -> h
 
-  let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers ?body uri =
-    let headers = 
-      match headers with
-      |None -> Header.init ()
-      |Some h -> h in
-    let encoding =
-      match encoding with
-      |None -> begin
-        (* Check for a content-length in the supplied headers first *)
-        match Header.get_content_range headers with
-        |Some clen -> Transfer.Fixed clen
-        |None -> begin
-          match body with
-          |None -> Transfer.Fixed 0 
-          |Some _ -> Transfer.Chunked 
-        end
-      end
-      |Some e -> e
-    in
-    { meth; version; headers; uri; encoding }
-
   let write_header req oc =
    let fst_line = Printf.sprintf "%s %s %s\r\n" (Code.string_of_method req.meth)
       (Uri.path_and_query req.uri) (Code.string_of_version req.version) in
@@ -168,3 +187,5 @@ module Make(IO : IO.S) = struct
   let is_form req = Header.is_form req.headers
   let read_form req ic = Header_IO.parse_form req.headers ic
 end
+
+

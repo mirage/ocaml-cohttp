@@ -23,6 +23,16 @@ type r = {
   encoding: Transfer.encoding;
 }
 
+val make : ?meth:Code.meth -> ?version:Code.version -> 
+  ?encoding:Transfer.encoding -> ?headers:Header.t ->
+  ?body:'a -> Uri.t -> r
+
+val make_request_with_encoding: 
+  ?headers:Header.t ->
+  ?chunked:bool ->
+  body:(unit -> string option) ->
+  Code.meth -> Uri.t -> r * string option
+
 module type S = sig
   module IO : IO.S
   type t = r
@@ -39,10 +49,6 @@ module type S = sig
 
   val transfer_encoding : t -> string
 
-  val make : ?meth:Code.meth -> ?version:Code.version -> 
-    ?encoding:Transfer.encoding -> ?headers:Header.t ->
-    ?body:'a -> Uri.t -> t
-
   val read : IO.ic -> t option IO.t
   val has_body : t -> bool
   val read_body_chunk :
@@ -57,6 +63,5 @@ module type S = sig
   val is_form: t -> bool
   val read_form : t -> IO.ic -> (string * string list) list IO.t
 end
-
 
 module Make(IO : IO.S) : S with module IO = IO
