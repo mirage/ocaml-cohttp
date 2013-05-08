@@ -26,6 +26,7 @@ module type S = sig
     IO.ic -> IO.oc -> Response.r
 end
 
+(*
 module Make
   (IO : IO.S)
   (Request:Request.S with module IO=IO)
@@ -88,4 +89,4 @@ module Make
   let put ?body ?chunked ?headers uri = call ?headers ?body ?chunked `PUT uri 
   let patch ?body ?chunked ?headers uri = call ?headers ?body ?chunked `PATCH uri 
 end
-
+*)

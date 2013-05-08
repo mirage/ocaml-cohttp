@@ -25,7 +25,6 @@ type r = {
 
 module type S = sig
   module IO : IO.S
-  module State_types : State_types.S with module IO = IO
   type t = r
   val meth : t -> Code.meth
   val uri : t -> Uri.t
@@ -46,9 +45,6 @@ module type S = sig
 
   val read : IO.ic -> t option IO.t
   val has_body : t -> bool
-  val read_body :
-    t -> ('a, 'a) State_types.chunk_handler -> IO.ic ->
-    ('a, 'a, unit) State_types.PStateIO.t
   val read_body_chunk :
     t -> IO.ic -> Transfer.chunk IO.t
 

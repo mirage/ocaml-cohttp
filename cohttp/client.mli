@@ -15,43 +15,13 @@
  *
  *)
 
-module Make
-  (IO : IO.S)
-  (Request:Request.S with module IO=IO)
-  (Response:Response.S with module IO=IO)
-  : sig
-
+module type S = sig
+  module IO : IO.S
   val call :
     ?headers:Header.t ->
-    ?chunked:bool -> ?body:(unit -> string option) -> Code.meth -> 
-    Uri.t -> (Response.t, 'a) Response.State_types.response_handler ->
-    IO.ic -> IO.oc -> unit IO.t
-
-  val head :
-    ?headers:Header.t -> Uri.t -> (Response.t, 'a) Response.State_types.response_handler -> 
-    IO.ic -> IO.oc -> unit IO.t
-
-  val get :
-    ?headers:Header.t -> Uri.t -> (Response.t, 'a) Response.State_types.response_handler ->
-    IO.ic -> IO.oc -> unit IO.t
-
-  val delete :
-    ?headers:Header.t -> Uri.t -> (Response.t, 'a) Response.State_types.response_handler ->
-    IO.ic -> IO.oc -> unit IO.t
-
-  val post :
-    ?body:(unit -> string option) -> ?chunked:bool ->
-    ?headers:Header.t -> Uri.t -> (Response.t, 'a) Response.State_types.response_handler ->
-    IO.ic -> IO.oc -> unit IO.t
-
-  val put :
-    ?body:(unit -> string option) -> ?chunked:bool ->
-    ?headers:Header.t -> Uri.t -> (Response.t, 'a) Response.State_types.response_handler ->
-    IO.ic -> IO.oc -> unit IO.t
-
-  val patch :
-    ?body:(unit -> string option) -> ?chunked:bool ->
-    ?headers:Header.t -> Uri.t -> (Response.t, 'a) Response.State_types.response_handler ->
-    IO.ic -> IO.oc -> unit IO.t
-
+    ?chunked:bool ->
+    ?body:(unit -> string option) ->
+    Code.meth ->
+    Uri.t ->
+    IO.ic -> IO.oc -> Response.r
 end
