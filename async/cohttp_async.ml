@@ -19,6 +19,13 @@ open Core.Std
 open Async.Std
 
 module IO = struct
+  let check_debug norm_fn debug_fn =
+    try
+      (* XXX why does Async remove getenv? *)
+      ignore(Core.Std.Sys.getenv_exn "COHTTP_DEBUG");
+      debug_fn
+    with Failure _ ->
+      norm_fn
 
   type 'a t = 'a Deferred.t
   let (>>=) = Deferred.(>>=)
@@ -52,9 +59,10 @@ module IO = struct
     |`Ok -> return (Some buf)
     |`Eof _ -> return None
 
-  let write oc buf =
-    Writer.write oc buf;
-    return ()
+  let write =
+    check_debug
+      (fun oc buf -> Writer.write oc buf; return ())
+      (fun oc buf -> Printf.eprintf "\n%4d >>> %s" (Pid.to_int (Unix.getpid ())) buf; Writer.write oc buf; return ())
 
   let write_line oc buf =
     Writer.write oc buf;
@@ -63,63 +71,78 @@ module IO = struct
 end
 
 module Net = struct
-  let connect ~uri ~f =
+  let connect ?interrupt uri =
     let host = Option.value (Uri.host uri) ~default:"localhost" in
     match Uri_services.tcp_port_of_uri ~default:"http" uri with
-    |None -> f `Unknown_service
-    |Some port ->
-      Tcp.with_connection (Tcp.to_host_and_port host port)
-        (fun _ ic oc -> f (`Ok (ic,oc)))
+    |None -> raise (Failure "Net.connect") (* TODO proper exception *)
+    |Some port -> Tcp.connect ?interrupt (Tcp.to_host_and_port host port)
 end
 
 module Response = Cohttp.Response.Make(IO)
-module Request = Cohttp.Request.Make(IO)
+module Req = Cohttp.Request.Make(IO)
 module Client = struct
 
-  
-(*
-  let call ?headers ?(chunked=false) ?body meth uri =
-    let ivar = Ivar.create () in
-    let state = ref `Waiting_for_response in
-    let signal_handler s =
-      match !state,s with
-      |`Waiting_for_response, `Response resp ->
+  let call ?interrupt ?headers ?(chunked=false) ?body meth uri =
+    (match body with
+      | None -> return []
+      | Some body -> Pipe.to_list body 
+    ) >>= fun body_bufs ->
+    let req =
+      match body_bufs,chunked with
+      | [],true     (* Dont used chunked encoding with an empty body *)
+      | _,false ->  (* If we dont want chunked, calculate a content length *)
+        let body_length = List.fold ~init:0 ~f:(fun a b -> String.length b + a) body_bufs in
+        Cohttp.Request.make_for_client ?headers ~chunked:false ~body_length meth uri 
+      | _,true ->   (* Use chunked encoding if there is a body *)
+        Cohttp.Request.make_for_client ?headers ~chunked meth uri
+    in
+    Net.connect ?interrupt uri
+    >>= fun (_,ic,oc) ->
+    (* Write request down the wire *)
+    Req.write_header req oc
+    >>= fun () ->
+    Deferred.List.iter ~f:(fun b -> Req.write_body req oc b) body_bufs
+    >>= fun () ->
+    Req.write_footer req oc
+    >>= fun () ->
+    Response.read ic
+    >>= function
+      | None -> return None
+      | Some res ->
+        (* Build a response pipe for the body *)
         let rd,wr = Pipe.create () in
-        state := `Getting_body wr;
-        Ivar.fill ivar (resp, rd);
-        return ()
-      |`Getting_body wr, `Body buf ->
-        Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
-        >>= (function
-        |`Closed -> (* Junk rest of the body *)
-          state := `Junking_body;
-          return ()
-        |`Ok _ -> return ())
-      |`Getting_body wr, `Body_end ->
-        state := `Complete;
-        Pipe.close wr;
-        return ()
-      |`Junking_body, `Body _ -> return ()
-      |`Junking_body, `Body_end ->
-        state := `Complete;
-        return ()
-      |`Waiting_for_response, `Body _
-      |`Waiting_for_response, `Body_end
-      |_, `Failure
-      |`Junking_body, `Response _
-      |`Getting_body _, `Response _ ->
-        (* TODO warning and non-fatal *)
-        assert false
-      |`Complete, _ -> return ()
-    in 
-    Net.connect ~uri ~f:(function
-    |`Unknown_service -> return None
-    |`Ok (ic,oc) ->
-      (* Establish the remote HTTP connection *)
-      call ?headers ~chunked ?body meth uri signal_handler ic oc
-      >>= fun () ->
-      Ivar.read ivar >>= fun x -> 
-      return (Some x)
-    )
-*)
+        don't_wait_for (
+          let rec aux () =
+            let open Cohttp.Transfer in
+            Response.read_body_chunk res ic
+            >>= function
+              | Done ->
+                Pipe.close wr;
+                Writer.close oc
+                >>= fun () ->
+                Reader.close ic
+              | Chunk buf ->
+                Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
+                >>= (function
+                    | `Closed ->
+                      Writer.close oc
+                      >>= fun () ->
+                      Reader.close ic
+                    |`Ok _ -> 
+                      aux ()
+                  )
+              | Final_chunk buf ->
+                Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
+                >>= (function
+                    | `Closed ->
+                      Writer.close oc
+                      >>= fun () ->
+                      Reader.close ic
+                    |`Ok _ -> 
+                      Pipe.close wr;
+                      return ()
+                  )
+          in aux ()
+        );
+        return (Some (res, rd))
 end
