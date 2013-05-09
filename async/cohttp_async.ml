@@ -86,8 +86,8 @@ module Client = struct
 
   let call ?interrupt ?headers ?(chunked=false) ?body meth uri =
     (match body with
-      | None -> return []
-      | Some body -> Pipe.to_list body 
+     | None -> return []
+     | Some body -> Pipe.to_list body 
     ) >>= fun body_bufs ->
     let req =
       match body_bufs,chunked with
@@ -107,46 +107,46 @@ module Client = struct
     >>= fun () ->
     ReqIO.write_footer req oc
     >>= fun () ->
+    (* Read response *)
     ResIO.read ic
-    >>= function
-      | None -> raise (Failure "Error reading HTTP response")
-      | Some res ->
-        (* Build a response pipe for the body *)
-        let rd,wr = Pipe.create () in
-        don't_wait_for (
-          let rec aux () =
-            let open Cohttp.Transfer in
-            ResIO.read_body_chunk res ic
-            >>= function
-              | Done ->
-                Pipe.close wr;
-                Writer.close oc
-                >>= fun () ->
-                Reader.close ic
-              | Chunk buf ->
-                Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
-                >>= (function
-                    | `Closed ->
-                      Writer.close oc
-                      >>= fun () ->
-                      Reader.close ic
-                    |`Ok _ -> 
-                      aux ()
-                  )
-              | Final_chunk buf ->
-                Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
-                >>= (function
-                    | `Closed ->
-                      Writer.close oc
-                      >>= fun () ->
-                      Reader.close ic
-                    |`Ok _ -> 
-                      Pipe.close wr;
-                      return ()
-                  )
-          in aux ()
-        );
-        return (res, rd)
+    >>= fun res ->
+    let res = Option.value_exn ~message:"Error reading HTTP response" res in
+    (* Build a response pipe for the body *)
+    let rd,wr = Pipe.create () in
+    don't_wait_for (
+      let rec aux () =
+        let open Cohttp.Transfer in
+        ResIO.read_body_chunk res ic
+        >>= function
+          | Done ->
+            Pipe.close wr;
+            Writer.close oc
+            >>= fun () ->
+            Reader.close ic
+          | Chunk buf ->
+            Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
+            >>= (function
+                | `Closed ->
+                  Writer.close oc
+                  >>= fun () ->
+                  Reader.close ic
+                |`Ok _ -> 
+                  aux ()
+              )
+          | Final_chunk buf ->
+            Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
+            >>= (function
+                | `Closed ->
+                  Writer.close oc
+                  >>= fun () ->
+                  Reader.close ic
+                |`Ok _ -> 
+                  Pipe.close wr;
+                  return ()
+              )
+      in aux ()
+    );
+    return (res, rd)
 end
 
 module Server = struct
