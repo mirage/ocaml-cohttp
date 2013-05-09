@@ -75,9 +75,9 @@ let read_exactly ic len =
 let write =
   check_debug
     (fun oc buf -> Lwt_io.write oc buf)
-    (fun oc buf -> Printf.eprintf "%4d >>> %s" (Unix.getpid ()) buf; Lwt_io.write oc buf)
+    (fun oc buf -> Printf.eprintf "\n%4d >>> %s" (Unix.getpid ()) buf; Lwt_io.write oc buf)
 
 let write_line =
   check_debug
     (fun oc buf -> Lwt_io.write_line oc buf)
-    (fun oc buf -> Printf.eprintf "%4d >>> %s\n" (Unix.getpid ()) buf; Lwt_io.write_line oc buf)
+    (fun oc buf -> Printf.eprintf "\n%4d >>> %s\n" (Unix.getpid ()) buf; Lwt_io.write_line oc buf)
