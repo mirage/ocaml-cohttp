@@ -70,8 +70,8 @@ let client () =
   let body1 = body () in
   let body2 = body () in
   let reqs = Lwt_stream.of_list [
-    Request.make ?body:body1 (Uri.of_string "/post"), body1;
-    Request.make ?body:body2 ~headers:(Header.of_list ["connection","close"])
+    Request.make ~encoding:Transfer.Chunked (Uri.of_string "/post"), body1;
+    Request.make ~encoding:Transfer.Chunked ~headers:(Header.of_list ["connection","close"])
       (Uri.of_string "/post"), body2;
   ] in
   lwt resp = Client.callv address port reqs in

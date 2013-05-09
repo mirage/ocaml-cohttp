@@ -228,7 +228,7 @@ let make_simple_req () =
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
   let body = Body.body_of_string "foobar" in
-  let req = Request.make ~headers:(Header.init_with "foo" "bar") (Uri.of_string "/foo/bar") ?body in
+  let req = Request.make ~encoding:Transfer.Chunked ~headers:(Header.init_with "foo" "bar") (Uri.of_string "/foo/bar") in
   Request.write (fun req oc ->
     Body.write_body (Request.write_body req oc) body
   ) req oc >>= fun () ->
