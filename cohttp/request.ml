@@ -23,6 +23,8 @@ type r = {
   encoding: Transfer.encoding;
 }
 
+let headers r = r.headers
+
 let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
   let headers = 
     match headers with

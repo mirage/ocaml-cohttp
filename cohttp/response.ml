@@ -22,6 +22,8 @@ type r = {
   status: Code.status_code;
 }
 
+let headers r = r.headers
+
 module type S = sig
   module IO : IO.S
   type t = r

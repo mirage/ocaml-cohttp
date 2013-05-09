@@ -23,6 +23,8 @@ type r = {
   encoding: Transfer.encoding;
 }
 
+val headers : r -> Header.t
+
 val make : ?meth:Code.meth -> ?version:Code.version -> 
   ?encoding:Transfer.encoding -> ?headers:Header.t ->
   Uri.t -> r

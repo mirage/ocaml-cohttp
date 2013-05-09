@@ -22,6 +22,8 @@ type r = {
   status: Code.status_code;
 }
 
+val headers : r -> Header.t
+
 module type S = sig
   module IO : IO.S
   type t = r
