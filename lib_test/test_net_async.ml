@@ -27,13 +27,9 @@ let make_net_req () =
   let uri = Uri.of_string "http://anil.recoil.org/" in
   let body = None in
   Client.call ~headers ?body `GET uri 
-  >>= function
-  | None -> 
-      prerr_endline "<request failed>";
-      assert false
-  | Some (res, body) ->
-      show_headers (Response.headers res);
-      Pipe.iter body ~f:(fun b -> prerr_endline ("XX " ^ b); return ())
+  >>= fun (res, body) ->
+   show_headers (Cohttp.Response.headers res);
+   Pipe.iter body ~f:(fun b -> prerr_endline ("XX " ^ b); return ())
 
 (* Create your own code from requestb.in *)
 let requestbin_code = "17euz0n1"
@@ -48,13 +44,9 @@ let make_net_post_req () =
    |n -> make_body (sprintf "fooooobody%d" n :: acc) (n-1) in
   let body = Pipe.of_list (make_body [] 2) in
   Client.call ~headers ~body `POST uri 
-  >>= function
-  | None -> 
-      prerr_endline "<request failed>";
-      assert false
-  | Some (res, body) ->
-      show_headers (Response.headers res);
-      Pipe.iter body ~f:(fun b -> prerr_endline ("XX " ^ b); return ())
+  >>= fun (res, body) ->
+    show_headers (Cohttp.Response.headers res);
+    Pipe.iter body ~f:(fun b -> prerr_endline ("XX " ^ b); return ())
 
 let test_cases =
   (* TODO: can multiple async tests run with separate Schedulers? Is there

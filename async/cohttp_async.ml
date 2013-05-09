@@ -78,8 +78,10 @@ module Net = struct
     |Some port -> Tcp.connect ?interrupt (Tcp.to_host_and_port host port)
 end
 
-module Response = Cohttp.Response.Make(IO)
-module Req = Cohttp.Request.Make(IO)
+module ResIO = Cohttp.Response.Make(IO)
+module ReqIO = Cohttp.Request.Make(IO)
+open Cohttp
+
 module Client = struct
 
   let call ?interrupt ?headers ?(chunked=false) ?body meth uri =
@@ -92,29 +94,29 @@ module Client = struct
       | [],true     (* Dont used chunked encoding with an empty body *)
       | _,false ->  (* If we dont want chunked, calculate a content length *)
         let body_length = List.fold ~init:0 ~f:(fun a b -> String.length b + a) body_bufs in
-        Cohttp.Request.make_for_client ?headers ~chunked:false ~body_length meth uri 
+        Request.make_for_client ?headers ~chunked:false ~body_length meth uri 
       | _,true ->   (* Use chunked encoding if there is a body *)
-        Cohttp.Request.make_for_client ?headers ~chunked meth uri
+        Request.make_for_client ?headers ~chunked meth uri
     in
     Net.connect ?interrupt uri
     >>= fun (_,ic,oc) ->
     (* Write request down the wire *)
-    Req.write_header req oc
+    ReqIO.write_header req oc
     >>= fun () ->
-    Deferred.List.iter ~f:(fun b -> Req.write_body req oc b) body_bufs
+    Deferred.List.iter ~f:(fun b -> ReqIO.write_body req oc b) body_bufs
     >>= fun () ->
-    Req.write_footer req oc
+    ReqIO.write_footer req oc
     >>= fun () ->
-    Response.read ic
+    ResIO.read ic
     >>= function
-      | None -> return None
+      | None -> raise (Failure "Error reading HTTP response")
       | Some res ->
         (* Build a response pipe for the body *)
         let rd,wr = Pipe.create () in
         don't_wait_for (
           let rec aux () =
             let open Cohttp.Transfer in
-            Response.read_body_chunk res ic
+            ResIO.read_body_chunk res ic
             >>= function
               | Done ->
                 Pipe.close wr;
@@ -144,5 +146,9 @@ module Client = struct
                   )
           in aux ()
         );
-        return (Some (res, rd))
+        return (res, rd)
+end
+
+module Server = struct
+
 end
