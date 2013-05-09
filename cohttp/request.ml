@@ -23,7 +23,7 @@ type r = {
   encoding: Transfer.encoding;
 }
 
-let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers ?body uri =
+let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
   let headers = 
     match headers with
     | None -> Header.init ()
@@ -34,38 +34,23 @@ let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers ?body uri =
        (* Check for a content-length in the supplied headers first *)
        match Header.get_content_range headers with
        | Some clen -> Transfer.Fixed clen
-       | None -> begin
-           match body with
-           | None -> Transfer.Fixed 0 
-           | Some _ -> Transfer.Chunked 
-       end
+       | None -> Transfer.Fixed 0 
      end
     | Some e -> e
   in
   { meth; version; headers; uri; encoding }
 
-(* Figure out a transfer encoding given some parameters.
+(* Make a client request, which involves guessing encoding and
+   adding content headers if appropriate.
    @param chunked Forces chunked encoding
  *)
-let make_request_with_encoding ?headers ?(chunked=true) ~body meth uri =
-  (* Call body once to try and get a chunk *)
-  let body = body () in
-  let req = match body with
-  | None ->
-     (* No body, so content-length is 0 *)
-     let encoding = Transfer.Fixed 0 in
-     make ~meth ~encoding ?headers ~body uri
-  | Some body -> begin
-     match chunked with
-     | true ->
-       let encoding = Transfer.Chunked in
-       make ~meth ~encoding ?headers ~body uri
-     | false ->
-       let clen = String.length body in
-       let encoding = Transfer.Fixed clen in
-       make ~meth ~encoding ?headers ~body uri
-  end in
-  req, body
+let make_for_client ?headers ?(chunked=true) ?(body_length=0) meth uri =
+  let encoding =
+    match chunked with
+    | true -> Transfer.Chunked
+    | false -> Transfer.Fixed body_length
+  in
+  make ~meth ~encoding ?headers uri
 
 module type S = sig
   module IO : IO.S
@@ -96,6 +81,9 @@ module type S = sig
 
   val is_form: t -> bool
   val read_form : t -> IO.ic -> (string * string list) list IO.t
+
+  val make : ?meth:Code.meth -> ?version:Code.version -> 
+    ?encoding:Transfer.encoding -> ?headers:Header.t -> Uri.t -> r
 end
 
 module Make(IO : IO.S) = struct
@@ -186,6 +174,7 @@ module Make(IO : IO.S) = struct
 
   let is_form req = Header.is_form req.headers
   let read_form req ic = Header_IO.parse_form req.headers ic
+  let make = make
 end
 
 

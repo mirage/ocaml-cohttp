@@ -25,13 +25,13 @@ type r = {
 
 val make : ?meth:Code.meth -> ?version:Code.version -> 
   ?encoding:Transfer.encoding -> ?headers:Header.t ->
-  ?body:'a -> Uri.t -> r
+  Uri.t -> r
 
-val make_request_with_encoding: 
+val make_for_client:
   ?headers:Header.t ->
   ?chunked:bool ->
-  body:(unit -> string option) ->
-  Code.meth -> Uri.t -> r * string option
+  ?body_length:int ->
+  Code.meth -> Uri.t -> r
 
 module type S = sig
   module IO : IO.S
@@ -62,6 +62,9 @@ module type S = sig
 
   val is_form: t -> bool
   val read_form : t -> IO.ic -> (string * string list) list IO.t
+
+  val make : ?meth:Code.meth -> ?version:Code.version -> 
+    ?encoding:Transfer.encoding -> ?headers:Header.t -> Uri.t -> r
 end
 
 module Make(IO : IO.S) : S with module IO = IO
