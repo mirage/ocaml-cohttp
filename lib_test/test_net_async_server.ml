@@ -16,13 +16,14 @@
  *)
 
 open Core.Std
-open Async.Std
-open Cohttp_async
 
 let ls_dir =
-  Core.Std.Sys.ls_dir "."
+  Sys.ls_dir "."
   |> List.filter ~f:(fun fname ->
-      match Core.Std.Sys.is_file fname with |`Yes -> true |_ -> false)
+      match Sys.is_file fname with |`Yes -> true |_ -> false)
+
+open Async.Std
+open Cohttp_async
 
 let handler ?body sock req =
   let uri = Cohttp.Request.uri req in
