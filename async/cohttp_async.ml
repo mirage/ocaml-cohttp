@@ -70,13 +70,27 @@ module IO = struct
 
   let write =
     check_debug
-      (fun oc buf -> Writer.write oc buf; return ())
-      (fun oc buf -> Printf.eprintf "\n%4d >>> %s" (Pid.to_int (Unix.getpid ())) buf; Writer.write oc buf; return ())
+      (fun oc buf -> 
+         Writer.write oc buf; 
+         return ())
+      (fun oc buf -> 
+         Printf.eprintf "\n%4d >>> %s" (Pid.to_int (Unix.getpid ())) buf; 
+         Writer.write oc buf;
+         return ())
 
   let write_line oc buf =
-    Writer.write oc buf;
-    Writer.write oc "\r\n";
-    return ()
+    check_debug
+      (fun oc buf ->
+         Writer.write oc buf;
+         Writer.write oc "\r\n";
+         return ()
+      )
+      (fun oc buf ->
+         Printf.eprintf "\n%4d >>>> %s\n" (Pid.to_int (Unix.getpid())) buf;
+         Writer.write oc buf;
+         Writer.write oc "\r\n";
+         return ()
+      )
 end
 
 module Net = struct
@@ -171,6 +185,8 @@ module Server = struct
     server: ('address, 'listening_on) Tcp.Server.t;
   }
 
+  type response = Writer.t -> unit Deferred.t
+
   let close t = Tcp.Server.close t.server
   let close_finished t = Tcp.Server.close_finished t.server
   let is_closed t = Tcp.Server.is_closed t.server
@@ -192,31 +208,66 @@ module Server = struct
         Some (pipe_of_body read_chunk rd wr)
     in
     handle_request ?body sock req
-    >>= fun response_fn ->
-    response_fn wr
+    >>= fun response ->
+    response wr
 
-  let respond ?body ?headers status wr =
-    let headers = Header.add_opt headers "connection" "close" in
-    match body with
-    | None ->
-      let res = ResIO.make ~status ~encoding:(Transfer.Fixed 0) ~headers () in
-      ResIO.write_header res wr
-      >>= fun () ->
-      ResIO.write_footer res wr
-      >>= fun () ->
-      Writer.close wr
-    | Some body ->
-      let res = ResIO.make ~status ~encoding:Transfer.Chunked ~headers () in
-      ResIO.write_header res wr
-      >>= fun () ->
-      Pipe.iter body ~f:(ResIO.write_body res wr)
-      >>= fun () ->
-      ResIO.write_footer res wr
-      >>= fun () ->
-      Writer.close wr
+  let respond ?body ?headers status : response =
+    fun wr ->
+      let headers = Header.add_opt headers "connection" "close" in
+      match body with
+      | None ->
+        let res = ResIO.make ~status ~encoding:(Transfer.Fixed 0) ~headers () in
+        ResIO.write_header res wr
+        >>= fun () ->
+        ResIO.write_footer res wr
+        >>= fun () ->
+        Writer.close wr
+      | Some body ->
+        let res = ResIO.make ~status ~encoding:Transfer.Chunked ~headers () in
+        ResIO.write_header res wr
+        >>= fun () ->
+        Pipe.iter body ~f:(ResIO.write_body res wr)
+        >>= fun () ->
+        ResIO.write_footer res wr
+        >>= fun () ->
+        Writer.close wr
+
+  let respond_with_pipe ?headers body =
+    return (respond ~body ?headers `OK)
+
+  let respond_with_string ?headers ?(code=`OK) body =
+    let body = Pipe.of_list [body] in
+    return (respond ~body ?headers code)
+
+  let resolve_local_file ~docroot ~uri =
+    (* This normalises the Uri and strips out .. characters *)
+    Uri.path (Uri.resolve "" (Uri.of_string "") uri)
+    |> Filename.concat docroot
+
+  let error_body_default =
+    "<html><body><h1>404 Not Found</h1></body></html>"
+
+  let respond_with_file ?headers ?error_body filename =
+    Monitor.try_with ~run:`Now
+      (fun () ->
+         Reader.open_file filename
+         >>= fun rd ->
+         let body = Reader.pipe rd in
+         return (respond ~body ?headers `OK)
+      )
+    >>= function
+      |Ok res -> return res
+      |Error exn ->
+        let error_body = Option.value ~default:error_body_default error_body in
+        respond_with_string ~code:`Not_found error_body
 
 
-  let create ?max_connections ?max_pending_connections ?buffer_age_limit ?on_handler_error where_to_listen handle_request =
-    Tcp.Server.create ?max_connections ?max_pending_connections ?buffer_age_limit ?on_handler_error where_to_listen (handle_client handle_request)
+  let create ?max_connections ?max_pending_connections 
+      ?buffer_age_limit ?on_handler_error where_to_listen handle_request =
+    Tcp.Server.create ?max_connections ?max_pending_connections 
+      ?buffer_age_limit ?on_handler_error 
+      where_to_listen (handle_client handle_request)
+    >>| fun server ->
+    { server }
 
 end
