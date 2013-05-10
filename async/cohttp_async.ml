@@ -38,11 +38,20 @@ module IO = struct
   let iter fn x =
     Deferred.List.iter x ~f:fn 
 
-  let read_line ic =
-    Reader.read_line ic >>=
-    function
-    |`Ok s -> return (Some s)
-    |`Eof -> return None
+  let read_line =
+    check_debug
+      (fun ic ->
+         Reader.read_line ic >>=
+         function
+         |`Ok s -> return (Some s)
+         |`Eof -> return None
+      )
+      (fun ic ->
+         Reader.read_line ic >>=
+         function
+         |`Ok s -> Printf.eprintf "<<< %s\n" s; return (Some s)
+         |`Eof -> Printf.eprintf "<<<EOF\n"; return None
+      )
 
   let read = 
     let buf = String.create 4096 in
@@ -82,13 +91,50 @@ module ResIO = Cohttp.Response.Make(IO)
 module ReqIO = Cohttp.Request.Make(IO)
 open Cohttp
 
+let pipe_of_body read_chunk ic oc =
+  let rd,wr = Pipe.create () in
+  let rec aux () =
+    let open Cohttp.Transfer in
+    read_chunk ic
+    >>= function
+      | Chunk buf ->
+        Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
+        >>= (function
+            | `Closed ->
+              Writer.close oc
+              >>= fun () ->
+              Reader.close ic
+            |`Ok _ -> 
+              aux ()
+          )
+      | Final_chunk buf ->
+        Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
+        >>= (function
+            | `Closed ->
+              Writer.close oc
+              >>= fun () ->
+              Reader.close ic
+            |`Ok _ -> 
+              Pipe.close wr;
+              return ()
+      | Done ->
+        Pipe.close wr;
+        Writer.close oc
+        >>= fun () ->
+        Reader.close ic
+          )
+  in don't_wait_for (aux ());
+  rd
+
 module Client = struct
 
   let call ?interrupt ?headers ?(chunked=false) ?body meth uri =
+    (* Convert the body Pipe to a list of chunks. *)
     (match body with
      | None -> return []
      | Some body -> Pipe.to_list body 
     ) >>= fun body_bufs ->
+    (* Figure out an appropriate transfer encoding *)
     let req =
       match body_bufs,chunked with
       | [],true     (* Dont used chunked encoding with an empty body *)
@@ -98,6 +144,7 @@ module Client = struct
       | _,true ->   (* Use chunked encoding if there is a body *)
         Request.make_for_client ?headers ~chunked meth uri
     in
+    (* Connect to the remote side *)
     Net.connect ?interrupt uri
     >>= fun (_,ic,oc) ->
     (* Write request down the wire *)
@@ -112,43 +159,64 @@ module Client = struct
     >>= fun res ->
     let res = Option.value_exn ~message:"Error reading HTTP response" res in
     (* Build a response pipe for the body *)
-    let rd,wr = Pipe.create () in
-    don't_wait_for (
-      let rec aux () =
-        let open Cohttp.Transfer in
-        ResIO.read_body_chunk res ic
-        >>= function
-          | Done ->
-            Pipe.close wr;
-            Writer.close oc
-            >>= fun () ->
-            Reader.close ic
-          | Chunk buf ->
-            Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
-            >>= (function
-                | `Closed ->
-                  Writer.close oc
-                  >>= fun () ->
-                  Reader.close ic
-                |`Ok _ -> 
-                  aux ()
-              )
-          | Final_chunk buf ->
-            Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
-            >>= (function
-                | `Closed ->
-                  Writer.close oc
-                  >>= fun () ->
-                  Reader.close ic
-                |`Ok _ -> 
-                  Pipe.close wr;
-                  return ()
-              )
-      in aux ()
-    );
+    let rd = pipe_of_body (ResIO.read_body_chunk res) ic oc in
     return (res, rd)
+
+  let get ?interrupt ?headers uri =
+    call ?interrupt ?headers ~chunked:false `GET uri
 end
 
 module Server = struct
+  type ('address, 'listening_on) t = {
+    server: ('address, 'listening_on) Tcp.Server.t;
+  }
+
+  let close t = Tcp.Server.close t.server
+  let close_finished t = Tcp.Server.close_finished t.server
+  let is_closed t = Tcp.Server.is_closed t.server
+
+  (* Turn an incoming TCP request into an HTTP request and
+     dispatch it to [handle_request] *)
+  let handle_client handle_request sock rd wr =
+    ReqIO.read rd
+    >>= fun req ->
+    Option.value_exn ~message:"Error reading HTTP request" req
+    |> fun req ->
+    (* Create pipe for response body if it exists *)
+    let body =
+      match ReqIO.has_body req with
+      | false -> None
+      | true ->
+        (* Create a Pipe for the body *)
+        let read_chunk = ReqIO.read_body_chunk req in
+        Some (pipe_of_body read_chunk rd wr)
+    in
+    handle_request ?body sock req
+    >>= fun response_fn ->
+    response_fn wr
+
+  let respond ?body ?headers status wr =
+    let headers = Header.add_opt headers "connection" "close" in
+    match body with
+    | None ->
+        let res = ResIO.make ~status ~encoding:(Transfer.Fixed 0) ~headers () in
+        ResIO.write_header res wr
+        >>= fun () ->
+        ResIO.write_footer res wr
+        >>= fun () ->
+        Writer.close wr
+    | Some body ->
+        let res = ResIO.make ~status ~encoding:Transfer.Chunked ~headers () in
+        ResIO.write_header res wr
+        >>= fun () ->
+        Pipe.iter body ~f:(ResIO.write_body res wr)
+        >>= fun () ->
+        ResIO.write_footer res wr
+        >>= fun () ->
+        Writer.close wr
+
+
+  let create ?max_connections ?max_pending_connections ?buffer_age_limit ?on_handler_error where_to_listen handle_request =
+    Tcp.Server.create ?max_connections ?max_pending_connections ?buffer_age_limit ?on_handler_error where_to_listen (handle_client handle_request)
 
 end
