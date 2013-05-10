@@ -146,6 +146,15 @@ Executable test_net_lwt_server
   Install:            false
   BuildDepends:       cohttp, cohttp.lwt
 
+Executable test_net_lwt_multi_get
+  Path:               lib_test
+  MainIs:             test_net_lwt_multi_get.ml
+  Build$:             flag(tests) && flag(lwt)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.lwt
+
 Executable test_net_lwt_client_and_server
   Path:               lib_test
   MainIs:             test_net_lwt_client_and_server.ml
@@ -167,6 +176,15 @@ Executable test_net_mirage_server
 Executable test_net_async
   Path:               lib_test
   MainIs:             test_net_async.ml
+  Build$:             flag(tests) && flag(async)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.async, oUnit (>= 1.0.2)
+
+Executable test_net_async_multi_get
+  Path:               lib_test
+  MainIs:             test_net_async_multi_get.ml
   Build$:             flag(tests) && flag(async)
   Custom:             true
   CompiledObject:     best

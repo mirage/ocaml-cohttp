@@ -55,8 +55,8 @@ let not_none_s n t fn =
   |Some x -> fn x >>= fun () -> return (prerr_endline ("OK " ^ n))
 
 let client () =
-  (* Do a set of single calls first *)
-  for_lwt i = 0 to 1 do
+  (* Do a set of single calls first and consume the body *)
+  for_lwt i = 0 to 1000 do
     not_none "get 1" (Client.get url) (fun (r,b) -> assert(b = None)) >>= fun () -> 
     not_none_s "post 1" (Client.post ?body:(Body.body_of_string "foobar") url)
      (fun (r,b) ->
@@ -65,6 +65,13 @@ let client () =
        return ()
      ) 
   done >>= fun () -> 
+  (* Repeat but do not consume body *)
+  for_lwt i = 0 to 1000 do
+    not_none "get 1" (Client.get url) (fun (r,b) -> assert(b = None)) >>= fun () -> 
+    not_none_s "post 1" (Client.post ?body:(Body.body_of_string "foobar") url)
+     (fun (r,b) -> return ()) 
+  done >>= fun () -> 
+ 
   (* Do a callv *)
   let body () = Body.body_of_string "foobar" in
   let body1 = body () in

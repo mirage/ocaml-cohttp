@@ -1,5 +1,5 @@
 Name:        cohttp
-Version:     0.9.6
+Version:     0.9.7
 Synopsis:    HTTP library for Lwt, Async and Mirage
 Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire, David Scott
 License:     LGPL-2.0 with OCaml linking exception
@@ -11,11 +11,11 @@ Flag lwt
 
 Flag async
   Description: build the Core/Async library
-  Default: false
+  Default: true
 
 Flag mirage
   Description: build the Mirage library
-  Default: false
+  Default: true
 
 Flag nettests
   Description: run the internet-using tests
@@ -28,7 +28,7 @@ Library cohttp
   Library lwt
     Path: lwt
     Buildable: $lwt
-    BuildDepends: lwt.unix, lwt, uri, cohttp, lwt.syntax
+    BuildDepends: lwt.unix, lwt, uri, cohttp, lwt.syntax, ssl
     pp: camlp4o
     Modules: Cohttp_lwt_unix, Cohttp_lwt, Cohttp_lwt_net, Cohttp_lwt_body, Cohttp_lwt_make
 
