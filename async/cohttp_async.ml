@@ -140,6 +140,11 @@ let pipe_of_body read_chunk ic oc =
   in don't_wait_for (aux ());
   rd
 
+type body = string Pipe.Reader.t
+let body_to_string body =
+  Pipe.to_list body 
+  >>| String.concat
+ 
 module Client = struct
 
   let call ?interrupt ?headers ?(chunked=false) ?body meth uri =
@@ -178,6 +183,10 @@ module Client = struct
 
   let get ?interrupt ?headers uri =
     call ?interrupt ?headers ~chunked:false `GET uri
+
+  let post ?interrupt ?headers ?(chunked=false) ?body uri =
+    call ?interrupt ?headers ~chunked ?body `POST uri
+
 end
 
 module Server = struct
