@@ -117,12 +117,12 @@ let pipe_of_body read_chunk ic oc =
             |`Ok _ -> 
               Pipe.close wr;
               return ()
+          )
       | Done ->
         Pipe.close wr;
         Writer.close oc
         >>= fun () ->
         Reader.close ic
-          )
   in don't_wait_for (aux ());
   rd
 
@@ -199,21 +199,21 @@ module Server = struct
     let headers = Header.add_opt headers "connection" "close" in
     match body with
     | None ->
-        let res = ResIO.make ~status ~encoding:(Transfer.Fixed 0) ~headers () in
-        ResIO.write_header res wr
-        >>= fun () ->
-        ResIO.write_footer res wr
-        >>= fun () ->
-        Writer.close wr
+      let res = ResIO.make ~status ~encoding:(Transfer.Fixed 0) ~headers () in
+      ResIO.write_header res wr
+      >>= fun () ->
+      ResIO.write_footer res wr
+      >>= fun () ->
+      Writer.close wr
     | Some body ->
-        let res = ResIO.make ~status ~encoding:Transfer.Chunked ~headers () in
-        ResIO.write_header res wr
-        >>= fun () ->
-        Pipe.iter body ~f:(ResIO.write_body res wr)
-        >>= fun () ->
-        ResIO.write_footer res wr
-        >>= fun () ->
-        Writer.close wr
+      let res = ResIO.make ~status ~encoding:Transfer.Chunked ~headers () in
+      ResIO.write_header res wr
+      >>= fun () ->
+      Pipe.iter body ~f:(ResIO.write_body res wr)
+      >>= fun () ->
+      ResIO.write_footer res wr
+      >>= fun () ->
+      Writer.close wr
 
 
   let create ?max_connections ?max_pending_connections ?buffer_age_limit ?on_handler_error where_to_listen handle_request =
