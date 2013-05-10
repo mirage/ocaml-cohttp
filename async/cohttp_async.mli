@@ -72,11 +72,13 @@ module Server : sig
   (** Resolve a URI and a docroot into a concrete local filename. *)
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
 
-  (** Respond with a [string] Pipe that provides the response body *)
+  (** Respond with a [string] Pipe that provides the response body.
+      @param code Default is HTTP 200 `OK *)
   val respond_with_pipe : 
-    ?headers:Cohttp.Header.t -> string Pipe.Reader.t -> response Deferred.t
+    ?headers:Cohttp.Header.t -> ?code:Cohttp.Code.status_code -> string Pipe.Reader.t -> response Deferred.t
 
-  (** Respond with a static [string] body *)
+  (** Respond with a static [string] body
+      @param code Default is HTTP 200 `OK *)
   val respond_with_string : 
     ?headers:Cohttp.Header.t -> ?code:Cohttp.Code.status_code -> string -> response Deferred.t
 

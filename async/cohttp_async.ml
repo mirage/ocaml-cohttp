@@ -241,8 +241,8 @@ module Server = struct
         >>= fun () ->
         Writer.close wr
 
-  let respond_with_pipe ?headers body =
-    return (respond ~body ?headers `OK)
+  let respond_with_pipe ?headers ?(code=`OK) body =
+    return (respond ~body ?headers code)
 
   let respond_with_string ?headers ?(code=`OK) body =
     let body = Pipe.of_list [body] in
