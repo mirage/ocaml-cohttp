@@ -15,14 +15,19 @@
  *
  *)
 
-type r = {
-  encoding: Transfer.encoding;
-  headers: Header.t;
-  version: Code.version;
-  status: Code.status_code;
-}
+type r
 
+(** Retrieve request HTTP headers *)
 val headers : r -> Header.t
+
+(** Retrieve the transfer encoding of this HTTP request *)
+val encoding : r -> Transfer.encoding
+
+(** Retrieve HTTP version, usually 1.1 *)
+val version : r -> Code.version
+
+(** Retrieve HTTP status code of the response *)
+val status : r -> Code.status_code
 
 module type S = sig
   module IO : IO.S

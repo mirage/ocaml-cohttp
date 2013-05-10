@@ -23,6 +23,9 @@ type r = {
 }
 
 let headers r = r.headers
+let encoding r = r.encoding
+let version r = r.version
+let status r = r.status
 
 module type S = sig
   module IO : IO.S

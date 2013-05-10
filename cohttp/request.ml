@@ -24,6 +24,10 @@ type r = {
 }
 
 let headers r = r.headers
+let meth r = r.meth
+let uri r = r.uri
+let version r = r.version
+let encoding r = r.encoding
 
 let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
   let headers = 

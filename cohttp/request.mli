@@ -15,15 +15,22 @@
  *
  *)
 
-type r = { 
-  headers: Header.t;
-  meth: Code.meth;
-  uri: Uri.t;
-  version: Code.version;
-  encoding: Transfer.encoding;
-}
+type r
 
+(** Retrieve request HTTP headers *)
 val headers : r -> Header.t
+
+(** Retrieve request HTTP code *)
+val meth : r -> Code.meth
+
+(** Retrieve full HTTP request uri *)
+val uri : r -> Uri.t
+
+(** Retrieve HTTP version, usually 1.1 *)
+val version : r -> Code.version
+
+(** Retrieve the transfer encoding of this HTTP request *)
+val encoding : r -> Transfer.encoding
 
 val make : ?meth:Code.meth -> ?version:Code.version -> 
   ?encoding:Transfer.encoding -> ?headers:Header.t ->
