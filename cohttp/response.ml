@@ -57,7 +57,6 @@ module Make(IO : IO.S) = struct
   open IO
 
   module Header_IO = Header_io.Make(IO)
-  module Body_IO = Body.Make(IO)
   module Transfer_IO = Transfer_io.Make(IO)
 
   type t = r

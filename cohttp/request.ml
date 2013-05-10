@@ -82,7 +82,6 @@ module type S = sig
   val write_header : t -> IO.oc -> unit IO.t
   val write_body : t -> IO.oc -> string -> unit IO.t
   val write_footer : t -> IO.oc -> unit IO.t
-  val write' : t -> (unit -> string option) -> IO.oc -> unit IO.t
   val write : (t -> IO.oc -> unit IO.t) -> t -> IO.oc -> unit IO.t
 
   val is_form: t -> bool
@@ -97,7 +96,6 @@ module Make(IO : IO.S) = struct
   open IO
 
   module Header_IO = Header_io.Make(IO)
-  module Body_IO = Body.Make(IO) 
   module Transfer_IO = Transfer_io.Make(IO)
   
   type t = r 
@@ -143,7 +141,7 @@ module Make(IO : IO.S) = struct
       return (Some { headers; meth; uri; version; encoding })
 
   let has_body req = Transfer.has_body req.encoding
-  let read_body_chunk req ic = Body_IO.read_chunk req.encoding ic
+  let read_body_chunk req ic = Transfer_IO.read req.encoding ic
 
   let host_of_uri uri = 
     match Uri.host uri with
@@ -174,9 +172,6 @@ module Make(IO : IO.S) = struct
     write_header req oc >>= fun () ->
     write_body req oc >>= fun () ->
     write_footer req oc
-
-  let write' req fn oc =
-    write (fun req oc -> Body_IO.write req.encoding fn oc) req oc
 
   let is_form req = Header.is_form req.headers
   let read_form req ic = Header_IO.parse_form req.headers ic
