@@ -216,11 +216,11 @@ module Server = struct
         let read_chunk = ReqIO.read_body_chunk req in
         Some (pipe_of_body read_chunk rd wr)
     in
-    handle_request ?body sock req
+    handle_request ~body sock req
     >>= fun response ->
     response wr
 
-  let respond ?body ?headers status : response =
+  let respond ?headers ~body status : response =
     fun wr ->
       let headers = Header.add_opt headers "connection" "close" in
       match body with
@@ -242,11 +242,11 @@ module Server = struct
         Writer.close wr
 
   let respond_with_pipe ?headers ?(code=`OK) body =
-    return (respond ~body ?headers code)
+    return (respond ?headers ~body:(Some body) code)
 
   let respond_with_string ?headers ?(code=`OK) body =
     let body = Pipe.of_list [body] in
-    return (respond ~body ?headers code)
+    return (respond ?headers ~body:(Some body) code)
 
   let resolve_local_file ~docroot ~uri =
     (* This normalises the Uri and strips out .. characters *)
@@ -262,7 +262,7 @@ module Server = struct
          Reader.open_file filename
          >>= fun rd ->
          let body = Reader.pipe rd in
-         return (respond ~body ?headers `OK)
+         return (respond ?headers ~body:(Some body) `OK)
       )
     >>= function
       |Ok res -> return res

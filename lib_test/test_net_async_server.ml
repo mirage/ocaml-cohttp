@@ -25,7 +25,7 @@ let ls_dir =
 open Async.Std
 open Cohttp_async
 
-let handler ?body sock req =
+let handler ~body sock req =
   let uri = Cohttp.Request.uri req in
   match Uri.path uri with
   | "/" | "" ->
