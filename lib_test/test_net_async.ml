@@ -25,8 +25,7 @@ let show_headers h =
 let make_net_req () =
   let headers = Cohttp.Header.of_list ["connection","close"] in
   let uri = Uri.of_string "http://anil.recoil.org/" in
-  let body = None in
-  Client.call ~headers ?body `GET uri 
+  Client.get ~headers uri 
   >>= fun (res, body) ->
    show_headers (Cohttp.Response.headers res);
    Pipe.iter body ~f:(fun b -> prerr_endline ("XX " ^ b); return ())
