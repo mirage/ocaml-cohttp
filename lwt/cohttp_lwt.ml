@@ -30,7 +30,13 @@ module Client(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
       match Response.has_body res with
       |true ->
         let stream = Cohttp_lwt_body.create_stream (Response.read_body_chunk res) ic in
-        (match closefn with |Some fn -> Lwt_stream.on_terminate stream fn |None -> ());
+        (match closefn with 
+          |Some fn ->
+             Lwt_stream.on_terminate stream fn;
+             let gcfn st = fn () in
+             Gc.finalise gcfn stream
+          |None -> ()
+        );
         let body = Cohttp_lwt_body.body_of_stream stream in
         return (Some (res, body))
       |false ->

@@ -66,10 +66,15 @@ let client () =
      ) 
   done >>= fun () -> 
   (* Repeat but do not consume body *)
-  for_lwt i = 0 to 1000 do
-    not_none "get 1" (Client.get url) (fun (r,b) -> assert(b = None)) >>= fun () -> 
-    not_none_s "post 1" (Client.post ?body:(Body.body_of_string "foobar") url)
-     (fun (r,b) -> return ()) 
+  for_lwt i = 0 to 2000 do
+    try_lwt
+      not_none "get 1" (Client.get url) (fun (r,b) -> assert(b = None)) >>= fun () -> 
+      not_none_s "post 1" (Client.post ?body:(Body.body_of_string "foobar") url) (fun (r,b) -> return ()) 
+    with exn ->
+      printf "got error, running gc\n%!";
+      Gc.compact ();
+      not_none "get 1" (Client.get url) (fun (r,b) -> assert(b = None)) >>= fun () -> 
+      not_none_s "post 1" (Client.post ?body:(Body.body_of_string "foobar") url) (fun (r,b) -> return ()) 
   done >>= fun () -> 
  
   (* Do a callv *)
