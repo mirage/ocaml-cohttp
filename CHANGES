@@ -1,3 +1,7 @@
+0.9.8 (trunk):
+
+* Remove `Cohttp_async.body` type alias and just use `string Pipe.Reader.t` for more explicit types.
+
 0.9.7 (2013-05-10):
 * Attach a GC finaliser to the Lwt client to ensure that even an HTTP body isnt consumed, the socket will eventually be closed (#11).
 * Add an Async.Server interface, and revise the Client interface to be more in line with Core standards.
