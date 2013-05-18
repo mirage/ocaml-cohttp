@@ -20,22 +20,15 @@
 (** The [Request] module holds the information about a HTTP request, and
     also includes the {! Cohttp_lwt_unix_io} functions to handle large 
     message bodies. *)
-module Request : sig
-  include module type of Cohttp.Request with type t = Cohttp.Request.t
-  include Cohttp.Request.S with module IO=Cohttp_lwt_unix_io
-end
+module Request : Cohttp_lwt.Request with module IO = Cohttp_lwt_unix_io
 
 (** The [Response] module holds the information about a HTTP response, and
     also includes the {! Cohttp_lwt_unix_io} functions to handle large 
     message bodies. *)
-module Response : sig
-  include module type of Cohttp.Response with type t = Cohttp.Response.t
-  include Cohttp.Response.S with module IO=Cohttp_lwt_unix_io
-end
+module Response : Cohttp_lwt.Response with module IO = Cohttp_lwt_unix_io
 
 (** The [Client] module implements an HTTP client interface. *)
-module Client : 
-  Cohttp_lwt.Client with module IO=Cohttp_lwt_unix_io
+module Client : Cohttp_lwt.Client with module IO=Cohttp_lwt_unix_io
 
 (** This module type defines the additional UNIX-specific functions that are
   exposed in addition to the {! Cohttp_lwt.Server} interface.  These are
@@ -57,6 +50,6 @@ end
 (** The [Server] module implement the full UNIX HTTP server interface,
   including the UNIX-specific functions defined in {! S }. *)
 module Server : sig
-  include Cohttp_lwt.Server with module IO=Cohttp_lwt_unix_io
+  include Cohttp_lwt.Server with module IO = Cohttp_lwt_unix_io
   include S with type Server.config = config
 end 

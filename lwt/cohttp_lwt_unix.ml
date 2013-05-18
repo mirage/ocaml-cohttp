@@ -15,10 +15,8 @@
  *
  *)
 
-module Request = struct
-  include Cohttp.Request
-  include Cohttp.Request.Make(Cohttp_lwt_unix_io)
-end
+
+module Request = Cohttp_lwt.Make_request(Cohttp_lwt_unix_io)
 
 module Response = struct
   include Cohttp.Response

@@ -27,6 +27,26 @@ module type Net = sig
   val close : IO.ic -> IO.oc -> unit
 end
 
+module type Request = sig
+  include module type of Cohttp.Request with type t = Cohttp.Request.t
+  include Cohttp.Request.S
+end
+
+module Make_request(IO:IO.S) = struct
+  include Cohttp.Request
+  include Cohttp.Request.Make(IO)
+end
+
+module type Response = sig
+  include module type of Cohttp.Response with type t = Cohttp.Response.t
+  include Cohttp.Response.S
+end
+
+module Make_response(IO:IO.S) = struct
+  include Cohttp.Response
+  include Cohttp.Response.Make(IO)
+end
+
 module type Client = sig
   module IO : IO.S
   val call :

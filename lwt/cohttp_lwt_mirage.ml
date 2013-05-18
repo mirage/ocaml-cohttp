@@ -31,22 +31,11 @@ module Net_IO = struct
   let close ic oc = ignore_result (Net.Channel.close ic)
 end
 
-module Request = struct
-  include Cohttp.Request
-  include Cohttp.Request.Make(Cohttp_lwt_mirage_io)
-end
-
-module Response = struct
-  include Cohttp.Response
-  include Cohttp.Response.Make(Cohttp_lwt_mirage_io)
-end
-
-module Client = 
-  Cohttp_lwt.Make_client
-    (Cohttp_lwt_mirage_io)
-    (Request) 
-    (Response)
-    (Net_IO)
+(* Build all the core modules from the [Cohttp_lwt] functors *)
+module Request = Cohttp_lwt.Make_request(Cohttp_lwt_mirage_io)
+module Response = Cohttp_lwt.Make_response(Cohttp_lwt_mirage_io)
+module Client = Cohttp_lwt.Make_client(Cohttp_lwt_mirage_io)(Request)(Response)(Net_IO)
+module Server_core = Cohttp_lwt.Make_server(Cohttp_lwt_mirage_io)(Request)(Response)(Net_IO)
 
 module Server_mirage (Server:Cohttp_lwt.Server with module IO=Cohttp_lwt_mirage_io) = struct 
   module Server = Server
@@ -67,9 +56,6 @@ module Server_mirage (Server:Cohttp_lwt.Server with module IO=Cohttp_lwt_mirage_
     in
     Net.Channel.listen mgr (`TCPv4 (src, cb))
 end
-
-module Server_core =
-  Cohttp_lwt.Make_server(Cohttp_lwt_mirage_io)(Request)(Response)(Net_IO)
 
 module Server = struct
   include Server_core

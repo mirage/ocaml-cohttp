@@ -15,27 +15,20 @@
  *
  *)
 
-(** HTTP client and server using the [Lwt_unix] interfaces. *)
+(** HTTP client and server using the [mirage-net] interfaces. *)
 
 (** The [Request] module holds the information about a HTTP request, and
     also includes the {! Cohttp_lwt_mirage_io} functions to handle large 
     message bodies. *)
-module Request : sig
-  include module type of Cohttp.Request with type t = Cohttp.Request.t
-  include Cohttp.Request.S with module IO=Cohttp_lwt_mirage_io
-end
+module Request : Cohttp_lwt.Request with module IO = Cohttp_lwt_mirage_io
 
-(** The [Response] module holds the information about a HTTP request, and
+(** The [Response] module holds the information about a HTTP response, and
     also includes the {! Cohttp_lwt_mirage_io} functions to handle large 
     message bodies. *)
-module Response : sig
-  include module type of Cohttp.Response with type t = Cohttp.Response.t
-  include Cohttp.Response.S with module IO=Cohttp_lwt_mirage_io
-end
+module Response : Cohttp_lwt.Response with module IO = Cohttp_lwt_mirage_io
 
 (** The [Client] module implements an HTTP client interface. *)
-module Client : 
-  Cohttp_lwt.Client with module IO=Cohttp_lwt_mirage_io
+module Client : Cohttp_lwt.Client with module IO = Cohttp_lwt_mirage_io
 
 (** The Mirage [S] module type defines the additional Mirage-specific
     functions that are exposed by the {! Cohttp_lwt.Server} interface. 
