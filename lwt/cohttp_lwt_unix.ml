@@ -17,15 +17,22 @@
 
 module IO = Cohttp_lwt_unix_io
 
-module Request = Cohttp.Request.Make(IO)
-module Response = Cohttp.Response.Make(IO)
+module Request = struct
+  include Cohttp.Request
+  include Cohttp.Request.Make(IO)
+end
+
+module ReqIO = Cohttp.Request.Make(IO)
+module ResIO = Cohttp.Response.Make(IO)
+
 module Body = Cohttp_lwt_body
 module Net = Cohttp_lwt_net
-module Client = Cohttp_lwt.Client(IO)(Request)(Response)(Net)
+
+module Client = Cohttp_lwt.Client(IO)(ReqIO)(ResIO)(Net)
 
 module Server = struct
   open Lwt
-  include Cohttp_lwt.Server(IO)(Request)(Response)(Net)
+  include Cohttp_lwt.Server(IO)(ReqIO)(ResIO)(Net)
 
   let blank_uri = Uri.of_string "" 
 
@@ -57,8 +64,8 @@ module Server = struct
       ) in
       Lwt_stream.on_terminate stream (fun () -> 
         ignore_result (Lwt_io.close ic));
-      let body = Body.body_of_stream stream in
-      let res = Response.make ~status:`OK ~encoding ?headers () in
+      let body = Cohttp_lwt_body.body_of_stream stream in
+      let res = Cohttp.Response.make ~status:`OK ~encoding ?headers () in
       return (res, body)
     with
      | Unix.Unix_error(Unix.ENOENT,_,_) | Isnt_a_file ->

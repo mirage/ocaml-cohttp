@@ -29,49 +29,49 @@ module Client : sig
     ?body:Body.contents ->
     ?chunked:bool ->
     Cohttp.Code.meth ->
-    Uri.t -> (Response.t * Body.t) option Lwt.t
+    Uri.t -> (Cohttp.Response.t * Body.t) option Lwt.t
 
   val head :
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t) option Lwt.t
+    Uri.t -> (Cohttp.Response.t * Body.t) option Lwt.t
 
   val get :
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t) option Lwt.t
+    Uri.t -> (Cohttp.Response.t * Body.t) option Lwt.t
 
   val delete :
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t) option Lwt.t
+    Uri.t -> (Cohttp.Response.t * Body.t) option Lwt.t
 
   val post :
     ?body:Body.contents ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t) option Lwt.t
+    Uri.t -> (Cohttp.Response.t * Body.t) option Lwt.t
 
   val put :
     ?body:Body.contents ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t) option Lwt.t
+    Uri.t -> (Cohttp.Response.t * Body.t) option Lwt.t
 
   val patch :
     ?body:Body.contents ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t) option Lwt.t
+    Uri.t -> (Cohttp.Response.t * Body.t) option Lwt.t
 
   val post_form :
     ?headers:Cohttp.Header.t ->
     params:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t) option Lwt.t
+    Uri.t -> (Cohttp.Response.t * Body.t) option Lwt.t
 
   val callv :
     ?ssl:bool ->
     string ->
     int ->
-    (Request.t * Body.contents option) Lwt_stream.t ->
-    (Response.t * Body.t) Lwt_stream.t Lwt.t
+    (Cohttp.Request.t * Body.contents option) Lwt_stream.t ->
+    (Cohttp.Response.t * Body.t) Lwt_stream.t Lwt.t
 end
 
 module Server : sig
@@ -80,7 +80,8 @@ module Server : sig
     val string_of_conn_id : int -> string
 
     type config = {
-      callback : conn_id -> ?body:Body.contents -> Request.t -> (Response.t * Body.t) Lwt.t;
+      callback : conn_id -> ?body:Body.contents ->
+       Cohttp.Request.t -> (Cohttp.Response.t * Body.t) Lwt.t;
       conn_closed : conn_id -> unit -> unit;
     }
 
@@ -89,14 +90,14 @@ module Server : sig
     val respond_string :
       ?headers:Cohttp.Header.t ->
       status:Cohttp.Code.status_code ->
-      body:string -> unit -> (Response.t * Body.t) Lwt.t
+      body:string -> unit -> (Cohttp.Response.t * Body.t) Lwt.t
 
     val respond_error :
       status:Cohttp.Code.status_code ->
-      body:string -> unit -> (Response.t * Body.t) Lwt.t
+      body:string -> unit -> (Cohttp.Response.t * Body.t) Lwt.t
 
    val respond_not_found :
-      ?uri:Uri.t -> unit -> (Response.t * Body.t) Lwt.t
+      ?uri:Uri.t -> unit -> (Cohttp.Response.t * Body.t) Lwt.t
 end
 
 val listen :

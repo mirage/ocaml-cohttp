@@ -15,7 +15,7 @@
  *
  *)
 
-type r = { 
+type t = { 
   headers: Header.t;
   meth: Code.meth;
   uri: Uri.t;
@@ -28,6 +28,11 @@ let meth r = r.meth
 let uri r = r.uri
 let version r = r.version
 let encoding r = r.encoding
+
+let params r = Uri.query r.uri
+let get_param r k =
+  try Some (List.(hd (assoc k (params r))))
+  with _ -> None
 
 let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
   let headers = 
@@ -58,21 +63,38 @@ let make_for_client ?headers ?(chunked=true) ?(body_length=0) meth uri =
   in
   make ~meth ~encoding ?headers uri
 
-module type S = sig
-  module IO : IO.S
-  type t = r 
+module type T = sig
+  val headers : t -> Header.t
   val meth : t -> Code.meth
+  (** Retrieve full HTTP request uri *)
   val uri : t -> Uri.t
+
+  (** Retrieve HTTP version, usually 1.1 *)
   val version : t -> Code.version
 
-  val path : t -> string
-  val header : t -> string -> string option
-  val headers : t -> Header.t
+  (** Retrieve the transfer encoding of this HTTP request *)
+  val encoding : t -> Transfer.encoding
 
+  (** TODO *)
   val params : t -> (string * string list) list
+
+  (** TODO *)
   val get_param : t -> string -> string option
 
-  val transfer_encoding : t -> string
+  val make : ?meth:Code.meth -> ?version:Code.version -> 
+    ?encoding:Transfer.encoding -> ?headers:Header.t ->
+    Uri.t -> t
+
+  val make_for_client:
+    ?headers:Header.t ->
+    ?chunked:bool ->
+    ?body_length:int ->
+    Code.meth -> Uri.t -> t
+end
+
+
+module type S = sig
+  module IO : IO.S
 
   val read : IO.ic -> t option IO.t
   val has_body : t -> bool
@@ -86,34 +108,14 @@ module type S = sig
 
   val is_form: t -> bool
   val read_form : t -> IO.ic -> (string * string list) list IO.t
-
-  val make : ?meth:Code.meth -> ?version:Code.version -> 
-    ?encoding:Transfer.encoding -> ?headers:Header.t -> Uri.t -> r
 end
 
 module Make(IO : IO.S) = struct
   module IO = IO
-  open IO
-
   module Header_IO = Header_io.Make(IO)
   module Transfer_IO = Transfer_io.Make(IO)
   
-  type t = r 
-  
-  let meth r = r.meth
-  let uri r = r.uri
-  let version r = r.version
-  let path r = Uri.path r.uri
-  
-  let header req h = Header.get req.headers h
-  let headers req = req.headers
-  
-  let params r = Uri.query r.uri
-  let get_param r k =
-    try Some (List.(hd (assoc k (params r))))
-    with _ -> None
-
-  let transfer_encoding req = Transfer.encoding_to_string req.encoding
+  open IO
 
   let url_decode url = Uri.pct_decode url
 
@@ -175,7 +177,6 @@ module Make(IO : IO.S) = struct
 
   let is_form req = Header.is_form req.headers
   let read_form req ic = Header_IO.parse_form req.headers ic
-  let make = make
 end
 
 

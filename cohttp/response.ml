@@ -15,7 +15,7 @@
  *
  *)
 
-type r = {
+type t = {
   encoding: Transfer.encoding;
   headers: Header.t;
   version: Code.version;
@@ -27,16 +27,12 @@ let encoding r = r.encoding
 let version r = r.version
 let status r = r.status
 
+let make ?(version=`HTTP_1_1) ?(status=`OK) ?(encoding=Transfer.Chunked) ?headers () =
+  let headers = match headers with None -> Header.init () |Some h -> h in
+  { encoding; headers; version; status }
+
 module type S = sig
   module IO : IO.S
-  type t = r
-
-  val version : t -> Code.version
-  val status : t -> Code.status_code
-  val headers: t -> Header.t
-
-  val make : ?version:Code.version -> ?status:Code.status_code ->
-    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> t
 
   val read : IO.ic -> t option IO.t
   val has_body : t -> bool
@@ -54,19 +50,10 @@ end
 
 module Make(IO : IO.S) = struct
   module IO = IO
-  open IO
-
   module Header_IO = Header_io.Make(IO)
   module Transfer_IO = Transfer_io.Make(IO)
 
-  type t = r
-  let version r = r.version
-  let status r = r.status
-  let headers r = r.headers
-
-  let make ?(version=`HTTP_1_1) ?(status=`OK) ?(encoding=Transfer.Chunked) ?headers () =
-    let headers = match headers with None -> Header.init () |Some h -> h in
-    { encoding; headers; version; status }
+  open IO
 
   let pieces_sep = Re_str.regexp_string " "
   let header_sep = Re_str.regexp ": *"

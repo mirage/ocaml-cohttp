@@ -28,7 +28,7 @@ module Client : sig
     ?interrupt:unit Deferred.t ->
     ?headers:Cohttp.Header.t ->
     Uri.t ->
-    (Cohttp.Response.r * string Pipe.Reader.t) Deferred.t
+    (Cohttp.Response.t * string Pipe.Reader.t) Deferred.t
 
   (** Send an HTTP POST request.
       [chunked] encoding is off by default as not many servers support it
@@ -39,7 +39,7 @@ module Client : sig
     ?chunked:bool ->
     ?body:string Pipe.Reader.t ->
     Uri.t ->
-    (Cohttp.Response.r * string Pipe.Reader.t) Deferred.t
+    (Cohttp.Response.t * string Pipe.Reader.t) Deferred.t
 
   (** Send an HTTP request with arbitrary method and string Pipe.Reader.t *)
   val call :
@@ -49,7 +49,7 @@ module Client : sig
     ?body:string Pipe.Reader.t ->
     Cohttp.Code.meth ->
     Uri.t ->
-    (Cohttp.Response.r * string Pipe.Reader.t) Deferred.t
+    (Cohttp.Response.t * string Pipe.Reader.t) Deferred.t
 end
 
 module Server : sig
@@ -92,6 +92,6 @@ module Server : sig
                       | `Ignore
                       | `Raise ] ->
     ('address, 'listening_on) Tcp.Where_to_listen.t
-    -> (body:string Pipe.Reader.t option -> 'address -> Cohttp.Request.r -> response Deferred.t)
+    -> (body:string Pipe.Reader.t option -> 'address -> Cohttp.Request.t -> response Deferred.t)
     -> ('address, 'listening_on) t Deferred.t
 end

@@ -102,13 +102,13 @@ let oc_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.output buf
 open Lwt
 
 let basic_req_parse () =
-  let open Cohttp_lwt_unix in
+  let module CU = Cohttp_lwt_unix in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_req) in
-  Cohttp_lwt_unix.Request.read ic >>=
+  CU.Request.read ic >>=
   function
   |Some req ->
-    assert_equal (Request.version req) `HTTP_1_1;
-    assert_equal (Request.meth req) `GET;
+    assert_equal (CU.Request.version req) `HTTP_1_1;
+    assert_equal (CU.Request.meth req) `GET;
     assert_equal (Uri.to_string (Request.uri req)) "/index.html";
     return ()
   |None -> assert false
@@ -138,7 +138,7 @@ let req_parse () =
   |None -> assert false
   |Some req ->
     assert_equal `GET (Request.meth req);
-    assert_equal "/index.html" (Request.path req);
+    assert_equal "/index.html" ((Uri.path (Request.uri req)));
     assert_equal `HTTP_1_1 (Request.version req);
     return ()
 

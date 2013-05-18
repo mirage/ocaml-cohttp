@@ -29,7 +29,7 @@ let url_shutdown = Uri.of_string (sprintf "http://%s:%d/shutdown" address port)
 
 let make_server () =
   let callback conn_id ?body req =
-    match Request.path req with
+    match Uri.path (Request.uri req) with
     |""|"/" ->
        Server.respond_string ~status:`OK ~body:"helloworld" ()
     |"/post" -> begin

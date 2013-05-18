@@ -225,14 +225,14 @@ module Server = struct
       let headers = Header.add_opt headers "connection" "close" in
       match body with
       | None ->
-        let res = ResIO.make ~status ~encoding:(Transfer.Fixed 0) ~headers () in
+        let res = Response.make ~status ~encoding:(Transfer.Fixed 0) ~headers () in
         ResIO.write_header res wr
         >>= fun () ->
         ResIO.write_footer res wr
         >>= fun () ->
         Writer.close wr
       | Some body ->
-        let res = ResIO.make ~status ~encoding:Transfer.Chunked ~headers () in
+        let res = Response.make ~status ~encoding:Transfer.Chunked ~headers () in
         ResIO.write_header res wr
         >>= fun () ->
         Pipe.iter body ~f:(ResIO.write_body res wr)
