@@ -1,6 +1,6 @@
 OASISFormat: 0.3
 Name:        cohttp
-Version:     0.9.7
+Version:     0.9.8
 Synopsis:    HTTP library for Lwt, Async and Mirage
 Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire, David Scott
 License:     LGPL-2.0 with OCaml linking exception
@@ -12,7 +12,7 @@ Library cohttp
   Findlibname: cohttp
   Pack: true
   Modules: IO, Code, Header, Cookie, Request, Response, Transfer, Accept, Accept_parser, Accept_lexer, Base64, Auth, Header_io, Transfer_io, Client
-  BuildDepends:	re, uri (>= 1.3.2), uri.services, cstruct
+  BuildDepends:	re, uri (>= 1.3.8), uri.services
 
 Flag lwt
   Description: build the Lwt library
@@ -45,7 +45,7 @@ Library cohttp_mirage
   Path: lwt
   Findlibname: mirage
   FindlibParent: cohttp
-  BuildDepends: uri, re, cohttp, lwt.syntax, mirage, mirage-net
+  BuildDepends: uri, re, cohttp, lwt.syntax, mirage, mirage-net, cstruct
   Modules: Cohttp_lwt_mirage_io, Cohttp_lwt_mirage, Cohttp_lwt, Cohttp_lwt_body
 
 Library cohttp_async
