@@ -25,17 +25,19 @@ module Response : sig
   include Cohttp.Response.S with module IO=Cohttp_lwt_unix_io
 end
 
+module type S = sig
+  val resolve_file : docroot:string -> uri:Uri.t -> string
+
+  val respond_file :
+    ?headers:Cohttp.Header.t ->
+    fname:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+end
+ 
 module Client : Cohttp_lwt.Client with module IO=Cohttp_lwt_unix_io
-module Server : Cohttp_lwt.Server with module IO=Cohttp_lwt_unix_io
 
-(*
-    val resolve_file : docroot:string -> uri:Uri.t -> string
+module Server : sig
+  include Cohttp_lwt.Server with module IO=Cohttp_lwt_unix_io
+  include S
+end 
 
-    val respond_file :
-      ?headers:Cohttp.Header.t ->
-      fname:string -> unit -> (Cohttp.Response.t * Body.t) Lwt.t
-
-    val callback : 
-      config -> Lwt_io.input_channel -> Lwt_io.output_channel -> unit Lwt.t
-*)
 val server : ?timeout:int -> address:string -> port:int -> Server.config -> unit Lwt.t
