@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -36,11 +36,18 @@ module Net_IO = struct
   let close ic oc = ignore_result (Channel.close ic)
 end
 
-module Request = Request.Make(IO)
-module Response = Response.Make(IO)
-module Body = Cohttp_lwt_body
-module Client = Cohttp_lwt.Client(IO)(Request)(Response)(Net_IO)
-module Server = Cohttp_lwt.Server(IO)(Request)(Response)(Net_IO)
+module Request = struct
+  include Cohttp.Request
+  include Cohttp.Request.Make(IO)
+end
+
+module Response = struct
+  include Cohttp.Response
+  include Cohttp.Response.Make(IO)
+end
+
+module Client = Cohttp_lwt.Make_client(IO)(Request)(Response)(Net_IO)
+module Server = Cohttp_lwt.Make_server(IO)(Request)(Response)(Net_IO)
 
 let listen ?timeout mgr src spec =
   (* TODO XXX the cancel-based timeout is almost certainly broken as the

@@ -15,8 +15,6 @@
  *
  *)
 
-module Body : module type of Cohttp_lwt_body
-
 module Request : Cohttp.Request.S 
   with module IO = Cohttp_lwt_mirage_io
 
@@ -26,52 +24,52 @@ module Response : Cohttp.Response.S
 module Client : sig
   val call :
     ?headers:Cohttp.Header.t ->
-    ?body:Body.contents ->
+    ?body:Cohttp_lwt_body.contents ->
     ?chunked:bool ->
     Cohttp.Code.meth ->
-    Uri.t -> (Cohttp.Response.t * Body.t) option Lwt.t
+    Uri.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) option Lwt.t
 
   val head :
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Cohttp.Response.t * Body.t) option Lwt.t
+    Uri.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) option Lwt.t
 
   val get :
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Cohttp.Response.t * Body.t) option Lwt.t
+    Uri.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) option Lwt.t
 
   val delete :
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Cohttp.Response.t * Body.t) option Lwt.t
+    Uri.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) option Lwt.t
 
   val post :
-    ?body:Body.contents ->
+    ?body:Cohttp_lwt_body.contents ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Cohttp.Response.t * Body.t) option Lwt.t
+    Uri.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) option Lwt.t
 
   val put :
-    ?body:Body.contents ->
+    ?body:Cohttp_lwt_body.contents ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Cohttp.Response.t * Body.t) option Lwt.t
+    Uri.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) option Lwt.t
 
   val patch :
-    ?body:Body.contents ->
+    ?body:Cohttp_lwt_body.contents ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Cohttp.Response.t * Body.t) option Lwt.t
+    Uri.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) option Lwt.t
 
   val post_form :
     ?headers:Cohttp.Header.t ->
     params:Cohttp.Header.t ->
-    Uri.t -> (Cohttp.Response.t * Body.t) option Lwt.t
+    Uri.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) option Lwt.t
 
   val callv :
     ?ssl:bool ->
     string ->
     int ->
-    (Cohttp.Request.t * Body.contents option) Lwt_stream.t ->
-    (Cohttp.Response.t * Body.t) Lwt_stream.t Lwt.t
+    (Cohttp.Request.t * Cohttp_lwt_body.contents option) Lwt_stream.t ->
+    (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt_stream.t Lwt.t
 end
 
 module Server : sig
@@ -80,8 +78,8 @@ module Server : sig
     val string_of_conn_id : int -> string
 
     type config = {
-      callback : conn_id -> ?body:Body.contents ->
-       Cohttp.Request.t -> (Cohttp.Response.t * Body.t) Lwt.t;
+      callback : conn_id -> ?body:Cohttp_lwt_body.contents ->
+       Cohttp.Request.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
       conn_closed : conn_id -> unit -> unit;
     }
 
@@ -90,14 +88,14 @@ module Server : sig
     val respond_string :
       ?headers:Cohttp.Header.t ->
       status:Cohttp.Code.status_code ->
-      body:string -> unit -> (Cohttp.Response.t * Body.t) Lwt.t
+      body:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
     val respond_error :
       status:Cohttp.Code.status_code ->
-      body:string -> unit -> (Cohttp.Response.t * Body.t) Lwt.t
+      body:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
    val respond_not_found :
-      ?uri:Uri.t -> unit -> (Cohttp.Response.t * Body.t) Lwt.t
+      ?uri:Uri.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 end
 
 val listen :

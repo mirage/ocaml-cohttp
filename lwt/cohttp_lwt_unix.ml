@@ -22,18 +22,20 @@ module Request = struct
   include Cohttp.Request.Make(IO)
 end
 
-module ReqIO = Cohttp.Request.Make(IO)
-module ResIO = Cohttp.Response.Make(IO)
+module Response = struct
+  include Cohttp.Response
+  include Cohttp.Response.Make(IO)
+end
 
-module Body = Cohttp_lwt_body
 module Net = Cohttp_lwt_net
 
-module Client = Cohttp_lwt.Client(IO)(ReqIO)(ResIO)(Net)
+module Client = Cohttp_lwt.Make_client(IO)(Request)(Response)(Net)
 
 module Server = struct
+  include Cohttp_lwt.Make_server(IO)(Request)(Response)(Net)
+end
+(*
   open Lwt
-  include Cohttp_lwt.Server(IO)(ReqIO)(ResIO)(Net)
-
   let blank_uri = Uri.of_string "" 
 
   let resolve_file ~docroot ~uri =
@@ -74,6 +76,7 @@ module Server = struct
          let body = Printexc.to_string exn in
          respond_error ~status:`Internal_server_error ~body ()
 end
+*)
 
 let server ?timeout ~address ~port spec =
   lwt sockaddr = Net.build_sockaddr address port in
