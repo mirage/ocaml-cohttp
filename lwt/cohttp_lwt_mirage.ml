@@ -18,8 +18,7 @@
 open Lwt
 
 module Net_IO = struct
-  type ic = Net.Channel.t
-  type oc = Net.Channel.t
+  module IO = Cohttp_lwt_mirage_io
 
   let connect_uri uri =
     fail (Failure "not implemented")

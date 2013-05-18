@@ -37,7 +37,7 @@ Library cohttp_lwt_unix
   Findlibname: lwt
   FindlibParent: cohttp
   BuildDepends: lwt.unix, lwt, uri, cohttp, lwt.ssl, lwt.syntax
-  Modules: Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt, Cohttp_lwt_net, Cohttp_lwt_body, Cohttp_lwt_unix_net
+  Modules: Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt, Cohttp_lwt_body, Cohttp_lwt_unix_net
 
 Library cohttp_mirage
   Build$: flag(mirage)

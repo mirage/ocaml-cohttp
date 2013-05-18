@@ -15,6 +15,15 @@
  *
  *)
 
+module type Net = sig
+  module IO : IO.S
+  val connect_uri : Uri.t -> (IO.ic * IO.oc) Lwt.t
+  val connect : ?ssl:bool -> string -> int -> (IO.ic * IO.oc) Lwt.t
+  val close_in : IO.ic -> unit
+  val close_out : IO.oc -> unit
+  val close : IO.ic -> IO.oc -> unit
+end
+
 module type Client = sig
   module IO : IO.S
 
@@ -72,7 +81,7 @@ module Make_client
     (IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
     (ReqIO:Cohttp.Request.S with module IO = IO)
     (ResIO:Cohttp.Response.S with module IO = IO)
-    (Net:Cohttp_lwt_net.S with type oc = ResIO.IO.oc and type ic = ResIO.IO.ic) : Client with module IO=IO
+    (Net:Net with module IO = IO) : Client with module IO=IO
 
 
 module type Server = sig
@@ -119,5 +128,7 @@ module Make_server
     (IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
     (ReqIO:Cohttp.Request.S with module IO=IO)
     (ResIO:Cohttp.Response.S with module IO=IO)
-    (Net:Cohttp_lwt_net.S with type oc = ResIO.IO.oc and type ic = ResIO.IO.ic) : 
+    (Net:Net with module IO = IO) :
     Server with module IO=IO
+
+
