@@ -29,11 +29,6 @@ let uri r = r.uri
 let version r = r.version
 let encoding r = r.encoding
 
-let params r = Uri.query r.uri
-let get_param r k =
-  try Some (List.(hd (assoc k (params r))))
-  with _ -> None
-
 let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
   let headers = 
     match headers with

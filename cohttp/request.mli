@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,24 +15,28 @@
  *
  *)
 
+(** HTTP/1.1 request handling *)
+
+(** This contains the metadata for a HTTP/1.1 request header, including
+    the {!headers}, {!version}, {!meth} and {!uri}.  The body is handled by
+    the separate {!S} module type, as it is dependent on the IO 
+    implementation. *)
 type t
 
+(** Retrieve the HTTP request headers *)
 val headers : t -> Header.t
+
+(** Retrieve the HTTP request method *)
 val meth : t -> Code.meth
-(** Retrieve full HTTP request uri *)
+
+(** Retrieve the full HTTP request uri *)
 val uri : t -> Uri.t
 
-(** Retrieve HTTP version, usually 1.1 *)
+(** Retrieve the HTTP version, usually 1.1 *)
 val version : t -> Code.version
 
 (** Retrieve the transfer encoding of this HTTP request *)
 val encoding : t -> Transfer.encoding
-
-(** TODO *)
-val params : t -> (string * string list) list
-
-(** TODO *)
-val get_param : t -> string -> string option
 
 val make : ?meth:Code.meth -> ?version:Code.version -> 
   ?encoding:Transfer.encoding -> ?headers:Header.t ->
