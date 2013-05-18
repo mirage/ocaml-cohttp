@@ -29,7 +29,7 @@ let make_net_req url () =
     let headers = Response.headers res in
     Cohttp.Header.iter
       (fun k v -> List.iter (Printf.eprintf "%s: %s\n%!" k) v) headers;
-    Lwt_stream.iter_s (fun s -> return ()) (Body.stream_of_body body)
+    Lwt_stream.iter_s (fun s -> return ()) (Cohttp_lwt_body.stream_of_body body)
 
 let make_net_reqv () =
   let last_header = Cohttp.Header.of_list ["connection","close"] in
@@ -44,7 +44,7 @@ let make_net_reqv () =
   Lwt_stream.iter_s (fun (res,body) ->
     (* Consume the body *)
     incr num;
-    lwt body = Body.string_of_body body in
+    lwt body = Cohttp_lwt_body.string_of_body body in
     assert_equal (Response.status res) `Not_found;
     return ()
   ) resp >>= fun () ->

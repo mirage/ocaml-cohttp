@@ -27,7 +27,7 @@ let make_server () =
     match Uri.path (Request.uri req) with
     |""|"/" -> Server.respond_string ~status:`OK ~body:"helloworld" ()
     |"/post" -> begin
-       lwt body = Body.string_of_body body in
+       lwt body = Cohttp_lwt_body.string_of_body body in
        Server.respond_string ~status:`OK ~body ()
     end  
     |"/postnodrain" -> begin
