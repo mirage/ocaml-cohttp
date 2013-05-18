@@ -15,6 +15,32 @@
  *
  *)
 
+(** HTTP client and server using the [Lwt_unix] interfaces. *)
+
+(** The [Request] module holds the information about a HTTP request, and
+    also includes the {! Cohttp_lwt_unix_io} functions to handle large 
+    message bodies. *)
+module Request : sig
+  include module type of Cohttp.Request with type t = Cohttp.Request.t
+  include Cohttp.Request.S with module IO=Cohttp_lwt_unix_io
+end
+
+(** The [Response] module holds the information about a HTTP response, and
+    also includes the {! Cohttp_lwt_unix_io} functions to handle large 
+    message bodies. *)
+module Response : sig
+  include module type of Cohttp.Response with type t = Cohttp.Response.t
+  include Cohttp.Response.S with module IO=Cohttp_lwt_unix_io
+end
+
+(** The [Client] module implements an HTTP client interface. *)
+module Client : 
+  Cohttp_lwt.Client with module IO=Cohttp_lwt_unix_io
+
+(** This module type defines the additional UNIX-specific functions that are
+  exposed in addition to the {! Cohttp_lwt.Server} interface.  These are
+  primarily filesystem functions, and also {! create} to actually bind
+  the server to a socket and respond to incoming requests. *)
 module type S = sig
   module Server : Cohttp_lwt.Server
 
@@ -24,22 +50,12 @@ module type S = sig
     ?headers:Cohttp.Header.t ->
     fname:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
-  val create : ?timeout:int -> address:string -> port:int -> Server.config -> unit Lwt.t
+  val create : ?timeout:int -> address:string -> port:int -> 
+    Server.config -> unit Lwt.t
 end
 
-module Request : sig
-  include module type of Cohttp.Request with type t = Cohttp.Request.t
-  include Cohttp.Request.S with module IO=Cohttp_lwt_unix_io
-end
-
-module Response : sig
-  include module type of Cohttp.Response with type t = Cohttp.Response.t
-  include Cohttp.Response.S with module IO=Cohttp_lwt_unix_io
-end
-
-module Client : 
-  Cohttp_lwt.Client with module IO=Cohttp_lwt_unix_io
-
+(** The [Server] module implement the full UNIX HTTP server interface,
+  including the UNIX-specific functions defined in {! S }. *)
 module Server : sig
   include Cohttp_lwt.Server with module IO=Cohttp_lwt_unix_io
   include S with type Server.config = config
