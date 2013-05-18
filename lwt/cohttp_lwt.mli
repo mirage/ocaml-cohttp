@@ -38,6 +38,7 @@ module type Request = sig
   include Cohttp.Request.S
 end
 
+(** Functor to build a concrete {! Request } from an IO implementation *)
 module Make_request(IO:IO.S) : Request with module IO = IO
 
 (** The [Response] module combines the {! Cohttp.Request } module with
@@ -47,6 +48,7 @@ module type Response = sig
   include Cohttp.Response.S
 end
 
+(** Functor to build a concrete {! Response } from an IO implementation *)
 module Make_response(IO:IO.S) : Response with module IO = IO
 
 (** The [Client] module implements non-pipelined single HTTP client
@@ -57,108 +59,120 @@ module Make_response(IO:IO.S) : Response with module IO = IO
     up, but this can take some additional time to happen. *)
 module type Client = sig
   module IO : IO.S
+  module Request : Request
+  module Response : Response
 
   val call :
     ?headers:Cohttp.Header.t ->
     ?body:Cohttp_lwt_body.contents ->
     ?chunked:bool ->
     Cohttp.Code.meth ->
-    Uri.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
 
   val head :
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
 
   val get :
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
 
   val delete :
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
 
   val post :
     ?body:Cohttp_lwt_body.contents ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
 
   val put :
     ?body:Cohttp_lwt_body.contents ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
 
   val patch :
     ?body:Cohttp_lwt_body.contents ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
 
   val post_form :
     ?headers:Cohttp.Header.t ->
     params:Cohttp.Header.t ->
-    Uri.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
 
   val callv :
     ?ssl:bool ->
     string ->
     int ->
-    (Cohttp.Request.t * Cohttp_lwt_body.contents option) Lwt_stream.t ->
-    (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt_stream.t Lwt.t
+    (Request.t * Cohttp_lwt_body.contents option) Lwt_stream.t ->
+    (Response.t * Cohttp_lwt_body.t) Lwt_stream.t Lwt.t
 end
 
+(** The [Make_client] functor glues together a {! Cohttp.IO.S } implementation
+    with {! Cohttp.Request } and {! Cohttp.Response } to send requests down
+    a connection that is established by the  {! Net } module.
+    The resulting module satisfies the {! Client } module type. *)
 module Make_client
     (IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
-    (ReqIO:Cohttp.Request.S with module IO = IO)
-    (ResIO:Cohttp.Response.S with module IO = IO)
-    (Net:Net with module IO = IO) : Client with module IO=IO
+    (Request:Request with module IO = IO)
+    (Response:Response with module IO = IO)
+    (Net:Net with module IO = IO) : 
+    Client with module IO=IO and module Request=Request and module Response=Response
 
+(** The [Server] module implements a pipelined HTTP/1.1 server. *)
 module type Server = sig
   module IO : IO.S
+  module Request : Request
+  module Response : Response
 
   type conn_id = int
   val string_of_conn_id : int -> string
 
   type config = {
     callback : conn_id -> ?body:Cohttp_lwt_body.contents -> 
-      Cohttp.Request.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
+      Request.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed : conn_id -> unit -> unit;
   }
 
   val respond :
     ?headers:Cohttp.Header.t ->
     status:Cohttp.Code.status_code ->
-    body:Cohttp_lwt_body.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+    body:Cohttp_lwt_body.t -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val respond_string :
     ?headers:Cohttp.Header.t ->
     status:Cohttp.Code.status_code ->
-    body:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+    body:string -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val respond_error :
     status:Cohttp.Code.status_code ->
-    body:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+    body:string -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val respond_redirect :
     ?headers:Cohttp.Header.t ->
-    uri:Uri.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+    uri:Uri.t -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val respond_need_auth :
     ?headers:Cohttp.Header.t ->
-    auth:Cohttp.Auth.req -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+    auth:Cohttp.Auth.req -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val respond_not_found :
-    ?uri:Uri.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+    ?uri:Uri.t -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val callback : config -> IO.ic -> IO.oc -> unit Lwt.t
 end
 
+(** The [Make_client] functor glues together a {! Cohttp.IO.S } implementation
+    with {! Cohttp.Request } and {! Cohttp.Response } to send requests down
+    a connection that is established by the  {! Net } module.
+    The resulting module satisfies the {! Client } module type. *)
 module Make_server
     (IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
-    (ReqIO:Cohttp.Request.S with module IO=IO)
-    (ResIO:Cohttp.Response.S with module IO=IO)
+    (Request:Request with module IO=IO)
+    (Response:Response with module IO=IO)
     (Net:Net with module IO = IO) :
-    Server with module IO=IO
-
-
+    Server with module IO=IO and module Request=Request and module Response=Response
