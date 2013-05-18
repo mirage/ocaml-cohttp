@@ -35,7 +35,7 @@ module Client : Cohttp_lwt.Client with module IO=Cohttp_lwt_unix_io
   primarily filesystem functions, and also {! create} to actually bind
   the server to a socket and respond to incoming requests. *)
 module type S = sig
-  module Server : Cohttp_lwt.Server
+  include Cohttp_lwt.Server with module IO = Cohttp_lwt_unix_io
 
   val resolve_file : docroot:string -> uri:Uri.t -> string
 
@@ -44,12 +44,9 @@ module type S = sig
     fname:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val create : ?timeout:int -> address:string -> port:int -> 
-    Server.config -> unit Lwt.t
+    config -> unit Lwt.t
 end
 
 (** The [Server] module implement the full UNIX HTTP server interface,
   including the UNIX-specific functions defined in {! S }. *)
-module Server : sig
-  include Cohttp_lwt.Server with module IO = Cohttp_lwt_unix_io
-  include S with type Server.config = config
-end 
+module Server : S

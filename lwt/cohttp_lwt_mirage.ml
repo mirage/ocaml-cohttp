@@ -37,9 +37,9 @@ module Response = Cohttp_lwt.Make_response(Cohttp_lwt_mirage_io)
 module Client = Cohttp_lwt.Make_client(Cohttp_lwt_mirage_io)(Request)(Response)(Net_IO)
 module Server_core = Cohttp_lwt.Make_server(Cohttp_lwt_mirage_io)(Request)(Response)(Net_IO)
 
-module Server_mirage (Server:Cohttp_lwt.Server with module IO=Cohttp_lwt_mirage_io) = struct 
-  module Server = Server
-
+(* Extend the [Server_core] module with the Mirage-specific functions *)
+module Server = struct
+  include Server_core
   let listen ?timeout mgr src spec =
     (* TODO XXX the cancel-based timeout is almost certainly broken as the
      * thread won't issue a Response *)
@@ -47,25 +47,20 @@ module Server_mirage (Server:Cohttp_lwt.Server with module IO=Cohttp_lwt_mirage_
       match timeout with 
       |None -> 
         fun dst ch ->
-          Server.callback spec ch ch
+          callback spec ch ch
       |Some tm ->
         fun dst ch ->
           let tmout = OS.Time.sleep tm in
-          let cb_t = Server.callback spec ch ch in
+          let cb_t = callback spec ch ch in
           tmout <?> cb_t
     in
     Net.Channel.listen mgr (`TCPv4 (src, cb))
 end
 
-module Server = struct
-  include Server_core
-  include Server_mirage(Server_core)
-end
-
 module type S = sig
-  module Server : Cohttp_lwt.Server
+  include Cohttp_lwt.Server with module IO = Cohttp_lwt_mirage_io
 
   val listen :
     ?timeout:float ->
-    Net.Manager.t -> Net.Nettypes.ipv4_src -> Server.config -> unit Lwt.t
+    Net.Manager.t -> Net.Nettypes.ipv4_src -> config -> unit Lwt.t
 end

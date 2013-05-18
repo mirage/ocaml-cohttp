@@ -35,16 +35,12 @@ module Client : Cohttp_lwt.Client with module IO = Cohttp_lwt_mirage_io
     This is primarily the {! listen} function to actually create the
     server instance and response to incoming requests. *)
 module type S = sig
-  module Server : Cohttp_lwt.Server
+  include Cohttp_lwt.Server with module IO=Cohttp_lwt_mirage_io
 
-  val listen :
-    ?timeout:float ->
-    Net.Manager.t -> Net.Nettypes.ipv4_src -> Server.config -> unit Lwt.t
+  val listen : ?timeout:float ->
+    Net.Manager.t -> Net.Nettypes.ipv4_src -> config -> unit Lwt.t
 end
 
 (** The [Server] module implement the full Mirage HTTP server interface,
   including the Mirage-specific functions defined in {! S }. *)
-module Server : sig
-  include Cohttp_lwt.Server with module IO=Cohttp_lwt_mirage_io
-  include S with type Server.config = config
-end 
+module Server : S

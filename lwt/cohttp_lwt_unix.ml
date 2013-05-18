@@ -26,9 +26,11 @@ end
 module Client = Cohttp_lwt.Make_client
   (Cohttp_lwt_unix_io)(Request)(Response)(Cohttp_lwt_unix_net)
 
-module Server_unix (Server:Cohttp_lwt.Server with module IO=Cohttp_lwt_unix_io) = struct 
-  module Server = Server
+module Server = struct
+  include Cohttp_lwt.Make_server
+    (Cohttp_lwt_unix_io)(Request)(Response)(Cohttp_lwt_unix_net)
   open Lwt
+
   let blank_uri = Uri.of_string "" 
 
   let resolve_file ~docroot ~uri =
@@ -64,26 +66,19 @@ module Server_unix (Server:Cohttp_lwt.Server with module IO=Cohttp_lwt_unix_io) 
       return (res, body)
     with
      | Unix.Unix_error(Unix.ENOENT,_,_) | Isnt_a_file ->
-         Server.respond_not_found ()
+         respond_not_found ()
      | exn ->
          let body = Printexc.to_string exn in
-         Server.respond_error ~status:`Internal_server_error ~body ()
+         respond_error ~status:`Internal_server_error ~body ()
 
   let create ?timeout ~address ~port spec =
     lwt sockaddr = Cohttp_lwt_unix_net.build_sockaddr address port in
-    Cohttp_lwt_unix_net.Tcp_server.init ~sockaddr ~timeout (Server.callback spec)
-end
-
-module Server_core =
-  Cohttp_lwt.Make_server(Cohttp_lwt_unix_io)(Request)(Response)(Cohttp_lwt_unix_net)
-
-module Server = struct
-  include Server_core
-  include Server_unix(Server_core)
+    Cohttp_lwt_unix_net.Tcp_server.init ~sockaddr ~timeout (callback spec)
 end
 
 module type S = sig
-  module Server : Cohttp_lwt.Server
+
+  include Cohttp_lwt.Server with module IO = Cohttp_lwt_unix_io
 
   val resolve_file : 
     docroot:string -> uri:Uri.t -> string
@@ -96,5 +91,5 @@ module type S = sig
   val create : 
     ?timeout:int -> 
     address:string -> port:int -> 
-    Server.config -> unit Lwt.t
+    config -> unit Lwt.t
 end
