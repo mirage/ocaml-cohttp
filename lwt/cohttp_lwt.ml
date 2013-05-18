@@ -17,7 +17,6 @@
 
 open Cohttp
 open Lwt
-open Cohttp_lwt_make
 
 module type Client = sig
   module IO : IO.S
@@ -75,7 +74,7 @@ end
 module Make_client(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
              (ReqIO:Cohttp.Request.S with module IO = IO)
              (ResIO:Cohttp.Response.S with module IO = IO)
-             (Net:NET with type oc = ResIO.IO.oc and type ic = ResIO.IO.ic)  = struct
+             (Net:Cohttp_lwt_net.S with type oc = ResIO.IO.oc and type ic = ResIO.IO.ic)  = struct
   module IO = IO
   let read_response ?closefn ic oc =
     match_lwt ResIO.read ic with
@@ -195,7 +194,7 @@ end
 module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
              (ReqIO:Cohttp.Request.S with module IO=IO)
              (ResIO:Cohttp.Response.S with module IO=IO)
-             (Net:NET with type oc = ResIO.IO.oc and type ic = ResIO.IO.ic)  = struct
+             (Net:Cohttp_lwt_net.S with type oc = ResIO.IO.oc and type ic = ResIO.IO.ic)  = struct
   module IO = IO
   module Transfer_IO = Transfer_io.Make(IO)
 

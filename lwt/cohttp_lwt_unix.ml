@@ -16,6 +16,7 @@
  *)
 
 module IO = Cohttp_lwt_unix_io
+module Net = Cohttp_lwt_unix_net
 
 module Request = struct
   include Cohttp.Request
@@ -26,8 +27,6 @@ module Response = struct
   include Cohttp.Response
   include Cohttp.Response.Make(IO)
 end
-
-module Net = Cohttp_lwt_net
 
 module Client = Cohttp_lwt.Make_client(IO)(Request)(Response)(Net)
 

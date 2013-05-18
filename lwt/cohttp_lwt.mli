@@ -1,3 +1,20 @@
+(*
+ * Copyright (c) 2013 Anil Madhavapeddy <anil@recoil.org>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *)
+
 module type Client = sig
   module IO : IO.S
 
@@ -55,7 +72,7 @@ module Make_client
     (IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
     (ReqIO:Cohttp.Request.S with module IO = IO)
     (ResIO:Cohttp.Response.S with module IO = IO)
-    (Net:Cohttp_lwt_make.NET with type oc = ResIO.IO.oc and type ic = ResIO.IO.ic) : Client with module IO=IO
+    (Net:Cohttp_lwt_net.S with type oc = ResIO.IO.oc and type ic = ResIO.IO.ic) : Client with module IO=IO
 
 
 module type Server = sig
@@ -102,5 +119,5 @@ module Make_server
     (IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
     (ReqIO:Cohttp.Request.S with module IO=IO)
     (ResIO:Cohttp.Response.S with module IO=IO)
-    (Net:Cohttp_lwt_make.NET with type oc = ResIO.IO.oc and type ic = ResIO.IO.ic) : 
+    (Net:Cohttp_lwt_net.S with type oc = ResIO.IO.oc and type ic = ResIO.IO.ic) : 
     Server with module IO=IO

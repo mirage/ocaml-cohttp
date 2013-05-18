@@ -1,5 +1,5 @@
- (*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+(*
+ * Copyright (c) 2013 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,112 +15,12 @@
  *
  *)
 
-(* Miscellaneous net-helpers used by Cohttp. Ideally, these will disappear
- * into some connection-management framework such as andrenth/release *)
-
-open Lwt
-
-type ic = Lwt_io.input_channel
-type oc = Lwt_io.output_channel
-
-(* Perform a DNS lookup on the addr and generate a sockaddr *)
-let build_sockaddr addr port =
-  try_lwt
-    (* should this be lwt hent = Lwt_lib.gethostbyname addr ? *)
-    let hent = Unix.gethostbyname addr in
-    return (Unix.ADDR_INET (hent.Unix.h_addr_list.(0), port))
-  with _ -> 
-    raise_lwt (Failure ("cant resolve hostname: " ^ addr))
-
-(* Vanilla TCP connection *)
-module Tcp_client = struct
-  let connect sa =
-    let fd = Lwt_unix.socket (Unix.domain_of_sockaddr sa) Unix.SOCK_STREAM 0 in
-    lwt () = Lwt_unix.connect fd sa in
-    let ic = Lwt_io.of_fd ~mode:Lwt_io.input fd in
-    let oc = Lwt_io.of_fd ~mode:Lwt_io.output fd in
-    return (ic, oc)
-
-  let close (ic,oc) =
-    let _ = try_lwt Lwt_io.close oc with _ -> return () in
-    try_lwt Lwt_io.close ic with _ -> return ()
+module type S = sig
+  type ic
+  type oc
+  val connect_uri : Uri.t -> (ic * oc) Lwt.t
+  val connect : ?ssl:bool -> string -> int -> (ic * oc) Lwt.t
+  val close_in : ic -> unit
+  val close_out : oc -> unit
+  val close : ic -> oc -> unit
 end
-
-(* SSL TCP connection *)
-module Ssl_client = struct
-  let sslctx =
-    Ssl.init ();
-    Ssl.create_context Ssl.SSLv23 Ssl.Client_context
-
-  let connect sa =
-    let fd = Lwt_unix.socket (Unix.domain_of_sockaddr sa) Unix.SOCK_STREAM 0 in
-    lwt () = Lwt_unix.connect fd sa in
-    lwt sock = Lwt_ssl.ssl_connect fd sslctx in
-    let ic = Lwt_ssl.in_channel_of_descr sock in
-    let oc = Lwt_ssl.out_channel_of_descr sock in
-    return (ic,oc)
-
-  let close (ic,oc) =
-    let _ = try_lwt Lwt_ssl.close ic with _ -> return () in
-    try_lwt Lwt_ssl.close oc with _ -> return ()
-end
-
-module Tcp_server = struct
-
-  let close (ic,oc) =
-    try_lwt Lwt_io.close oc with _ -> return () >>= fun () ->
-    try_lwt Lwt_io.close ic with _ -> return ()
-
-  let init_socket sockaddr =
-    let suck = Lwt_unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
-    Lwt_unix.setsockopt suck Unix.SO_REUSEADDR true;
-    Lwt_unix.bind suck sockaddr;
-    Lwt_unix.listen suck 15;
-    suck
-
-  let process_accept ~sockaddr ~timeout callback (client,_) =
-    let ic = Lwt_io.of_fd Lwt_io.input client in
-    let oc = Lwt_io.of_fd Lwt_io.output client in
- 
-    let c = callback ic oc in
-    let events = match timeout with
-      |None -> [c]
-      |Some t -> [c; (Lwt_unix.sleep (float_of_int t)) ] in
-    let _ = Lwt.pick events >>= fun () -> close (ic,oc) in
-    return ()
-  
-  let init ~sockaddr ~timeout callback =
-    let s = init_socket sockaddr in
-    while_lwt true do
-      Lwt_unix.accept s >>=
-      process_accept ~sockaddr ~timeout callback
-    done
-end
-
-let connect_uri uri =
-  let port = match Uri_services.tcp_port_of_uri uri with
-    |None -> raise (Failure "unknown scheme") |Some p -> p in
-  lwt sa = build_sockaddr (Uri.host_with_default uri) port in
-  match Uri.scheme uri with
-  |Some "https" -> Ssl_client.connect sa
-  |Some "http" -> Tcp_client.connect sa
-  |Some _ | None -> fail (Failure "unknown scheme")
-
-let connect ?(ssl=false) host port =
-  lwt sa = build_sockaddr host port in
-  match ssl with
-  |true -> Ssl_client.connect sa
-  |false -> Tcp_client.connect sa
-
-let close_in ic =
-  ignore_result (try_lwt Lwt_io.close ic with _ -> return ())
-
-let close_out oc =
-  ignore_result (try_lwt Lwt_io.close oc with _ -> return ())
-
-let close' ic oc =
-  try_lwt Lwt_io.close oc with _ -> return () >>= fun () ->
-  try_lwt Lwt_io.close ic with _ -> return ()
-
-let close ic oc =
-  ignore_result (close' ic oc)
