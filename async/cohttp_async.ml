@@ -101,9 +101,15 @@ module Net = struct
     |Some port -> Tcp.connect ?interrupt (Tcp.to_host_and_port host port)
 end
 
-module ResIO = Cohttp.Response.Make(IO)
-module ReqIO = Cohttp.Request.Make(IO)
-open Cohttp
+module Request = struct
+  include Cohttp.Request
+  include Cohttp.Request.Make(IO)
+end
+ 
+module Response = struct
+  include Cohttp.Response
+  include Cohttp.Response.Make(IO)
+end
 
 let pipe_of_body read_chunk ic oc =
   let rd,wr = Pipe.create () in
@@ -167,18 +173,18 @@ module Client = struct
     Net.connect ?interrupt uri
     >>= fun (_,ic,oc) ->
     (* Write request down the wire *)
-    ReqIO.write_header req oc
+    Request.write_header req oc
     >>= fun () ->
-    Deferred.List.iter ~f:(fun b -> ReqIO.write_body req oc b) body_bufs
+    Deferred.List.iter ~f:(fun b -> Request.write_body req oc b) body_bufs
     >>= fun () ->
-    ReqIO.write_footer req oc
+    Request.write_footer req oc
     >>= fun () ->
     (* Read response *)
-    ResIO.read ic
+    Response.read ic
     >>= fun res ->
     let res = Option.value_exn ~message:"Error reading HTTP response" res in
     (* Build a response pipe for the body *)
-    let rd = pipe_of_body (ResIO.read_body_chunk res) ic oc in
+    let rd = pipe_of_body (Response.read_body_chunk res) ic oc in
     return (res, rd)
 
   let get ?interrupt ?headers uri =
@@ -203,17 +209,17 @@ module Server = struct
   (* Turn an incoming TCP request into an HTTP request and
      dispatch it to [handle_request] *)
   let handle_client handle_request sock rd wr =
-    ReqIO.read rd
+    Request.read rd
     >>= fun req ->
     Option.value_exn ~message:"Error reading HTTP request" req
     |> fun req ->
     (* Create pipe for response body if it exists *)
     let body =
-      match ReqIO.has_body req with
+      match Request.has_body req with
       | false -> None
       | true ->
         (* Create a Pipe for the body *)
-        let read_chunk = ReqIO.read_body_chunk req in
+        let read_chunk = Request.read_body_chunk req in
         Some (pipe_of_body read_chunk rd wr)
     in
     handle_request ~body sock req
@@ -222,22 +228,22 @@ module Server = struct
 
   let respond ?headers ~body status : response =
     fun wr ->
-      let headers = Header.add_opt headers "connection" "close" in
+      let headers = Cohttp.Header.add_opt headers "connection" "close" in
       match body with
       | None ->
-        let res = Response.make ~status ~encoding:(Transfer.Fixed 0) ~headers () in
-        ResIO.write_header res wr
+        let res = Response.make ~status ~encoding:(Cohttp.Transfer.Fixed 0) ~headers () in
+        Response.write_header res wr
         >>= fun () ->
-        ResIO.write_footer res wr
+        Response.write_footer res wr
         >>= fun () ->
         Writer.close wr
       | Some body ->
-        let res = Response.make ~status ~encoding:Transfer.Chunked ~headers () in
-        ResIO.write_header res wr
+        let res = Response.make ~status ~encoding:Cohttp.Transfer.Chunked ~headers () in
+        Response.write_header res wr
         >>= fun () ->
-        Pipe.iter body ~f:(ResIO.write_body res wr)
+        Pipe.iter body ~f:(Response.write_body res wr)
         >>= fun () ->
-        ResIO.write_footer res wr
+        Response.write_footer res wr
         >>= fun () ->
         Writer.close wr
 
