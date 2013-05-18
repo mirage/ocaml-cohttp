@@ -15,23 +15,20 @@
  *
  *)
 
-module IO = Cohttp_lwt_unix_io
-module Net = Cohttp_lwt_unix_net
-
 module Request = struct
   include Cohttp.Request
-  include Cohttp.Request.Make(IO)
+  include Cohttp.Request.Make(Cohttp_lwt_unix_io)
 end
 
 module Response = struct
   include Cohttp.Response
-  include Cohttp.Response.Make(IO)
+  include Cohttp.Response.Make(Cohttp_lwt_unix_io)
 end
 
 module Client = Cohttp_lwt.Make_client
-  (IO)(Request)(Response)(Net)
+  (Cohttp_lwt_unix_io)(Request)(Response)(Cohttp_lwt_unix_net)
 
-module Server_unix (Server:Cohttp_lwt.Server with module IO=IO) = struct 
+module Server_unix (Server:Cohttp_lwt.Server with module IO=Cohttp_lwt_unix_io) = struct 
   module Server = Server
   open Lwt
   let blank_uri = Uri.of_string "" 
@@ -75,12 +72,12 @@ module Server_unix (Server:Cohttp_lwt.Server with module IO=IO) = struct
          Server.respond_error ~status:`Internal_server_error ~body ()
 
   let create ?timeout ~address ~port spec =
-    lwt sockaddr = Net.build_sockaddr address port in
-    Net.Tcp_server.init ~sockaddr ~timeout (Server.callback spec)
+    lwt sockaddr = Cohttp_lwt_unix_net.build_sockaddr address port in
+    Cohttp_lwt_unix_net.Tcp_server.init ~sockaddr ~timeout (Server.callback spec)
 end
 
 module Server_core =
-  Cohttp_lwt.Make_server(IO)(Request)(Response)(Net)
+  Cohttp_lwt.Make_server(Cohttp_lwt_unix_io)(Request)(Response)(Cohttp_lwt_unix_net)
 
 module Server = struct
   include Server_core

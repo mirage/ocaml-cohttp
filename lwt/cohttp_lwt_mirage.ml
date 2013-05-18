@@ -15,15 +15,11 @@
  *
  *)
 
-open Cohttp
 open Lwt
 
-module IO = Cohttp_lwt_mirage_io
-
 module Net_IO = struct
-  open Net
-  type ic = Channel.t
-  type oc = Channel.t
+  type ic = Net.Channel.t
+  type oc = Net.Channel.t
 
   let connect_uri uri =
     fail (Failure "not implemented")
@@ -33,34 +29,58 @@ module Net_IO = struct
 
   let close_in ic = ()
   let close_out ic = ()
-  let close ic oc = ignore_result (Channel.close ic)
+  let close ic oc = ignore_result (Net.Channel.close ic)
 end
 
 module Request = struct
   include Cohttp.Request
-  include Cohttp.Request.Make(IO)
+  include Cohttp.Request.Make(Cohttp_lwt_mirage_io)
 end
 
 module Response = struct
   include Cohttp.Response
-  include Cohttp.Response.Make(IO)
+  include Cohttp.Response.Make(Cohttp_lwt_mirage_io)
 end
 
-module Client = Cohttp_lwt.Make_client(IO)(Request)(Response)(Net_IO)
-module Server = Cohttp_lwt.Make_server(IO)(Request)(Response)(Net_IO)
+module Client = 
+  Cohttp_lwt.Make_client
+    (Cohttp_lwt_mirage_io)
+    (Request) 
+    (Response)
+    (Net_IO)
 
-let listen ?timeout mgr src spec =
-  (* TODO XXX the cancel-based timeout is almost certainly broken as the
-   * thread won't issue a Response *)
-  let cb = 
-    match timeout with 
-    |None -> 
-      fun dst ch ->
-        Server.callback spec ch ch
-    |Some tm ->
-      fun dst ch ->
-        let tmout = OS.Time.sleep tm in
-        let cb_t = Server.callback spec ch ch in
-        tmout <?> cb_t
-  in
-  Net.Channel.listen mgr (`TCPv4 (src, cb))
+module Server_mirage (Server:Cohttp_lwt.Server with module IO=Cohttp_lwt_mirage_io) = struct 
+  module Server = Server
+
+  let listen ?timeout mgr src spec =
+    (* TODO XXX the cancel-based timeout is almost certainly broken as the
+     * thread won't issue a Response *)
+    let cb = 
+      match timeout with 
+      |None -> 
+        fun dst ch ->
+          Server.callback spec ch ch
+      |Some tm ->
+        fun dst ch ->
+          let tmout = OS.Time.sleep tm in
+          let cb_t = Server.callback spec ch ch in
+          tmout <?> cb_t
+    in
+    Net.Channel.listen mgr (`TCPv4 (src, cb))
+end
+
+module Server_core =
+  Cohttp_lwt.Make_server(Cohttp_lwt_mirage_io)(Request)(Response)(Net_IO)
+
+module Server = struct
+  include Server_core
+  include Server_mirage(Server_core)
+end
+
+module type S = sig
+  module Server : Cohttp_lwt.Server
+
+  val listen :
+    ?timeout:float ->
+    Net.Manager.t -> Net.Nettypes.ipv4_src -> Server.config -> unit Lwt.t
+end
