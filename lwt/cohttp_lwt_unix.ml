@@ -17,18 +17,16 @@
 
 
 module Request = Cohttp_lwt.Make_request(Cohttp_lwt_unix_io)
-
-module Response = struct
-  include Cohttp.Response
-  include Cohttp.Response.Make(Cohttp_lwt_unix_io)
-end
+module Response = Cohttp_lwt.Make_response(Cohttp_lwt_unix_io)
 
 module Client = Cohttp_lwt.Make_client
   (Cohttp_lwt_unix_io)(Request)(Response)(Cohttp_lwt_unix_net)
 
+module Server_core = Cohttp_lwt.Make_server
+  (Cohttp_lwt_unix_io)(Request)(Response)(Cohttp_lwt_unix_net)
+
 module Server = struct
-  include Cohttp_lwt.Make_server
-    (Cohttp_lwt_unix_io)(Request)(Response)(Cohttp_lwt_unix_net)
+  include Server_core
   open Lwt
 
   let blank_uri = Uri.of_string "" 

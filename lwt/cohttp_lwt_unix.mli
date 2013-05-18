@@ -28,7 +28,7 @@ module Request : Cohttp_lwt.Request with module IO = Cohttp_lwt_unix_io
 module Response : Cohttp_lwt.Response with module IO = Cohttp_lwt_unix_io
 
 (** The [Client] module implements an HTTP client interface. *)
-module Client : Cohttp_lwt.Client with module IO=Cohttp_lwt_unix_io
+module Client : Cohttp_lwt.Client with module IO = Cohttp_lwt_unix_io
 
 (** This module type defines the additional UNIX-specific functions that are
   exposed in addition to the {! Cohttp_lwt.Server} interface.  These are
