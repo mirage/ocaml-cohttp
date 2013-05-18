@@ -28,18 +28,11 @@ module Response = struct
   include Cohttp.Response.Make(IO)
 end
 
-module Client = Cohttp_lwt.Make_client(IO)(Request)(Response)(Net)
+module Client = Cohttp_lwt.Make_client
+  (IO)(Request)(Response)(Net)
 
-module type S = sig
-  val resolve_file : docroot:string -> uri:Uri.t -> string
-
-  val respond_file :
-    ?headers:Cohttp.Header.t ->
-    fname:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
-end
-
-module Server_unix (Server:Cohttp_lwt.Server) = struct 
-
+module Server_unix (Server:Cohttp_lwt.Server with module IO=IO) = struct 
+  module Server = Server
   open Lwt
   let blank_uri = Uri.of_string "" 
 
@@ -80,15 +73,33 @@ module Server_unix (Server:Cohttp_lwt.Server) = struct
      | exn ->
          let body = Printexc.to_string exn in
          Server.respond_error ~status:`Internal_server_error ~body ()
+
+  let create ?timeout ~address ~port spec =
+    lwt sockaddr = Net.build_sockaddr address port in
+    Net.Tcp_server.init ~sockaddr ~timeout (Server.callback spec)
 end
 
-module Server_core = Cohttp_lwt.Make_server(IO)(Request)(Response)(Net)
+module Server_core =
+  Cohttp_lwt.Make_server(IO)(Request)(Response)(Net)
 
 module Server = struct
   include Server_core
   include Server_unix(Server_core)
 end
 
-let server ?timeout ~address ~port spec =
-  lwt sockaddr = Net.build_sockaddr address port in
-  Net.Tcp_server.init ~sockaddr ~timeout (Server.callback spec)
+module type S = sig
+  module Server : Cohttp_lwt.Server
+
+  val resolve_file : 
+    docroot:string -> uri:Uri.t -> string
+
+  val respond_file :
+    ?headers:Cohttp.Header.t ->
+    fname:string -> unit -> 
+    (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+
+  val create : 
+    ?timeout:int -> 
+    address:string -> port:int -> 
+    Server.config -> unit Lwt.t
+end

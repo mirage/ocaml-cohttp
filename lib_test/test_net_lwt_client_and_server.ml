@@ -42,7 +42,7 @@ let make_server () =
   in
   let conn_closed _ () = () in
   let config = { Server.callback; conn_closed } in
-  server ~address ~port config
+  Server.create ~address ~port config
 
 let not_none n t fn =
   match_lwt t with
