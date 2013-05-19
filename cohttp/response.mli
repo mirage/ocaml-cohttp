@@ -30,10 +30,10 @@ val version : t -> Code.version
 val status : t -> Code.status_code
 
 val make :
-  ?version:Code.version -> 
+  ?version:Code.version ->
   ?status:Code.status_code ->
-  ?encoding:Transfer.encoding -> 
-  ?headers:Header.t -> 
+  ?encoding:Transfer.encoding ->
+  ?headers:Header.t ->
   unit -> t
 
 module type S = sig
@@ -52,4 +52,4 @@ module type S = sig
   val write : (t -> IO.oc -> unit IO.t) -> t -> IO.oc -> unit IO.t
 end
 
-module Make(IO : IO.S) : S with module IO = IO
+module Make(IO : IO.S) : S with module IO := IO

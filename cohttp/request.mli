@@ -19,7 +19,7 @@
 
 (** This contains the metadata for a HTTP/1.1 request header, including
     the {!headers}, {!version}, {!meth} and {!uri}.  The body is handled by
-    the separate {!S} module type, as it is dependent on the IO 
+    the separate {!S} module type, as it is dependent on the IO
     implementation. *)
 type t
 
@@ -38,7 +38,7 @@ val version : t -> Code.version
 (** Retrieve the transfer encoding of this HTTP request *)
 val encoding : t -> Transfer.encoding
 
-val make : ?meth:Code.meth -> ?version:Code.version -> 
+val make : ?meth:Code.meth -> ?version:Code.version ->
   ?encoding:Transfer.encoding -> ?headers:Header.t ->
   Uri.t -> t
 
@@ -64,4 +64,4 @@ module type S = sig
   val read_form : t -> IO.ic -> (string * string list) list IO.t
 end
 
-module Make(IO : IO.S) : S with module IO = IO
+module Make(IO : IO.S) : S with module IO := IO

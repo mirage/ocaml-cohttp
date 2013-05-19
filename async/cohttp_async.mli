@@ -24,13 +24,13 @@ val body_to_string : string Pipe.Reader.t -> string Deferred.t
 module IO : Cohttp.IO.S
 
 module Request : sig
-  include module type of Cohttp.Request with type t = Cohttp.Request.t
-  include Cohttp.Request.S with module IO=IO
+  include module type of Cohttp.Request  with type t = Cohttp.Request.t
+  include Cohttp.Request.S with module IO := IO
 end
 
 module Response : sig
   include module type of Cohttp.Response with type t = Cohttp.Response.t
-  include Cohttp.Response.S with module IO=IO
+  include Cohttp.Response.S with module IO := IO
 end
 
 module Client : sig
@@ -83,18 +83,18 @@ module Server : sig
 
   (** Respond with a [string] Pipe that provides the response string Pipe.Reader.t.
       @param code Default is HTTP 200 `OK *)
-  val respond_with_pipe : 
-    ?headers:Cohttp.Header.t -> ?code:Cohttp.Code.status_code -> 
+  val respond_with_pipe :
+    ?headers:Cohttp.Header.t -> ?code:Cohttp.Code.status_code ->
     string Pipe.Reader.t -> response Deferred.t
 
   (** Respond with a static [string] string Pipe.Reader.t
       @param code Default is HTTP 200 `OK *)
-  val respond_with_string : 
-    ?headers:Cohttp.Header.t -> ?code:Cohttp.Code.status_code -> 
+  val respond_with_string :
+    ?headers:Cohttp.Header.t -> ?code:Cohttp.Code.status_code ->
     string -> response Deferred.t
 
   (** Respond with file contents, and [error_string Pipe.Reader.t] if the file isn't found *)
-  val respond_with_file : 
+  val respond_with_file :
     ?headers:Cohttp.Header.t -> ?error_body:string ->
     string -> response Deferred.t
 
