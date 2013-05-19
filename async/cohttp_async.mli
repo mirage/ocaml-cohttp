@@ -21,7 +21,7 @@ open Async.Std
 (** Read in a full body and convert to a [string] *)
 val body_to_string : string Pipe.Reader.t -> string Deferred.t
 
-module IO : Cohttp.IO.S
+module IO : Cohttp.IO.S with type 'a t = 'a Deferred.t
 
 module Request : sig
   include module type of Cohttp.Request with type t = Cohttp.Request.t
