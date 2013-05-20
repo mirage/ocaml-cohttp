@@ -64,3 +64,5 @@ module type S = sig
     ?timeout:float ->
     Net.Manager.t -> Net.Nettypes.ipv4_src -> config -> unit Lwt.t
 end
+
+let listen = Server.listen

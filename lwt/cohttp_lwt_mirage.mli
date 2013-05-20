@@ -44,3 +44,8 @@ end
 (** The [Server] module implement the full Mirage HTTP server interface,
   including the Mirage-specific functions defined in {! S }. *)
 module Server : S
+
+(** This [listen] call is the same as {! Server.listen}, but here for
+    compatibility with the Mirari build tool. *)
+val listen : ?timeout:float ->
+    Net.Manager.t -> Net.Nettypes.ipv4_src -> Server.config -> unit Lwt.t
