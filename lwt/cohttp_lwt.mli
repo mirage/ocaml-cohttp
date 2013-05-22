@@ -15,6 +15,8 @@
  *
  *)
 
+open Cohttp
+
 (** Portable Lwt implementation of HTTP client and server, without
     depending on a particular I/O implementation.  The various [Make]
     functors must be instantiated by an implmentation that provides
