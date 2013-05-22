@@ -20,8 +20,7 @@
 
 open Lwt
 
-type ic = Lwt_io.input_channel
-type oc = Lwt_io.output_channel
+module IO = Cohttp_lwt_unix_io
 
 (* Perform a DNS lookup on the addr and generate a sockaddr *)
 let build_sockaddr addr port =

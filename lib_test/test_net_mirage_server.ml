@@ -38,7 +38,7 @@ let make_server () =
   Net.Manager.create (fun mgr interface id ->
     let src = None, 8081 in
     Net.Manager.configure interface (`IPv4 ip) >>= fun () ->
-    listen mgr src spec
+    Server.listen mgr src spec
   )
     
 let _ = OS.Main.run (make_server ()) 

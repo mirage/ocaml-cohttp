@@ -15,17 +15,19 @@
  *
  *)
 
-module IO = Cohttp_lwt_unix_io
 
-module Request = Cohttp.Request.Make(IO)
-module Response = Cohttp.Response.Make(IO)
-module Body = Cohttp_lwt_body
-module Net = Cohttp_lwt_net
-module Client = Cohttp_lwt.Client(IO)(Request)(Response)(Net)
+module Request = Cohttp_lwt.Make_request(Cohttp_lwt_unix_io)
+module Response = Cohttp_lwt.Make_response(Cohttp_lwt_unix_io)
+
+module Client = Cohttp_lwt.Make_client
+  (Cohttp_lwt_unix_io)(Request)(Response)(Cohttp_lwt_unix_net)
+
+module Server_core = Cohttp_lwt.Make_server
+  (Cohttp_lwt_unix_io)(Request)(Response)(Cohttp_lwt_unix_net)
 
 module Server = struct
+  include Server_core
   open Lwt
-  include Cohttp_lwt.Server(IO)(Request)(Response)(Net)
 
   let blank_uri = Uri.of_string "" 
 
@@ -57,8 +59,8 @@ module Server = struct
       ) in
       Lwt_stream.on_terminate stream (fun () -> 
         ignore_result (Lwt_io.close ic));
-      let body = Body.body_of_stream stream in
-      let res = Response.make ~status:`OK ~encoding ?headers () in
+      let body = Cohttp_lwt_body.body_of_stream stream in
+      let res = Cohttp.Response.make ~status:`OK ~encoding ?headers () in
       return (res, body)
     with
      | Unix.Unix_error(Unix.ENOENT,_,_) | Isnt_a_file ->
@@ -66,8 +68,26 @@ module Server = struct
      | exn ->
          let body = Printexc.to_string exn in
          respond_error ~status:`Internal_server_error ~body ()
+
+  let create ?timeout ~address ~port spec =
+    lwt sockaddr = Cohttp_lwt_unix_net.build_sockaddr address port in
+    Cohttp_lwt_unix_net.Tcp_server.init ~sockaddr ~timeout (callback spec)
 end
 
-let server ?timeout ~address ~port spec =
-  lwt sockaddr = Net.build_sockaddr address port in
-  Net.Tcp_server.init ~sockaddr ~timeout (Server.callback spec)
+module type S = sig
+
+  include Cohttp_lwt.Server with module IO = Cohttp_lwt_unix_io
+
+  val resolve_file : 
+    docroot:string -> uri:Uri.t -> string
+
+  val respond_file :
+    ?headers:Cohttp.Header.t ->
+    fname:string -> unit -> 
+    (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+
+  val create : 
+    ?timeout:int -> 
+    address:string -> port:int -> 
+    config -> unit Lwt.t
+end

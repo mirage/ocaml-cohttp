@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,12 +17,101 @@
 
 open Cohttp
 open Lwt
-open Cohttp_lwt_make
 
-module Client(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
-             (Req:Cohttp.Request.S with module IO = IO)
-             (Response:Cohttp.Response.S with module IO = IO)
-             (Net:NET with type oc = Response.IO.oc and type ic = Response.IO.ic)  = struct
+module type Net = sig
+  module IO : IO.S
+  val connect_uri : Uri.t -> (IO.ic * IO.oc) Lwt.t
+  val connect : ?ssl:bool -> string -> int -> (IO.ic * IO.oc) Lwt.t
+  val close_in : IO.ic -> unit
+  val close_out : IO.oc -> unit
+  val close : IO.ic -> IO.oc -> unit
+end
+
+module type Request = sig
+  include module type of Cohttp.Request with type t = Cohttp.Request.t
+  include Cohttp.Request.S
+end
+
+module Make_request(IO:IO.S) = struct
+  include Cohttp.Request
+  include Cohttp.Request.Make(IO)
+end
+
+module type Response = sig
+  include module type of Cohttp.Response with type t = Cohttp.Response.t
+  include Cohttp.Response.S
+end
+
+module Make_response(IO:IO.S) = struct
+  include Cohttp.Response
+  include Cohttp.Response.Make(IO)
+end
+
+module type Client = sig
+  module IO : IO.S
+  module Request : Request
+  module Response : Response
+
+  val call :
+    ?headers:Cohttp.Header.t ->
+    ?body:Cohttp_lwt_body.contents ->
+    ?chunked:bool ->
+    Cohttp.Code.meth ->
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+
+  val head :
+    ?headers:Cohttp.Header.t ->
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+
+  val get :
+    ?headers:Cohttp.Header.t ->
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+
+  val delete :
+    ?headers:Cohttp.Header.t ->
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+
+  val post :
+    ?body:Cohttp_lwt_body.contents ->
+    ?chunked:bool ->
+    ?headers:Cohttp.Header.t ->
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+
+  val put :
+    ?body:Cohttp_lwt_body.contents ->
+    ?chunked:bool ->
+    ?headers:Cohttp.Header.t ->
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+
+  val patch :
+    ?body:Cohttp_lwt_body.contents ->
+    ?chunked:bool ->
+    ?headers:Cohttp.Header.t ->
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+
+  val post_form :
+    ?headers:Cohttp.Header.t ->
+    params:Cohttp.Header.t ->
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+
+  val callv :
+    ?ssl:bool ->
+    string ->
+    int ->
+    (Request.t * Cohttp_lwt_body.contents option) Lwt_stream.t ->
+    (Response.t * Cohttp_lwt_body.t) Lwt_stream.t Lwt.t
+end
+
+module Make_client
+    (IO:IO.S with type 'a t = 'a Lwt.t)
+    (Request:Request with module IO = IO)
+    (Response:Response with module IO = IO)
+    (Net:Net with module IO = IO) = struct
+
+  module IO = IO
+  module Request = Request
+  module Response = Response
+
   let read_response ?closefn ic oc =
     match_lwt Response.read ic with
     |None -> return None
@@ -51,16 +140,16 @@ module Client(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
     match chunked with
     | true -> 
         let req = Request.make_for_client ~headers ~chunked meth uri in
-        Req.write (fun req oc ->
-          Cohttp_lwt_body.write_body (Req.write_body req oc) body) req oc
+        Request.write (fun req oc ->
+          Cohttp_lwt_body.write_body (Request.write_body req oc) body) req oc
         >>= fun () ->
         read_response ~closefn ic oc
     | false ->
         (* If chunked is not allowed, then obtain the body length and insert header *)
         lwt (body_length, buf) = Cohttp_lwt_body.get_length body in
         let req = Request.make_for_client ~headers ~chunked ~body_length meth uri in
-        Req.write (fun req oc ->
-          Cohttp_lwt_body.write_body (Req.write_body req oc) buf) req oc 
+        Request.write (fun req oc ->
+          Cohttp_lwt_body.write_body (Request.write_body req oc) buf) req oc 
         >>= fun () ->
         read_response ~closefn ic oc
 
@@ -77,14 +166,12 @@ module Client(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
     let body = Cohttp_lwt_body.body_of_string (Uri.encoded_of_query q) in
     post ~chunked:false ~headers ?body uri
 
-  let callv ?(ssl=false) host port (reqs : (Request.r * _ option) Lwt_stream.t)
-      : (Response.t * _) Lwt_stream.t Lwt.t
-      =
+  let callv ?(ssl=false) host port reqs =
     lwt (ic, oc) = Net.connect ~ssl host port in
     (* Serialise the requests out to the wire *)
     let _ = Lwt_stream.iter_s (fun (req,body) -> 
-      Req.write (fun req oc ->
-        Cohttp_lwt_body.write_body (Req.write_body req oc) body) req oc)
+      Request.write (fun req oc ->
+        Cohttp_lwt_body.write_body (Request.write_body req oc) body) req oc)
       reqs in
     (* Read the responses. For each response, ensure that the previous response
      * has consumed the body before continuing to the next response, since HTTP/1.1
@@ -98,10 +185,58 @@ module Client(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
     return resps
 end
 
-module Server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
-             (Request:Cohttp.Request.S with module IO = IO)
-             (Response:Cohttp.Response.S with module IO = IO)
-             (Net:NET with type oc = Response.IO.oc and type ic = Response.IO.ic)  = struct
+module type Server = sig
+  module IO : IO.S
+  module Request : Request
+  module Response : Response
+
+  type conn_id = int
+  val string_of_conn_id : int -> string
+
+    type config = {
+      callback : conn_id -> ?body:Cohttp_lwt_body.contents -> 
+        Cohttp.Request.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
+      conn_closed : conn_id -> unit -> unit;
+    }
+
+    val respond :
+      ?headers:Cohttp.Header.t ->
+      status:Cohttp.Code.status_code ->
+      body:Cohttp_lwt_body.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+
+    val respond_string :
+      ?headers:Cohttp.Header.t ->
+      status:Cohttp.Code.status_code ->
+      body:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+
+    val respond_error :
+      status:Cohttp.Code.status_code ->
+      body:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+
+    val respond_redirect :
+      ?headers:Cohttp.Header.t ->
+      uri:Uri.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+
+    val respond_need_auth :
+      ?headers:Cohttp.Header.t ->
+      auth:Cohttp.Auth.req -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+
+    val respond_not_found :
+      ?uri:Uri.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+
+    val callback : 
+      config -> IO.ic -> IO.oc -> unit Lwt.t
+end
+
+
+module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
+             (Request:Request with module IO=IO)
+             (Response:Response with module IO=IO)
+             (Net:Net with module IO=IO) = struct
+  module IO = IO
+  module Request = Request
+  module Response = Response
+
   module Transfer_IO = Transfer_io.Make(IO)
 
   type conn_id = int

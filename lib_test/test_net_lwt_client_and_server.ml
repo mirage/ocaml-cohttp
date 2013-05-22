@@ -29,11 +29,11 @@ let url_shutdown = Uri.of_string (sprintf "http://%s:%d/shutdown" address port)
 
 let make_server () =
   let callback conn_id ?body req =
-    match Request.path req with
+    match Uri.path (Request.uri req) with
     |""|"/" ->
        Server.respond_string ~status:`OK ~body:"helloworld" ()
     |"/post" -> begin
-       lwt body = Body.string_of_body body in
+       lwt body = Cohttp_lwt_body.string_of_body body in
        Server.respond_string ~status:`OK ~body ()
     end  
     |"/postnodrain" ->
@@ -42,7 +42,7 @@ let make_server () =
   in
   let conn_closed _ () = () in
   let config = { Server.callback; conn_closed } in
-  server ~address ~port config
+  Server.create ~address ~port config
 
 let not_none n t fn =
   match_lwt t with
@@ -58,9 +58,9 @@ let client () =
   (* Do a set of single calls first and consume the body *)
   for_lwt i = 0 to 1000 do
     not_none "get 1" (Client.get url) (fun (r,b) -> assert(b = None)) >>= fun () -> 
-    not_none_s "post 1" (Client.post ?body:(Body.body_of_string "foobar") url)
+    not_none_s "post 1" (Client.post ?body:(Cohttp_lwt_body.body_of_string "foobar") url)
      (fun (r,b) ->
-       lwt b = Body.string_of_body b in
+       lwt b = Cohttp_lwt_body.string_of_body b in
        assert (b = "foobar");
        return ()
      ) 
@@ -69,16 +69,16 @@ let client () =
   for_lwt i = 0 to 2000 do
     try_lwt
       not_none "get 1" (Client.get url) (fun (r,b) -> assert(b = None)) >>= fun () -> 
-      not_none_s "post 1" (Client.post ?body:(Body.body_of_string "foobar") url) (fun (r,b) -> return ()) 
+      not_none_s "post 1" (Client.post ?body:(Cohttp_lwt_body.body_of_string "foobar") url) (fun (r,b) -> return ()) 
     with exn ->
       printf "got error, running gc\n%!";
       Gc.compact ();
       not_none "get 1" (Client.get url) (fun (r,b) -> assert(b = None)) >>= fun () -> 
-      not_none_s "post 1" (Client.post ?body:(Body.body_of_string "foobar") url) (fun (r,b) -> return ()) 
+      not_none_s "post 1" (Client.post ?body:(Cohttp_lwt_body.body_of_string "foobar") url) (fun (r,b) -> return ()) 
   done >>= fun () -> 
  
   (* Do a callv *)
-  let body () = Body.body_of_string "foobar" in
+  let body () = Cohttp_lwt_body.body_of_string "foobar" in
   let body1 = body () in
   let body2 = body () in
   let reqs = Lwt_stream.of_list [
@@ -88,7 +88,7 @@ let client () =
   ] in
   lwt resp = Client.callv address port reqs in
   Lwt_stream.iter_s (fun (res, body) ->
-    lwt body = Body.string_of_body body in 
+    lwt body = Cohttp_lwt_body.string_of_body body in 
     assert(body="foobar");
     return ()
   ) resp >>= fun () -> 

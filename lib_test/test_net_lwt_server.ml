@@ -21,12 +21,13 @@ open Lwt
 
 open Cohttp
 open Cohttp_lwt_unix
+
 let make_server () =
   let callback conn_id ?body req =
-    match Request.path req with
+    match Uri.path (Request.uri req) with
     |""|"/" -> Server.respond_string ~status:`OK ~body:"helloworld" ()
     |"/post" -> begin
-       lwt body = Body.string_of_body body in
+       lwt body = Cohttp_lwt_body.string_of_body body in
        Server.respond_string ~status:`OK ~body ()
     end  
     |"/postnodrain" -> begin
@@ -40,6 +41,6 @@ let make_server () =
     Printf.eprintf "conn %s closed\n%!" (Server.string_of_conn_id conn_id)
   in
   let config = { Server.callback; conn_closed } in
-  server ~address:"0.0.0.0" ~port:8081 config
+  Server.create ~address:"0.0.0.0" ~port:8081 config
     
 let _ = Lwt_unix.run (make_server ()) 

@@ -18,11 +18,20 @@
 open Core.Std
 open Async.Std
 
-(** Pipe which gets the potentially large HTTP request/response body *)
-type body = string Pipe.Reader.t
-
 (** Read in a full body and convert to a [string] *)
-val body_to_string : body -> string Deferred.t
+val body_to_string : string Pipe.Reader.t -> string Deferred.t
+
+module IO : Cohttp.IO.S with type 'a t = 'a Deferred.t
+
+module Request : sig
+  include module type of Cohttp.Request with type t = Cohttp.Request.t
+  include Cohttp.Request.S with module IO=IO
+end
+
+module Response : sig
+  include module type of Cohttp.Response with type t = Cohttp.Response.t
+  include Cohttp.Response.S with module IO=IO
+end
 
 module Client : sig
 
@@ -31,7 +40,7 @@ module Client : sig
     ?interrupt:unit Deferred.t ->
     ?headers:Cohttp.Header.t ->
     Uri.t ->
-    (Cohttp.Response.r * body) Deferred.t
+    (Response.t * string Pipe.Reader.t) Deferred.t
 
   (** Send an HTTP POST request.
       [chunked] encoding is off by default as not many servers support it
@@ -40,19 +49,19 @@ module Client : sig
     ?interrupt:unit Deferred.t ->
     ?headers:Cohttp.Header.t ->
     ?chunked:bool ->
-    ?body:body ->
+    ?body:string Pipe.Reader.t ->
     Uri.t ->
-    (Cohttp.Response.r * body) Deferred.t
+    (Response.t * string Pipe.Reader.t) Deferred.t
 
-  (** Send an HTTP request with arbitrary method and body *)
+  (** Send an HTTP request with arbitrary method and string Pipe.Reader.t *)
   val call :
     ?interrupt:unit Deferred.t ->
     ?headers:Cohttp.Header.t ->
     ?chunked:bool ->
-    ?body:body ->
+    ?body:string Pipe.Reader.t ->
     Cohttp.Code.meth ->
     Uri.t ->
-    (Cohttp.Response.r * body) Deferred.t
+    (Response.t * string Pipe.Reader.t) Deferred.t
 end
 
 module Server : sig
@@ -66,25 +75,28 @@ module Server : sig
 
   val respond :
     ?headers:Cohttp.Header.t ->
-    body:body option ->
+    body:string Pipe.Reader.t option ->
     Cohttp.Code.status_code -> response
 
   (** Resolve a URI and a docroot into a concrete local filename. *)
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
 
-  (** Respond with a [string] Pipe that provides the response body.
+  (** Respond with a [string] Pipe that provides the response string Pipe.Reader.t.
       @param code Default is HTTP 200 `OK *)
   val respond_with_pipe : 
-    ?headers:Cohttp.Header.t -> ?code:Cohttp.Code.status_code -> string Pipe.Reader.t -> response Deferred.t
+    ?headers:Cohttp.Header.t -> ?code:Cohttp.Code.status_code -> 
+    string Pipe.Reader.t -> response Deferred.t
 
-  (** Respond with a static [string] body
+  (** Respond with a static [string] string Pipe.Reader.t
       @param code Default is HTTP 200 `OK *)
   val respond_with_string : 
-    ?headers:Cohttp.Header.t -> ?code:Cohttp.Code.status_code -> string -> response Deferred.t
+    ?headers:Cohttp.Header.t -> ?code:Cohttp.Code.status_code -> 
+    string -> response Deferred.t
 
-  (** Respond with file contents, and [error_body] if the file isn't found *)
+  (** Respond with file contents, and [error_string Pipe.Reader.t] if the file isn't found *)
   val respond_with_file : 
-    ?headers:Cohttp.Header.t -> ?error_body:string -> string -> response Deferred.t
+    ?headers:Cohttp.Header.t -> ?error_body:string ->
+    string -> response Deferred.t
 
   (** Build a HTTP server, based on the [Tcp.Server] interface *)
   val create :
@@ -95,6 +107,6 @@ module Server : sig
                       | `Ignore
                       | `Raise ] ->
     ('address, 'listening_on) Tcp.Where_to_listen.t
-    -> (body:body option -> 'address -> Cohttp.Request.r -> response Deferred.t)
+    -> (body:string Pipe.Reader.t option -> 'address -> Request.t -> response Deferred.t)
     -> ('address, 'listening_on) t Deferred.t
 end

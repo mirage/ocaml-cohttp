@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,15 +15,10 @@
  *
  *)
 
-open Cohttp
 open Lwt
 
-module IO = Cohttp_lwt_mirage_io
-
 module Net_IO = struct
-  open Net
-  type ic = Channel.t
-  type oc = Channel.t
+  module IO = Cohttp_lwt_mirage_io
 
   let connect_uri uri =
     fail (Failure "not implemented")
@@ -33,27 +28,41 @@ module Net_IO = struct
 
   let close_in ic = ()
   let close_out ic = ()
-  let close ic oc = ignore_result (Channel.close ic)
+  let close ic oc = ignore_result (Net.Channel.close ic)
 end
 
-module Request = Request.Make(IO)
-module Response = Response.Make(IO)
-module Body = Cohttp_lwt_body
-module Client = Cohttp_lwt.Client(IO)(Request)(Response)(Net_IO)
-module Server = Cohttp_lwt.Server(IO)(Request)(Response)(Net_IO)
+(* Build all the core modules from the [Cohttp_lwt] functors *)
+module Request = Cohttp_lwt.Make_request(Cohttp_lwt_mirage_io)
+module Response = Cohttp_lwt.Make_response(Cohttp_lwt_mirage_io)
+module Client = Cohttp_lwt.Make_client(Cohttp_lwt_mirage_io)(Request)(Response)(Net_IO)
+module Server_core = Cohttp_lwt.Make_server(Cohttp_lwt_mirage_io)(Request)(Response)(Net_IO)
 
-let listen ?timeout mgr src spec =
-  (* TODO XXX the cancel-based timeout is almost certainly broken as the
-   * thread won't issue a Response *)
-  let cb = 
-    match timeout with 
-    |None -> 
-      fun dst ch ->
-        Server.callback spec ch ch
-    |Some tm ->
-      fun dst ch ->
-        let tmout = OS.Time.sleep tm in
-        let cb_t = Server.callback spec ch ch in
-        tmout <?> cb_t
-  in
-  Net.Channel.listen mgr (`TCPv4 (src, cb))
+(* Extend the [Server_core] module with the Mirage-specific functions *)
+module Server = struct
+  include Server_core
+  let listen ?timeout mgr src spec =
+    (* TODO XXX the cancel-based timeout is almost certainly broken as the
+     * thread won't issue a Response *)
+    let cb = 
+      match timeout with 
+      |None -> 
+        fun dst ch ->
+          callback spec ch ch
+      |Some tm ->
+        fun dst ch ->
+          let tmout = OS.Time.sleep tm in
+          let cb_t = callback spec ch ch in
+          tmout <?> cb_t
+    in
+    Net.Channel.listen mgr (`TCPv4 (src, cb))
+end
+
+module type S = sig
+  include Cohttp_lwt.Server with module IO = Cohttp_lwt_mirage_io
+
+  val listen :
+    ?timeout:float ->
+    Net.Manager.t -> Net.Nettypes.ipv4_src -> config -> unit Lwt.t
+end
+
+let listen = Server.listen

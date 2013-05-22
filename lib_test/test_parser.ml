@@ -102,14 +102,14 @@ let oc_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.output buf
 open Lwt
 
 let basic_req_parse () =
-  let open Cohttp_lwt_unix in
+  let module CU = Cohttp_lwt_unix in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_req) in
-  Cohttp_lwt_unix.Request.read ic >>=
+  CU.Request.read ic >>=
   function
   |Some req ->
-    assert_equal (Request.version req) `HTTP_1_1;
-    assert_equal (Request.meth req) `GET;
-    assert_equal (Uri.to_string (Request.uri req)) "/index.html";
+    assert_equal (Cohttp.Request.version req) `HTTP_1_1;
+    assert_equal (CU.Request.meth req) `GET;
+    assert_equal (Uri.to_string (CU.Request.uri req)) "/index.html";
     return ()
   |None -> assert false
 
@@ -138,7 +138,7 @@ let req_parse () =
   |None -> assert false
   |Some req ->
     assert_equal `GET (Request.meth req);
-    assert_equal "/index.html" (Request.path req);
+    assert_equal "/index.html" ((Uri.path (Request.uri req)));
     assert_equal `HTTP_1_1 (Request.version req);
     return ()
 
@@ -178,7 +178,7 @@ let post_chunked_parse () =
   Request.read ic >>= function
   |None -> assert false
   |Some req ->
-    assert_equal (Request.transfer_encoding req) "chunked";
+    assert_equal (Transfer.encoding_to_string (Request.encoding req)) "chunked";
     Request.read_body_chunk req ic >>= fun chunk ->
     assert_equal chunk (Transfer.Chunk "abcdefghijklmnopqrstuvwxyz");
     Request.read_body_chunk req ic >>= fun chunk ->
@@ -227,10 +227,10 @@ let make_simple_req () =
   (* Use the low-level write_header/footer API *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
-  let body = Body.body_of_string "foobar" in
+  let body = Cohttp_lwt_body.body_of_string "foobar" in
   let req = Request.make ~encoding:Transfer.Chunked ~headers:(Header.init_with "foo" "bar") (Uri.of_string "/foo/bar") in
   Request.write (fun req oc ->
-    Body.write_body (Request.write_body req oc) body
+    Cohttp_lwt_body.write_body (Request.write_body req oc) body
   ) req oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
   (* Use the high-level write API. This also tests that req is immutable
@@ -249,9 +249,9 @@ let make_simple_res () =
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
   let res = Response.make ~headers:(Header.of_list [("foo","bar")]) () in
-  let body = Body.body_of_string "foobar" in
+  let body = Cohttp_lwt_body.body_of_string "foobar" in
   Response.write (fun res oc ->
-    Body.write_body (Response.write_body res oc) body
+    Cohttp_lwt_body.write_body (Response.write_body res oc) body
   ) res oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
   (* Use the high-level write API. This also tests that req is immutable

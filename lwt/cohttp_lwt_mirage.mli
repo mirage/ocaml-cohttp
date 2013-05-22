@@ -15,90 +15,37 @@
  *
  *)
 
-module Body : module type of Cohttp_lwt_body
+(** HTTP client and server using the [mirage-net] interfaces. *)
 
-module Request : Cohttp.Request.S 
-  with module IO = Cohttp_lwt_mirage_io
+(** The [Request] module holds the information about a HTTP request, and
+    also includes the {! Cohttp_lwt_mirage_io} functions to handle large 
+    message bodies. *)
+module Request : Cohttp_lwt.Request with module IO = Cohttp_lwt_mirage_io
 
-module Response : Cohttp.Response.S 
-  with module IO = Cohttp_lwt_mirage_io
+(** The [Response] module holds the information about a HTTP response, and
+    also includes the {! Cohttp_lwt_mirage_io} functions to handle large 
+    message bodies. *)
+module Response : Cohttp_lwt.Response with module IO = Cohttp_lwt_mirage_io
 
-module Client : sig
-  val call :
-    ?headers:Cohttp.Header.t ->
-    ?body:Body.contents ->
-    ?chunked:bool ->
-    Cohttp.Code.meth ->
-    Uri.t -> (Response.t * Body.t) option Lwt.t
+(** The [Client] module implements an HTTP client interface. *)
+module Client : Cohttp_lwt.Client with module IO = Cohttp_lwt_mirage_io
 
-  val head :
-    ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t) option Lwt.t
+(** The Mirage [S] module type defines the additional Mirage-specific
+    functions that are exposed by the {! Cohttp_lwt.Server} interface. 
+    This is primarily the {! listen} function to actually create the
+    server instance and response to incoming requests. *)
+module type S = sig
+  include Cohttp_lwt.Server with module IO=Cohttp_lwt_mirage_io
 
-  val get :
-    ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t) option Lwt.t
-
-  val delete :
-    ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t) option Lwt.t
-
-  val post :
-    ?body:Body.contents ->
-    ?chunked:bool ->
-    ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t) option Lwt.t
-
-  val put :
-    ?body:Body.contents ->
-    ?chunked:bool ->
-    ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t) option Lwt.t
-
-  val patch :
-    ?body:Body.contents ->
-    ?chunked:bool ->
-    ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t) option Lwt.t
-
-  val post_form :
-    ?headers:Cohttp.Header.t ->
-    params:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t) option Lwt.t
-
-  val callv :
-    ?ssl:bool ->
-    string ->
-    int ->
-    (Request.t * Body.contents option) Lwt_stream.t ->
-    (Response.t * Body.t) Lwt_stream.t Lwt.t
+  val listen : ?timeout:float ->
+    Net.Manager.t -> Net.Nettypes.ipv4_src -> config -> unit Lwt.t
 end
 
-module Server : sig
+(** The [Server] module implement the full Mirage HTTP server interface,
+  including the Mirage-specific functions defined in {! S }. *)
+module Server : S
 
-    type conn_id = int
-    val string_of_conn_id : int -> string
-
-    type config = {
-      callback : conn_id -> ?body:Body.contents -> Request.t -> (Response.t * Body.t) Lwt.t;
-      conn_closed : conn_id -> unit -> unit;
-    }
-
-    val callback : config -> Net.Channel.t -> Net.Channel.t -> unit Lwt.t
-
-    val respond_string :
-      ?headers:Cohttp.Header.t ->
-      status:Cohttp.Code.status_code ->
-      body:string -> unit -> (Response.t * Body.t) Lwt.t
-
-    val respond_error :
-      status:Cohttp.Code.status_code ->
-      body:string -> unit -> (Response.t * Body.t) Lwt.t
-
-   val respond_not_found :
-      ?uri:Uri.t -> unit -> (Response.t * Body.t) Lwt.t
-end
-
-val listen :
-  ?timeout:float ->
-  Net.Manager.t -> Net.Nettypes.ipv4_src -> Server.config -> unit Lwt.t
+(** This [listen] call is the same as {! Server.listen}, but here for
+    compatibility with the Mirari build tool. *)
+val listen : ?timeout:float ->
+    Net.Manager.t -> Net.Nettypes.ipv4_src -> Server.config -> unit Lwt.t

@@ -15,35 +15,33 @@
  *
  *)
 
-type r
+type t
 
 (** Retrieve request HTTP headers *)
-val headers : r -> Header.t
+val headers : t -> Header.t
 
 (** Retrieve the transfer encoding of this HTTP request *)
-val encoding : r -> Transfer.encoding
+val encoding : t -> Transfer.encoding
 
 (** Retrieve HTTP version, usually 1.1 *)
-val version : r -> Code.version
+val version : t -> Code.version
 
 (** Retrieve HTTP status code of the response *)
-val status : r -> Code.status_code
+val status : t -> Code.status_code
+
+val make :
+  ?version:Code.version -> 
+  ?status:Code.status_code ->
+  ?encoding:Transfer.encoding -> 
+  ?headers:Header.t -> 
+  unit -> t
 
 module type S = sig
   module IO : IO.S
-  type t = r
-
-  val version : t -> Code.version
-  val status : t -> Code.status_code
-  val headers: t -> Header.t
-
-  val make : ?version:Code.version -> ?status:Code.status_code ->
-    ?encoding:Transfer.encoding -> ?headers:Header.t -> unit -> t
 
   val read : IO.ic -> t option IO.t
   val has_body : t -> bool
-  val read_body_chunk :
-    t -> IO.ic -> Transfer.chunk IO.t
+  val read_body_chunk : t -> IO.ic -> Transfer.chunk IO.t
 
   val is_form: t -> bool
   val read_form : t -> IO.ic -> (string * string list) list IO.t

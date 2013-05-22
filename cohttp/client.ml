@@ -23,5 +23,5 @@ module type S = sig
     ?body:(unit -> string option) ->
     Code.meth ->
     Uri.t ->
-    IO.ic -> IO.oc -> Response.r
+    IO.ic -> IO.oc -> Response.t
 end
