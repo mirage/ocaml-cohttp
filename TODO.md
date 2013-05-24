@@ -5,10 +5,6 @@ Planned interface-breaking changes before 1.0:
 
 * Make the Lwt response stream bounded (new in lwt-2.4+)
 
-* Server file support and default_spec
-
-* Make Lwt_ssl optional
-
 * Header module needs to deal with repeated keys correctly (by folding
   them into the string list of values)
 

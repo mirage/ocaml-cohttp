@@ -1,5 +1,5 @@
-0.9.8 (trunk):
-* Rewrite Lwt modules to share more module code, and remove duplicate function calls.
+0.9.8 (2013-05-24):
+* Lwt interface change: Rewrite Lwt backends to share code, and remove duplicate function calls from Uri.
 * Depend on `Uri` 1.3.8+ as it exposes the parameter query functions now removed from `Request`.
 * Do not depend on Cstruct in core library, as only Mirage needs it.
 * Remove `Cohttp_async.body` type alias and just use `string Pipe.Reader.t` for more explicit types.
