@@ -19,6 +19,26 @@ module Set_cookie_hdr : sig
     t -> string * string
   (** Return an HTTP header *)
 
+  val extract : Header.t -> (string * t) list
+  (** Return the list of cookies sent by the server *)
+
+  val binding : t -> cookie
+  (** The name-value binding *)
+
+  val value : t -> string
+  (** The value *)
+
+  val expiration : t -> expiration
+  (** The expiration *)
+
+  val domain : t -> string option
+  (** The domain for which the cookie is valid, if any *)
+
+  val path : t -> string option
+  (** The path for which the cookie is valid, if any *)
+
+  val is_secure : t -> bool
+  (** Has the cookie's secure attribute been set? *)
 end
 
 module Cookie_hdr : sig
