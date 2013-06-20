@@ -17,10 +17,10 @@
 
 type t
 
-(** Retrieve request HTTP headers *)
+(** Retrieve response HTTP headers *)
 val headers : t -> Header.t
 
-(** Retrieve the transfer encoding of this HTTP request *)
+(** Retrieve the transfer encoding of this HTTP response *)
 val encoding : t -> Transfer.encoding
 
 (** Retrieve HTTP version, usually 1.1 *)
