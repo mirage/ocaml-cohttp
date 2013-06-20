@@ -168,10 +168,10 @@ module type Server = sig
   val callback : config -> IO.ic -> IO.oc -> unit Lwt.t
 end
 
-(** The [Make_client] functor glues together a {! Cohttp.IO.S } implementation
+(** The [Make_server] functor glues together a {! Cohttp.IO.S } implementation
     with {! Cohttp.Request } and {! Cohttp.Response } to send requests down
     a connection that is established by the  {! Net } module.
-    The resulting module satisfies the {! Client } module type. *)
+    The resulting module satisfies the {! Server } module type. *)
 module Make_server
     (IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
     (Request:Request with module IO=IO)
