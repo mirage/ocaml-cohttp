@@ -39,6 +39,8 @@ module Set_cookie_hdr = struct
     expiration = expiry; domain = domain;
     path = path; secure = secure }
     
+  (* TODO: deprecated by RFC 6265 and almost certainly buggy without
+     reference to cookie field *)
   let serialize_1_1 c =
     let attrs = ["Version=1"] in
     let attrs = if c.secure then ("Secure" :: attrs) else attrs in
@@ -59,6 +61,7 @@ module Set_cookie_hdr = struct
     let attrs = match c.expiration with
       | `Session -> attrs in
     let n, c = c.cookie in
+    (* TODO: may be buggy, some UAs will ignore cookie-strings without '='*)
     let attrs = (n ^ (match c with "" -> ""
             | v -> "=" ^ v)) :: attrs in
       ("Set-Cookie", String.concat "; " attrs)
@@ -67,6 +70,63 @@ module Set_cookie_hdr = struct
     match version with
       | `HTTP_1_0 -> serialize_1_0 c
       | `HTTP_1_1 -> serialize_1_1 c
+
+  (* TODO: implement *)
+  let extract_1_1 cstr alist = alist
+
+  let extract_1_0 cstr alist =
+    let attrs = Re_str.split_delim (Re_str.regexp ";[ \t]*") cstr in
+    let attrs = List.map (fun attr ->
+      match Re_str.split_delim (Re_str.regexp_string "=") attr with
+        | [] -> ("","")
+        | n::v -> (n,String.concat "=" v)
+    ) attrs in
+    try
+      let cookie = List.hd attrs in
+      let attrs = List.map (fun (n,v) -> (String.lowercase n, v))
+        (List.tl attrs) in
+      let path =
+        try
+          let v = List.assoc "path" attrs in
+          if v = "" || v.[0] <> '/'
+          then raise Not_found
+          else Some v
+        with Not_found -> None
+      in
+      let domain =
+        try
+          let v = List.assoc "domain" attrs in
+          if v = "" then raise Not_found
+          else Some
+            (String.lowercase
+               (if v.[0] = '.' then Re_str.string_after v 1 else v))
+        with Not_found -> None
+      in
+      (* TODO: trim wsp *)
+      (fst cookie, {
+        cookie;
+        (* TODO: respect expires attribute *)
+        expiration = `Session;
+        domain;
+        path;
+        secure = List.mem_assoc "secure" attrs;
+      })::alist
+    with (Failure "hd") -> alist
+
+  (* TODO: check dupes+order *)
+  let extract hdr =
+    Header.fold (function
+      | "set-cookie" -> extract_1_0
+      | "set-cookie2" -> extract_1_1
+      | _ -> (fun _ a -> a)
+    ) hdr []
+
+  let binding { cookie } = cookie
+  let value { cookie=(_,v) } = v
+  let expiration { expiration } = expiration
+  let domain { domain } = domain
+  let path { path } = path
+  let is_secure { secure } = secure
 end
 
 module Cookie_hdr = struct
@@ -92,6 +152,7 @@ module Cookie_hdr = struct
              $else) *)
           let cookies = List.filter (fun s -> s.[0] != '$') comps in
           let split_pair nvp =
+            (* TODO: This is buggy for cookies with '=' in values *)
             match Re_str.split_delim equals_re nvp with
             | [] -> ("","")
             | n :: [] -> (n, "")
