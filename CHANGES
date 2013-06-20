@@ -3,6 +3,7 @@
 * Depend on `Uri` 1.3.8+ as it exposes the parameter query functions now removed from `Request`.
 * Do not depend on Cstruct in core library, as only Mirage needs it.
 * Remove `Cohttp_async.body` type alias and just use `string Pipe.Reader.t` for more explicit types.
+* Add set-cookie header extraction functions for clients that read cookies
 
 0.9.7 (2013-05-10):
 * Attach a GC finaliser to the Lwt client to ensure that even an HTTP body isnt consumed, the socket will eventually be closed (#11).
