@@ -73,7 +73,7 @@ module type Client = sig
 
   val head :
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> Response.t option Lwt.t
 
   val get :
     ?headers:Cohttp.Header.t ->

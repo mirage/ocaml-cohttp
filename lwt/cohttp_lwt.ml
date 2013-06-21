@@ -61,7 +61,7 @@ module type Client = sig
 
   val head :
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> Response.t option Lwt.t
 
   val get :
     ?headers:Cohttp.Header.t ->
@@ -153,9 +153,15 @@ module Make_client
         >>= fun () ->
         read_response ~closefn ic oc
 
-  let head ?headers uri = call ?headers `HEAD uri 
-  let get ?headers uri = call ?headers `GET uri 
-  let delete ?headers uri = call ?headers `DELETE uri 
+  (* The HEAD should not have a response body *)
+  let head ?headers uri = 
+    call ?headers ~chunked:false `HEAD uri
+    >|= function
+    |None -> None
+    |Some (res,body) -> Some res
+
+  let get ?headers uri = call ?headers ~chunked:false `GET uri 
+  let delete ?headers uri = call ?headers ~chunked:false `DELETE uri 
   let post ?body ?chunked ?headers uri = call ?headers ?body ?chunked `POST uri 
   let put ?body ?chunked ?headers uri = call ?headers ?body ?chunked `PUT uri 
   let patch ?body ?chunked ?headers uri = call ?headers ?body ?chunked `PATCH uri 
