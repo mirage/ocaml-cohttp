@@ -37,8 +37,8 @@ let read_line =
     (fun ic -> Lwt_io.read_line_opt ic)
     (fun ic ->
       match_lwt Lwt_io.read_line_opt ic with
-      |None as x -> Printf.eprintf "%4d <<< EOF\n" (Unix.getpid ()); return x
-      |Some l as x -> Printf.eprintf "%4d <<< %s\n" (Unix.getpid ()) l; return x)
+      |None as x -> Printf.eprintf "%4d <<< EOF\n%!" (Unix.getpid ()); return x
+      |Some l as x -> Printf.eprintf "%4d <<< %s\n%!" (Unix.getpid ()) l; return x)
 
 let read =
  check_debug
@@ -49,7 +49,7 @@ let read =
      lwt buf = 
        try_lwt Lwt_io.read ~count ic
        with End_of_file -> return "" in
-     Printf.eprintf "%4d <<<[%d] %s" (Unix.getpid ()) count buf;
+     Printf.eprintf "%4d <<<[%d] %s%!" (Unix.getpid ()) count buf;
      return buf)
 
 let read_exactly =
@@ -62,8 +62,8 @@ let read_exactly =
         try_lwt Lwt_io.read_into_exactly ic buf off len >>= fun () ->  return true
         with End_of_file -> return false in
       (match rd with
-      |true -> Printf.eprintf "%4d <<< %S" (Unix.getpid ()) (String.sub buf off len)
-      |false -> Printf.eprintf "%4d <<< <EOF>\n" (Unix.getpid ()));
+      |true -> Printf.eprintf "%4d <<< %S%!" (Unix.getpid ()) (String.sub buf off len)
+      |false -> Printf.eprintf "%4d <<< <EOF>\n%!" (Unix.getpid ()));
       return rd)
 
 let read_exactly ic len =
@@ -75,9 +75,9 @@ let read_exactly ic len =
 let write =
   check_debug
     (fun oc buf -> Lwt_io.write oc buf)
-    (fun oc buf -> Printf.eprintf "\n%4d >>> %s" (Unix.getpid ()) buf; Lwt_io.write oc buf)
+    (fun oc buf -> Printf.eprintf "\n%4d >>> %s%!" (Unix.getpid ()) buf; Lwt_io.write oc buf)
 
 let write_line =
   check_debug
     (fun oc buf -> Lwt_io.write_line oc buf)
-    (fun oc buf -> Printf.eprintf "\n%4d >>> %s\n" (Unix.getpid ()) buf; Lwt_io.write_line oc buf)
+    (fun oc buf -> Printf.eprintf "\n%4d >>> %s\n%!" (Unix.getpid ()) buf; Lwt_io.write_line oc buf)
