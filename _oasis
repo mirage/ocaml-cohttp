@@ -137,6 +137,15 @@ Executable test_net_lwt_google
   Install:            false
   BuildDepends:       cohttp.lwt
 
+Executable test_net_lwt_lastminute
+  Path:               lib_test
+  MainIs:             test_net_lwt_lastminute.ml
+  Build$:             flag(tests) && flag(lwt)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp.lwt
+
 Executable test_net_lwt_server
   Path:               lib_test
   MainIs:             test_net_lwt_server.ml
