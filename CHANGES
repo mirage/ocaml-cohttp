@@ -1,6 +1,7 @@
 0.9.10 (trunk):
 * Add `set-cookie` header extraction functions for clients that read cookies.
 * Explicitly flush the debug output when the `COHTTP_DEBUG` env variable is set.
+* Add Async.Client head/post/patch/delete methods.
 
 0.9.9 (2013-06-12):
 * Disable the mirage executable test as it was building too aggressively and breaking builds.

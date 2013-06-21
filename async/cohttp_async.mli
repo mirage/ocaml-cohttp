@@ -42,6 +42,20 @@ module Client : sig
     Uri.t ->
     (Response.t * string Pipe.Reader.t) Deferred.t
 
+  (** Send an HTTP HEAD request *)
+  val head :
+    ?interrupt:unit Deferred.t ->
+    ?headers:Cohttp.Header.t ->
+    Uri.t ->
+    Response.t Deferred.t
+
+  (** Send an HTTP DELETE request *)
+  val delete :
+    ?interrupt:unit Deferred.t ->
+    ?headers:Cohttp.Header.t ->
+    Uri.t ->
+    (Response.t * string Pipe.Reader.t) Deferred.t
+
   (** Send an HTTP POST request.
       [chunked] encoding is off by default as not many servers support it
     *)
@@ -52,6 +66,30 @@ module Client : sig
     ?body:string Pipe.Reader.t ->
     Uri.t ->
     (Response.t * string Pipe.Reader.t) Deferred.t
+
+  (** Send an HTTP PUT request.
+      [chunked] encoding is off by default as not many servers support it
+    *)
+  val put :
+    ?interrupt:unit Deferred.t ->
+    ?headers:Cohttp.Header.t ->
+    ?chunked:bool ->
+    ?body:string Pipe.Reader.t ->
+    Uri.t ->
+    (Response.t * string Pipe.Reader.t) Deferred.t
+
+  (** Send an HTTP PATCH request.
+      [chunked] encoding is off by default as not many servers support it
+    *)
+  val patch :
+    ?interrupt:unit Deferred.t ->
+    ?headers:Cohttp.Header.t ->
+    ?chunked:bool ->
+    ?body:string Pipe.Reader.t ->
+    Uri.t ->
+    (Response.t * string Pipe.Reader.t) Deferred.t
+
+
 
   (** Send an HTTP request with arbitrary method and string Pipe.Reader.t *)
   val call :

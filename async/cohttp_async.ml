@@ -190,9 +190,23 @@ module Client = struct
   let get ?interrupt ?headers uri =
     call ?interrupt ?headers ~chunked:false `GET uri
 
+  let head ?interrupt ?headers uri =
+    call ?interrupt ?headers ~chunked:false `HEAD uri
+    >>= fun (res, body) ->
+    Pipe.close_read body;
+    return res
+
   let post ?interrupt ?headers ?(chunked=false) ?body uri =
     call ?interrupt ?headers ~chunked ?body `POST uri
 
+  let put ?interrupt ?headers ?(chunked=false) ?body uri =
+    call ?interrupt ?headers ~chunked ?body `PUT uri
+
+  let patch ?interrupt ?headers ?(chunked=false) ?body uri =
+    call ?interrupt ?headers ~chunked ?body `PATCH uri
+
+  let delete ?interrupt ?headers uri =
+    call ?interrupt ?headers ~chunked:false `DELETE uri
 end
 
 module Server = struct
