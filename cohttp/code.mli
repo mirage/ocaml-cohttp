@@ -19,7 +19,7 @@
 *)
 
 type version = [ `HTTP_1_0 | `HTTP_1_1 ]
-type meth = [ `GET | `POST | `HEAD | `DELETE | `PATCH | `PUT ]
+type meth = [ `GET | `POST | `HEAD | `DELETE | `PATCH | `PUT | `OPTIONS ]
 
 type informational_status =
   [ `Continue
@@ -133,4 +133,3 @@ val is_server_error: int -> bool
   (** @return true on "client error" and "server error" status code, false
   elsewhere *)
 val is_error: int -> bool
-
