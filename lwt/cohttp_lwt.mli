@@ -27,7 +27,7 @@ open Cohttp
 module type Net = sig
   module IO : IO.S
   val connect_uri : Uri.t -> (IO.ic * IO.oc) Lwt.t
-  val connect : ?ssl:bool -> string -> int -> (IO.ic * IO.oc) Lwt.t
+  val connect : ?ssl:bool -> string -> string -> (IO.ic * IO.oc) Lwt.t
   val close_in : IO.ic -> unit
   val close_out : IO.oc -> unit
   val close : IO.ic -> IO.oc -> unit

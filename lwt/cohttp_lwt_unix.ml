@@ -70,7 +70,7 @@ module Server = struct
          respond_error ~status:`Internal_server_error ~body ()
 
   let create ?timeout ~address ~port spec =
-    lwt sockaddr = Cohttp_lwt_unix_net.build_sockaddr address port in
+    lwt sockaddr = Cohttp_lwt_unix_net.build_sockaddr address (string_of_int port) in
     Cohttp_lwt_unix_net.Tcp_server.init ~sockaddr ~timeout (callback spec)
 end
 
