@@ -23,13 +23,13 @@ open Lwt
 module IO = Cohttp_lwt_unix_io
 
 (* Perform a DNS lookup on the addr and generate a sockaddr *)
-let build_sockaddr addr port =
-  try_lwt
-    (* should this be lwt hent = Lwt_lib.gethostbyname addr ? *)
-    let hent = Unix.gethostbyname addr in
-    return (Unix.ADDR_INET (hent.Unix.h_addr_list.(0), port))
-  with _ -> 
-    raise_lwt (Failure ("cant resolve hostname: " ^ addr))
+let build_sockaddr host service =
+  let open Lwt_unix in
+  getprotobyname "tcp" >>= fun pe ->
+  getaddrinfo host service [AI_PROTOCOL pe.p_proto] >>= function
+  | [] ->
+    Lwt.fail (Invalid_argument (Printf.sprintf "No socket address for %s/%s" host service))
+  | ai::_ -> Lwt.return ai.ai_addr
 
 (* Vanilla TCP connection *)
 module Tcp_client = struct
@@ -97,16 +97,18 @@ module Tcp_server = struct
 end
 
 let connect_uri uri =
-  let port = match Uri_services.tcp_port_of_uri uri with
-    |None -> raise (Failure "unknown scheme") |Some p -> p in
-  lwt sa = build_sockaddr (Uri.host_with_default uri) port in
+  (match Uri_services.tcp_port_of_uri uri with
+    |None -> Lwt.fail (Invalid_argument "unknown scheme")
+    |Some p -> Lwt.return (string_of_int p))
+  >>= fun service ->
+  build_sockaddr (Uri.host_with_default uri) service >>= fun sa ->
   match Uri.scheme uri with
   |Some "https" -> Ssl_client.connect sa
   |Some "http" -> Tcp_client.connect sa
   |Some _ | None -> fail (Failure "unknown scheme")
 
-let connect ?(ssl=false) host port =
-  lwt sa = build_sockaddr host port in
+let connect ?(ssl=false) ~host ~service () =
+  lwt sa = build_sockaddr host service in
   match ssl with
   |true -> Ssl_client.connect sa
   |false -> Tcp_client.connect sa

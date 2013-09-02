@@ -23,7 +23,7 @@ module Net_IO = struct
   let connect_uri uri =
     fail (Failure "not implemented")
 
-  let connect ?ssl address port =
+  let connect ?ssl ~host ~service () =
     fail (Failure "not implemented")
 
   let close_in ic = ()
