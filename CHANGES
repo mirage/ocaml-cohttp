@@ -1,5 +1,6 @@
 0.9.11 (trunk):
 * Add HTTP OPTIONS method.
+* Use getaddrinfo instead of gethostbyname for DNS resolution.
 
 0.9.10 (2013-06-21):
 * Add `set-cookie` header extraction functions for clients that read cookies.
