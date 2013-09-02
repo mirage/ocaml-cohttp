@@ -21,7 +21,7 @@ open Lwt
 module type Net = sig
   module IO : IO.S
   val connect_uri : Uri.t -> (IO.ic * IO.oc) Lwt.t
-  val connect : ?ssl:bool -> string -> string -> (IO.ic * IO.oc) Lwt.t
+  val connect : ?ssl:bool -> host:string -> service:string -> unit -> (IO.ic * IO.oc) Lwt.t
   val close_in : IO.ic -> unit
   val close_out : IO.oc -> unit
   val close : IO.ic -> IO.oc -> unit
@@ -173,7 +173,8 @@ module Make_client
     post ~chunked:false ~headers ?body uri
 
   let callv ?(ssl=false) host port reqs =
-    lwt (ic, oc) = Net.connect ~ssl host (string_of_int port) in
+    let service = string_of_int port in
+    lwt (ic, oc) = Net.connect ~ssl ~host ~service () in
     (* Serialise the requests out to the wire *)
     let _ = Lwt_stream.iter_s (fun (req,body) -> 
       Request.write (fun req oc ->

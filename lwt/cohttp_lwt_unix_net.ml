@@ -107,7 +107,7 @@ let connect_uri uri =
   |Some "http" -> Tcp_client.connect sa
   |Some _ | None -> fail (Failure "unknown scheme")
 
-let connect ?(ssl=false) host service =
+let connect ?(ssl=false) ~host ~service () =
   lwt sa = build_sockaddr host service in
   match ssl with
   |true -> Ssl_client.connect sa
