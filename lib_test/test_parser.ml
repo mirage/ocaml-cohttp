@@ -109,7 +109,7 @@ let basic_req_parse () =
   |Some req ->
     assert_equal (Cohttp.Request.version req) `HTTP_1_1;
     assert_equal (CU.Request.meth req) `GET;
-    assert_equal (Uri.to_string (CU.Request.uri req)) "/index.html";
+    assert_equal (Uri.to_string (CU.Request.uri req)) "http://www.example.com/index.html";
     return ()
   |None -> assert false
 
