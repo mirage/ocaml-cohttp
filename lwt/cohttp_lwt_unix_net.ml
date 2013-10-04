@@ -71,11 +71,13 @@ module Tcp_server = struct
     try_lwt Lwt_io.close ic with _ -> return ()
 
   let init_socket sockaddr =
-    let suck = Lwt_unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
-    Lwt_unix.setsockopt suck Unix.SO_REUSEADDR true;
-    Lwt_unix.bind suck sockaddr;
-    Lwt_unix.listen suck 15;
-    suck
+    Unix.handle_unix_error
+      (fun () ->
+         let sock = Lwt_unix.socket (Unix.domain_of_sockaddr sockaddr) Unix.SOCK_STREAM 0 in
+         Lwt_unix.setsockopt sock Unix.SO_REUSEADDR true;
+         Lwt_unix.bind sock sockaddr;
+         Lwt_unix.listen sock 15;
+         sock) ()
 
   let process_accept ~sockaddr ~timeout callback (client,_) =
     let ic = Lwt_io.of_fd Lwt_io.input client in
