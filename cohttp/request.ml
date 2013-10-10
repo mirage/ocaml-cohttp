@@ -120,9 +120,9 @@ module Make(IO : IO.S) = struct
     read_line ic >>= function
     |Some request_line -> begin
       match Re_str.split_delim pieces_sep request_line with
-      | [ meth_raw; uri_raw; http_ver_raw ] -> begin
+      | [ meth_raw; path; http_ver_raw ] -> begin
           match method_of_string meth_raw, version_of_string http_ver_raw with
-          |Some m, Some v -> return (Some (m, (Uri.of_string uri_raw), v))
+          |Some m, Some v -> return (Some (m, path, v))
           |_ -> return None
       end
       | _ -> return None
@@ -132,23 +132,28 @@ module Make(IO : IO.S) = struct
   let read ic =
     parse_request_fst_line ic >>= function
     |None -> return None
-    |Some (meth, uri, version) ->
-      Header_IO.parse ic >>= fun headers -> 
+    |Some (meth, path, version) ->
+      Header_IO.parse ic >>= fun headers ->
+      let uri = match (Header.get headers "host") with
+        | None -> Uri.of_string path
+        | Some h ->
+          (* XXX: Could be https:// as well... *)
+          Uri.of_string ("http://" ^ h ^ path) in
       let encoding = Header.get_transfer_encoding headers in
       return (Some { headers; meth; uri; version; encoding })
 
   let has_body req = Transfer.has_body req.encoding
   let read_body_chunk req ic = Transfer_IO.read req.encoding ic
 
-  let host_of_uri uri = 
-    match Uri.host uri with
-    |None -> "localhost"
-    |Some h -> h
-
   let write_header req oc =
    let fst_line = Printf.sprintf "%s %s %s\r\n" (Code.string_of_method req.meth)
       (Uri.path_and_query req.uri) (Code.string_of_version req.version) in
-    let headers = Header.add req.headers "host" (host_of_uri req.uri) in
+    let headers = Header.add req.headers "host"
+        (Uri.host_with_default ~default:"localhost" req.uri ^
+           match Uri.port req.uri with
+           | Some p -> ":" ^ string_of_int p
+           | None -> ""
+        ) in
     let headers = Header.add_transfer_encoding headers req.encoding in
     IO.write oc fst_line >>= fun _ ->
     iter (IO.write oc) (Header.to_lines headers) >>= fun _ ->
