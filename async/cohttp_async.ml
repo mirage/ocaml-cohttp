@@ -53,13 +53,11 @@ module IO = struct
          |`Eof -> Printf.eprintf "<<<EOF\n"; return None
       )
 
-  let read = 
-    let buf = String.create 4096 in
-    fun ic len ->
-      Reader.read ic ~len buf >>=
-      function
-      |`Ok len' -> return (String.sub buf 0 len')
-      |`Eof -> return ""
+  let read ic len =
+    let buf = String.create len in
+    Reader.read ic ~len buf >>= function
+    | `Ok len' -> return (String.sub buf 0 len')
+    | `Eof -> return ""
 
   let read_exactly ic len =
     let buf = String.create len in
