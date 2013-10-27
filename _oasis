@@ -182,6 +182,15 @@ Executable test_net_async
   Install:            false
   BuildDepends:       cohttp, cohttp.async, oUnit (>= 1.0.2)
 
+Executable test_net_async_http10
+  Path:               lib_test
+  MainIs:             test_net_async_http10.ml
+  Build$:             flag(tests) && flag(async)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.async, oUnit (>= 1.0.2)
+
 Executable test_net_async_multi_get
   Path:               lib_test
   MainIs:             test_net_async_multi_get.ml
