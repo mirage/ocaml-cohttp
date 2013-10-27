@@ -7,7 +7,7 @@ NAME=cohttp
 LWT ?= $(shell if ocamlfind query lwt.ssl >/dev/null 2>&1; then echo --enable-lwt; fi)
 ASYNC ?= $(shell if ocamlfind query async_core >/dev/null 2>&1; then echo --enable-async; fi)
 MIRAGE ?= $(shell if ocamlfind query mirage-net >/dev/null 2>&1; then echo --enable-mirage; fi)
-ifneq ($(MIRAGE_OS),xen)
+ifeq "$(findstring $(MIRAGE_OS),xen kfreebsd)" ""
 TESTS ?= --enable-tests
 endif
 # disabled by default as they hang at the moment for Async
