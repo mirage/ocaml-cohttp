@@ -5,6 +5,7 @@
 * Add HTTP OPTIONS method.
 * Use getaddrinfo instead of gethostbyname for DNS resolution.
 * Async: improve HTTP/1.0 support (#35).
+* Build with debug symbols, binary annotations by default.
 
 0.9.10 (2013-06-21):
 * Add `set-cookie` header extraction functions for clients that read cookies.
