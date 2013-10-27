@@ -4,6 +4,7 @@ open Printf
 let u1 = "http://www.lastminute.com"
 let u2 = "http://www.bbc.co.uk"
 let u3 = "http://twitter.com"
+let u4 = "http://www.rustorka.com:2710/announce?info_hash=/00%00%00%00%00%00%0000%000%00%00%00%00%00%000&peer_id=00000000000000000000"
 
 (* a simple function to access the content of the response *)
 let content = function
@@ -13,7 +14,7 @@ let content = function
 
 (* launch both requests in parallel *)
 let t =
-  let uris = List.map Uri.of_string [u1;u2;u3] in
+  let uris = List.map Uri.of_string [u1;u2;u3;u4] in
   Lwt_list.map_p (fun uri ->
     printf "fetching %s\n%!" (Uri.to_string uri);
     Cohttp_lwt_unix.Client.get uri
