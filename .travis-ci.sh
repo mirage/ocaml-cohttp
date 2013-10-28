@@ -1,8 +1,6 @@
 OPAM_DEPENDS="lwt async ssl uri re"
 
 case "$OCAML_VERSION,$OPAM_VERSION" in
-3.12.1,1.0.0) ppa=avsm/ocaml312+opam10 ;;
-3.12.1,1.1.0) ppa=avsm/ocaml312+opam11 ;;
 4.00.1,1.0.0) ppa=avsm/ocaml40+opam10 ;;
 4.00.1,1.1.0) ppa=avsm/ocaml40+opam11 ;;
 4.01.0,1.0.0) ppa=avsm/ocaml41+opam10 ;;
