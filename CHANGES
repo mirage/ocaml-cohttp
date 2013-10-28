@@ -1,4 +1,4 @@
-0.9.11 (trunk):
+0.9.11 (2013-10-27):
 * Request module: When sending a request, add the port information in the host header field if available.
 * Request module: When parsing a request, add scheme, host and port information in the uri.
 * TCP server: When creating the socket for the server, do not force PF_INET6 but take the sockaddr value.
@@ -6,6 +6,7 @@
 * Use getaddrinfo instead of gethostbyname for DNS resolution.
 * Async: improve HTTP/1.0 support (#35).
 * Build with debug symbols, binary annotations by default.
+* Add Travis CI test scripts.
 
 0.9.10 (2013-06-21):
 * Add `set-cookie` header extraction functions for clients that read cookies.
