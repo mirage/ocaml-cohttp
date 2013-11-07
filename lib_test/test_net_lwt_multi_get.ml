@@ -5,7 +5,8 @@ let fetch () =
   >>= fun _ -> return ()
 
 let rec perform_get n =
-  lwt () = Lwt_io.printf "%d\n" n in
+  Lwt_io.printf "%d\n" n 
+  >>= fun () ->
   ignore (fetch ());
   ignore (fetch ());
   ignore (fetch ());

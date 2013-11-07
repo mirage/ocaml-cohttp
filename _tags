@@ -216,5 +216,5 @@
 <lib_test/test_net_async_server.{native,byte}>: custom
 # OASIS_STOP
 <lib_test/{test_parser,test_net_lwt,test_net_lwt_server,test_net_mirage_server,test_net_lwt_client_and_server}.ml>: syntax_camlp4o, pkg_lwt.syntax
-<lwt/*> or <lib_test/*>: syntax_camlp4o, pkg_lwt.syntax
+<lwt/*>: syntax_camlp4o, pkg_lwt.syntax
 true: annot, bin_annot, debug, strict_sequence, principal
