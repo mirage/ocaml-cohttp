@@ -1,3 +1,6 @@
+0.9.12 (trunk):
+* Fix transfer-length detection (regression from 0.9.11 in #42).
+
 0.9.11 (2013-10-27):
 * Request module: When sending a request, add the port information in the host header field if available.
 * Request module: When parsing a request, add scheme, host and port information in the uri.
