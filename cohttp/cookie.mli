@@ -10,7 +10,7 @@ module Set_cookie_hdr : sig
     returns the cookie in future requests, under certain conditions. *)
 
   val make :
-    ?expiry:expiration ->
+    ?expiration:expiration ->
     ?path:string ->
     ?domain:string -> ?secure:bool -> cookie -> t
 
@@ -22,7 +22,7 @@ module Set_cookie_hdr : sig
   val extract : Header.t -> (string * t) list
   (** Return the list of cookies sent by the server *)
 
-  val binding : t -> cookie
+  val cookie : t -> cookie
   (** The name-value binding *)
 
   val value : t -> string
@@ -37,7 +37,7 @@ module Set_cookie_hdr : sig
   val path : t -> string option
   (** The path for which the cookie is valid, if any *)
 
-  val is_secure : t -> bool
+  val secure : t -> bool
   (** Has the cookie's secure attribute been set? *)
 end
 
