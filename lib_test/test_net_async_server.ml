@@ -61,8 +61,12 @@ let handler ~body sock req =
     |> Server.respond_with_file
 
 let make_net_server () =
-  Server.create (Tcp.on_port 8080) handler
+  Server.create ~on_handler_error:`Ignore (Tcp.on_port 8080) handler
 
 let _ = 
   let _server = make_net_server () in
+  let () = every (sec 3.0) (fun () ->
+    Gc.compact ();
+    printf "live words: %d\n%!" (Gc.((stat()).Stat.live_words))
+  ) in
   Scheduler.go ()
