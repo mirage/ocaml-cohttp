@@ -1,4 +1,5 @@
 0.9.12 (trunk):
+* `Cohttp.Set_cookie.t` is no longer an abstract type to make it easier to update (#38).
 * [Lwt] ignore SIGPIPE unconditionally if using the Lwt/Unix module (#37).
 * Rename `Cookie` creation parameters for consistency (interface breaking, see #44).
 * Fix transfer-length detection (regression from 0.9.11 in #42).

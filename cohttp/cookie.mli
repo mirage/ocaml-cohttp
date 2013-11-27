@@ -23,7 +23,12 @@ type cookie = string * string
 
 module Set_cookie_hdr : sig
 
-  type t
+  type t = {
+    cookie: cookie;
+    expiration : expiration;
+    domain : string option;
+    path : string option;
+    secure : bool }
   (** A header which a server sends to a client to request that the client
     returns the cookie in future requests, under certain conditions. *)
 
