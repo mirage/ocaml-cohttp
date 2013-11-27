@@ -21,7 +21,9 @@ let check_debug norm_fn debug_fn =
     debug_fn
   with Not_found ->
     norm_fn
-    
+
+let () = Sys.(set_signal sigpipe Signal_ignore)
+
 type 'a t = 'a Lwt.t
 let (>>=) = Lwt.bind
 let (>>) m n = m >>= fun _ -> n
