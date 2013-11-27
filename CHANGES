@@ -1,4 +1,5 @@
 0.9.12 (trunk):
+* Rename `Cookie` creation parameters for consistency (interface breaking, see #44).
 * Fix transfer-length detection (regression from 0.9.11 in #42).
 * Add Merin editor file (#41).
 
