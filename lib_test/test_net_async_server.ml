@@ -39,14 +39,11 @@ let handler ~body sock req =
       <li><i>Files</i></li>
       %s</ul></body></html>" 
     |> Server.respond_with_string
-
   | "/hello" ->
     Server.respond_with_string "hello world"
-
   | "/hellopipe" ->
     let body = Pipe.of_list ["hello";"world"] in
     Server.respond_with_pipe body
-
   | "/timer" ->
     let rd,wr = Pipe.create () in
     Pipe.write_without_pushback wr "<html><body>";
@@ -55,7 +52,6 @@ let handler ~body sock req =
          Pipe.write_without_pushback wr (Time.to_string (Time.now ()) ^ "<br>");
       );
     Server.respond_with_pipe rd
-
   | _ ->
     Server.resolve_local_file ~docroot:"." ~uri
     |> Server.respond_with_file
@@ -66,7 +62,7 @@ let make_net_server () =
 let _ = 
   let _server = make_net_server () in
   let () = every (sec 3.0) (fun () ->
-    Gc.compact ();
-    printf "live words: %d\n%!" (Gc.((stat()).Stat.live_words))
-  ) in
+      Gc.compact ();
+      printf "live words: %d\n%!" (Gc.((stat()).Stat.live_words))
+    ) in
   Scheduler.go ()
