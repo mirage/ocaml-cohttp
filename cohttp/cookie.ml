@@ -34,10 +34,8 @@ module Set_cookie_hdr = struct
     secure : bool }
 
   (* Does not check the contents of name or value for ';', ',', '\s', or name[0]='$' *)
-  let make ?(expiry=`Session) ?path ?domain ?(secure=false) cookie =
-    { cookie = cookie;
-    expiration = expiry; domain = domain;
-    path = path; secure = secure }
+  let make ?(expiration=`Session) ?path ?domain ?(secure=false) cookie =
+    { cookie ; expiration ; domain ; path ; secure }
     
   (* TODO: deprecated by RFC 6265 and almost certainly buggy without
      reference to cookie field *)
@@ -121,12 +119,12 @@ module Set_cookie_hdr = struct
       | _ -> (fun _ a -> a)
     ) hdr []
 
-  let binding { cookie } = cookie
-  let value { cookie=(_,v) } = v
+  let cookie { cookie } = cookie
   let expiration { expiration } = expiration
   let domain { domain } = domain
   let path { path } = path
-  let is_secure { secure } = secure
+  let secure { secure } = secure
+  let value { cookie=(_,v) } = v
 end
 
 module Cookie_hdr = struct
