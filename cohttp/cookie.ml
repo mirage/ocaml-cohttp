@@ -28,7 +28,7 @@ module Set_cookie_hdr = struct
     expiration : expiration;
     domain : string option;
     path : string option;
-    secure : bool }
+    secure : bool } with fields
 
   (* Does not check the contents of name or value for ';', ',', '\s', or name[0]='$' *)
   let make ?(expiration=`Session) ?path ?domain ?(secure=false) cookie =
@@ -116,11 +116,6 @@ module Set_cookie_hdr = struct
       | _ -> (fun _ a -> a)
     ) hdr []
 
-  let cookie { cookie } = cookie
-  let expiration { expiration } = expiration
-  let domain { domain } = domain
-  let path { path } = path
-  let secure { secure } = secure
   let value { cookie=(_,v) } = v
 end
 
