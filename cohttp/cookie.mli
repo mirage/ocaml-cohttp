@@ -1,3 +1,21 @@
+(*
+ * Copyright (C) <2012> Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (C) <2009> David Sheets <sheets@alum.mit.edu>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *)
+
 type expiration = [ `Session ]
 
 type cookie = string * string
@@ -5,12 +23,17 @@ type cookie = string * string
 
 module Set_cookie_hdr : sig
 
-  type t
+  type t = {
+    cookie: cookie;
+    expiration : expiration;
+    domain : string option;
+    path : string option;
+    secure : bool } with fields
   (** A header which a server sends to a client to request that the client
     returns the cookie in future requests, under certain conditions. *)
 
   val make :
-    ?expiry:expiration ->
+    ?expiration:expiration ->
     ?path:string ->
     ?domain:string -> ?secure:bool -> cookie -> t
 
@@ -22,7 +45,7 @@ module Set_cookie_hdr : sig
   val extract : Header.t -> (string * t) list
   (** Return the list of cookies sent by the server *)
 
-  val binding : t -> cookie
+  val cookie : t -> cookie
   (** The name-value binding *)
 
   val value : t -> string
@@ -37,7 +60,7 @@ module Set_cookie_hdr : sig
   val path : t -> string option
   (** The path for which the cookie is valid, if any *)
 
-  val is_secure : t -> bool
+  val secure : t -> bool
   (** Has the cookie's secure attribute been set? *)
 end
 

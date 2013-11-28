@@ -15,15 +15,43 @@
  *
  *)
 
+(** Map of HTTP header key and value(s) associated with them.  Since HTTP
+    headers can contain duplicate keys, this structure can return a list
+    of values associated with a single key. *)
 type t
+
+(** Construct a fresh, empty map of HTTP headers *)
 val init : unit -> t
+
+(** Construct a fresh map of HTTP headers with a single key and value entry *)
 val init_with  : string -> string -> t
+
+(** Add a key and value to an existing header map *)
 val add : t -> string -> string -> t
+
+(** Given an optional header, either update the existing one with
+    a key and value, or construct a fresh header with those values if
+    the header is [None] *)
 val add_opt : t option -> string -> string -> t
+
+(** Remove a key from the header map and return a fresh header set.  The
+    original header parameter is not modified. *)
 val remove : t -> string -> t
+
+(** Replace a key from the header map if it exists.  The original
+    header parameter is not modified. *)
 val replace : t -> string -> string -> t
+
+(** Retrieve a key from a header.  If the header is one of the set of
+    headers defined to have list values, then all of the values are
+    concatenated into a single string separated by commas and returned.
+    If it is a singleton header, then the first value is selected and
+    no concatenation is performed. *)
 val get : t -> string -> string option
+
+(** Retrieve all of the values associated with a key *)
 val get_multi : t -> string -> string list
+
 val iter : (string -> string list -> unit) -> t -> unit
 val map : (string -> string list -> string list) -> t -> t
 val fold : (string -> string -> 'a -> 'a) -> t -> 'a -> 'a

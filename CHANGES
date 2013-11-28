@@ -1,3 +1,12 @@
+0.9.12 (2013-11-28):
+* Improve documentation for `Cohttp.Header`.
+* Expose Fieldslib setters and getters for most of the `Cohttp` types (#38).
+* `Cohttp.Set_cookie.t` is no longer an abstract type to make it easier to update (#38).
+* [Lwt] ignore SIGPIPE unconditionally if using the Lwt/Unix module (#37).
+* Rename `Cookie` creation parameters for consistency (interface breaking, see #44).
+* Fix transfer-length detection (regression from 0.9.11 in #42).
+* Add Merin editor file (#41).
+
 0.9.11 (2013-10-27):
 * Request module: When sending a request, add the port information in the host header field if available.
 * Request module: When parsing a request, add scheme, host and port information in the uri.

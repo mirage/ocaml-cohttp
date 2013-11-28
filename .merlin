@@ -1,0 +1,18 @@
+S async
+S cohttp
+S lib_test
+S lwt
+
+PKG lwt
+PKG lwt.syntax
+PKG lwt.unix
+PKG core
+PKG async
+PKG uri
+PKG re.str
+
+B _build/
+B _build/lwt
+B _build/lib_test
+B _build/async
+B _build/cohttp

@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,12 +20,7 @@ type t = {
   headers: Header.t;
   version: Code.version;
   status: Code.status_code;
-}
-
-let headers r = r.headers
-let encoding r = r.encoding
-let version r = r.version
-let status r = r.status
+} with fields
 
 let make ?(version=`HTTP_1_1) ?(status=`OK) ?(encoding=Transfer.Chunked) ?headers () =
   let headers = match headers with None -> Header.init () |Some h -> h in

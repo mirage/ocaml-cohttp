@@ -28,7 +28,7 @@ let valid_auth () =
   assert_equal (H.get_authorization h) (Some auth)
 
 let valid_set_cookie () =
-  let c = Cohttp.Cookie.Set_cookie_hdr.make ~expiry:`Session
+  let c = Cohttp.Cookie.Set_cookie_hdr.make ~expiration:`Session
      ~path:"/foo/bar" ~domain:"ocaml.org"
 	 ~secure:true ("key", "value") in
   let k, v = Cohttp.Cookie.Set_cookie_hdr.serialize ~version:`HTTP_1_0 c in

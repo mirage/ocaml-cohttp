@@ -1,23 +1,20 @@
 (*
-  OCaml HTTP - do it yourself (fully OCaml) HTTP daemon
-
-  Copyright (C) <2012> Anil Madhavapeddy <anil@recoil.org>
-  Copyright (C) <2009> David Sheets <sheets@alum.mit.edu>
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU Library General Public License as
-  published by the Free Software Foundation, version 2.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Library General Public License for more details.
-
-  You should have received a copy of the GNU Library General Public
-  License along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
-  USA
-*)
+ * Copyright (C) <2012> Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (C) <2009> David Sheets <sheets@alum.mit.edu>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *)
 
 (* We need a non-Unix date/time implementation to support other expiration
    types *)
@@ -31,13 +28,11 @@ module Set_cookie_hdr = struct
     expiration : expiration;
     domain : string option;
     path : string option;
-    secure : bool }
+    secure : bool } with fields
 
   (* Does not check the contents of name or value for ';', ',', '\s', or name[0]='$' *)
-  let make ?(expiry=`Session) ?path ?domain ?(secure=false) cookie =
-    { cookie = cookie;
-    expiration = expiry; domain = domain;
-    path = path; secure = secure }
+  let make ?(expiration=`Session) ?path ?domain ?(secure=false) cookie =
+    { cookie ; expiration ; domain ; path ; secure }
     
   (* TODO: deprecated by RFC 6265 and almost certainly buggy without
      reference to cookie field *)
@@ -121,12 +116,7 @@ module Set_cookie_hdr = struct
       | _ -> (fun _ a -> a)
     ) hdr []
 
-  let binding { cookie } = cookie
   let value { cookie=(_,v) } = v
-  let expiration { expiration } = expiration
-  let domain { domain } = domain
-  let path { path } = path
-  let is_secure { secure } = secure
 end
 
 module Cookie_hdr = struct
