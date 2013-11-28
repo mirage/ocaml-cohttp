@@ -1,4 +1,4 @@
-0.9.12 (trunk):
+0.9.12 (2013-11-28):
 * Improve documentation for `Cohttp.Header`.
 * Expose Fieldslib setters and getters for most of the `Cohttp` types (#38).
 * `Cohttp.Set_cookie.t` is no longer an abstract type to make it easier to update (#38).
