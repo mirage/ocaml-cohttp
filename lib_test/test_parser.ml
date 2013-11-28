@@ -219,16 +219,14 @@ let get_substring oc buf =
   let b = String.create len in
   Lwt_bytes.blit_bytes_string buf 0 b 0 len;
   b
- 
-let make_simple_req () =
+
+let write_req expected req =
   let open Cohttp in
   let open Cohttp_lwt_unix in
-  let expected = "GET /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
   (* Use the low-level write_header/footer API *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
   let body = Cohttp_lwt_body.body_of_string "foobar" in
-  let req = Request.make ~encoding:Transfer.Chunked ~headers:(Header.init_with "foo" "bar") (Uri.of_string "/foo/bar") in
   Request.write (fun req oc ->
     Cohttp_lwt_body.write_body (Request.write_body req oc) body
   ) req oc >>= fun () ->
@@ -237,9 +235,24 @@ let make_simple_req () =
    * by re-using it *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
-  Request.write (fun req oc -> Request.write_body req oc "foobar") req oc >>= fun () ->
-  assert_equal expected (get_substring oc buf);
-  return ()
+  Request.write (fun req oc -> Request.write_body req oc "foobar") req oc
+  >|= fun () ->
+  assert_equal expected (get_substring oc buf)
+
+let make_simple_req () = 
+  let open Cohttp in
+  let open Cohttp_lwt_unix in
+  let expected = "GET /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
+  let req = Request.make ~encoding:Transfer.Chunked ~headers:(Header.init_with "foo" "bar") (Uri.of_string "/foo/bar") in
+  write_req expected req
+
+let mutate_simple_req () = 
+  let open Cohttp in
+  let open Cohttp_lwt_unix in
+  let expected = "POST /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
+  let req = Request.make ~encoding:Transfer.Chunked ~headers:(Header.init_with "foo" "bar") (Uri.of_string "/foo/bar") in
+  Request.set_meth req `POST;
+  write_req expected req
 
 let make_simple_res () =
   let open Cohttp in
@@ -273,6 +286,7 @@ let test_cases =
     "basic_res_parse 2", (basic_res_parse basic_res_plus_crlf);
     "res_content_parse", res_content_parse;
     "make_simple_req", make_simple_req; 
+    "mutate_simple_req", mutate_simple_req; 
     "make_simple_res", make_simple_res;
   ] in
   List.map (fun (n,x) -> n >:: (fun () -> Lwt_unix.run (x ()))) tests
