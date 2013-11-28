@@ -15,7 +15,12 @@
  *
  *)
 
-type t
+type t = {
+  encoding: Transfer.encoding;
+  headers: Header.t;
+  version: Code.version;
+  status: Code.status_code;
+} with fields
 
 (** Retrieve response HTTP headers *)
 val headers : t -> Header.t
