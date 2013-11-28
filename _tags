@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: a952834f500b83eea06ca53d69394888)
+# DO NOT EDIT (digest: 089787a6c5457a0274e3a8e4ceb59b20)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -33,6 +33,8 @@
 <cohttp/*.ml{,i}>: pkg_uri
 <cohttp/*.ml{,i}>: pkg_re
 <cohttp/*.ml{,i}>: pkg_uri.services
+<cohttp/*.ml{,i}>: pkg_fieldslib
+<cohttp/*.ml{,i}>: pkg_fieldslib.syntax
 # Library cohttp_lwt_unix
 "lwt/cohttp_lwt_unix.cmxs": use_cohttp_lwt_unix
 <lwt/*.ml{,i}>: pkg_lwt.unix
@@ -48,6 +50,8 @@
 <lwt/*.ml{,i}>: pkg_mirage-net
 <lwt/*.ml{,i}>: pkg_cstruct
 <lwt/*.ml{,i}>: pkg_uri.services
+<lwt/*.ml{,i}>: pkg_fieldslib
+<lwt/*.ml{,i}>: pkg_fieldslib.syntax
 # Library cohttp_async
 "async/cohttp_async.cmxs": use_cohttp_async
 <async/*.ml{,i}>: use_cohttp
@@ -58,6 +62,8 @@
 <async/*.ml{,i}>: pkg_async
 <async/*.ml{,i}>: pkg_re
 <async/*.ml{,i}>: pkg_uri.services
+<async/*.ml{,i}>: pkg_fieldslib
+<async/*.ml{,i}>: pkg_fieldslib.syntax
 # Executable test_parser
 <lib_test/test_parser.{native,byte}>: use_cohttp_lwt_unix
 <lib_test/test_parser.{native,byte}>: use_cohttp
@@ -69,6 +75,8 @@
 <lib_test/test_parser.{native,byte}>: pkg_lwt
 <lib_test/test_parser.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_parser.{native,byte}>: pkg_uri.services
+<lib_test/test_parser.{native,byte}>: pkg_fieldslib
+<lib_test/test_parser.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_parser.{native,byte}>: custom
 # Executable test_accept
 <lib_test/test_accept.{native,byte}>: use_cohttp
@@ -76,6 +84,8 @@
 <lib_test/test_accept.{native,byte}>: pkg_uri
 <lib_test/test_accept.{native,byte}>: pkg_re
 <lib_test/test_accept.{native,byte}>: pkg_uri.services
+<lib_test/test_accept.{native,byte}>: pkg_fieldslib
+<lib_test/test_accept.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_accept.{native,byte}>: custom
 # Executable test_header
 <lib_test/test_header.{native,byte}>: use_cohttp
@@ -83,6 +93,8 @@
 <lib_test/test_header.{native,byte}>: pkg_uri
 <lib_test/test_header.{native,byte}>: pkg_re
 <lib_test/test_header.{native,byte}>: pkg_uri.services
+<lib_test/test_header.{native,byte}>: pkg_fieldslib
+<lib_test/test_header.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_header.{native,byte}>: custom
 # Executable test_net_lwt
 <lib_test/test_net_lwt.{native,byte}>: use_cohttp_lwt_unix
@@ -95,6 +107,8 @@
 <lib_test/test_net_lwt.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt.{native,byte}>: pkg_uri.services
+<lib_test/test_net_lwt.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_lwt.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_net_lwt.{native,byte}>: custom
 # Executable test_net_lwt_google
 <lib_test/test_net_lwt_google.{native,byte}>: use_cohttp_lwt_unix
@@ -106,6 +120,8 @@
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_uri.services
+<lib_test/test_net_lwt_google.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_lwt_google.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_net_lwt_google.{native,byte}>: custom
 # Executable test_net_lwt_lastminute
 <lib_test/test_net_lwt_lastminute.{native,byte}>: use_cohttp_lwt_unix
@@ -117,6 +133,8 @@
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_uri.services
+<lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_net_lwt_lastminute.{native,byte}>: custom
 # Executable test_net_lwt_server
 <lib_test/test_net_lwt_server.{native,byte}>: use_cohttp_lwt_unix
@@ -128,6 +146,8 @@
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_uri.services
+<lib_test/test_net_lwt_server.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_lwt_server.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_net_lwt_server.{native,byte}>: custom
 # Executable test_net_lwt_multi_get
 <lib_test/test_net_lwt_multi_get.{native,byte}>: use_cohttp_lwt_unix
@@ -139,6 +159,8 @@
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_uri.services
+<lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_net_lwt_multi_get.{native,byte}>: custom
 # Executable test_net_lwt_client_and_server
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: use_cohttp_lwt_unix
@@ -150,6 +172,8 @@
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_uri.services
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/*.ml{,i}>: use_cohttp_lwt_unix
 <lib_test/*.ml{,i}>: pkg_lwt.syntax
 <lib_test/*.ml{,i}>: pkg_lwt.unix
@@ -167,6 +191,8 @@
 <lib_test/test_net_async.{native,byte}>: pkg_async
 <lib_test/test_net_async.{native,byte}>: pkg_re
 <lib_test/test_net_async.{native,byte}>: pkg_uri.services
+<lib_test/test_net_async.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_async.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_net_async.{native,byte}>: custom
 # Executable test_net_async_http10
 <lib_test/test_net_async_http10.{native,byte}>: use_cohttp_async
@@ -179,6 +205,8 @@
 <lib_test/test_net_async_http10.{native,byte}>: pkg_async
 <lib_test/test_net_async_http10.{native,byte}>: pkg_re
 <lib_test/test_net_async_http10.{native,byte}>: pkg_uri.services
+<lib_test/test_net_async_http10.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_async_http10.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_net_async_http10.{native,byte}>: custom
 # Executable test_net_async_multi_get
 <lib_test/test_net_async_multi_get.{native,byte}>: use_cohttp_async
@@ -191,6 +219,8 @@
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_async
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_re
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_uri.services
+<lib_test/test_net_async_multi_get.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_async_multi_get.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_net_async_multi_get.{native,byte}>: custom
 # Executable test_net_async_server
 <lib_test/test_net_async_server.{native,byte}>: use_cohttp_async
@@ -203,6 +233,8 @@
 <lib_test/test_net_async_server.{native,byte}>: pkg_async
 <lib_test/test_net_async_server.{native,byte}>: pkg_re
 <lib_test/test_net_async_server.{native,byte}>: pkg_uri.services
+<lib_test/test_net_async_server.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_async_server.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/*.ml{,i}>: use_cohttp_async
 <lib_test/*.ml{,i}>: use_cohttp
 <lib_test/*.ml{,i}>: pkg_oUnit
@@ -213,8 +245,11 @@
 <lib_test/*.ml{,i}>: pkg_async
 <lib_test/*.ml{,i}>: pkg_re
 <lib_test/*.ml{,i}>: pkg_uri.services
+<lib_test/*.ml{,i}>: pkg_fieldslib
+<lib_test/*.ml{,i}>: pkg_fieldslib.syntax
 <lib_test/test_net_async_server.{native,byte}>: custom
 # OASIS_STOP
 <lib_test/{test_parser,test_net_lwt,test_net_lwt_server,test_net_mirage_server,test_net_lwt_client_and_server}.ml>: syntax_camlp4o, pkg_lwt.syntax
+<cohttp/request.*> or <cohttp/response.*> or <cohttp/cookie.*>: syntax_camlp4o, pkg_fieldslib.syntax
 <lwt/*>: syntax_camlp4o, pkg_lwt.syntax
 true: annot, bin_annot, debug, strict_sequence, principal

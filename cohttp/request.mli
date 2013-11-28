@@ -21,7 +21,13 @@
     the {!headers}, {!version}, {!meth} and {!uri}.  The body is handled by
     the separate {!S} module type, as it is dependent on the IO 
     implementation. *)
-type t
+type t = {
+  mutable headers: Header.t;
+  mutable meth: Code.meth;
+  mutable uri: Uri.t;
+  mutable version: Code.version;
+  mutable encoding: Transfer.encoding;
+} with fields
 
 (** Retrieve the HTTP request headers *)
 val headers : t -> Header.t

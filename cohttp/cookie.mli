@@ -28,7 +28,7 @@ module Set_cookie_hdr : sig
     expiration : expiration;
     domain : string option;
     path : string option;
-    secure : bool }
+    secure : bool } with fields
   (** A header which a server sends to a client to request that the client
     returns the cookie in future requests, under certain conditions. *)
 

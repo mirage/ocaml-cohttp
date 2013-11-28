@@ -16,18 +16,12 @@
  *)
 
 type t = { 
-  headers: Header.t;
-  meth: Code.meth;
-  uri: Uri.t;
-  version: Code.version;
-  encoding: Transfer.encoding;
-}
-
-let headers r = r.headers
-let meth r = r.meth
-let uri r = r.uri
-let version r = r.version
-let encoding r = r.encoding
+  mutable headers: Header.t;
+  mutable meth: Code.meth;
+  mutable uri: Uri.t;
+  mutable version: Code.version;
+  mutable encoding: Transfer.encoding;
+} with fields
 
 let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
   let headers = 
@@ -57,36 +51,6 @@ let make_for_client ?headers ?(chunked=true) ?(body_length=0) meth uri =
     | false -> Transfer.Fixed body_length
   in
   make ~meth ~encoding ?headers uri
-
-module type T = sig
-  val headers : t -> Header.t
-  val meth : t -> Code.meth
-  (** Retrieve full HTTP request uri *)
-  val uri : t -> Uri.t
-
-  (** Retrieve HTTP version, usually 1.1 *)
-  val version : t -> Code.version
-
-  (** Retrieve the transfer encoding of this HTTP request *)
-  val encoding : t -> Transfer.encoding
-
-  (** TODO *)
-  val params : t -> (string * string list) list
-
-  (** TODO *)
-  val get_param : t -> string -> string option
-
-  val make : ?meth:Code.meth -> ?version:Code.version -> 
-    ?encoding:Transfer.encoding -> ?headers:Header.t ->
-    Uri.t -> t
-
-  val make_for_client:
-    ?headers:Header.t ->
-    ?chunked:bool ->
-    ?body_length:int ->
-    Code.meth -> Uri.t -> t
-end
-
 
 module type S = sig
   module IO : IO.S
