@@ -60,9 +60,7 @@ end
 module type S = sig
   include Cohttp_lwt.Server with module IO = Cohttp_lwt_mirage_io
 
-  val listen :
-    ?timeout:float ->
-    Net.Manager.t -> Net.Nettypes.ipv4_src -> config -> unit Lwt.t
+  val listen : ?timeout:float -> Net.Manager.t -> Net.Nettypes.ipv4_src -> t -> unit Lwt.t
 end
 
 let listen = Server.listen

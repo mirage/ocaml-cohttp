@@ -192,24 +192,35 @@ module Make_client
     return resps
 end
 
+type server = {
+  callback :
+    Cohttp.Connection.t ->
+    ?body:Cohttp_lwt_body.contents ->
+    Cohttp.Request.t ->
+    (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
+  conn_closed:
+    Cohttp.Connection.t -> unit -> unit;
+}
+
+(** Configuration of servers. *)
 module type Server = sig
   module IO : IO.S
   module Request : Request
   module Response : Response
+  type t = server = {
+    callback :
+      Cohttp.Connection.t ->
+      ?body:Cohttp_lwt_body.contents ->
+      Cohttp.Request.t ->
+      (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
+    conn_closed:
+      Cohttp.Connection.t -> unit -> unit;
+  }
 
-  type conn_id = int
-  val string_of_conn_id : int -> string
-
-    type config = {
-      callback : conn_id -> ?body:Cohttp_lwt_body.contents -> 
-        Cohttp.Request.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
-      conn_closed : conn_id -> unit -> unit;
-    }
-
-    val respond :
-      ?headers:Cohttp.Header.t ->
-      status:Cohttp.Code.status_code ->
-      body:Cohttp_lwt_body.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+  val respond :
+    ?headers:Cohttp.Header.t ->
+    status:Cohttp.Code.status_code ->
+    body:Cohttp_lwt_body.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val respond_string :
     ?headers:Cohttp.Header.t ->
@@ -231,8 +242,7 @@ module type Server = sig
   val respond_not_found :
     ?uri:Uri.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
-    val callback : 
-      config -> IO.ic -> IO.oc -> unit Lwt.t
+  val callback: t -> IO.ic -> IO.oc -> unit Lwt.t
 end
 
 
@@ -289,9 +299,8 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
     respond_string ~status:`Not_found ~body ()
 
   let callback spec =
-    let conn_id = ref 0 in
     let daemon_callback ic oc =
-      let conn_id = incr conn_id; !conn_id in
+      let conn_id = Connection.create () in
       let read_m = Lwt_mutex.create () in
       (* If the request is HTTP version 1.0 then the request stream should be
          considered closed after the first request/response. *)
