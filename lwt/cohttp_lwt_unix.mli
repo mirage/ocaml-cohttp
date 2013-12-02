@@ -18,12 +18,12 @@
 (** HTTP client and server using the [Lwt_unix] interfaces. *)
 
 (** The [Request] module holds the information about a HTTP request, and
-    also includes the {! Cohttp_lwt_unix_io} functions to handle large 
+    also includes the {! Cohttp_lwt_unix_io} functions to handle large
     message bodies. *)
 module Request : Cohttp_lwt.Request with module IO = Cohttp_lwt_unix_io
 
 (** The [Response] module holds the information about a HTTP response, and
-    also includes the {! Cohttp_lwt_unix_io} functions to handle large 
+    also includes the {! Cohttp_lwt_unix_io} functions to handle large
     message bodies. *)
 module Response : Cohttp_lwt.Response with module IO = Cohttp_lwt_unix_io
 

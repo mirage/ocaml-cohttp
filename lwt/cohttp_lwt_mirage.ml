@@ -43,9 +43,9 @@ module Server = struct
   let listen ?timeout mgr src spec =
     (* TODO XXX the cancel-based timeout is almost certainly broken as the
      * thread won't issue a Response *)
-    let cb = 
-      match timeout with 
-      |None -> 
+    let cb =
+      match timeout with
+      |None ->
         fun dst ch ->
           callback spec ch ch
       |Some tm ->
