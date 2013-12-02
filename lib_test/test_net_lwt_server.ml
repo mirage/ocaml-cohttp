@@ -38,7 +38,7 @@ let make_server () =
        Server.respond_file ~fname ()
   in
   let conn_closed conn_id () =
-    Printf.eprintf "conn %s closed\n%!" (Server.string_of_conn_id conn_id)
+    Printf.eprintf "conn %s closed\n%!" (Connection.to_string conn_id)
   in
   let config = { Server.callback; conn_closed } in
   Server.create ~address:"0.0.0.0" ~port:8081 config
