@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: b2f79c812fd804283c366c86adc53357) *)
+(* DO NOT EDIT (digest: bdff3e0261c223cf2e6fd3d1655e76bb) *)
 module OASISGettext = struct
 (* # 21 "src/oasis/OASISGettext.ml" *)
 
@@ -480,6 +480,7 @@ let package_default =
      MyOCamlbuildBase.lib_ocaml =
        [
           ("cohttp", ["cohttp"]);
+          ("cohttp_lwt_core", ["lwt"]);
           ("cohttp_lwt_unix", ["lwt"]);
           ("cohttp_mirage", ["lwt"]);
           ("cohttp_async", ["async"])
@@ -497,7 +498,7 @@ let package_default =
 
 let dispatch_default = MyOCamlbuildBase.dispatch_default package_default;;
 
-# 501 "myocamlbuild.ml"
+# 502 "myocamlbuild.ml"
 (* OASIS_STOP *)
 open Ocamlbuild_plugin
 

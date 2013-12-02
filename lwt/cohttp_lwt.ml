@@ -119,7 +119,7 @@ module Make_client
       match Response.has_body res with
       |true ->
         let stream = Cohttp_lwt_body.create_stream (Response.read_body_chunk res) ic in
-        (match closefn with 
+        (match closefn with
           |Some fn ->
              Lwt_stream.on_terminate stream fn;
              let gcfn st = fn () in
@@ -132,13 +132,13 @@ module Make_client
         (match closefn with |Some fn -> fn () |None -> ());
         return (Some (res, None))
     end
- 
+
   let call ?headers ?(body:Cohttp_lwt_body.t) ?(chunked=true) meth uri =
     let headers = match headers with None -> Header.init () | Some h -> h in
     lwt (ic,oc) = Net.connect_uri uri in
     let closefn () = Net.close ic oc in
     match chunked with
-    | true -> 
+    | true ->
         let req = Request.make_for_client ~headers ~chunked meth uri in
         Request.write (fun req oc ->
           Cohttp_lwt_body.write_body (Request.write_body req oc) body) req oc
@@ -149,22 +149,22 @@ module Make_client
         lwt (body_length, buf) = Cohttp_lwt_body.get_length body in
         let req = Request.make_for_client ~headers ~chunked ~body_length meth uri in
         Request.write (fun req oc ->
-          Cohttp_lwt_body.write_body (Request.write_body req oc) buf) req oc 
+          Cohttp_lwt_body.write_body (Request.write_body req oc) buf) req oc
         >>= fun () ->
         read_response ~closefn ic oc
 
   (* The HEAD should not have a response body *)
-  let head ?headers uri = 
+  let head ?headers uri =
     call ?headers ~chunked:false `HEAD uri
     >|= function
     |None -> None
     |Some (res,body) -> Some res
 
-  let get ?headers uri = call ?headers ~chunked:false `GET uri 
-  let delete ?headers uri = call ?headers ~chunked:false `DELETE uri 
-  let post ?body ?chunked ?headers uri = call ?headers ?body ?chunked `POST uri 
-  let put ?body ?chunked ?headers uri = call ?headers ?body ?chunked `PUT uri 
-  let patch ?body ?chunked ?headers uri = call ?headers ?body ?chunked `PATCH uri 
+  let get ?headers uri = call ?headers ~chunked:false `GET uri
+  let delete ?headers uri = call ?headers ~chunked:false `DELETE uri
+  let post ?body ?chunked ?headers uri = call ?headers ?body ?chunked `POST uri
+  let put ?body ?chunked ?headers uri = call ?headers ?body ?chunked `PUT uri
+  let patch ?body ?chunked ?headers uri = call ?headers ?body ?chunked `PATCH uri
 
   let post_form ?headers ~params uri =
     let headers = Header.add_opt headers "content-type" "application/x-www-form-urlencoded" in
@@ -176,7 +176,7 @@ module Make_client
     let service = string_of_int port in
     lwt (ic, oc) = Net.connect ~ssl ~host ~service () in
     (* Serialise the requests out to the wire *)
-    let _ = Lwt_stream.iter_s (fun (req,body) -> 
+    let _ = Lwt_stream.iter_s (fun (req,body) ->
       Request.write (fun req oc ->
         Cohttp_lwt_body.write_body (Request.write_body req oc) body) req oc)
       reqs in
@@ -186,53 +186,63 @@ module Make_client
     let read_m = Lwt_mutex.create () in
     let resps = Lwt_stream.from (fun () ->
        let closefn () = Lwt_mutex.unlock read_m in
-       Lwt_mutex.with_lock read_m (fun () -> read_response ~closefn ic oc) 
+       Lwt_mutex.with_lock read_m (fun () -> read_response ~closefn ic oc)
      ) in
     Lwt_stream.on_terminate resps (fun () -> Net.close ic oc);
     return resps
 end
 
+type server = {
+  callback :
+    Cohttp.Connection.t ->
+    ?body:Cohttp_lwt_body.contents ->
+    Cohttp.Request.t ->
+    (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
+  conn_closed:
+    Cohttp.Connection.t -> unit -> unit;
+}
+
+(** Configuration of servers. *)
 module type Server = sig
   module IO : IO.S
   module Request : Request
   module Response : Response
+  type t = server = {
+    callback :
+      Cohttp.Connection.t ->
+      ?body:Cohttp_lwt_body.contents ->
+      Cohttp.Request.t ->
+      (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
+    conn_closed:
+      Cohttp.Connection.t -> unit -> unit;
+  }
 
-  type conn_id = int
-  val string_of_conn_id : int -> string
+  val respond :
+    ?headers:Cohttp.Header.t ->
+    status:Cohttp.Code.status_code ->
+    body:Cohttp_lwt_body.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
-    type config = {
-      callback : conn_id -> ?body:Cohttp_lwt_body.contents -> 
-        Cohttp.Request.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
-      conn_closed : conn_id -> unit -> unit;
-    }
+  val respond_string :
+    ?headers:Cohttp.Header.t ->
+    status:Cohttp.Code.status_code ->
+    body:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
-    val respond :
-      ?headers:Cohttp.Header.t ->
-      status:Cohttp.Code.status_code ->
-      body:Cohttp_lwt_body.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+  val respond_error :
+    status:Cohttp.Code.status_code ->
+    body:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
-    val respond_string :
-      ?headers:Cohttp.Header.t ->
-      status:Cohttp.Code.status_code ->
-      body:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+  val respond_redirect :
+    ?headers:Cohttp.Header.t ->
+    uri:Uri.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
-    val respond_error :
-      status:Cohttp.Code.status_code ->
-      body:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+  val respond_need_auth :
+    ?headers:Cohttp.Header.t ->
+    auth:Cohttp.Auth.req -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
-    val respond_redirect :
-      ?headers:Cohttp.Header.t ->
-      uri:Uri.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+  val respond_not_found :
+    ?uri:Uri.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
-    val respond_need_auth :
-      ?headers:Cohttp.Header.t ->
-      auth:Cohttp.Auth.req -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
-
-    val respond_not_found :
-      ?uri:Uri.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
-
-    val callback : 
-      config -> IO.ic -> IO.oc -> unit Lwt.t
+  val callback: t -> IO.ic -> IO.oc -> unit Lwt.t
 end
 
 
@@ -243,16 +253,17 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
   module IO = IO
   module Request = Request
   module Response = Response
+  type t = server = {
+    callback :
+      Cohttp.Connection.t ->
+      ?body:Cohttp_lwt_body.contents ->
+      Cohttp.Request.t ->
+      (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
+    conn_closed:
+      Cohttp.Connection.t -> unit -> unit;
+  }
 
   module Transfer_IO = Transfer_io.Make(IO)
-
-  type conn_id = int
-  let string_of_conn_id = string_of_int
-
-  type config = {
-    callback: conn_id -> ?body:Cohttp_lwt_body.contents -> Request.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t;
-    conn_closed : conn_id -> unit -> unit;
-  }
 
   let respond ?headers ~status ~body () =
     let encoding = Cohttp_lwt_body.get_transfer_encoding body in
@@ -260,7 +271,7 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
     return (res, body)
 
   let respond_string ?headers ~status ~body () =
-    let res = Response.make ~status 
+    let res = Response.make ~status
       ~encoding:(Transfer.Fixed (String.length body)) ?headers () in
     let body = Cohttp_lwt_body.body_of_string body in
     return (res,body)
@@ -269,7 +280,7 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
     respond_string ~status ~body:("Error: "^body) ()
 
   let respond_redirect ?headers ~uri () =
-    let headers = 
+    let headers =
       match headers with
       |None -> Header.init_with "location" (Uri.to_string uri)
       |Some h -> Header.add h "location" (Uri.to_string uri)
@@ -288,9 +299,8 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
     respond_string ~status:`Not_found ~body ()
 
   let callback spec =
-    let conn_id = ref 0 in
     let daemon_callback ic oc =
-      let conn_id = incr conn_id; !conn_id in
+      let conn_id = Connection.create () in
       let read_m = Lwt_mutex.create () in
       (* If the request is HTTP version 1.0 then the request stream should be
          considered closed after the first request/response. *)
@@ -321,8 +331,8 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
           end
       ) in
       (* Map the requests onto a response stream to serialise out *)
-      let res_stream = Lwt_stream.map_s (fun (req, body) -> 
-        try_lwt 
+      let res_stream = Lwt_stream.map_s (fun (req, body) ->
+        try_lwt
           spec.callback conn_id ?body req
         with exn ->
           respond_error ~status:`Internal_server_error ~body:(Printexc.to_string exn) ()

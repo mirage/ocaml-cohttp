@@ -43,9 +43,9 @@ module Server = struct
   let listen ?timeout mgr src spec =
     (* TODO XXX the cancel-based timeout is almost certainly broken as the
      * thread won't issue a Response *)
-    let cb = 
-      match timeout with 
-      |None -> 
+    let cb =
+      match timeout with
+      |None ->
         fun dst ch ->
           callback spec ch ch
       |Some tm ->
@@ -60,9 +60,7 @@ end
 module type S = sig
   include Cohttp_lwt.Server with module IO = Cohttp_lwt_mirage_io
 
-  val listen :
-    ?timeout:float ->
-    Net.Manager.t -> Net.Nettypes.ipv4_src -> config -> unit Lwt.t
+  val listen : ?timeout:float -> Net.Manager.t -> Net.Nettypes.ipv4_src -> t -> unit Lwt.t
 end
 
 let listen = Server.listen

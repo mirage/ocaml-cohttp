@@ -18,12 +18,12 @@
 (** HTTP client and server using the [mirage-net] interfaces. *)
 
 (** The [Request] module holds the information about a HTTP request, and
-    also includes the {! Cohttp_lwt_mirage_io} functions to handle large 
+    also includes the {! Cohttp_lwt_mirage_io} functions to handle large
     message bodies. *)
 module Request : Cohttp_lwt.Request with module IO = Cohttp_lwt_mirage_io
 
 (** The [Response] module holds the information about a HTTP response, and
-    also includes the {! Cohttp_lwt_mirage_io} functions to handle large 
+    also includes the {! Cohttp_lwt_mirage_io} functions to handle large
     message bodies. *)
 module Response : Cohttp_lwt.Response with module IO = Cohttp_lwt_mirage_io
 
@@ -31,14 +31,13 @@ module Response : Cohttp_lwt.Response with module IO = Cohttp_lwt_mirage_io
 module Client : Cohttp_lwt.Client with module IO = Cohttp_lwt_mirage_io
 
 (** The Mirage [S] module type defines the additional Mirage-specific
-    functions that are exposed by the {! Cohttp_lwt.Server} interface. 
+    functions that are exposed by the {! Cohttp_lwt.Server} interface.
     This is primarily the {! listen} function to actually create the
     server instance and response to incoming requests. *)
 module type S = sig
   include Cohttp_lwt.Server with module IO=Cohttp_lwt_mirage_io
 
-  val listen : ?timeout:float ->
-    Net.Manager.t -> Net.Nettypes.ipv4_src -> config -> unit Lwt.t
+  val listen : ?timeout:float -> Net.Manager.t -> Net.Nettypes.ipv4_src -> t -> unit Lwt.t
 end
 
 (** The [Server] module implement the full Mirage HTTP server interface,
@@ -47,5 +46,4 @@ module Server : S
 
 (** This [listen] call is the same as {! Server.listen}, but here for
     compatibility with the Mirari build tool. *)
-val listen : ?timeout:float ->
-    Net.Manager.t -> Net.Nettypes.ipv4_src -> Server.config -> unit Lwt.t
+val listen : ?timeout:float -> Net.Manager.t -> Net.Nettypes.ipv4_src -> Server.t -> unit Lwt.t
