@@ -19,7 +19,7 @@
 (** Connection identifiers. *)
 
 type t
-(** Abstract type for connections identifiers. *)
+(** Abstract type for connection identifiers. *)
 
 val create: unit -> t
 (** Create a fresh connection identifier. *)
