@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 143425a50adbb8db1544b070e13a63ab)
+# DO NOT EDIT (digest: 56ef89c77c32f281c432c51a5902e462)
 IO
 Code
 Header
@@ -15,4 +15,5 @@ Auth
 Header_io
 Transfer_io
 Client
+Connection
 # OASIS_STOP
