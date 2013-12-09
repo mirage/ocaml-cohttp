@@ -1,7 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: e0a95622fdda972c9a71c62938683652)
-Cohttp_lwt_mirage_io
-Cohttp_lwt_mirage
-Cohttp_lwt
-Cohttp_lwt_body
+# DO NOT EDIT (digest: 8a260d19886c181780183abf39818946)
+../mirage/Cohttp_mirage_io
+../mirage/Cohttp_mirage
 # OASIS_STOP

@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: 6986af1ee7d3541b9e1fb0656ec3ac2c)
-version = "0.9.12"
+# DO NOT EDIT (digest: 45ebc6ef58c1b5e80e40920f1521fce0)
+version = "0.9.13"
 description = "HTTP library for Lwt, Async and Mirage"
 requires = "re uri uri.services fieldslib fieldslib.syntax"
 archive(byte) = "cohttp.cma"
@@ -8,21 +8,43 @@ archive(byte, plugin) = "cohttp.cma"
 archive(native) = "cohttp.cmxa"
 archive(native, plugin) = "cohttp.cmxs"
 exists_if = "cohttp.cma"
-package "mirage" (
- version = "0.9.12"
+package "mirage-xen" (
+ version = "0.9.13"
  description = "HTTP library for Lwt, Async and Mirage"
- requires = "uri re cohttp lwt.syntax mirage mirage-net cstruct"
- archive(byte) = "cohttp_mirage.cma"
- archive(byte, plugin) = "cohttp_mirage.cma"
- archive(native) = "cohttp_mirage.cmxa"
- archive(native, plugin) = "cohttp_mirage.cmxs"
- exists_if = "cohttp_mirage.cma"
+ requires = "cohttp.lwt-core mirage-types cstruct mirage-tcpip-xen"
+ archive(byte) = "cohttp_mirage_xen.cma"
+ archive(byte, plugin) = "cohttp_mirage_xen.cma"
+ archive(native) = "cohttp_mirage_xen.cmxa"
+ archive(native, plugin) = "cohttp_mirage_xen.cmxs"
+ exists_if = "cohttp_mirage_xen.cma"
+)
+
+package "mirage-unix" (
+ version = "0.9.13"
+ description = "HTTP library for Lwt, Async and Mirage"
+ requires = "cohttp.lwt-core mirage-types cstruct mirage-tcpip-unix"
+ archive(byte) = "cohttp_mirage_unix.cma"
+ archive(byte, plugin) = "cohttp_mirage_unix.cma"
+ archive(native) = "cohttp_mirage_unix.cmxa"
+ archive(native, plugin) = "cohttp_mirage_unix.cmxs"
+ exists_if = "cohttp_mirage_unix.cma"
+)
+
+package "lwt-core" (
+ version = "0.9.13"
+ description = "HTTP library for Lwt, Async and Mirage"
+ requires = "lwt uri cohttp lwt.ssl lwt.syntax"
+ archive(byte) = "cohttp_lwt_core.cma"
+ archive(byte, plugin) = "cohttp_lwt_core.cma"
+ archive(native) = "cohttp_lwt_core.cmxa"
+ archive(native, plugin) = "cohttp_lwt_core.cmxs"
+ exists_if = "cohttp_lwt_core.cma"
 )
 
 package "lwt" (
- version = "0.9.12"
+ version = "0.9.13"
  description = "HTTP library for Lwt, Async and Mirage"
- requires = "lwt.unix lwt uri cohttp lwt.ssl lwt.syntax"
+ requires = "cohttp.lwt-core unix"
  archive(byte) = "cohttp_lwt_unix.cma"
  archive(byte, plugin) = "cohttp_lwt_unix.cma"
  archive(native) = "cohttp_lwt_unix.cmxa"
@@ -31,7 +53,7 @@ package "lwt" (
 )
 
 package "async" (
- version = "0.9.12"
+ version = "0.9.13"
  description = "HTTP library for Lwt, Async and Mirage"
  requires = "uri cohttp async_core async_unix threads async"
  archive(byte) = "cohttp_async.cma"

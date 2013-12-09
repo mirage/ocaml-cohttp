@@ -1,3 +1,8 @@
+0.9.13
+* Fix the support of mirage.1.0
+* Add a new `Cohttp.Connection` module to manage server's connections identifiers.
+* Share the same configuration type for the different server implementations
+
 0.9.12 (2013-11-28):
 * Improve documentation for `Cohttp.Header`.
 * Expose Fieldslib setters and getters for most of the `Cohttp` types (#38).
@@ -22,7 +27,7 @@
 * Explicitly flush the debug output when the `COHTTP_DEBUG` env variable is set.
 * [async] Add client head/post/patch/delete methods.
 * [lwt] Client.head no longer returns a response body, just the metadata.
-* [lwt] Do not send chunked encoding headers with GET/DELETE requests that have no body. 
+* [lwt] Do not send chunked encoding headers with GET/DELETE requests that have no body.
 
 0.9.9 (2013-06-12):
 * Disable the mirage executable test as it was building too aggressively and breaking builds.

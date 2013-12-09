@@ -1,6 +1,6 @@
 OASISFormat: 0.3
 Name:        cohttp
-Version:     0.9.12
+Version:     0.9.13
 Synopsis:    HTTP library for Lwt, Async and Mirage
 Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire, David Scott
 License:     LGPL-2.0 with OCaml linking exception
@@ -11,7 +11,8 @@ Library cohttp
   Path: cohttp
   Findlibname: cohttp
   Pack: true
-  Modules: IO, Code, Header, Cookie, Request, Response, Transfer, Accept, Accept_parser, Accept_lexer, Base64, Auth, Header_io, Transfer_io, Client
+  Modules: IO, Code, Header, Cookie, Request, Response, Transfer, Accept, Accept_parser,
+           Accept_lexer, Base64, Auth, Header_io, Transfer_io, Client, Connection
   BuildDepends:	re, uri (>= 1.3.8), uri.services, fieldslib, fieldslib.syntax
 
 Flag lwt
@@ -22,13 +23,26 @@ Flag async
   Description: build the Core/Async library
   Default: false
 
-Flag mirage
-  Description: build the Mirage library
+Flag mirage_unix
+  Description: build the Mirage library for Unix
+  Default: false
+
+Flag mirage_xen
+  Description: build the Mirage library for Xen
   Default: false
 
 Flag nettests
   Description: run the internet-using tests
   Default: false
+
+Library cohttp_lwt_core
+  Build$: flag(lwt ) || flag(mirage_unix) || flag(mirage_xen)
+  Install$: flag(lwt) || flag(mirage_unix) || flag(mirage_xen)
+  Path: lwt
+  Findlibname: lwt-core
+  FindlibParent: cohttp
+  BuildDepends: lwt, uri, cohttp, lwt.ssl, lwt.syntax
+  Modules: Cohttp_lwt_body
 
 Library cohttp_lwt_unix
   Build$: flag(lwt)
@@ -36,17 +50,26 @@ Library cohttp_lwt_unix
   Path: lwt
   Findlibname: lwt
   FindlibParent: cohttp
-  BuildDepends: lwt.unix, lwt, uri, cohttp, lwt.ssl, lwt.syntax
-  Modules: Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt, Cohttp_lwt_body, Cohttp_lwt_unix_net
+  BuildDepends: cohttp.lwt-core, unix
+  Modules: Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt, Cohttp_lwt_unix_net
 
-Library cohttp_mirage
-  Build$: flag(mirage)
-  Install$: flag(mirage)
-  Path: lwt
-  Findlibname: mirage
+Library cohttp_mirage_unix
+  Build$: flag(mirage_unix)
+  Install$: flag(mirage_unix)
+  Path: mirage
+  Findlibname: mirage-unix
   FindlibParent: cohttp
-  BuildDepends: uri, re, cohttp, lwt.syntax, mirage, mirage-net, cstruct
-  Modules: Cohttp_lwt_mirage_io, Cohttp_lwt_mirage, Cohttp_lwt, Cohttp_lwt_body
+  BuildDepends: cohttp.lwt-core, mirage-types, cstruct, mirage-tcpip-unix
+  Modules: Cohttp_mirage_io, Cohttp_mirage
+
+Library cohttp_mirage_xen
+  Build$: flag(mirage_xen)
+  Install$: flag(mirage_xen)
+  Path: mirage
+  Findlibname: mirage-xen
+  FindlibParent: cohttp
+  BuildDepends: cohttp.lwt-core, mirage-types, cstruct, mirage-tcpip-xen
+  Modules: Cohttp_mirage_io, Cohttp_mirage
 
 Library cohttp_async
   Build$: flag(async)
@@ -83,14 +106,23 @@ Document cohttp_async
   XOCamlbuildPath:      async
   XOCamlbuildLibraries: cohttp.async
 
-Document cohttp_mirage
+Document cohttp_mirage_unix
   Title:                Cohttp Mirage docs
   Type:                 ocamlbuild (0.3)
   BuildTools+:          ocamldoc
-  Build$:               flag(mirage)
+  Build$:               flag(mirage_unix)
   Install:		true
-  XOCamlbuildPath:      lwt
-  XOCamlbuildLibraries: cohttp.mirage
+  XOCamlbuildPath:      mirage
+  XOCamlbuildLibraries: cohttp.mirage-unix
+
+Document cohttp_mirage_xen
+  Title:                Cohttp Mirage docs
+  Type:                 ocamlbuild (0.3)
+  BuildTools+:          ocamldoc
+  Build$:               flag(mirage_xen)
+  Install:		true
+  XOCamlbuildPath:      mirage
+  XOCamlbuildLibraries: cohttp.mirage-xen
 
 Executable test_parser
   Path:               lib_test
