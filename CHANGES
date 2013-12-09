@@ -1,4 +1,5 @@
 0.9.13
+* Fix the support of mirage.1.0
 * Add a new `Cohttp.Connection` module to manage server's connections identifiers.
 * Share the same configuration type for the different server implementations
 
