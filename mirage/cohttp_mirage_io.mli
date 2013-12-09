@@ -16,6 +16,6 @@
  *)
 
 include Cohttp.IO.S
- with type 'a t = 'a Lwt.t
- and type ic = Net.Channel.t
- and type oc = Net.Channel.t
+  with type 'a t = 'a Lwt.t
+   and type ic = Net.Channel.t
+   and type oc = Net.Channel.t

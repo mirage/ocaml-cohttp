@@ -23,8 +23,12 @@ Flag async
   Description: build the Core/Async library
   Default: false
 
-Flag mirage
-  Description: build the Mirage library
+Flag mirage_unix
+  Description: build the Mirage library for Unix
+  Default: false
+
+Flag mirage_xen
+  Description: build the Mirage library for Xen
   Default: false
 
 Flag nettests
@@ -32,8 +36,8 @@ Flag nettests
   Default: false
 
 Library cohttp_lwt_core
-  Build$: flag(lwt) || flag(mirage)
-  Install$: flag(lwt) || flag(mirage)
+  Build$: flag(lwt ) || flag(mirage_unix) || flag(mirage_xen)
+  Install$: flag(lwt) || flag(mirage_unix) || flag(mirage_xen)
   Path: lwt
   Findlibname: lwt-core
   FindlibParent: cohttp
@@ -49,14 +53,23 @@ Library cohttp_lwt_unix
   BuildDepends: cohttp.lwt-core, unix
   Modules: Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt, Cohttp_lwt_unix_net
 
-Library cohttp_mirage
-  Build$: flag(mirage)
-  Install$: flag(mirage)
-  Path: lwt
-  Findlibname: mirage
+Library cohttp_mirage_unix
+  Build$: flag(mirage_unix)
+  Install$: flag(mirage_unix)
+  Path: mirage
+  Findlibname: mirage-unix
   FindlibParent: cohttp
-  BuildDepends: cohttp.lwt-core, mirage, mirage-net, cstruct
-  Modules: Cohttp_lwt_mirage_io, Cohttp_lwt_mirage
+  BuildDepends: cohttp.lwt-core, mirage-types, cstruct, mirage-tcpip-unix
+  Modules: Cohttp_mirage_io, Cohttp_mirage
+
+Library cohttp_mirage_xen
+  Build$: flag(mirage_xen)
+  Install$: flag(mirage_xen)
+  Path: mirage
+  Findlibname: mirage-xen
+  FindlibParent: cohttp
+  BuildDepends: cohttp.lwt-core, mirage-types, cstruct, mirage-tcpip-xen
+  Modules: Cohttp_mirage_io, Cohttp_mirage
 
 Library cohttp_async
   Build$: flag(async)
@@ -93,14 +106,23 @@ Document cohttp_async
   XOCamlbuildPath:      async
   XOCamlbuildLibraries: cohttp.async
 
-Document cohttp_mirage
+Document cohttp_mirage_unix
   Title:                Cohttp Mirage docs
   Type:                 ocamlbuild (0.3)
   BuildTools+:          ocamldoc
-  Build$:               flag(mirage)
+  Build$:               flag(mirage_unix)
   Install:		true
-  XOCamlbuildPath:      lwt
-  XOCamlbuildLibraries: cohttp.mirage
+  XOCamlbuildPath:      mirage
+  XOCamlbuildLibraries: cohttp.mirage-unix
+
+Document cohttp_mirage_xen
+  Title:                Cohttp Mirage docs
+  Type:                 ocamlbuild (0.3)
+  BuildTools+:          ocamldoc
+  Build$:               flag(mirage_xen)
+  Install:		true
+  XOCamlbuildPath:      mirage
+  XOCamlbuildLibraries: cohttp.mirage-xen
 
 Executable test_parser
   Path:               lib_test
