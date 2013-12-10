@@ -122,22 +122,32 @@ module Make_client
     (IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
     (Request:Request with module IO = IO)
     (Response:Response with module IO = IO)
-    (Net:Net with module IO = IO) : 
+    (Net:Net with module IO = IO) :
     Client with module IO=IO and module Request=Request and module Response=Response
+
+type server = {
+  callback :
+    Cohttp.Connection.t ->
+    ?body:Cohttp_lwt_body.contents ->
+    Cohttp.Request.t ->
+    (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
+  conn_closed:
+    Cohttp.Connection.t -> unit -> unit;
+}
 
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)
 module type Server = sig
   module IO : IO.S
   module Request : Request
   module Response : Response
-
-  type conn_id = int
-  val string_of_conn_id : int -> string
-
-  type config = {
-    callback : conn_id -> ?body:Cohttp_lwt_body.contents -> 
-      Request.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t;
-    conn_closed : conn_id -> unit -> unit;
+  type t = server = {
+    callback :
+      Cohttp.Connection.t ->
+      ?body:Cohttp_lwt_body.contents ->
+      Cohttp.Request.t ->
+      (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
+    conn_closed:
+      Cohttp.Connection.t -> unit -> unit;
   }
 
   val respond :
@@ -165,7 +175,8 @@ module type Server = sig
   val respond_not_found :
     ?uri:Uri.t -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
-  val callback : config -> IO.ic -> IO.oc -> unit Lwt.t
+  val callback : server -> IO.ic -> IO.oc -> unit Lwt.t
+
 end
 
 (** The [Make_server] functor glues together a {! Cohttp.IO.S } implementation
@@ -177,4 +188,6 @@ module Make_server
     (Request:Request with module IO=IO)
     (Response:Response with module IO=IO)
     (Net:Net with module IO = IO) :
-    Server with module IO=IO and module Request=Request and module Response=Response
+    Server with module IO = IO
+            and module Request = Request
+            and module Response = Response

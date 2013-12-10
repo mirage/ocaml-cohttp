@@ -29,18 +29,18 @@ let make_server () =
     |"/post" -> begin
        lwt body = Cohttp_lwt_body.string_of_body body in
        Server.respond_string ~status:`OK ~body ()
-    end  
+    end
     |"/postnodrain" -> begin
        Server.respond_string ~status:`OK ~body:"nodrain" ()
     end
-    |_ -> 
+    |_ ->
        let fname = Server.resolve_file ~docroot:"." ~uri:(Request.uri req) in
        Server.respond_file ~fname ()
   in
   let conn_closed conn_id () =
-    Printf.eprintf "conn %s closed\n%!" (Server.string_of_conn_id conn_id)
+    Printf.eprintf "conn %s closed\n%!" (Connection.to_string conn_id)
   in
   let config = { Server.callback; conn_closed } in
   Server.create ~address:"0.0.0.0" ~port:8081 config
-    
-let _ = Lwt_unix.run (make_server ()) 
+
+let _ = Lwt_unix.run (make_server ())

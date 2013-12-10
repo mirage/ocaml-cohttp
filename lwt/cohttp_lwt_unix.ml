@@ -29,7 +29,7 @@ module Server = struct
   include Server_core
   open Lwt
 
-  let blank_uri = Uri.of_string "" 
+  let blank_uri = Uri.of_string ""
 
   let resolve_file ~docroot ~uri =
     (* This normalises the Uri and strips out .. characters *)
@@ -40,14 +40,14 @@ module Server = struct
   let respond_file ?headers ~fname () =
     try_lwt
       (* Check this isnt a directory first *)
-      lwt () = wrap (fun () -> 
+      lwt () = wrap (fun () ->
        if Unix.((stat fname).st_kind <> S_REG) then raise Isnt_a_file) in
       lwt ic = Lwt_io.open_file ~buffer_size:16384 ~mode:Lwt_io.input fname in
       lwt len = Lwt_io.length ic in
       let encoding = Cohttp.Transfer.Fixed (Int64.to_int len) in
       let count = 16384 in
       let stream = Lwt_stream.from (fun () ->
-        try_lwt 
+        try_lwt
           Lwt_io.read ~count ic >|=
              function
              |"" -> None
@@ -57,7 +57,7 @@ module Server = struct
            prerr_endline ("exn: " ^ (Printexc.to_string exn));
            return None
       ) in
-      Lwt_stream.on_terminate stream (fun () -> 
+      Lwt_stream.on_terminate stream (fun () ->
         ignore_result (Lwt_io.close ic));
       let body = Cohttp_lwt_body.body_of_stream stream in
       let res = Cohttp.Response.make ~status:`OK ~encoding ?headers () in
@@ -78,16 +78,14 @@ module type S = sig
 
   include Cohttp_lwt.Server with module IO = Cohttp_lwt_unix_io
 
-  val resolve_file : 
+  val resolve_file :
     docroot:string -> uri:Uri.t -> string
 
   val respond_file :
     ?headers:Cohttp.Header.t ->
-    fname:string -> unit -> 
+    fname:string -> unit ->
     (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
-  val create : 
-    ?timeout:int -> 
-    address:string -> port:int -> 
-    config -> unit Lwt.t
+  val create : ?timeout:int -> address:string -> port:int -> t -> unit Lwt.t
+
 end

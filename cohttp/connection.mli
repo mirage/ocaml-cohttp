@@ -1,5 +1,6 @@
 (*
- * Copyright (c) 2013 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2013 Thomas Gazagnaire <thomas@gazagnaire.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,7 +16,13 @@
  *
  *)
 
-include Cohttp.IO.S
- with type 'a t = 'a Lwt.t
- and type ic = Net.Channel.t
- and type oc = Net.Channel.t
+(** Connection identifiers. *)
+
+type t
+(** Abstract type for connection identifiers. *)
+
+val create: unit -> t
+(** Create a fresh connection identifier. *)
+
+val to_string: t -> string
+(** Pretty-print a connection identifer. *)
