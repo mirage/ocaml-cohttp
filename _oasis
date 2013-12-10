@@ -39,7 +39,7 @@ Library cohttp_lwt
   Build$: flag(lwt ) || flag(mirage_unix) || flag(mirage_xen)
   Install$: flag(lwt) || flag(mirage_unix) || flag(mirage_xen)
   Path: lwt
-  Findlibname: lwt
+  Findlibname: lwt-core
   FindlibParent: cohttp
   BuildDepends: lwt, uri, cohttp, lwt.syntax
   Modules: Cohttp_lwt_body, Cohttp_lwt
@@ -48,9 +48,9 @@ Library cohttp_lwt_unix
   Build$: flag(lwt)
   Install$: flag(lwt)
   Path: lwt
-  Findlibname: lwt-unix
+  Findlibname: lwt
   FindlibParent: cohttp
-  BuildDepends: cohttp.lwt, unix, lwt.unix, lwt.ssl
+  BuildDepends: cohttp.lwt-core, unix, lwt.unix, lwt.ssl
   Modules: Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt_unix_net
 
 Library cohttp_mirage_unix
@@ -59,7 +59,7 @@ Library cohttp_mirage_unix
   Path: mirage
   Findlibname: mirage-unix
   FindlibParent: cohttp
-  BuildDepends: cohttp.lwt, mirage-types, cstruct, mirage-tcpip-unix
+  BuildDepends: cohttp.lwt-core, mirage-types, cstruct, mirage-tcpip-unix
   Modules: Cohttp_mirage_io, Cohttp_mirage
 
 Library cohttp_mirage_xen
@@ -68,7 +68,7 @@ Library cohttp_mirage_xen
   Path: mirage
   Findlibname: mirage-xen
   FindlibParent: cohttp
-  BuildDepends: cohttp.lwt, mirage-types, cstruct, mirage-tcpip-xen
+  BuildDepends: cohttp.lwt-core, mirage-types, cstruct, mirage-tcpip-xen
   Modules: Cohttp_mirage_io, Cohttp_mirage
 
 Library cohttp_async
@@ -131,7 +131,7 @@ Executable test_parser
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp, cohttp.lwt-unix, oUnit (>= 1.0.2)
+  BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2)
 
 Executable test_accept
   Path:               lib_test
@@ -158,7 +158,7 @@ Executable test_net_lwt
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp, cohttp.lwt-unix, oUnit (>= 1.0.2)
+  BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2)
 
 Executable test_net_lwt_google
   Path:               lib_test
@@ -167,7 +167,7 @@ Executable test_net_lwt_google
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp.lwt-unix
+  BuildDepends:       cohttp.lwt
 
 Executable test_net_lwt_lastminute
   Path:               lib_test
@@ -176,7 +176,7 @@ Executable test_net_lwt_lastminute
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp.lwt-unix
+  BuildDepends:       cohttp.lwt
 
 Executable test_net_lwt_server
   Path:               lib_test
@@ -185,7 +185,7 @@ Executable test_net_lwt_server
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp, cohttp.lwt-unix
+  BuildDepends:       cohttp, cohttp.lwt
 
 Executable test_net_lwt_multi_get
   Path:               lib_test
@@ -194,7 +194,7 @@ Executable test_net_lwt_multi_get
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp, cohttp.lwt-unix
+  BuildDepends:       cohttp, cohttp.lwt
 
 Executable test_net_lwt_client_and_server
   Path:               lib_test
@@ -203,7 +203,7 @@ Executable test_net_lwt_client_and_server
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp, cohttp.lwt-unix
+  BuildDepends:       cohttp, cohttp.lwt
 
 Executable test_net_async
   Path:               lib_test

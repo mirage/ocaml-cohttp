@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: c746ec7b581e66fb4cadf9eb5faf9aa2)
+# DO NOT EDIT (digest: 5ef394ff982ae649a5fec90a7b6a6298)
 version = "0.9.13"
 description = "HTTP library for Lwt, Async and Mirage"
 requires = "re uri uri.services fieldslib fieldslib.syntax"
@@ -11,7 +11,7 @@ exists_if = "cohttp.cma"
 package "mirage-xen" (
  version = "0.9.13"
  description = "HTTP library for Lwt, Async and Mirage"
- requires = "cohttp.lwt mirage-types cstruct mirage-tcpip-xen"
+ requires = "cohttp.lwt-core mirage-types cstruct mirage-tcpip-xen"
  archive(byte) = "cohttp_mirage_xen.cma"
  archive(byte, plugin) = "cohttp_mirage_xen.cma"
  archive(native) = "cohttp_mirage_xen.cmxa"
@@ -22,7 +22,7 @@ package "mirage-xen" (
 package "mirage-unix" (
  version = "0.9.13"
  description = "HTTP library for Lwt, Async and Mirage"
- requires = "cohttp.lwt mirage-types cstruct mirage-tcpip-unix"
+ requires = "cohttp.lwt-core mirage-types cstruct mirage-tcpip-unix"
  archive(byte) = "cohttp_mirage_unix.cma"
  archive(byte, plugin) = "cohttp_mirage_unix.cma"
  archive(native) = "cohttp_mirage_unix.cmxa"
@@ -30,18 +30,7 @@ package "mirage-unix" (
  exists_if = "cohttp_mirage_unix.cma"
 )
 
-package "lwt-unix" (
- version = "0.9.13"
- description = "HTTP library for Lwt, Async and Mirage"
- requires = "cohttp.lwt unix lwt.unix lwt.ssl"
- archive(byte) = "cohttp_lwt_unix.cma"
- archive(byte, plugin) = "cohttp_lwt_unix.cma"
- archive(native) = "cohttp_lwt_unix.cmxa"
- archive(native, plugin) = "cohttp_lwt_unix.cmxs"
- exists_if = "cohttp_lwt_unix.cma"
-)
-
-package "lwt" (
+package "lwt-core" (
  version = "0.9.13"
  description = "HTTP library for Lwt, Async and Mirage"
  requires = "lwt uri cohttp lwt.syntax"
@@ -50,6 +39,17 @@ package "lwt" (
  archive(native) = "cohttp_lwt.cmxa"
  archive(native, plugin) = "cohttp_lwt.cmxs"
  exists_if = "cohttp_lwt.cma"
+)
+
+package "lwt" (
+ version = "0.9.13"
+ description = "HTTP library for Lwt, Async and Mirage"
+ requires = "cohttp.lwt-core unix lwt.unix lwt.ssl"
+ archive(byte) = "cohttp_lwt_unix.cma"
+ archive(byte, plugin) = "cohttp_lwt_unix.cma"
+ archive(native) = "cohttp_lwt_unix.cmxa"
+ archive(native, plugin) = "cohttp_lwt_unix.cmxs"
+ exists_if = "cohttp_lwt_unix.cma"
 )
 
 package "async" (
