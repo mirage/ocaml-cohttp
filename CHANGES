@@ -2,7 +2,8 @@
 * The `cohttp.lwt-core` is now installed as an OS-independent Lwt library.
 * Add support for Mirage 1.0, via `cohttp.mirage-unix` and `cohttp.mirage-xen`.
 * Add a new `Cohttp.Connection` module to manage server's connections identifiers.
-* Share the same configuration type for the different server implementations
+* Share the same configuration type for the different server implementations.
+* Add `Accept_types` module to the `Cohttp` pack.
 
 0.9.12 (2013-11-28):
 * Improve documentation for `Cohttp.Header`.
