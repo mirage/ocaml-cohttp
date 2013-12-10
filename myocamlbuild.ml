@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 85dcdd87992319515697fb022c89edea) *)
+(* DO NOT EDIT (digest: 6dba23f391c2bf4e8a13fae82774f5db) *)
 module OASISGettext = struct
 (* # 21 "src/oasis/OASISGettext.ml" *)
 
@@ -480,7 +480,7 @@ let package_default =
      MyOCamlbuildBase.lib_ocaml =
        [
           ("cohttp", ["cohttp"]);
-          ("cohttp_lwt_core", ["lwt"]);
+          ("cohttp_lwt", ["lwt"]);
           ("cohttp_lwt_unix", ["lwt"]);
           ("cohttp_mirage_unix", ["mirage"]);
           ("cohttp_mirage_xen", ["mirage"]);

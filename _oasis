@@ -35,23 +35,23 @@ Flag nettests
   Description: run the internet-using tests
   Default: false
 
-Library cohttp_lwt_core
+Library cohttp_lwt
   Build$: flag(lwt ) || flag(mirage_unix) || flag(mirage_xen)
   Install$: flag(lwt) || flag(mirage_unix) || flag(mirage_xen)
   Path: lwt
-  Findlibname: lwt-core
+  Findlibname: lwt
   FindlibParent: cohttp
   BuildDepends: lwt, uri, cohttp, lwt.ssl, lwt.syntax
-  Modules: Cohttp_lwt_body
+  Modules: Cohttp_lwt_body, Cohttp_lwt
 
 Library cohttp_lwt_unix
   Build$: flag(lwt)
   Install$: flag(lwt)
   Path: lwt
-  Findlibname: lwt
+  Findlibname: lwt-unix
   FindlibParent: cohttp
-  BuildDepends: cohttp.lwt-core, unix
-  Modules: Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt, Cohttp_lwt_unix_net
+  BuildDepends: cohttp.lwt, unix
+  Modules: Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt_unix_net
 
 Library cohttp_mirage_unix
   Build$: flag(mirage_unix)
@@ -59,7 +59,7 @@ Library cohttp_mirage_unix
   Path: mirage
   Findlibname: mirage-unix
   FindlibParent: cohttp
-  BuildDepends: cohttp.lwt-core, mirage-types, cstruct, mirage-tcpip-unix
+  BuildDepends: cohttp.lwt, mirage-types, cstruct, mirage-tcpip-unix
   Modules: Cohttp_mirage_io, Cohttp_mirage
 
 Library cohttp_mirage_xen
@@ -68,7 +68,7 @@ Library cohttp_mirage_xen
   Path: mirage
   Findlibname: mirage-xen
   FindlibParent: cohttp
-  BuildDepends: cohttp.lwt-core, mirage-types, cstruct, mirage-tcpip-xen
+  BuildDepends: cohttp.lwt, mirage-types, cstruct, mirage-tcpip-xen
   Modules: Cohttp_mirage_io, Cohttp_mirage
 
 Library cohttp_async
