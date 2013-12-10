@@ -1,5 +1,7 @@
-0.9.13
-* Fix the support of mirage.1.0
+0.9.13 (2013-12-10):
+* The Lwt/Unix libraries now use `cohttp.lwt-unix` as their ocamlfind package.
+* The `cohttp.lwt` module is now OS-independent. 
+* Add support for Mirage 1.0, via `cohttp.mirage-unix` and `cohttp.mirage-xen`.
 * Add a new `Cohttp.Connection` module to manage server's connections identifiers.
 * Share the same configuration type for the different server implementations
 

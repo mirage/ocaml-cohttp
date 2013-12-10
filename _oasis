@@ -50,7 +50,7 @@ Library cohttp_lwt_unix
   Path: lwt
   Findlibname: lwt-unix
   FindlibParent: cohttp
-  BuildDepends: cohttp.lwt, unix, lwt.ssl
+  BuildDepends: cohttp.lwt, unix, lwt.unix, lwt.ssl
   Modules: Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt_unix_net
 
 Library cohttp_mirage_unix
@@ -131,7 +131,7 @@ Executable test_parser
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2)
+  BuildDepends:       cohttp, cohttp.lwt-unix, oUnit (>= 1.0.2)
 
 Executable test_accept
   Path:               lib_test
@@ -158,7 +158,7 @@ Executable test_net_lwt
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2)
+  BuildDepends:       cohttp, cohttp.lwt-unix, oUnit (>= 1.0.2)
 
 Executable test_net_lwt_google
   Path:               lib_test
@@ -167,7 +167,7 @@ Executable test_net_lwt_google
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp.lwt
+  BuildDepends:       cohttp.lwt-unix
 
 Executable test_net_lwt_lastminute
   Path:               lib_test
@@ -176,7 +176,7 @@ Executable test_net_lwt_lastminute
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp.lwt
+  BuildDepends:       cohttp.lwt-unix
 
 Executable test_net_lwt_server
   Path:               lib_test
@@ -185,7 +185,7 @@ Executable test_net_lwt_server
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp, cohttp.lwt
+  BuildDepends:       cohttp, cohttp.lwt-unix
 
 Executable test_net_lwt_multi_get
   Path:               lib_test
@@ -194,7 +194,7 @@ Executable test_net_lwt_multi_get
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp, cohttp.lwt
+  BuildDepends:       cohttp, cohttp.lwt-unix
 
 Executable test_net_lwt_client_and_server
   Path:               lib_test
@@ -203,7 +203,7 @@ Executable test_net_lwt_client_and_server
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp, cohttp.lwt
+  BuildDepends:       cohttp, cohttp.lwt-unix
 
 Executable test_net_async
   Path:               lib_test
@@ -240,6 +240,15 @@ Executable test_net_async_server
   CompiledObject:     best
   Install:            false
   BuildDepends:       cohttp, cohttp.async, oUnit (>= 1.0.2)
+
+#Executable "cohttp-async-server"
+#  Path:               bin
+#  MainIs:             cohttp_server_async.ml
+#  Build$:             flag(tests) && flag(async)
+#  Custom:             true
+#  CompiledObject:     best
+#  Install:            true
+#  BuildDepends:       cohttp, cohttp.async
 
 Test test_accept
   Run$:               flag(tests)

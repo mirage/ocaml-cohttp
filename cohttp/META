@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: fb308b5f63e77efcd12ec0e0abacd708)
+# DO NOT EDIT (digest: c746ec7b581e66fb4cadf9eb5faf9aa2)
 version = "0.9.13"
 description = "HTTP library for Lwt, Async and Mirage"
 requires = "re uri uri.services fieldslib fieldslib.syntax"
@@ -33,7 +33,7 @@ package "mirage-unix" (
 package "lwt-unix" (
  version = "0.9.13"
  description = "HTTP library for Lwt, Async and Mirage"
- requires = "cohttp.lwt unix lwt.ssl"
+ requires = "cohttp.lwt unix lwt.unix lwt.ssl"
  archive(byte) = "cohttp_lwt_unix.cma"
  archive(byte, plugin) = "cohttp_lwt_unix.cma"
  archive(native) = "cohttp_lwt_unix.cmxa"
