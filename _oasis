@@ -41,7 +41,7 @@ Library cohttp_lwt
   Path: lwt
   Findlibname: lwt
   FindlibParent: cohttp
-  BuildDepends: lwt, uri, cohttp, lwt.ssl, lwt.syntax
+  BuildDepends: lwt, uri, cohttp, lwt.syntax
   Modules: Cohttp_lwt_body, Cohttp_lwt
 
 Library cohttp_lwt_unix
@@ -50,7 +50,7 @@ Library cohttp_lwt_unix
   Path: lwt
   Findlibname: lwt-unix
   FindlibParent: cohttp
-  BuildDepends: cohttp.lwt, unix
+  BuildDepends: cohttp.lwt, unix, lwt.ssl
   Modules: Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt_unix_net
 
 Library cohttp_mirage_unix

@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 1ac981890f661c00d11d8c085cc2df04)
+# DO NOT EDIT (digest: 76a619d100f115e70a1beaf4696e4bb4)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -45,8 +45,8 @@
 <lwt/*.ml{,i}>: use_cohttp
 <lwt/*.ml{,i}>: pkg_uri
 <lwt/*.ml{,i}>: pkg_unix
-<lwt/*.ml{,i}>: pkg_lwt
 <lwt/*.ml{,i}>: pkg_lwt.ssl
+<lwt/*.ml{,i}>: pkg_lwt
 <lwt/*.ml{,i}>: pkg_lwt.syntax
 <lwt/*.ml{,i}>: pkg_re
 <lwt/*.ml{,i}>: pkg_uri.services
@@ -64,7 +64,6 @@
 <mirage/*.ml{,i}>: pkg_cstruct
 <mirage/*.ml{,i}>: pkg_mirage-tcpip-xen
 <mirage/*.ml{,i}>: pkg_lwt
-<mirage/*.ml{,i}>: pkg_lwt.ssl
 <mirage/*.ml{,i}>: pkg_lwt.syntax
 <mirage/*.ml{,i}>: pkg_re
 <mirage/*.ml{,i}>: pkg_uri.services
@@ -88,7 +87,6 @@
 <lib_test/test_parser.{native,byte}>: pkg_oUnit
 <lib_test/test_parser.{native,byte}>: pkg_uri
 <lib_test/test_parser.{native,byte}>: pkg_lwt
-<lib_test/test_parser.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_parser.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_parser.{native,byte}>: pkg_re
 <lib_test/test_parser.{native,byte}>: pkg_uri.services
@@ -119,7 +117,6 @@
 <lib_test/test_net_lwt.{native,byte}>: pkg_oUnit
 <lib_test/test_net_lwt.{native,byte}>: pkg_uri
 <lib_test/test_net_lwt.{native,byte}>: pkg_lwt
-<lib_test/test_net_lwt.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt.{native,byte}>: pkg_re
 <lib_test/test_net_lwt.{native,byte}>: pkg_uri.services
@@ -131,7 +128,6 @@
 <lib_test/test_net_lwt_google.{native,byte}>: use_cohttp
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_uri
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt
-<lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_re
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_uri.services
@@ -143,7 +139,6 @@
 <lib_test/test_net_lwt_lastminute.{native,byte}>: use_cohttp
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_uri
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_lwt
-<lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_re
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_uri.services
@@ -155,7 +150,6 @@
 <lib_test/test_net_lwt_server.{native,byte}>: use_cohttp
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_uri
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt
-<lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_re
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_uri.services
@@ -167,7 +161,6 @@
 <lib_test/test_net_lwt_multi_get.{native,byte}>: use_cohttp
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_uri
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_lwt
-<lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_re
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_uri.services
@@ -179,7 +172,6 @@
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: use_cohttp
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_uri
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt
-<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_re
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_uri.services
@@ -187,7 +179,6 @@
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/*.ml{,i}>: use_cohttp_lwt
 <lib_test/*.ml{,i}>: pkg_lwt
-<lib_test/*.ml{,i}>: pkg_lwt.ssl
 <lib_test/*.ml{,i}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: custom
 # Executable test_net_async
