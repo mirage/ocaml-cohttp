@@ -89,6 +89,9 @@ module IO = struct
          Writer.write oc "\r\n";
          return ()
       )
+
+  let flush oc =
+    Writer.flushed oc
 end
 
 module Net = struct
