@@ -19,8 +19,12 @@ open Core.Std
 open Async.Std
 open Cohttp_async
 
+let serve_file ~docroot ~uri =
+  Server.resolve_local_file ~docroot ~uri
+  |> Server.respond_with_file
+
 (** HTTP handler *)
-let handler ~info ~docroot ~verbose ~body sock req =
+let rec handler ~info ~docroot ~verbose ~index ~body sock req =
   let uri = Cohttp.Request.uri req in
   let path = Uri.path uri in
   (* Get a canonical filename from the URL and docroot *)
@@ -37,44 +41,62 @@ let handler ~info ~docroot ~verbose ~body sock req =
     );
   match stat.Unix.Stats.kind with
   (* Get a list of current files and map to HTML *)
-  | `Directory ->
-    Sys.ls_dir file_name
-    >>= Deferred.List.map ~f:(fun f ->
-        let file_name = Filename.concat file_name f in
-        Unix.stat file_name
-        >>= fun stat ->
-        let li l = sprintf "<li><a href=\"%s\">%s</a></li>" (Uri.to_string l) in
-        let link = Uri.with_path uri (Filename.concat path f) in
-        match stat.Unix.Stats.kind with
-        | `Directory -> return (li link (sprintf "<i>%s/</i>" f))
-        | `File -> return (li link f)
-        | `Socket|`Block|`Fifo|`Char|`Link -> return (sprintf "<s>%s</s>" f))
-    (* Concatenate the HTML into a response *)
-    >>= fun html ->
-    String.concat ~sep:"\n" html
-    |> fun contents -> sprintf "
+  | `Directory -> begin
+      (* Check if the index file exists *)
+      Sys.file_exists (Filename.concat file_name index)
+      >>= function
+      | `Yes -> (* Serve the index file directly *)
+        let uri = Uri.with_path uri (Filename.concat path index) in
+        Server.respond_with_redirect uri
+      | `No | `Unknown -> (* Do a directory listing *)
+        Sys.ls_dir file_name
+        >>= Deferred.List.map ~f:(fun f ->
+            let file_name = Filename.concat file_name f in
+            Unix.stat file_name
+            >>= fun stat ->
+            let li l = sprintf "<li><a href=\"%s\">%s</a></li>" (Uri.to_string l) in
+            let link = Uri.with_path uri (Filename.concat path f) in
+            match stat.Unix.Stats.kind with
+            | `Directory -> return (li link (sprintf "<i>%s/</i>" f))
+            | `File -> return (li link f)
+            | `Socket|`Block|`Fifo|`Char|`Link -> return (sprintf "<s>%s</s>" f))
+        (* Concatenate the HTML into a response *)
+        >>= fun html ->
+        String.concat ~sep:"\n" html
+        |> fun contents ->
+        sprintf "
          <html>
            <body>
            <h2>Directory Listing for %s</h2>
            <ul>%s</ul>
            <hr>%s
            </body>
-         </html>" file_name contents info
-                       |> Server.respond_with_string
+         </html>"
+          file_name contents info
+        |> Server.respond_with_string
+    end
   (* Serve the local file contents *)
-  | `File ->
-    Server.resolve_local_file ~docroot:"." ~uri
-    |> Server.respond_with_file
+  | `File -> serve_file ~docroot ~uri
   (* Any other file type is simply forbidden *)
   | `Socket | `Block | `Fifo | `Char | `Link ->
     Server.respond_with_string ~code:`Forbidden
       "<html><body><h2>Forbidden</h2>
         <p>This is not a normal file or directory</p></body></html>"
 
-let start_server docroot port host verbose () =
+let start_server docroot port host index verbose () =
   printf "Listening for HTTP requests on: %s %d\n" host port;
   let info = sprintf "Served by Cohttp/Async listening on %s:%d" host port in
-  Server.create ~on_handler_error:`Ignore (Tcp.on_port port) (handler ~info ~docroot ~verbose)
+  Unix.Inet_addr.of_string_or_getbyname host
+  >>= fun host ->
+  let listen_on = Tcp.Where_to_listen.create
+      ~socket_type:Socket.Type.tcp 
+      ~address:(`Inet (host,port))
+      ~listening_on:(fun _ -> port)
+  in
+  Server.create
+    ~on_handler_error:`Ignore 
+    listen_on 
+    (handler ~info ~docroot ~index ~verbose)
   >>= fun _ -> never ()
 
 let _ = 
@@ -83,8 +105,9 @@ let _ =
     Command.Spec.(
       empty
       +> anon (maybe_with_default "." ("docroot" %: string))
-      +> flag "-p" (optional_with_default 8080 int) ~doc:"TCP port to listen on"
-      +> flag "-s" (optional_with_default "0.0.0.0" string) ~doc:"IP address to listen on"
-      +> flag "-v" (optional_with_default false bool) ~doc:"Verbose logging output to console"
+      +> flag "-p" (optional_with_default 8080 int) ~doc:"port TCP port to listen on"
+      +> flag "-s" (optional_with_default "0.0.0.0" string) ~doc:"address IP address to listen on"
+      +> flag "-i" (optional_with_default "index.html" string) ~doc:"file Name of index file in directory"
+      +> flag "-v" (optional_with_default false bool) ~doc:" Verbose logging output to console"
     ) start_server 
   |> Command.run 
