@@ -1,3 +1,6 @@
+0.9.14 (trunk):
+* Install a `cohttp-async-server` binary that serves local directory contents via a web server.
+
 0.9.13 (2013-12-10):
 * The `cohttp.lwt-core` is now installed as an OS-independent Lwt library.
 * Add support for Mirage 1.0, via `cohttp.mirage-unix` and `cohttp.mirage-xen`.
