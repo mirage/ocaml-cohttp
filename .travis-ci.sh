@@ -1,4 +1,4 @@
-OPAM_DEPENDS="lwt async ssl uri re"
+OPAM_DEPENDS="lwt async ssl uri re mirage-tcpip-unix mirage-tcpip-xen"
 
 case "$OCAML_VERSION,$OPAM_VERSION" in
 4.00.1,1.0.0) ppa=avsm/ocaml40+opam10 ;;
@@ -20,7 +20,7 @@ echo OPAM versions
 opam --version
 opam --git-version
 
-opam init
+opam init git://github.com/ocaml/opam-repository >/dev/null 2>&1
 opam install ${OPAM_DEPENDS}
 
 eval `opam config env`
