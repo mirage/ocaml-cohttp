@@ -91,8 +91,8 @@ let get_length (body:t) : (int * t) Lwt.t =
     let len = String.length buf in
     return (len, (Some (`String buf)))
 
-let write_body fn (body:t) =
+let write_body ?(flush=(fun () -> return_unit)) fn (body:t) =
   match body with
   |None -> return ()
-  |Some (`Stream st) -> Lwt_stream.iter_s fn st
+  |Some (`Stream st) -> Lwt_stream.iter_s (fun b -> fn b >>= flush) st
   |Some (`String s) -> fn s
