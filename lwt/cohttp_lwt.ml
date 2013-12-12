@@ -207,6 +207,7 @@ module type Server = sig
   module IO : IO.S
   module Request : Request
   module Response : Response
+
   type t = server = {
     callback :
       Cohttp.Connection.t ->
@@ -219,6 +220,7 @@ module type Server = sig
 
   val respond :
     ?headers:Cohttp.Header.t ->
+    ?flush:bool ->
     status:Cohttp.Code.status_code ->
     body:Cohttp_lwt_body.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
@@ -266,9 +268,9 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
 
   module Transfer_IO = Transfer_io.Make(IO)
 
-  let respond ?headers ~status ~body () =
+  let respond ?headers ?(flush=false) ~status ~body () =
     let encoding = Cohttp_lwt_body.get_transfer_encoding body in
-    let res = Response.make ~status ~encoding ?headers () in
+    let res = Response.make ~status ~flush ~encoding ?headers () in
     return (res, body)
 
   let respond_string ?headers ~status ~body () =
@@ -307,26 +309,27 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
          considered closed after the first request/response. *)
       let early_close = ref false in
       (* Read the requests *)
-      let req_stream = Lwt_stream.from (fun () ->
+      let req_stream = Lwt_stream.from (
+        fun () ->
           if !early_close
           then return None
           else
             lwt () = Lwt_mutex.lock read_m in
             match_lwt Request.read ic with
-            |None ->
+            | None ->
               Lwt_mutex.unlock read_m;
               return None
-            |Some req -> begin
+            | Some req -> begin
                 early_close := Request.version req = `HTTP_1_0;
                 (* Ensure the input body has been fully read before reading again *)
                 match Request.has_body req with
-                |true ->
+                | true ->
                   let body_stream = Cohttp_lwt_body.create_stream (Request.read_body_chunk req) ic in
                   Lwt_stream.on_terminate body_stream (fun () -> Lwt_mutex.unlock read_m);
                   let body = Cohttp_lwt_body.body_of_stream body_stream in
                   (* The read_m remains locked until the caller reads the body *)
                   return (Some (req, body))
-                |false ->
+                | false ->
                   Lwt_mutex.unlock read_m;
                   return (Some (req, None))
               end
@@ -345,8 +348,14 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
       Lwt_stream.on_terminate res_stream (spec.conn_closed conn_id);
       (* Transmit the responses *)
       for_lwt (res,body) in res_stream do
+        let flush =
+          if res.Response.flush then
+            fun () -> IO.flush oc
+          else
+            fun () -> return_unit
+        in
         Response.write (fun res oc ->
-          Cohttp_lwt_body.write_body (Response.write_body res oc) body
+          Cohttp_lwt_body.write_body ~flush (Response.write_body res oc) body
         ) res oc
       done
     in daemon_callback

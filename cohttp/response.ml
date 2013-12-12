@@ -20,11 +20,12 @@ type t = {
   headers: Header.t;
   version: Code.version;
   status: Code.status_code;
+  flush: bool;
 } with fields
 
-let make ?(version=`HTTP_1_1) ?(status=`OK) ?(encoding=Transfer.Chunked) ?headers () =
+let make ?(version=`HTTP_1_1) ?(status=`OK) ?(flush=false) ?(encoding=Transfer.Chunked) ?headers () =
   let headers = match headers with None -> Header.init () |Some h -> h in
-  { encoding; headers; version; status }
+  { encoding; headers; version; flush; status }
 
 module type S = sig
   module IO : IO.S
@@ -73,7 +74,8 @@ module Make(IO : IO.S) = struct
     |Some (version, status) ->
        Header_IO.parse ic >>= fun headers ->
        let encoding = Header.get_transfer_encoding headers in
-       return (Some { encoding; headers; version; status })
+       let flush = false in
+       return (Some { encoding; headers; version; status; flush })
 
   let has_body {encoding} = Transfer.has_body encoding
   let read_body_chunk {encoding} ic = Transfer_IO.read encoding ic

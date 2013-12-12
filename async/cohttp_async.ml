@@ -246,14 +246,14 @@ module Server = struct
       let headers = Cohttp.Header.add_opt headers "connection" "close" in
       match body with
       | None ->
-        let res = Response.make ~status ~encoding:(Cohttp.Transfer.Fixed 0) ~headers () in
+        let res = Response.make ~status ~flush ~encoding:(Cohttp.Transfer.Fixed 0) ~headers () in
         Response.write_header res wr
         >>= fun () ->
         Response.write_footer res wr
         >>= fun () ->
         Writer.close wr
       | Some body ->
-        let res = Response.make ~status ~encoding:Cohttp.Transfer.Chunked ~headers () in
+        let res = Response.make ~status ~flush ~encoding:Cohttp.Transfer.Chunked ~headers () in
         Response.write_header res wr
         >>= fun () ->
         Pipe.iter body ~f:(fun buf ->
