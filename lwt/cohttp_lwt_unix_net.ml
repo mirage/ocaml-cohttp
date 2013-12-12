@@ -80,6 +80,7 @@ module Tcp_server = struct
          sock) ()
 
   let process_accept ~sockaddr ~timeout callback (client,_) =
+    Lwt_unix.setsockopt client Lwt_unix.TCP_NODELAY true;
     let ic = Lwt_io.of_fd Lwt_io.input client in
     let oc = Lwt_io.of_fd Lwt_io.output client in
  
