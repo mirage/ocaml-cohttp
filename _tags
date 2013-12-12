@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 7ab8a68c673d8f415118afc639982ff7)
+# DO NOT EDIT (digest: 7de326f3fa9e568196ac97673be30672)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -282,7 +282,7 @@
 <lib_test/*.ml{,i}>: pkg_fieldslib
 <lib_test/*.ml{,i}>: pkg_fieldslib.syntax
 <lib_test/test_net_async_server.{native,byte}>: custom
-# Executable cohttp-async-server
+# Executable cohttp-server
 <bin/cohttp_server_async.{native,byte}>: use_cohttp_async
 <bin/cohttp_server_async.{native,byte}>: use_cohttp
 <bin/cohttp_server_async.{native,byte}>: pkg_uri

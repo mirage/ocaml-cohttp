@@ -1,7 +1,7 @@
 0.9.14 (trunk):
-* Install a `cohttp-async-server` binary that serves local directory contents via a web server.
+* Install a `cohttp-server` binary that serves local directory contents via a web server (#54).
 * Add a `flush` function to the `IO` module type and implement in Lwt/Async/Mirage.
-* Add `flush` optional support in the Async responders.
+* Add option `flush` support in the Async and Lwt responders (#52).
 * Autogenerate HTTP codes from @citricsquid's JSON representation of the HTTP RFCs.
 
 0.9.13 (2013-12-10):

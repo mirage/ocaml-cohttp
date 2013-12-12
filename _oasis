@@ -241,7 +241,7 @@ Executable test_net_async_server
   Install:            false
   BuildDepends:       cohttp, cohttp.async, oUnit (>= 1.0.2)
 
-Executable "cohttp-async-server"
+Executable "cohttp-server"
   Path:               bin
   MainIs:             cohttp_server_async.ml
   Build$:             flag(tests) && flag(async)
