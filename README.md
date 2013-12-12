@@ -6,8 +6,8 @@ libraries:
 specifically the UNIX bindings.
 * `Cohttp_async` uses the [Async](https://realworldocaml.org/v1/en/html/concurrent-programming-with-async.html)
 library.
-* `Cohttp_lwt_mirage` uses the [Mirage](http://www.openmirage.org) interface
-to generate standalone unikernels.
+* `Cohttp_mirage` uses the [Mirage](http://www.openmirage.org) interface
+to generate standalone microkernels.
 
 You can implement other targets using the parser very easily.  Look at the
 `lib/IO.mli` signature and implement that in the desired backend.
