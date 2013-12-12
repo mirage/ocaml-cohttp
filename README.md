@@ -6,7 +6,7 @@ libraries:
 specifically the UNIX bindings.
 * `Cohttp_async` uses the [Async](https://bitbucket.org/yminsky/ocaml-core/wiki/DummiesGuideToAsync)
 library from Jane Street.
-* `Cohttp_lwt_mirage` uses the [Mirage](http://www.openmirage.org) interface
+* `Cohttp_mirage` uses the [Mirage](http://www.openmirage.org) interface
 to generate standalone microkernels.
 
 You can implement other targets using parser very easily.  Look at the

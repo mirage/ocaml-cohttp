@@ -18,7 +18,7 @@
 open OUnit
 open Printf
 open Lwt
-open Cohttp_lwt_mirage
+open Cohttp_mirage
 
 let ip =
   let open Net.Nettypes in
@@ -40,5 +40,5 @@ let make_server () =
     Net.Manager.configure interface (`IPv4 ip) >>= fun () ->
     Server.listen mgr src spec
   )
-    
-let _ = OS.Main.run (make_server ()) 
+
+let _ = OS.Main.run (make_server ())
