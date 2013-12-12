@@ -2,6 +2,7 @@
 * Install a `cohttp-async-server` binary that serves local directory contents via a web server.
 * Add a `flush` function to the `IO` module type and implement in Lwt/Async/Mirage.
 * Add `flush` optional support in the Async responders.
+* Autogenerate HTTP codes from @citricsquid's JSON representation of the HTTP RFCs.
 
 0.9.13 (2013-12-10):
 * The `cohttp.lwt-core` is now installed as an OS-independent Lwt library.
