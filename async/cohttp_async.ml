@@ -241,7 +241,7 @@ module Server = struct
     >>= fun response ->
     response wr
 
-  let respond ?(flush=false) ?headers ~body status : response =
+  let respond ?(flush=false) ?headers ?body status : response =
     fun wr ->
       let headers = Cohttp.Header.add_opt headers "connection" "close" in
       match body with
@@ -269,15 +269,15 @@ module Server = struct
         Writer.close wr
 
   let respond_with_pipe ?flush ?headers ?(code=`OK) body =
-    return (respond ?flush ?headers ~body:(Some body) code)
+    return (respond ?flush ?headers ~body code)
 
   let respond_with_string ?flush ?headers ?(code=`OK) body =
     let body = Pipe.of_list [body] in
-    return (respond ?flush ?headers ~body:(Some body) code)
+    return (respond ?flush ?headers ~body code)
 
   let respond_with_redirect ?headers uri =
     let headers = Cohttp.Header.add_opt headers "location" (Uri.to_string uri) in
-    return (respond ~flush:false ~headers ~body:None `Found)
+    return (respond ~flush:false ~headers `Found)
 
   let resolve_local_file ~docroot ~uri =
     (* This normalises the Uri and strips out .. characters *)
@@ -293,7 +293,7 @@ module Server = struct
          Reader.open_file filename
          >>= fun rd ->
          let body = Reader.pipe rd in
-         return (respond ?flush ?headers ~body:(Some body) `OK)
+         return (respond ?flush ?headers ~body `OK)
       )
     >>= function
       |Ok res -> return res

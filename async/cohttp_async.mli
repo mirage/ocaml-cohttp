@@ -112,7 +112,7 @@ module Server : sig
   val respond :
     ?flush:bool ->
     ?headers:Cohttp.Header.t ->
-    body:string Pipe.Reader.t option ->
+    ?body:string Pipe.Reader.t ->
     Cohttp.Code.status_code -> response
 
   (** Resolve a URI and a docroot into a concrete local filename. *)
