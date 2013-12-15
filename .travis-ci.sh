@@ -20,7 +20,8 @@ echo OPAM versions
 opam --version
 opam --git-version
 
-opam init git://github.com/ocaml/opam-repository >/dev/null 2>&1
+# opam init git://github.com/ocaml/opam-repository >/dev/null 2>&1
+opam init
 opam install ${OPAM_DEPENDS}
 
 eval `opam config env`
