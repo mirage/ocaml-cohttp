@@ -1,7 +1,7 @@
 # OASIS_START
-# DO NOT EDIT (digest: 191919a1b412de614ac25c71f18ab0da)
-# Ignore VCS directories, you can use the same kind of rule outside 
-# OASIS_START/STOP if you want to exclude directories that contains 
+# DO NOT EDIT (digest: 34cfc630efe139056434de798589c0f0)
+# Ignore VCS directories, you can use the same kind of rule outside
+# OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
 <**/.svn>: -traverse
 <**/.svn>: not_hygienic
@@ -282,9 +282,29 @@
 <lib_test/*.ml{,i}>: pkg_fieldslib
 <lib_test/*.ml{,i}>: pkg_fieldslib.syntax
 <lib_test/test_net_async_server.{native,byte}>: custom
+# Executable cohttp-server
+<bin/cohttp_server_async.{native,byte}>: use_cohttp_async
+<bin/cohttp_server_async.{native,byte}>: use_cohttp
+<bin/cohttp_server_async.{native,byte}>: pkg_uri
+<bin/cohttp_server_async.{native,byte}>: pkg_async_core
+<bin/cohttp_server_async.{native,byte}>: pkg_async_unix
+<bin/cohttp_server_async.{native,byte}>: pkg_threads
+<bin/cohttp_server_async.{native,byte}>: pkg_async
+<bin/cohttp_server_async.{native,byte}>: pkg_re
+<bin/cohttp_server_async.{native,byte}>: pkg_uri.services
+<bin/cohttp_server_async.{native,byte}>: pkg_fieldslib
+<bin/cohttp_server_async.{native,byte}>: pkg_fieldslib.syntax
+<bin/*.ml{,i}>: use_cohttp_async
+<bin/*.ml{,i}>: use_cohttp
+<bin/*.ml{,i}>: pkg_uri
+<bin/*.ml{,i}>: pkg_async_core
+<bin/*.ml{,i}>: pkg_async_unix
+<bin/*.ml{,i}>: pkg_threads
+<bin/*.ml{,i}>: pkg_async
+<bin/*.ml{,i}>: pkg_re
+<bin/*.ml{,i}>: pkg_uri.services
+<bin/*.ml{,i}>: pkg_fieldslib
+<bin/*.ml{,i}>: pkg_fieldslib.syntax
+<bin/cohttp_server_async.{native,byte}>: custom
 # OASIS_STOP
-<lib_test/{test_parser,test_net_lwt,test_net_lwt_server,test_net_mirage_server,test_net_lwt_client_and_server}.ml>: syntax_camlp4o, pkg_lwt.syntax
-<cohttp/request.*> or <cohttp/response.*> or <cohttp/cookie.*>: syntax_camlp4o, pkg_fieldslib.syntax
-<lwt/*>: syntax_camlp4o, pkg_lwt.syntax
-<mirage/*>: syntax_camlp4o, pkg_lwt.syntax
 true: annot, bin_annot, debug, strict_sequence, principal

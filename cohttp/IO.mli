@@ -13,4 +13,5 @@ module type S = sig
   val read_exactly : ic -> int -> string option t
 
   val write : oc -> string -> unit t
+  val flush : oc -> unit t
 end

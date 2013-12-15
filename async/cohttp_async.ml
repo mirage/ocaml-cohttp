@@ -89,6 +89,9 @@ module IO = struct
          Writer.write oc "\r\n";
          return ()
       )
+
+  let flush oc =
+    Writer.flushed oc
 end
 
 module Net = struct
@@ -238,33 +241,43 @@ module Server = struct
     >>= fun response ->
     response wr
 
-  let respond ?headers ~body status : response =
+  let respond ?(flush=false) ?headers ?body status : response =
     fun wr ->
       let headers = Cohttp.Header.add_opt headers "connection" "close" in
       match body with
       | None ->
-        let res = Response.make ~status ~encoding:(Cohttp.Transfer.Fixed 0) ~headers () in
+        let res = Response.make ~status ~flush ~encoding:(Cohttp.Transfer.Fixed 0) ~headers () in
         Response.write_header res wr
         >>= fun () ->
         Response.write_footer res wr
         >>= fun () ->
         Writer.close wr
       | Some body ->
-        let res = Response.make ~status ~encoding:Cohttp.Transfer.Chunked ~headers () in
+        let res = Response.make ~status ~flush ~encoding:Cohttp.Transfer.Chunked ~headers () in
         Response.write_header res wr
         >>= fun () ->
-        Pipe.iter body ~f:(Response.write_body res wr)
+        Pipe.iter body ~f:(fun buf ->
+          Response.write_body res wr buf
+          >>= fun () ->
+          (match flush with
+           | true -> Writer.flushed wr
+           | false -> return ())
+        )
         >>= fun () ->
         Response.write_footer res wr
         >>= fun () ->
         Writer.close wr
 
-  let respond_with_pipe ?headers ?(code=`OK) body =
-    return (respond ?headers ~body:(Some body) code)
+  let respond_with_pipe ?flush ?headers ?(code=`OK) body =
+    return (respond ?flush ?headers ~body code)
 
-  let respond_with_string ?headers ?(code=`OK) body =
+  let respond_with_string ?flush ?headers ?(code=`OK) body =
     let body = Pipe.of_list [body] in
-    return (respond ?headers ~body:(Some body) code)
+    return (respond ?flush ?headers ~body code)
+
+  let respond_with_redirect ?headers uri =
+    let headers = Cohttp.Header.add_opt headers "location" (Uri.to_string uri) in
+    return (respond ~flush:false ~headers `Found)
 
   let resolve_local_file ~docroot ~uri =
     (* This normalises the Uri and strips out .. characters *)
@@ -274,13 +287,13 @@ module Server = struct
   let error_body_default =
     "<html><body><h1>404 Not Found</h1></body></html>"
 
-  let respond_with_file ?headers ?error_body filename =
+  let respond_with_file ?flush ?headers ?error_body filename =
     Monitor.try_with ~run:`Now
       (fun () ->
          Reader.open_file filename
          >>= fun rd ->
          let body = Reader.pipe rd in
-         return (respond ?headers ~body:(Some body) `OK)
+         return (respond ?flush ?headers ~body `OK)
       )
     >>= function
       |Ok res -> return res

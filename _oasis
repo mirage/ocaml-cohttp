@@ -1,9 +1,9 @@
 OASISFormat: 0.3
 Name:        cohttp
-Version:     0.9.13
+Version:     0.9.14
 Synopsis:    HTTP library for Lwt, Async and Mirage
 Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire, David Scott
-License:     LGPL-2.0 with OCaml linking exception
+License:     ISC
 Plugins:     META (0.3)
 BuildTools:  ocamlbuild
 
@@ -241,14 +241,14 @@ Executable test_net_async_server
   Install:            false
   BuildDepends:       cohttp, cohttp.async, oUnit (>= 1.0.2)
 
-#Executable "cohttp-async-server"
-#  Path:               bin
-#  MainIs:             cohttp_server_async.ml
-#  Build$:             flag(tests) && flag(async)
-#  Custom:             true
-#  CompiledObject:     best
-#  Install:            true
-#  BuildDepends:       cohttp, cohttp.async
+Executable "cohttp-server"
+  Path:               bin
+  MainIs:             cohttp_server_async.ml
+  Build$:             flag(tests) && flag(async)
+  Custom:             true
+  CompiledObject:     best
+  Install:            true
+  BuildDepends:       cohttp, cohttp.async
 
 Test test_accept
   Run$:               flag(tests)

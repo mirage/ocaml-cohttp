@@ -20,6 +20,7 @@ type t = {
   headers: Header.t;
   version: Code.version;
   status: Code.status_code;
+  flush: bool;
 } with fields
 
 (** Retrieve response HTTP headers *)
@@ -37,6 +38,7 @@ val status : t -> Code.status_code
 val make :
   ?version:Code.version -> 
   ?status:Code.status_code ->
+  ?flush:bool ->
   ?encoding:Transfer.encoding -> 
   ?headers:Header.t -> 
   unit -> t

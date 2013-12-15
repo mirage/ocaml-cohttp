@@ -19,7 +19,7 @@ open Cohttp
 
 (** Portable Lwt implementation of HTTP client and server, without
     depending on a particular I/O implementation.  The various [Make]
-    functors must be instantiated by an implmentation that provides
+    functors must be instantiated by an implementation that provides
     a concrete IO monad. *)
 
 (** The [Net] module type defines how to connect to a remote node
@@ -152,6 +152,7 @@ module type Server = sig
 
   val respond :
     ?headers:Cohttp.Header.t ->
+    ?flush:bool ->
     status:Cohttp.Code.status_code ->
     body:Cohttp_lwt_body.t -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 

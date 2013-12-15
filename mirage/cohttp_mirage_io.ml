@@ -68,3 +68,7 @@ let write oc buf =
 let write_line oc buf =
   Channel.write_line oc buf;
   Channel.flush oc
+
+let flush oc =
+  (* NOOP since we flush in the normal writer functions above *)
+  return ()

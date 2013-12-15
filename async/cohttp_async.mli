@@ -89,8 +89,6 @@ module Client : sig
     Uri.t ->
     (Response.t * string Pipe.Reader.t) Deferred.t
 
-
-
   (** Send an HTTP request with arbitrary method and string Pipe.Reader.t *)
   val call :
     ?interrupt:unit Deferred.t ->
@@ -112,8 +110,9 @@ module Server : sig
   type response
 
   val respond :
+    ?flush:bool ->
     ?headers:Cohttp.Header.t ->
-    body:string Pipe.Reader.t option ->
+    ?body:string Pipe.Reader.t ->
     Cohttp.Code.status_code -> response
 
   (** Resolve a URI and a docroot into a concrete local filename. *)
@@ -122,17 +121,26 @@ module Server : sig
   (** Respond with a [string] Pipe that provides the response string Pipe.Reader.t.
       @param code Default is HTTP 200 `OK *)
   val respond_with_pipe : 
+    ?flush:bool ->
     ?headers:Cohttp.Header.t -> ?code:Cohttp.Code.status_code -> 
     string Pipe.Reader.t -> response Deferred.t
 
-  (** Respond with a static [string] string Pipe.Reader.t
+  (** Respond with a static [string] 
       @param code Default is HTTP 200 `OK *)
   val respond_with_string : 
+    ?flush:bool ->
     ?headers:Cohttp.Header.t -> ?code:Cohttp.Code.status_code -> 
     string -> response Deferred.t
 
+  (** Respond with a redirect to an absolute [uri]
+      @param uri Absolute URI to redirect the client to *)
+  val respond_with_redirect : 
+    ?headers:Cohttp.Header.t -> Uri.t -> response Deferred.t
+
+
   (** Respond with file contents, and [error_string Pipe.Reader.t] if the file isn't found *)
   val respond_with_file : 
+    ?flush:bool ->
     ?headers:Cohttp.Header.t -> ?error_body:string ->
     string -> response Deferred.t
 

@@ -24,7 +24,9 @@ open Cohttp_lwt_unix
 
 let make_server () =
   let callback conn_id ?body req =
-    match Uri.path (Request.uri req) with
+    let uri = Request.uri req in
+    Printf.printf "%s\n%!" (Uri.to_string uri);
+    match Uri.path uri with
     |""|"/" -> Server.respond_string ~status:`OK ~body:"helloworld" ()
     |"/post" -> begin
        lwt body = Cohttp_lwt_body.string_of_body body in
@@ -32,6 +34,44 @@ let make_server () =
     end
     |"/postnodrain" -> begin
        Server.respond_string ~status:`OK ~body:"nodrain" ()
+    end
+    |"/sse.php" -> begin
+       let headers = Header.init_with "content-type" "text/event-stream" in
+       let headers = Header.add headers "cache-control" "no-cache" in
+       let st,push_st = Lwt_stream.create () in
+       let body = Cohttp_lwt_body.body_of_stream st in
+       let cur_time () =
+         let tod = Unix.gettimeofday () in
+         let tm = Unix.localtime tod in
+         let s = Unix.(sprintf "%d:%d:%d" tm.tm_hour tm.tm_min tm.tm_sec) in
+         let id = int_of_float (Unix.gettimeofday ()) in
+         s,id
+       in
+       let _, start_time = cur_time () in
+       let send_msg id msg =
+         let msgs = [
+           "data: {";
+           sprintf "data: \"msg\": \"%d\"," msg;
+           sprintf "data: \"id\": %d" id;
+           "data: }" ] in
+         let r = sprintf "id: %d\r\n%s\r\n\r\n" id (String.concat "\r\n" msgs) in
+         Some r
+       in
+       let _ =
+         try_lwt
+           let rec respond () =
+              let pp,time = cur_time () in
+              print_endline pp;
+              (if time - start_time > 10 then
+                push_st None
+              else
+                push_st (send_msg start_time time));
+              Lwt_unix.sleep 3.0
+              >>= respond
+           in respond ()
+         with exn -> return ()
+       in
+       Server.respond ~headers ~flush:true ~status:`OK ~body ()
     end
     |_ ->
        let fname = Server.resolve_file ~docroot:"." ~uri:(Request.uri req) in
