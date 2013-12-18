@@ -1,3 +1,6 @@
+0.9.15 (trunk):
+* Remove `Cohttp_mirage` libraries, which have now moved to `mirage/mirage-http-*` on GitHub.
+
 0.9.14 (2013-12-15):
 * Install a `cohttp-server` binary that serves local directory contents via a web server (#54).
 * Add a `flush` function to the `IO` module type and implement in Lwt/Async/Mirage.
