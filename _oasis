@@ -11,5 +11,5 @@ Library mirage_http_unix
   CompiledObject:     best
   Path:               lib
   Findlibname:        mirage-http-unix
-  Modules:            Http
-  BuildDepends:       cohttp.lwt, mirage-tcpip-unix
+  Modules:            HTTP
+  BuildDepends:       cohttp.lwt, mirage-tcpip-unix, lwt.syntax
