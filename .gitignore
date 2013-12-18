@@ -1,0 +1,15 @@
+*.annot
+*.cmo
+*.cma
+*.cmi
+*.a
+*.o
+*.cmx
+*.cmxs
+*.cmxa
+*.cmt
+setup.bin
+setup.data
+setup.log
+_build
+*.native
