@@ -13,3 +13,4 @@ setup.data
 setup.log
 _build
 *.native
+.*.swp

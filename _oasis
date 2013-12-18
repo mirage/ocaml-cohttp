@@ -12,4 +12,5 @@ Library mirage_http_unix
   Path:               lib
   Findlibname:        mirage-http-unix
   Modules:            HTTP
+  InternalModules:    HTTP_IO
   BuildDepends:       cohttp.lwt-core, mirage-tcpip-unix, lwt.syntax
