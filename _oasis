@@ -1,0 +1,15 @@
+OASISFormat: 0.3
+Name:        mirage-http-unix
+Version:     1.0.0
+Synopsis:    Mirage HTTP clent and server for Unix
+Authors:     Anil Madhavapeddy, Thomas Gazagnaire
+License:     ISC
+Plugins:     META (0.3)
+BuildTools:  ocamlbuild
+
+Library mirage_http_unix
+  CompiledObject:     best
+  Path:               lib
+  Findlibname:        mirage-http-unix
+  Modules:            Http
+  BuildDepends:       cohttp.lwt, mirage-tcpip-unix
