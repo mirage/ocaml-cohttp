@@ -22,7 +22,7 @@ open Net
 
 module Net_IO = struct
 
-  module IO = Cohttp_mirage_io
+  module IO = HTTP_IO
 
   let connect_uri uri =
     fail (Failure "not implemented")
@@ -37,13 +37,13 @@ module Net_IO = struct
 end
 
 (* Build all the core modules from the [Cohttp_lwt] functors *)
-module Request = Cohttp_lwt.Make_request(Cohttp_mirage_io)
-module Response = Cohttp_lwt.Make_response(Cohttp_mirage_io)
-module Client = Cohttp_lwt.Make_client(Cohttp_mirage_io)(Request)(Response)(Net_IO)
-module Server_core = Cohttp_lwt.Make_server(Cohttp_mirage_io)(Request)(Response)(Net_IO)
+module Request = Cohttp_lwt.Make_request(HTTP_IO)
+module Response = Cohttp_lwt.Make_response(HTTP_IO)
+module Client = Cohttp_lwt.Make_client(HTTP_IO)(Request)(Response)(Net_IO)
+module Server_core = Cohttp_lwt.Make_server(HTTP_IO)(Request)(Response)(Net_IO)
 
 module type S = sig
-  include Cohttp_lwt.Server with module IO = Cohttp_mirage_io
+  include Cohttp_lwt.Server with module IO = HTTP_IO
   val listen : ?timeout:float -> Net.Manager.t -> Net.Nettypes.ipv4_src -> t -> unit Lwt.t
 end
 
