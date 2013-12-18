@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 34cfc630efe139056434de798589c0f0)
+# DO NOT EDIT (digest: c6f085d0be63f5d9d1a9cf1fb4ebdfa6)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -53,23 +53,6 @@
 <lwt/*.ml{,i}>: pkg_uri.services
 <lwt/*.ml{,i}>: pkg_fieldslib
 <lwt/*.ml{,i}>: pkg_fieldslib.syntax
-# Library cohttp_mirage_unix
-"mirage/cohttp_mirage_unix.cmxs": use_cohttp_mirage_unix
-<mirage/*.ml{,i}>: pkg_mirage-tcpip-unix
-# Library cohttp_mirage_xen
-"mirage/cohttp_mirage_xen.cmxs": use_cohttp_mirage_xen
-<mirage/*.ml{,i}>: use_cohttp_lwt
-<mirage/*.ml{,i}>: use_cohttp
-<mirage/*.ml{,i}>: pkg_uri
-<mirage/*.ml{,i}>: pkg_mirage-types
-<mirage/*.ml{,i}>: pkg_cstruct
-<mirage/*.ml{,i}>: pkg_mirage-tcpip-xen
-<mirage/*.ml{,i}>: pkg_lwt
-<mirage/*.ml{,i}>: pkg_lwt.syntax
-<mirage/*.ml{,i}>: pkg_re
-<mirage/*.ml{,i}>: pkg_uri.services
-<mirage/*.ml{,i}>: pkg_fieldslib
-<mirage/*.ml{,i}>: pkg_fieldslib.syntax
 # Library cohttp_async
 "async/cohttp_async.cmxs": use_cohttp_async
 <async/*.ml{,i}>: use_cohttp
