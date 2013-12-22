@@ -28,14 +28,15 @@ module Set_cookie_hdr : sig
     expiration : expiration;
     domain : string option;
     path : string option;
-    secure : bool } with fields
+    secure : bool;
+    http_only : bool } with fields
   (** A header which a server sends to a client to request that the client
     returns the cookie in future requests, under certain conditions. *)
 
   val make :
     ?expiration:expiration ->
     ?path:string ->
-    ?domain:string -> ?secure:bool -> cookie -> t
+    ?domain:string -> ?secure:bool -> ?http_only:bool -> cookie -> t
 
   val serialize :
     ?version:[ `HTTP_1_0 | `HTTP_1_1 ] ->

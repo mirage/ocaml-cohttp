@@ -28,11 +28,12 @@ module Set_cookie_hdr = struct
     expiration : expiration;
     domain : string option;
     path : string option;
-    secure : bool } with fields
+    secure : bool;
+    http_only: bool } with fields
 
   (* Does not check the contents of name or value for ';', ',', '\s', or name[0]='$' *)
-  let make ?(expiration=`Session) ?path ?domain ?(secure=false) cookie =
-    { cookie ; expiration ; domain ; path ; secure }
+  let make ?(expiration=`Session) ?path ?domain ?(secure=false) ?(http_only=false) cookie =
+    { cookie ; expiration ; domain ; path ; secure ; http_only }
     
   (* TODO: deprecated by RFC 6265 and almost certainly buggy without
      reference to cookie field *)
@@ -48,7 +49,8 @@ module Set_cookie_hdr = struct
       ("Set-Cookie2", String.concat "; " attrs)
   
   let serialize_1_0 c =
-    let attrs = if c.secure then ["secure"] else [] in
+    let attrs = if c.http_only then ["httponly"] else [] in
+    let attrs = if c.secure then "secure"::attrs else attrs in
     let attrs = match c.path with None -> attrs
       | Some p -> ("path=" ^ p) :: attrs in
     let attrs = match c.domain with None -> attrs
@@ -104,6 +106,7 @@ module Set_cookie_hdr = struct
         expiration = `Session;
         domain;
         path;
+        http_only=List.mem_assoc "httponly" attrs;
         secure = List.mem_assoc "secure" attrs;
       })::alist
     with (Failure "hd") -> alist
