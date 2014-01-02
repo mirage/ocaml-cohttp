@@ -142,8 +142,7 @@ module Cookie_hdr = struct
              $else) *)
           let cookies = List.filter (fun s -> s.[0] != '$') comps in
           let split_pair nvp =
-            (* TODO: This is buggy for cookies with '=' in values *)
-            match Re_str.split_delim equals_re nvp with
+            match Re_str.bounded_split equals_re nvp 2 with
             | [] -> ("","")
             | n :: [] -> (n, "")
             | n :: v :: _ -> (n, v)
