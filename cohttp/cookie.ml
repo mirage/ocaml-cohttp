@@ -16,9 +16,10 @@
  *
  *)
 
-(* We need a non-Unix date/time implementation to support other expiration
-   types *)
-type expiration = [ `Session ]
+type expiration = [ 
+  | `Session 
+  | `Max_age of int64
+]
 
 type cookie = string * string
 
@@ -43,7 +44,9 @@ module Set_cookie_hdr = struct
     let attrs = match c.path with None -> attrs
       | Some p -> ("Path=" ^ p) :: attrs in
     let attrs = match c.expiration with
-      | `Session -> "Discard" :: attrs in
+      | `Session -> "Discard" :: attrs 
+      | `Max_age age -> ("Max-Age=" ^ (Int64.to_string age)) :: attrs
+   in
     let attrs = match c.domain with None -> attrs
       | Some d -> ("Domain=" ^ d) :: attrs in
       ("Set-Cookie2", String.concat "; " attrs)
@@ -56,7 +59,9 @@ module Set_cookie_hdr = struct
     let attrs = match c.domain with None -> attrs
       | Some d -> ("domain=" ^ d) :: attrs in
     let attrs = match c.expiration with
-      | `Session -> attrs in
+      | `Session -> attrs
+      | `Max_age age -> ("Max-Age=" ^ (Int64.to_string age)) :: attrs
+    in
     let n, c = c.cookie in
     (* TODO: may be buggy, some UAs will ignore cookie-strings without '='*)
     let attrs = (n ^ (match c with "" -> ""
