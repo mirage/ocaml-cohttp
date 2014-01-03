@@ -16,11 +16,11 @@
  *)
 
 type t = {
-  encoding: Transfer.encoding;
-  headers: Header.t;
-  version: Code.version;
-  status: Code.status_code;
-  flush: bool;
+  mutable encoding: Transfer.encoding;
+  mutable headers: Header.t;
+  mutable version: Code.version;
+  mutable status: Code.status_code;
+  mutable flush: bool;
 } with fields
 
 (** Retrieve response HTTP headers *)
