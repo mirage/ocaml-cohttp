@@ -30,10 +30,10 @@ let valid_auth () =
 let valid_set_cookie () =
   let c = Cohttp.Cookie.Set_cookie_hdr.make ~expiration:`Session
      ~path:"/foo/bar" ~domain:"ocaml.org"
-	 ~secure:true ("key", "value") in
+	 ~secure:true ~http_only:true ("key", "value") in
   let k, v = Cohttp.Cookie.Set_cookie_hdr.serialize ~version:`HTTP_1_0 c in
   assert_equal ~printer:(fun x -> x) ~msg:"header key" "Set-Cookie" k;
-  assert_equal ~printer:(fun x -> x) ~msg:"header value" "key=value; domain=ocaml.org; path=/foo/bar; secure" v
+  assert_equal ~printer:(fun x -> x) ~msg:"header value" "key=value; domain=ocaml.org; path=/foo/bar; secure; httponly" v
 
 let valid_cookie () =
   let cookies = [ "foo", "bar"; "a", "b" ] in
