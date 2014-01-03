@@ -16,8 +16,21 @@
  *
  *)
 
-type expiration = [ `Session ]
+(** Functions for the HTTP Cookie and Set-Cookie header fields.
+    Using the Set-Cookie header field, an HTTP server can pass name/value
+    pairs and associated metadata (called cookies) to a user agent.  When
+    the user agent makes subsequent requests to the server, the user
+    agent uses the metadata and other information to determine whether to
+    return the name/value pairs in the Cookie header. *)
 
+(** Lifetime of the cookie after which the user agent discards it *)
+type expiration = [
+  | `Session          (** Instructs the user agent to discard the cookie
+                          unconditionally when the user agent terminates. *)
+  | `Max_age of int64 (** The value of the Max-Age attribute is delta-seconds,
+                           the lifetime of the cookie in seconds, a decimal
+                           non-negative integer. *)
+]
 type cookie = string * string
 (** A cookie is simply a key/value pair send from the client to the server *)
 

@@ -2,6 +2,7 @@
 * Remove `Cohttp_mirage` libraries, which have now moved to `mirage/mirage-http-*` on GitHub.
 * Add an "HTTP only" `Cookie` attribute (#69).
 * Fix parsing of cookies with `=` in the values (#71).
+* Add `Max-age` support for cookies (#70).
 
 0.9.14 (2013-12-15):
 * Install a `cohttp-server` binary that serves local directory contents via a web server (#54).
