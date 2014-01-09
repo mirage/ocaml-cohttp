@@ -125,7 +125,7 @@ let basic_res_parse res () =
      assert_equal (Response.status res) `OK;
      let headers = Response.headers res in
      assert_equal (Header.get headers "connection") (Some "close");
-     assert_equal (Header.get headers "accept-ranges") (Some "none");
+     assert_equal (Header.get headers "Accept-ranges") (Some "none");
      assert_equal (Header.get headers "content-type")
        (Some "text/html; charset=UTF-8");
      return ()
@@ -243,7 +243,7 @@ let make_simple_req () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
   let expected = "GET /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
-  let req = Request.make ~encoding:Transfer.Chunked ~headers:(Header.init_with "foo" "bar") (Uri.of_string "/foo/bar") in
+  let req = Request.make ~encoding:Transfer.Chunked ~headers:(Header.init_with "Foo" "bar") (Uri.of_string "/foo/bar") in
   write_req expected req
 
 let mutate_simple_req () = 
