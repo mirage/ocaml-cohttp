@@ -5,7 +5,7 @@ PREFIX ?= /usr/local
 NAME=cohttp
 
 LWT ?= $(shell if ocamlfind query lwt.ssl >/dev/null 2>&1; then echo --enable-lwt; fi)
-ASYNC ?= $(shell if ocamlfind query async_core >/dev/null 2>&1; then echo --enable-async; fi)
+ASYNC ?= $(shell if ocamlfind query async >/dev/null 2>&1; then echo --enable-async; fi)
 MIRAGE_UNIX ?= $(shell if ocamlfind query mirage-tcpip-unix >/dev/null 2>&1; then echo --enable-mirage-unix; fi)
 MIRAGE_XEN ?= $(shell if ocamlfind query mirage-tcpip-xen >/dev/null 2>&1; then echo --enable-mirage-xen; fi)
 ifeq "$(findstring $(MIRAGE_OS),xen kfreebsd)" ""

@@ -4,6 +4,7 @@
 * Fix parsing of cookies with `=` in the values (#71).
 * Add `Max-age` support for cookies (#70).
 * Make the `Response` record fields mutable to match the `Request` (#67).
+* Fix compilation with Async 109.58.00 (#77).
 
 0.9.14 (2013-12-15):
 * Install a `cohttp-server` binary that serves local directory contents via a web server (#54).
