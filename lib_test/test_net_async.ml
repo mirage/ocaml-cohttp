@@ -50,7 +50,7 @@ let make_net_post_req () =
 let test_cases =
   (* TODO: can multiple async tests run with separate Schedulers? Is there
    * an Async-aware oUnit instead? *)
-  let _ =  Async_core.Scheduler.within' (
+  let _ =  Scheduler.within' (
     fun () ->
       Monitor.try_with ( fun () ->
           make_net_req () >>= make_net_post_req) >>=
@@ -59,7 +59,7 @@ let test_cases =
         (* TODO: how to dump out top-level errors in a nicer way? *)
         Printf.fprintf stderr "err %s.\n%!" (Exn.backtrace ()); return ()
       |Ok _ ->
-	Async_unix.Shutdown.exit 0
+	Shutdown.exit 0
   ) in
-  Async_unix.Scheduler.go ()
+  Scheduler.go ()
 

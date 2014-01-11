@@ -15,12 +15,20 @@
  *
  *)
 
+(** HTTP/1.1 response handling *)
+
+(** This contains the metadata for a HTTP/1.1 response header, including
+    the {!encoding}, {!headers}, {!version}, {!status} code and whether to
+    {!flush} the connection after every body chunk (useful for server-side
+    events and other long-lived connection protocols). The body is handled by
+    the separate {!S} module type, as it is dependent on the IO 
+    implementation. *)
 type t = {
-  encoding: Transfer.encoding;
-  headers: Header.t;
-  version: Code.version;
-  status: Code.status_code;
-  flush: bool;
+  mutable encoding: Transfer.encoding;
+  mutable headers: Header.t;
+  mutable version: Code.version;
+  mutable status: Code.status_code;
+  mutable flush: bool;
 } with fields
 
 (** Retrieve response HTTP headers *)

@@ -26,7 +26,6 @@ let () = Sys.(set_signal sigpipe Signal_ignore)
 
 type 'a t = 'a Lwt.t
 let (>>=) = Lwt.bind
-let (>>) m n = m >>= fun _ -> n
 let return = Lwt.return
 
 type ic = Lwt_io.input_channel

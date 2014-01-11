@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 13e3c9d1478882e81faae344a7b7cbb0) *)
+(* DO NOT EDIT (digest: ba002535d7cd8c656b584c887c37635e) *)
 module OASISGettext = struct
 (* # 22 "src/oasis/OASISGettext.ml" *)
 
@@ -368,7 +368,11 @@ module MyOCamlbuildFindlib = struct
           flag ["ocaml"; "pkg_threads"; "compile"] (S[A "-thread"]);
           flag ["ocaml"; "pkg_threads"; "doc"] (S[A "-I"; A "+threads"]);
           flag ["ocaml"; "pkg_threads"; "link"] (S[A "-thread"]);
-          flag ["ocaml"; "pkg_threads"; "infer_interface"] (S[A "-thread"])
+          flag ["ocaml"; "pkg_threads"; "infer_interface"] (S[A "-thread"]);
+          flag ["ocaml"; "package(threads)"; "compile"] (S[A "-thread"]);
+          flag ["ocaml"; "package(threads)"; "doc"] (S[A "-I"; A "+threads"]);
+          flag ["ocaml"; "package(threads)"; "link"] (S[A "-thread"]);
+          flag ["ocaml"; "package(threads)"; "infer_interface"] (S[A "-thread"]);
 
       | _ ->
           ()
@@ -547,7 +551,7 @@ module MyOCamlbuildBase = struct
 end
 
 
-# 550 "myocamlbuild.ml"
+# 554 "myocamlbuild.ml"
 open Ocamlbuild_plugin;;
 let package_default =
   {
@@ -556,15 +560,12 @@ let package_default =
           ("cohttp", ["cohttp"], []);
           ("cohttp_lwt", ["lwt"], []);
           ("cohttp_lwt_unix", ["lwt"], []);
-          ("cohttp_mirage_unix", ["mirage"], []);
-          ("cohttp_mirage_xen", ["mirage"], []);
           ("cohttp_async", ["async"], [])
        ];
      lib_c = [];
      flags = [];
      includes =
        [
-          ("mirage", ["lwt"]);
           ("lwt", ["cohttp"]);
           ("lib_test", ["async"; "cohttp"; "lwt"]);
           ("bin", ["async"; "cohttp"]);
@@ -575,7 +576,7 @@ let package_default =
 
 let dispatch_default = MyOCamlbuildBase.dispatch_default package_default;;
 
-# 579 "myocamlbuild.ml"
+# 580 "myocamlbuild.ml"
 (* OASIS_STOP *)
 open Ocamlbuild_plugin
 

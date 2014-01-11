@@ -16,9 +16,10 @@
  *
  *)
 
-(* We need a non-Unix date/time implementation to support other expiration
-   types *)
-type expiration = [ `Session ]
+type expiration = [ 
+  | `Session 
+  | `Max_age of int64
+]
 
 type cookie = string * string
 
@@ -28,11 +29,12 @@ module Set_cookie_hdr = struct
     expiration : expiration;
     domain : string option;
     path : string option;
-    secure : bool } with fields
+    secure : bool;
+    http_only: bool } with fields
 
   (* Does not check the contents of name or value for ';', ',', '\s', or name[0]='$' *)
-  let make ?(expiration=`Session) ?path ?domain ?(secure=false) cookie =
-    { cookie ; expiration ; domain ; path ; secure }
+  let make ?(expiration=`Session) ?path ?domain ?(secure=false) ?(http_only=false) cookie =
+    { cookie ; expiration ; domain ; path ; secure ; http_only }
     
   (* TODO: deprecated by RFC 6265 and almost certainly buggy without
      reference to cookie field *)
@@ -42,19 +44,24 @@ module Set_cookie_hdr = struct
     let attrs = match c.path with None -> attrs
       | Some p -> ("Path=" ^ p) :: attrs in
     let attrs = match c.expiration with
-      | `Session -> "Discard" :: attrs in
+      | `Session -> "Discard" :: attrs 
+      | `Max_age age -> ("Max-Age=" ^ (Int64.to_string age)) :: attrs
+   in
     let attrs = match c.domain with None -> attrs
       | Some d -> ("Domain=" ^ d) :: attrs in
       ("Set-Cookie2", String.concat "; " attrs)
   
   let serialize_1_0 c =
-    let attrs = if c.secure then ["secure"] else [] in
+    let attrs = if c.http_only then ["httponly"] else [] in
+    let attrs = if c.secure then "secure"::attrs else attrs in
     let attrs = match c.path with None -> attrs
       | Some p -> ("path=" ^ p) :: attrs in
     let attrs = match c.domain with None -> attrs
       | Some d -> ("domain=" ^ d) :: attrs in
     let attrs = match c.expiration with
-      | `Session -> attrs in
+      | `Session -> attrs
+      | `Max_age age -> ("Max-Age=" ^ (Int64.to_string age)) :: attrs
+    in
     let n, c = c.cookie in
     (* TODO: may be buggy, some UAs will ignore cookie-strings without '='*)
     let attrs = (n ^ (match c with "" -> ""
@@ -104,6 +111,7 @@ module Set_cookie_hdr = struct
         expiration = `Session;
         domain;
         path;
+        http_only=List.mem_assoc "httponly" attrs;
         secure = List.mem_assoc "secure" attrs;
       })::alist
     with (Failure "hd") -> alist
@@ -142,8 +150,7 @@ module Cookie_hdr = struct
              $else) *)
           let cookies = List.filter (fun s -> s.[0] != '$') comps in
           let split_pair nvp =
-            (* TODO: This is buggy for cookies with '=' in values *)
-            match Re_str.split_delim equals_re nvp with
+            match Re_str.bounded_split equals_re nvp 2 with
             | [] -> ("","")
             | n :: [] -> (n, "")
             | n :: v :: _ -> (n, v)

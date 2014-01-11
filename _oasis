@@ -1,8 +1,8 @@
 OASISFormat: 0.3
 Name:        cohttp
-Version:     0.9.14
+Version:     0.9.15
 Synopsis:    HTTP library for Lwt, Async and Mirage
-Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire, David Scott
+Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire, David Scott, Rudy Grinberg
 License:     ISC
 Plugins:     META (0.3)
 BuildTools:  ocamlbuild
@@ -53,31 +53,13 @@ Library cohttp_lwt_unix
   BuildDepends: cohttp.lwt-core, unix, lwt.unix, lwt.ssl
   Modules: Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt_unix_net
 
-Library cohttp_mirage_unix
-  Build$: flag(mirage_unix)
-  Install$: flag(mirage_unix)
-  Path: mirage
-  Findlibname: mirage-unix
-  FindlibParent: cohttp
-  BuildDepends: cohttp.lwt-core, mirage-types, cstruct, mirage-tcpip-unix
-  Modules: Cohttp_mirage_io, Cohttp_mirage
-
-Library cohttp_mirage_xen
-  Build$: flag(mirage_xen)
-  Install$: flag(mirage_xen)
-  Path: mirage
-  Findlibname: mirage-xen
-  FindlibParent: cohttp
-  BuildDepends: cohttp.lwt-core, mirage-types, cstruct, mirage-tcpip-xen
-  Modules: Cohttp_mirage_io, Cohttp_mirage
-
 Library cohttp_async
   Build$: flag(async)
   Install$: flag(async)
   Path: async
   Findlibname: async
   FindlibParent: cohttp
-  BuildDepends: uri, cohttp, async_core (>= 109.12.00), async_unix, threads, async
+  BuildDepends: uri, cohttp, threads, async
   Modules: Cohttp_async
 
 Document cohttp
@@ -105,24 +87,6 @@ Document cohttp_async
   Install:		true
   XOCamlbuildPath:      async
   XOCamlbuildLibraries: cohttp.async
-
-Document cohttp_mirage_unix
-  Title:                Cohttp Mirage docs
-  Type:                 ocamlbuild (0.3)
-  BuildTools+:          ocamldoc
-  Build$:               flag(mirage_unix)
-  Install:		true
-  XOCamlbuildPath:      mirage
-  XOCamlbuildLibraries: cohttp.mirage-unix
-
-Document cohttp_mirage_xen
-  Title:                Cohttp Mirage docs
-  Type:                 ocamlbuild (0.3)
-  BuildTools+:          ocamldoc
-  Build$:               flag(mirage_xen)
-  Install:		true
-  XOCamlbuildPath:      mirage
-  XOCamlbuildLibraries: cohttp.mirage-xen
 
 Executable test_parser
   Path:               lib_test

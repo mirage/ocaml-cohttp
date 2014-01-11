@@ -17,12 +17,24 @@
  *
  *)
 
-module StringMap = Map.Make(String)
+module LString : sig
+  type t
+  val of_string: string -> t
+  val to_string: t -> string
+  val compare: t -> t -> int
+end = struct
+  type t = string
+  let of_string x = String.lowercase x
+  let to_string x = x
+  let compare a b = String.compare a b
+end
+
+module StringMap = Map.Make(LString)
 type t = string list StringMap.t
 
 let user_agent = "ocaml-cohttp" (* TODO: include version from build system *)
 
-let headers_with_list_values = [
+let headers_with_list_values = List.map LString.of_string [
   "accept";"accept-charset";"accept-encoding";"accept-language";
   "accept-ranges";"allow";"cache-control";"connection";"content-encoding";
   "content-language";"expect";"if-match";"if-none-match";"pragma";
@@ -30,32 +42,50 @@ let headers_with_list_values = [
   "vary";"via";"warning";"www-authenticate";
 ]
 
-let init () = StringMap.empty
-let init_with k v = StringMap.singleton k [v]
+let init () =
+  StringMap.empty
+
+let init_with k v =
+  StringMap.singleton (LString.of_string k) [v]
+
 let add h k v =
+  let k = LString.of_string k in
   try StringMap.add k (v::(StringMap.find k h)) h
   with Not_found -> StringMap.add k [v] h
+
 let add_opt h k v =
   match h with
   |None -> init_with k v
   |Some h -> add h k v
-let remove h k = StringMap.remove k h
-let replace h k v = StringMap.add k [v] h
+
+let remove h k =
+  let k = LString.of_string k in
+  StringMap.remove k h
+
+let replace h k v =
+  let k = LString.of_string k in
+  StringMap.add k [v] h
+
 let get =
   let lhm = List.fold_left
     (fun m k -> StringMap.add k () m) StringMap.empty
     headers_with_list_values
   in fun h k ->
+    let k = LString.of_string k in
     try let v = StringMap.find k h in
         if StringMap.exists (fun k' () -> k=k') lhm
         then Some (String.concat "," v)
         else Some (List.hd v)
     with Not_found | Failure _ -> None
-let get_multi h k = try StringMap.find k h with Not_found -> []
-let map fn h = StringMap.mapi fn h
+
+let get_multi h k =
+  let k = LString.of_string k in
+  try StringMap.find k h with Not_found -> []
+
+let map fn h = StringMap.mapi (fun k v -> fn (LString.to_string k) v)  h
 let iter fn h = ignore(map fn h)
 let fold fn h acc = StringMap.fold
-  (fun k v acc -> List.fold_left (fun acc v -> fn k v acc) acc v)
+  (fun k v acc -> List.fold_left (fun acc v -> fn (LString.to_string k) v acc) acc v)
   h acc
 let of_list l = List.fold_left (fun h (k,v) -> add h k v) (init ()) l
 

@@ -30,10 +30,28 @@ let valid_auth () =
 let valid_set_cookie () =
   let c = Cohttp.Cookie.Set_cookie_hdr.make ~expiration:`Session
      ~path:"/foo/bar" ~domain:"ocaml.org"
-	 ~secure:true ("key", "value") in
+	 ~secure:true ~http_only:true ("key", "value") in
   let k, v = Cohttp.Cookie.Set_cookie_hdr.serialize ~version:`HTTP_1_0 c in
   assert_equal ~printer:(fun x -> x) ~msg:"header key" "Set-Cookie" k;
-  assert_equal ~printer:(fun x -> x) ~msg:"header value" "key=value; domain=ocaml.org; path=/foo/bar; secure" v
+  assert_equal ~printer:(fun x -> x) ~msg:"header value" "key=value; domain=ocaml.org; path=/foo/bar; secure; httponly" v;
+  let c = Cohttp.Cookie.Set_cookie_hdr.make ~expiration:(`Max_age 100L) 
+     ~path:"/foo/bar" ~domain:"ocaml.org" ("key", "value") in
+  let k, v = Cohttp.Cookie.Set_cookie_hdr.serialize ~version:`HTTP_1_0 c in
+  assert_equal ~printer:(fun x -> x) ~msg:"header key2" "Set-Cookie" k;
+  assert_equal ~printer:(fun x -> x) ~msg:"header value2" "key=value; Max-Age=100; domain=ocaml.org; path=/foo/bar" v;
+  let k, v = Cohttp.Cookie.Set_cookie_hdr.serialize ~version:`HTTP_1_1 c in
+  assert_equal ~printer:(fun x -> x) ~msg:"header key 1.1" "Set-Cookie2" k;
+  assert_equal ~printer:(fun x -> x) ~msg:"header value 1.1" "Domain=ocaml.org; Max-Age=100; Path=/foo/bar; Version=1" v
+
+let cookie_printer x =
+  String.concat "; " (List.map (fun (x, y) -> x ^ ":" ^ y) x)
+
+let cookie_with_eq_val () =
+  let cookies = [("test","me=")] in
+  let (k, v) = Cohttp.Cookie.Cookie_hdr.serialize cookies in
+  let h = Cohttp.Header.of_list [ k, v ] in
+  let cookies = Cohttp.Cookie.Cookie_hdr.extract h in
+  assert_equal ~printer:cookie_printer cookies [("test", "me=")]
 
 let valid_cookie () =
   let cookies = [ "foo", "bar"; "a", "b" ] in
@@ -42,8 +60,8 @@ let valid_cookie () =
   assert_equal ~msg:"value" "foo=bar; a=b" v;
   let h = Cohttp.Header.of_list [ k, v ] in
   let cookies = Cohttp.Cookie.Cookie_hdr.extract h in
-  let printer x = String.concat "; " (List.map (fun (x, y) -> x ^ ":" ^ y) x) in
-  assert_equal ~printer ~msg:"headers" [ "foo", "bar"; "a", "b" ] cookies
+  assert_equal ~printer:cookie_printer
+    ~msg:"headers" [ "foo", "bar"; "a", "b" ] cookies
 
 (* returns true if the result list contains successes only.
    Copied from oUnit source as it isnt exposed by the mli *)
@@ -63,6 +81,7 @@ let _ =
     "Valid Auth" >:: valid_auth;
     "Valid Set-Cookie" >:: valid_set_cookie;
     "Valid Cookie" >:: valid_cookie;
+    "Cookie with =" >:: cookie_with_eq_val;
   ] in
   let verbose = ref false in
   let set_verbose _ = verbose := true in

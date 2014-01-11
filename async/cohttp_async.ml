@@ -29,7 +29,6 @@ module IO = struct
 
   type 'a t = 'a Deferred.t
   let (>>=) = Deferred.(>>=)
-  let (>>) m n = m >>= fun _ -> n
   let return = Deferred.return
 
   type ic = Reader.t
