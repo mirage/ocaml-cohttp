@@ -1,4 +1,4 @@
-0.9.15 (trunk):
+0.9.15 (2014-01-11):
 * Remove `Cohttp_mirage` libraries, which have now moved to `mirage/mirage-http-*` on GitHub.
 * Add an "HTTP only" `Cookie` attribute (#69).
 * Fix parsing of cookies with `=` in the values (#71).
