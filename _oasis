@@ -13,7 +13,7 @@ Library cohttp
   Pack: true
   Modules: IO, Code, Header, Cookie, Request, Response, Transfer, Accept, Accept_parser,
            Accept_lexer, Accept_types, Base64, Auth, Header_io, Transfer_io, Client, Connection
-  BuildDepends:	re, uri (>= 1.3.8), uri.services, fieldslib, fieldslib.syntax
+  BuildDepends:	re, uri (>= 1.3.8), uri.services, fieldslib, fieldslib.syntax, sexplib, sexplib.syntax
 
 Flag lwt
   Description: build the Lwt library
