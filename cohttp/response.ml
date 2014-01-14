@@ -15,13 +15,15 @@
  *
  *)
 
+open Sexplib.Std
+
 type t = {
   mutable encoding: Transfer.encoding;
   mutable headers: Header.t;
   mutable version: Code.version;
   mutable status: Code.status_code;
   mutable flush: bool;
-} with fields
+} with fields, sexp
 
 let make ?(version=`HTTP_1_1) ?(status=`OK) ?(flush=false) ?(encoding=Transfer.Chunked) ?headers () =
   let headers = match headers with None -> Header.init () |Some h -> h in
