@@ -20,7 +20,7 @@ open Sexplib.Std
 type t = { 
   mutable headers: Header.t;
   mutable meth: Code.meth;
-  mutable uri: Uri_sexp.t;
+  mutable uri: Uri.t;
   mutable version: Code.version;
   mutable encoding: Transfer.encoding;
 } with fields, sexp
