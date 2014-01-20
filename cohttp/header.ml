@@ -194,7 +194,7 @@ open Sexplib.Std
 open Sexplib.Conv
 
 let sexp_of_t t =
-  t |> to_list |> sexp_of_list (sexp_of_pair sexp_of_string sexp_of_string)
+  sexp_of_list (sexp_of_pair sexp_of_string sexp_of_string) (to_list t)
 
 let t_of_sexp s =
-  s |> list_of_sexp (pair_of_sexp string_of_sexp string_of_sexp) |> of_list
+  of_list (list_of_sexp (pair_of_sexp string_of_sexp string_of_sexp) s)
