@@ -189,3 +189,12 @@ let prepend_user_agent headers user_agent =
   match get headers k with
     | Some ua -> replace headers k (user_agent^" "^ua)
     | None -> add headers k user_agent
+
+open Sexplib.Std
+open Sexplib.Conv
+
+let sexp_of_t t =
+  sexp_of_list (sexp_of_pair sexp_of_string sexp_of_string) (to_list t)
+
+let t_of_sexp s =
+  of_list (list_of_sexp (pair_of_sexp string_of_sexp string_of_sexp) s)

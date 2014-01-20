@@ -1,8 +1,9 @@
 # OASIS_START
-# DO NOT EDIT (digest: 7f7d84c16d2071bc724730b64f9238c2)
+# DO NOT EDIT (digest: 32330db8ca5f73132243ca3d3866c81b)
 version = "0.9.16"
 description = "HTTP library for Lwt, Async and Mirage"
-requires = "re uri uri.services fieldslib fieldslib.syntax"
+requires =
+"re uri uri.services fieldslib fieldslib.syntax sexplib sexplib.syntax"
 archive(byte) = "cohttp.cma"
 archive(byte, plugin) = "cohttp.cma"
 archive(native) = "cohttp.cmxa"

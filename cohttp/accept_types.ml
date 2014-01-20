@@ -16,24 +16,26 @@
   PERFORMANCE OF THIS SOFTWARE.
 *)
 
-type pv = T of string | S of string
-type p = string * pv
+open Sexplib.Std
+
+type pv = T of string | S of string with sexp
+type p = string * pv with sexp
 type media_range =
   | MediaType of string * string
   | AnyMediaSubtype of string
-  | AnyMedia
+  | AnyMedia with sexp
 type charset =
   | Charset of string
-  | AnyCharset
+  | AnyCharset with sexp
 type encoding =
   | Encoding of string
   | Gzip
   | Compress
   | Deflate
   | Identity
-  | AnyEncoding
+  | AnyEncoding with sexp
 type language =
   | Language of string list
-  | AnyLanguage
-type q = int
-type 'a qlist = (q * 'a) list
+  | AnyLanguage with sexp
+type q = int with sexp
+type 'a qlist = (q * 'a) list with sexp
