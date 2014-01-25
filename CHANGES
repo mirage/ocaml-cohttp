@@ -1,6 +1,7 @@
 0.9.16 (trunk):
 * Add some module type equalities in `Cohttp_lwt_unix` so that
   `Cohttp_lwt_unix.Server.Request.IO.ic` can be equivalen to `Lwt_io.input_channel`.
+* Add sexp converters to most Cohttp types (#83).
 * Improve Travis tests to cover more upstream users of Cohttp.
 
 0.9.15 (2014-01-11):
