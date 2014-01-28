@@ -1,7 +1,7 @@
 .PHONY: all clean install build
 all: build doc
 
-NAME=mirage-http-unix
+NAME=mirage-http
 J=4
 
 export OCAMLRUNPARAM=b

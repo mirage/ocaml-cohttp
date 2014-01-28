@@ -16,59 +16,57 @@
  *
  *)
 
-(* open Cohttp *)
+module Make(Channel:V1_LWT.CHANNEL) = struct
 
-open Net
+  type 'a t = 'a Lwt.t
+  let (>>=) = Lwt.bind
+  let return = Lwt.return
 
-type 'a t = 'a Lwt.t
-let (>>=) = Lwt.bind
-let (>>) m n = m >>= fun _ -> n
-let return = Lwt.return
+  type ic = Channel.t
+  type oc = Channel.t
 
-type ic = Channel.t
-type oc = Channel.t
+  let iter fn x = Lwt_list.iter_s fn x
 
-let iter fn x = Lwt_list.iter_s fn x
+  let read_line ic =
+    match_lwt Channel.read_line ic with
+    | [] -> return None
+    | bufs -> return (Some (Cstruct.copyv bufs))
 
-let read_line ic =
-  match_lwt Channel.read_line ic with
-  | [] -> return None
-  | bufs -> return (Some (Cstruct.copyv bufs))
-
-let read ic len =
-  try_lwt
-    lwt iop = Channel.read_some ~len ic in
-    return (Cstruct.to_string iop)
-  with End_of_file -> return ""
-
-let read_exactly ic buf off len =
-  let rec read acc left =
-    match left with
-    | 0   -> return (List.rev acc)
-    | len ->
+  let read ic len =
+    try_lwt
       lwt iop = Channel.read_some ~len ic in
-      read (iop::acc) (left - (Cstruct.len iop))
-  in
-  lwt iov = read [] len in
-  (* XXX TODO this is hyper slow! *)
-  let srcbuf = Cstruct.copyv iov in
-  String.blit srcbuf 0 buf off (String.length srcbuf);
-  return true
+      return (Cstruct.to_string iop)
+    with End_of_file -> return ""
 
-let read_exactly ic len =
-  let buf = String.create len in
-  read_exactly ic buf 0 len >>= function
-  | true -> return (Some buf)
-  | false -> return None
+  let read_exactly ic buf off len =
+    let rec read acc left =
+      match left with
+      | 0   -> return (List.rev acc)
+      | len ->
+        lwt iop = Channel.read_some ~len ic in
+        read (iop::acc) (left - (Cstruct.len iop))
+    in
+    lwt iov = read [] len in
+    (* XXX TODO this is hyper slow! *)
+    let srcbuf = Cstruct.copyv iov in
+    String.blit srcbuf 0 buf off (String.length srcbuf);
+    return true
 
-let write oc buf =
-  Channel.write_string oc buf 0 (String.length buf);
-  Channel.flush oc
+  let read_exactly ic len =
+    let buf = String.create len in
+    read_exactly ic buf 0 len >>= function
+    | true -> return (Some buf)
+    | false -> return None
 
-let write_line oc buf =
-  Channel.write_line oc buf;
-  Channel.flush oc
+  let write oc buf =
+    Channel.write_string oc buf 0 (String.length buf);
+    Channel.flush oc
 
-let flush oc =
-  (* NOOP since we flush in the normal writer functions above *)
-  return ()
+  let write_line oc buf =
+    Channel.write_line oc buf;
+    Channel.flush oc
+
+  let flush oc =
+    (* NOOP since we flush in the normal writer functions above *)
+    return ()
+end
