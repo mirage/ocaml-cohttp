@@ -19,16 +19,12 @@ Flag lwt
   Description: build the Lwt library
   Default: false
 
+Flag lwt_unix
+  Description: build the Lwt-unix library
+  Default: false
+
 Flag async
   Description: build the Core/Async library
-  Default: false
-
-Flag mirage_unix
-  Description: build the Mirage library for Unix
-  Default: false
-
-Flag mirage_xen
-  Description: build the Mirage library for Xen
   Default: false
 
 Flag nettests
@@ -36,8 +32,8 @@ Flag nettests
   Default: false
 
 Library cohttp_lwt
-  Build$: flag(lwt ) || flag(mirage_unix) || flag(mirage_xen)
-  Install$: flag(lwt) || flag(mirage_unix) || flag(mirage_xen)
+  Build$: flag(lwt)
+  Install$: flag(lwt)
   Path: lwt
   Findlibname: lwt-core
   FindlibParent: cohttp
@@ -45,8 +41,8 @@ Library cohttp_lwt
   Modules: Cohttp_lwt_body, Cohttp_lwt
 
 Library cohttp_lwt_unix
-  Build$: flag(lwt)
-  Install$: flag(lwt)
+  Build$: flag(lwt_unix)
+  Install$: flag(lwt_unix)
   Path: lwt
   Findlibname: lwt
   FindlibParent: cohttp
@@ -74,7 +70,7 @@ Document cohttp_lwt_unix
   Title:                Cohttp Lwt UNIX docs
   Type:                 ocamlbuild (0.3)
   BuildTools+:          ocamldoc
-  Build$:               flag(lwt)
+  Build$:               flag(lwt_unix)
   Install:		true
   XOCamlbuildPath:      lwt
   XOCamlbuildLibraries: cohttp.lwt
@@ -91,7 +87,7 @@ Document cohttp_async
 Executable test_parser
   Path:               lib_test
   MainIs:             test_parser.ml
-  Build$:             flag(tests) && flag(lwt)
+  Build$:             flag(tests) && flag(lwt_unix)
   Custom:             true
   CompiledObject:     best
   Install:            false
@@ -118,7 +114,7 @@ Executable test_header
 Executable test_net_lwt
   Path:               lib_test
   MainIs:             test_net_lwt.ml
-  Build$:             flag(tests) && flag(lwt)
+  Build$:             flag(tests) && flag(lwt_unix)
   Custom:             true
   CompiledObject:     best
   Install:            false
@@ -127,7 +123,7 @@ Executable test_net_lwt
 Executable test_net_lwt_google
   Path:               lib_test
   MainIs:             test_net_lwt_google.ml
-  Build$:             flag(tests) && flag(lwt)
+  Build$:             flag(tests) && flag(lwt_unix)
   Custom:             true
   CompiledObject:     best
   Install:            false
@@ -136,7 +132,7 @@ Executable test_net_lwt_google
 Executable test_net_lwt_lastminute
   Path:               lib_test
   MainIs:             test_net_lwt_lastminute.ml
-  Build$:             flag(tests) && flag(lwt)
+  Build$:             flag(tests) && flag(lwt_unix)
   Custom:             true
   CompiledObject:     best
   Install:            false
@@ -145,7 +141,7 @@ Executable test_net_lwt_lastminute
 Executable test_net_lwt_server
   Path:               lib_test
   MainIs:             test_net_lwt_server.ml
-  Build$:             flag(tests) && flag(lwt)
+  Build$:             flag(tests) && flag(lwt_unix)
   Custom:             true
   CompiledObject:     best
   Install:            false
@@ -154,7 +150,7 @@ Executable test_net_lwt_server
 Executable test_net_lwt_multi_get
   Path:               lib_test
   MainIs:             test_net_lwt_multi_get.ml
-  Build$:             flag(tests) && flag(lwt)
+  Build$:             flag(tests) && flag(lwt_unix)
   Custom:             true
   CompiledObject:     best
   Install:            false
@@ -163,7 +159,7 @@ Executable test_net_lwt_multi_get
 Executable test_net_lwt_client_and_server
   Path:               lib_test
   MainIs:             test_net_lwt_client_and_server.ml
-  Build$:             flag(tests) && flag(lwt)
+  Build$:             flag(tests) && flag(lwt_unix)
   Custom:             true
   CompiledObject:     best
   Install:            false
@@ -225,12 +221,12 @@ Test test_header
   WorkingDirectory:   lib_test
 
 Test test_parser
-  Run$:               flag(tests) && flag(lwt)
+  Run$:               flag(tests) && flag(lwt_unix)
   Command:            $test_parser
   WorkingDirectory:   lib_test
 
 Test test_net_lwt
-  Run$:               flag(nettests) && flag(lwt)
+  Run$:               flag(nettests) && flag(lwt_unix)
   Command:            $test_net_lwt
   WorkingDirectory:   lib_test
 
