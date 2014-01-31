@@ -1,12 +1,12 @@
 # OASIS_START
-# DO NOT EDIT (digest: 4b3f6d5b595b1c60f3c7298f9509ef69)
-version = "1.0.0"
+# DO NOT EDIT (digest: ae50d6384295bbcc38baef76a57f5658)
+version = "1.1.0"
 description = "Mirage HTTP clent and server for Unix"
-requires = "cohttp.lwt-core mirage-tcpip-unix lwt.syntax"
-archive(byte) = "mirage_http_unix.cma"
-archive(byte, plugin) = "mirage_http_unix.cma"
-archive(native) = "mirage_http_unix.cmxa"
-archive(native, plugin) = "mirage_http_unix.cmxs"
-exists_if = "mirage_http_unix.cma"
+requires = "cohttp.lwt-core tcpip.channel lwt.syntax"
+archive(byte) = "mirage-http.cma"
+archive(byte, plugin) = "mirage-http.cma"
+archive(native) = "mirage-http.cmxa"
+archive(native, plugin) = "mirage-http.cmxs"
+exists_if = "mirage-http.cma"
 # OASIS_STOP
 

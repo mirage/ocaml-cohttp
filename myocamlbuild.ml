@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 22fb0416876de46af19a32a1de483e53) *)
+(* DO NOT EDIT (digest: 7f16041728c6e159f51aded86b1f3da2) *)
 module OASISGettext = struct
 (* # 22 "src/oasis/OASISGettext.ml" *)
 
@@ -368,7 +368,11 @@ module MyOCamlbuildFindlib = struct
           flag ["ocaml"; "pkg_threads"; "compile"] (S[A "-thread"]);
           flag ["ocaml"; "pkg_threads"; "doc"] (S[A "-I"; A "+threads"]);
           flag ["ocaml"; "pkg_threads"; "link"] (S[A "-thread"]);
-          flag ["ocaml"; "pkg_threads"; "infer_interface"] (S[A "-thread"])
+          flag ["ocaml"; "pkg_threads"; "infer_interface"] (S[A "-thread"]);
+          flag ["ocaml"; "package(threads)"; "compile"] (S[A "-thread"]);
+          flag ["ocaml"; "package(threads)"; "doc"] (S[A "-I"; A "+threads"]);
+          flag ["ocaml"; "package(threads)"; "link"] (S[A "-thread"]);
+          flag ["ocaml"; "package(threads)"; "infer_interface"] (S[A "-thread"]);
 
       | _ ->
           ()
@@ -547,11 +551,11 @@ module MyOCamlbuildBase = struct
 end
 
 
-# 550 "myocamlbuild.ml"
+# 554 "myocamlbuild.ml"
 open Ocamlbuild_plugin;;
 let package_default =
   {
-     MyOCamlbuildBase.lib_ocaml = [("mirage_http_unix", ["lib"], [])];
+     MyOCamlbuildBase.lib_ocaml = [("mirage-http", ["lib"], [])];
      lib_c = [];
      flags = [];
      includes = []
@@ -560,6 +564,6 @@ let package_default =
 
 let dispatch_default = MyOCamlbuildBase.dispatch_default package_default;;
 
-# 564 "myocamlbuild.ml"
+# 568 "myocamlbuild.ml"
 (* OASIS_STOP *)
 Ocamlbuild_plugin.dispatch dispatch_default;;

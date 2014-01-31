@@ -15,7 +15,7 @@
  *
  *)
 
-include Cohttp.IO.S
+module Make(Channel:V1_LWT.CHANNEL) : Cohttp.IO.S
   with type 'a t = 'a Lwt.t
-   and type ic = Net.Channel.t
-   and type oc = Net.Channel.t
+   and type ic = Channel.t
+   and type oc = Channel.t

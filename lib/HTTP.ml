@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012-2014 Anil Madhavapeddy <anil@recoil.org>
  * Copyright (c) 2013 Thomas Gazagnaire <thomas@gazazagnaire.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -18,52 +18,40 @@
 
 open Lwt
 
-open Net
+module Make(Channel:V1_LWT.CHANNEL) = struct
 
-module Net_IO = struct
+  module HTTP_IO = HTTP_IO.Make(Channel)
 
-  module IO = HTTP_IO
+  module Net_IO = struct
 
-  let connect_uri uri =
-    fail (Failure "not implemented")
+    module IO = HTTP_IO
 
-  let connect ?ssl ~host ~service () =
-    fail (Failure "not implemented")
+    let connect_uri uri =
+      fail (Failure "not implemented")
 
-  let close_in ic = ()
-  let close_out ic = ()
-  let close ic oc = ignore_result (Channel.close ic)
+    let connect ?ssl ~host ~service () =
+      fail (Failure "not implemented")
 
+    let close_in ic = ()
+    let close_out ic = ()
+    let close ic oc = ignore_result (Channel.close ic)
+
+  end
+
+  (* Build all the core modules from the [Cohttp_lwt] functors *)
+  module Request = Cohttp_lwt.Make_request(HTTP_IO)
+  module Response = Cohttp_lwt.Make_response(HTTP_IO)
+  module Client = Cohttp_lwt.Make_client(HTTP_IO)(Request)(Response)(Net_IO)
+  module Server_core = Cohttp_lwt.Make_server(HTTP_IO)(Request)(Response)(Net_IO)
+
+  (* Extend the [Server_core] module with the Mirage-specific
+     listen function. *)
+  module Server = struct
+    include Server_core
+
+    let listen spec flow =
+      let ch = Channel.create flow in
+      Server_core.callback spec ch ch 
+
+  end
 end
-
-(* Build all the core modules from the [Cohttp_lwt] functors *)
-module Request = Cohttp_lwt.Make_request(HTTP_IO)
-module Response = Cohttp_lwt.Make_response(HTTP_IO)
-module Client = Cohttp_lwt.Make_client(HTTP_IO)(Request)(Response)(Net_IO)
-module Server_core = Cohttp_lwt.Make_server(HTTP_IO)(Request)(Response)(Net_IO)
-
-module type S = sig
-  include Cohttp_lwt.Server with module IO = HTTP_IO
-  val listen : ?timeout:float -> Net.Manager.t -> Net.Nettypes.ipv4_src -> t -> unit Lwt.t
-end
-
-(* Extend the [Server_core] module with the Mirage-specific
-   functions *)
-module Server = struct
-  include Server_core
-  let listen ?timeout mgr src spec =
-    (* TODO XXX the cancel-based timeout is almost certainly broken as the
-     * thread won't issue a Response *)
-    let cb =
-      match timeout with
-      | None   -> fun dst ch -> callback spec ch ch
-      |Some tm ->
-        fun dst ch ->
-          let tmout = OS.Time.sleep tm in
-          let cb_t = callback spec ch ch in
-          tmout <?> cb_t
-    in
-    Net.Channel.listen mgr (`TCPv4 (src, cb))
-end
-
-let listen = Server.listen
