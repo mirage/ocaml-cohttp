@@ -22,27 +22,12 @@
     the separate {!S} module type, as it is dependent on the IO 
     implementation. *)
 type t = {
-  mutable headers: Header.t;
-  mutable meth: Code.meth;
-  mutable uri: Uri.t;
-  mutable version: Code.version;
-  mutable encoding: Transfer.encoding;
+  mutable headers: Header.t;    (** HTTP request headers *)
+  mutable meth: Code.meth;      (** HTTP request method *)
+  mutable uri: Uri.t;           (** Full HTTP request uri *)
+  mutable version: Code.version; (** HTTP version, usually 1.1 *)
+  mutable encoding: Transfer.encoding; (** transfer encoding of this HTTP request *)
 } with fields, sexp
-
-(** Retrieve the HTTP request headers *)
-val headers : t -> Header.t
-
-(** Retrieve the HTTP request method *)
-val meth : t -> Code.meth
-
-(** Retrieve the full HTTP request uri *)
-val uri : t -> Uri.t
-
-(** Retrieve the HTTP version, usually 1.1 *)
-val version : t -> Code.version
-
-(** Retrieve the transfer encoding of this HTTP request *)
-val encoding : t -> Transfer.encoding
 
 val make : ?meth:Code.meth -> ?version:Code.version -> 
   ?encoding:Transfer.encoding -> ?headers:Header.t ->
