@@ -320,7 +320,7 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
               Lwt_mutex.unlock read_m;
               return None
             | Some req -> begin
-                early_close := Request.version req = `HTTP_1_0;
+                early_close := not (Request.is_keep_alive req);
                 (* Ensure the input body has been fully read before reading again *)
                 match Request.has_body req with
                 | true ->
