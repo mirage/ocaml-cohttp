@@ -120,8 +120,8 @@ module Server : sig
   val respond :
     ?flush:bool ->
     ?headers:Cohttp.Header.t ->
-    ?body:string Pipe.Reader.t ->
-    Cohttp.Code.status_code -> response
+    ?body:Body.t ->
+    Cohttp.Code.status_code -> response Deferred.t
 
   (** Resolve a URI and a docroot into a concrete local filename. *)
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
@@ -161,6 +161,6 @@ module Server : sig
                       | `Ignore
                       | `Raise ] ->
     ('address, 'listening_on) Tcp.Where_to_listen.t
-    -> (body:string Pipe.Reader.t option -> 'address -> Request.t -> response Deferred.t)
+    -> (body:Body.t -> 'address -> Request.t -> response Deferred.t)
     -> ('address, 'listening_on) t Deferred.t
 end
