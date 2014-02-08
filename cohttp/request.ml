@@ -42,6 +42,12 @@ let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
   in
   { meth; version; headers; uri; encoding }
 
+let is_keep_alive { version; headers; _ } =
+  not (version = `HTTP_1_0 ||
+       (match Header.connection headers with
+       | Some `Close -> true
+       | _ -> false))
+
 (* Make a client request, which involves guessing encoding and
    adding content headers if appropriate.
    @param chunked Forces chunked encoding
