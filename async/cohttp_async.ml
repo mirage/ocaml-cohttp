@@ -242,10 +242,10 @@ end
 
 module Server = struct
   type ('address, 'listening_on) t = {
-    server: ('address, 'listening_on) Tcp.Server.t;
-  }
+    server: ('address, 'listening_on) Tcp.Server.t sexp_opaque;
+  } with sexp_of
 
-  type response = Writer.t -> unit Deferred.t
+  type response = Response.t * Body.t with sexp_of
 
   let close t = Tcp.Server.close t.server
   let close_finished t = Tcp.Server.close_finished t.server

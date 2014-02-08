@@ -109,12 +109,13 @@ end
 
 module Server : sig
   type ('address, 'listening_on) t constraint 'address = [< Socket.Address.t ]
+  with sexp_of
 
   val close          : (_, _) t -> unit Deferred.t
   val close_finished : (_, _) t -> unit Deferred.t
   val is_closed      : (_, _) t -> bool
 
-  type response
+  type response with sexp_of
 
   val respond :
     ?flush:bool ->
