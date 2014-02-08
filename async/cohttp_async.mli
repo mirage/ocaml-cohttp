@@ -100,6 +100,13 @@ module Client : sig
     (Response.t * string Pipe.Reader.t) Deferred.t
 end
 
+module Body : sig
+  type t with sexp_of
+  val empty : t
+  val string : string -> t
+  val pipe : string Pipe.Reader.t -> t
+end
+
 module Server : sig
   type ('address, 'listening_on) t constraint 'address = [< Socket.Address.t ]
 
