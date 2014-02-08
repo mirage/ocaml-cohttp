@@ -13,7 +13,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- *)
+*)
 
 open Core.Std
 open Async.Std
@@ -58,7 +58,7 @@ module Client : sig
 
   (** Send an HTTP POST request.
       [chunked] encoding is off by default as not many servers support it
-    *)
+  *)
   val post :
     ?interrupt:unit Deferred.t ->
     ?headers:Cohttp.Header.t ->
@@ -69,7 +69,7 @@ module Client : sig
 
   (** Send an HTTP PUT request.
       [chunked] encoding is off by default as not many servers support it
-    *)
+  *)
   val put :
     ?interrupt:unit Deferred.t ->
     ?headers:Cohttp.Header.t ->
@@ -80,7 +80,7 @@ module Client : sig
 
   (** Send an HTTP PATCH request.
       [chunked] encoding is off by default as not many servers support it
-    *)
+  *)
   val patch :
     ?interrupt:unit Deferred.t ->
     ?headers:Cohttp.Header.t ->
