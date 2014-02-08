@@ -299,15 +299,15 @@ module Server = struct
         Writer.close wr
 
   let respond_with_pipe ?flush ?headers ?(code=`OK) body =
-    return (respond ?flush ?headers ~body code)
+    respond ?flush ?headers ~body:(`Pipe body) code
 
   let respond_with_string ?flush ?headers ?(code=`OK) body =
-    let body = Pipe.of_list [body] in
-    return (respond ?flush ?headers ~body code)
+    respond ?flush ?headers ~body:(`String body) code
 
   let respond_with_redirect ?headers uri =
-    let headers = Cohttp.Header.add_opt headers "location" (Uri.to_string uri) in
-    return (respond ~flush:false ~headers `Found)
+    let headers = Cohttp.Header.add_opt headers
+                    "location" (Uri.to_string uri) in
+    respond ~flush:false ~headers `Found
 
   let resolve_local_file ~docroot ~uri =
     (* This normalises the Uri and strips out .. characters *)
@@ -317,19 +317,17 @@ module Server = struct
   let error_body_default =
     "<html><body><h1>404 Not Found</h1></body></html>"
 
-  let respond_with_file ?flush ?headers ?error_body filename =
+  let respond_with_file ?flush ?headers ?(error_body=error_body_default) filename =
     Monitor.try_with ~run:`Now
       (fun () ->
          Reader.open_file filename
          >>= fun rd ->
-         let body = Reader.pipe rd in
-         return (respond ?flush ?headers ~body `OK)
+         let body = `Pipe (Reader.pipe rd) in
+         respond ?flush ?headers ~body `OK
       )
     >>= function
-      |Ok res -> return res
-      |Error exn ->
-        let error_body = Option.value ~default:error_body_default error_body in
-        respond_with_string ~code:`Not_found error_body
+    |Ok res -> return res
+    |Error exn -> respond_with_string ~code:`Not_found error_body
 
 
   let create ?max_connections ?max_pending_connections 
