@@ -250,52 +250,47 @@ module Server = struct
   let close_finished t = Tcp.Server.close_finished t.server
   let is_closed t = Tcp.Server.is_closed t.server
 
-  (* Turn an incoming TCP request into an HTTP request and
-     dispatch it to [handle_request] *)
-  let handle_client handle_request sock rd wr =
-    Request.read rd
-    >>= fun req ->
-    Option.value_exn ~message:"Error reading HTTP request" req
-    |> fun req ->
-    (* Create pipe for response body if it exists *)
-    let body =
-      match Request.has_body req with
-      | false -> None
-      | true ->
-        (* Create a Pipe for the body *)
-        let read_chunk = Request.read_body_chunk req in
-        Some (pipe_of_body read_chunk rd wr)
-    in
-    handle_request ~body sock req
-    >>= fun response ->
-    response wr
+  let read_body req rd wr =
+    match Request.has_body req with
+    | false -> `Empty
+    | true -> (* Create a Pipe for the body *)
+      let read_chunk = Request.read_body_chunk req in
+      `Pipe (pipe_of_body read_chunk rd wr)
 
-  let respond ?(flush=false) ?headers ?body status : response =
-    fun wr ->
-      let headers = Cohttp.Header.add_opt headers "connection" "close" in
+  let handle_client handle_request sock rd wr =
+    Deferred.repeat_until_finished () begin fun () ->
+      Request.read rd >>= fun req ->
+      let req = Option.value_exn ~message:"Error reading HTTP request" req in
+      let body = read_body req rd wr in
+      handle_request ~body sock req >>= fun (res, body) ->
+      let keep_alive = Request.is_keep_alive req in
+      let res =                 (* set "connection" header for response *)
+        let headers = Cohttp.Header.add
+                        (Cohttp.Response.headers res)
+                        "connection"
+                        (if keep_alive then "keep-alive" else "close") in
+        { res with Response.headers } in
+      Response.write_header res wr >>= fun () ->
+      Body.write body res wr >>= fun () ->
+      Response.write_footer res wr >>= fun () ->
+      if Request.is_keep_alive req then
+        return (`Repeat ())
+      else
+        (* TODO: close reader as well?, it wasn't closed in the old version *)
+        Writer.close wr >>| fun () ->
+        `Finished ()
+    end
+
+  let respond ?(flush=false) ?(headers=Cohttp.Header.init ())
+        ?(body=`Empty) status : response Deferred.t =
+    let encoding =
+      let open Cohttp.Transfer in
       match body with
-      | None ->
-        let res = Response.make ~status ~flush ~encoding:(Cohttp.Transfer.Fixed 0) ~headers () in
-        Response.write_header res wr
-        >>= fun () ->
-        Response.write_footer res wr
-        >>= fun () ->
-        Writer.close wr
-      | Some body ->
-        let res = Response.make ~status ~flush ~encoding:Cohttp.Transfer.Chunked ~headers () in
-        Response.write_header res wr
-        >>= fun () ->
-        Pipe.iter body ~f:(fun buf ->
-          Response.write_body res wr buf
-          >>= fun () ->
-          (match flush with
-           | true -> Writer.flushed wr
-           | false -> return ())
-        )
-        >>= fun () ->
-        Response.write_footer res wr
-        >>= fun () ->
-        Writer.close wr
+      | `Empty -> Fixed 0
+      | `String s -> Fixed (String.length s)
+      | `Pipe p -> Chunked in
+    let resp = Response.make ~status ~flush ~encoding ~headers () in
+    return (resp, body)
 
   let respond_with_pipe ?flush ?headers ?(code=`OK) body =
     respond ?flush ?headers ~body:(`Pipe body) code
