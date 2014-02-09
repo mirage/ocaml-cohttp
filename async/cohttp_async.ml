@@ -258,28 +258,32 @@ module Server = struct
       `Pipe (pipe_of_body read_chunk rd wr)
 
   let handle_client handle_request sock rd wr =
-    Deferred.repeat_until_finished () begin fun () ->
-      Request.read rd >>= fun req ->
+    let requests_pipe = Reader.read_all rd (fun rd ->
+      Request.read rd >>| fun req ->
       let req = Option.value_exn ~message:"Error reading HTTP request" req in
       let body = read_body req rd wr in
-      handle_request ~body sock req >>= fun (res, body) ->
-      let keep_alive = Request.is_keep_alive req in
-      let res =                 (* set "connection" header for response *)
-        let headers = Cohttp.Header.add
-                        (Cohttp.Response.headers res)
-                        "connection"
-                        (if keep_alive then "keep-alive" else "close") in
-        { res with Response.headers } in
-      Response.write_header res wr >>= fun () ->
-      Body.write body res wr >>= fun () ->
-      Response.write_footer res wr >>= fun () ->
-      if Request.is_keep_alive req then
-        return (`Repeat ())
-      else
-        (* TODO: close reader as well?, it wasn't closed in the old version *)
-        Writer.close wr >>| fun () ->
-        `Finished ()
-    end
+      if not (Request.is_keep_alive req)
+      then don't_wait_for (Reader.close rd);
+      `Ok (req, body)
+    ) in
+    Pipe.iter requests_pipe ~f:begin fun (req, body) ->
+      try_with (fun () -> handle_request ~body sock req) >>= function
+      | Ok (res, body) ->
+        handle_request ~body sock req >>= fun (res, body) ->
+        let keep_alive = Request.is_keep_alive req in
+        let res =
+          let headers = Cohttp.Header.add
+                          (Cohttp.Response.headers res)
+                          "connection"
+                          (if keep_alive then "keep-alive" else "close") in
+          { res with Response.headers } in
+        Response.write_header res wr >>= fun () ->
+        Body.write body res wr >>= fun () ->
+        Response.write_footer res wr
+      | Error _ -> return ()
+    end >>= fun () ->
+    Writer.close wr
+
 
   let respond ?(flush=false) ?(headers=Cohttp.Header.init ())
         ?(body=`Empty) status : response Deferred.t =
