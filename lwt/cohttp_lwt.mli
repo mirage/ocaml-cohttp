@@ -66,7 +66,7 @@ module type Client = sig
 
   val call :
     ?headers:Cohttp.Header.t ->
-    ?body:Cohttp_lwt_body.contents ->
+    ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     Cohttp.Code.meth ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
@@ -84,19 +84,19 @@ module type Client = sig
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val post :
-    ?body:Cohttp_lwt_body.contents ->
+    ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val put :
-    ?body:Cohttp_lwt_body.contents ->
+    ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val patch :
-    ?body:Cohttp_lwt_body.contents ->
+    ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
@@ -128,7 +128,7 @@ module Make_client
 type server = {
   callback :
     Cohttp.Connection.t ->
-    ?body:Cohttp_lwt_body.contents ->
+    body:Cohttp_lwt_body.t ->
     Cohttp.Request.t ->
     (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
   conn_closed:
@@ -143,7 +143,7 @@ module type Server = sig
   type t = server = {
     callback :
       Cohttp.Connection.t ->
-      ?body:Cohttp_lwt_body.contents ->
+      body:Cohttp_lwt_body.t ->
       Cohttp.Request.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:

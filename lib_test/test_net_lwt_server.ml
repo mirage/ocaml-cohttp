@@ -23,13 +23,13 @@ open Cohttp
 open Cohttp_lwt_unix
 
 let make_server () =
-  let callback conn_id ?body req =
+  let callback conn_id ~body req =
     let uri = Request.uri req in
     Printf.printf "%s\n%!" (Uri.to_string uri);
     match Uri.path uri with
     |""|"/" -> Server.respond_string ~status:`OK ~body:"helloworld" ()
     |"/post" -> begin
-       lwt body = Cohttp_lwt_body.string_of_body body in
+       lwt body = Cohttp_lwt_body.to_string body in
        Server.respond_string ~status:`OK ~body ()
     end
     |"/postnodrain" -> begin
@@ -39,7 +39,7 @@ let make_server () =
        let headers = Header.init_with "content-type" "text/event-stream" in
        let headers = Header.add headers "cache-control" "no-cache" in
        let st,push_st = Lwt_stream.create () in
-       let body = Cohttp_lwt_body.body_of_stream st in
+       let body = Cohttp_lwt_body.of_stream st in
        let cur_time () =
          let tod = Unix.gettimeofday () in
          let tm = Unix.localtime tod in

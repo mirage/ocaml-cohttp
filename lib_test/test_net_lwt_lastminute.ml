@@ -9,7 +9,7 @@ let u4 = "http://www.rustorka.com:2710/announce?info_hash=/00%00%00%00%00%00%000
 (* a simple function to access the content of the response *)
 let content t =
   catch
-    (fun () -> t |> snd |> Cohttp_lwt_body.string_of_body)
+    (fun () -> t |> snd |> Cohttp_lwt_body.to_string)
     (fun _ -> return "")
 
 (* launch both requests in parallel *)

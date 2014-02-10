@@ -5,7 +5,7 @@ let body =
   let open Cohttp_lwt_unix in
   Lwt_unix.run (
     Client.get Uri.(of_string "http://www.google.com/") >>= fun (r,b) ->
-    Cohttp_lwt_body.string_of_body b
+    Cohttp_lwt_body.to_string b
   )
 
 let _ = prerr_endline body
