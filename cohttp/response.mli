@@ -29,7 +29,7 @@ type t = {
   mutable version: Code.version;
   mutable status: Code.status_code;
   mutable flush: bool;
-} with fields
+} with fields, sexp
 
 (** Retrieve response HTTP headers *)
 val headers : t -> Header.t

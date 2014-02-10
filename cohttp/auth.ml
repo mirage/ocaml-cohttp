@@ -15,14 +15,16 @@
  *
  *)
 
+open Sexplib.Std
 open Printf
 
 type req = [
  | `Basic of string (* realm *)
-]
+] with sexp
 
 type t =
   | Basic of string * string (* username, password *)
+  with sexp
 
 let to_string =
   function

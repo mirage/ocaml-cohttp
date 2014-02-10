@@ -16,14 +16,14 @@
   PERFORMANCE OF THIS SOFTWARE.
 *)
 
-type pv = Accept_types.pv = T of string | S of string
-type p = string * pv
+type pv = Accept_types.pv = T of string | S of string with sexp
+type p = string * pv with sexp
 type media_range =
   Accept_types.media_range =
     MediaType of string * string
   | AnyMediaSubtype of string
-  | AnyMedia
-type charset = Accept_types.charset = Charset of string | AnyCharset
+  | AnyMedia with sexp
+type charset = Accept_types.charset = Charset of string | AnyCharset with sexp
 type encoding =
   Accept_types.encoding =
     Encoding of string
@@ -31,10 +31,10 @@ type encoding =
   | Compress
   | Deflate
   | Identity
-  | AnyEncoding
-type language = Accept_types.language = Language of string list | AnyLanguage
-type q = int
-type 'a qlist = (q * 'a) list
+  | AnyEncoding with sexp
+type language = Accept_types.language = Language of string list | AnyLanguage with sexp
+type q = int with sexp
+type 'a qlist = (q * 'a) list with sexp
 
 val media_ranges :
   string option -> (media_range * p list) qlist

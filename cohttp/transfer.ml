@@ -15,15 +15,17 @@
  *
  *)
 
+open Sexplib.Std
+
 type encoding =
 | Chunked
 | Fixed of int
-| Unknown
+| Unknown with sexp
 
 type chunk =
 | Chunk of string
 | Final_chunk of string
-| Done
+| Done with sexp
 
 let encoding_to_string =
   function

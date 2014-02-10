@@ -17,10 +17,11 @@
 
 type req = [
  | `Basic of string (* realm *)
-]
+] with sexp
 
 type t =
   | Basic of string * string (* username, password *)
+with sexp
 
 val to_string : t -> string
 val of_string : string -> t option

@@ -27,7 +27,7 @@ type t = {
   mutable uri: Uri.t;
   mutable version: Code.version;
   mutable encoding: Transfer.encoding;
-} with fields
+} with fields, sexp
 
 (** Retrieve the HTTP request headers *)
 val headers : t -> Header.t

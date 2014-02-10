@@ -1,3 +1,10 @@
+0.9.16 (2014-01-30):
+* Add some module type equalities in `Cohttp_lwt_unix` so that
+  `Cohttp_lwt_unix.Server.Request.IO.ic` can be equivalen to `Lwt_io.input_channel`.
+* Add sexp converters to most Cohttp types (#83).
+* Improve Travis tests to cover more upstream users of Cohttp.
+* Refactor build flags to let the portable Lwt-core be built independently of Lwt.unix.
+
 0.9.15 (2014-01-11):
 * Remove `Cohttp_mirage` libraries, which have now moved to `mirage/mirage-http-*` on GitHub.
 * Add an "HTTP only" `Cookie` attribute (#69).

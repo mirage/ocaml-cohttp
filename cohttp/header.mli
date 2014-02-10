@@ -18,7 +18,7 @@
 (** Map of HTTP header key and value(s) associated with them.  Since HTTP
     headers can contain duplicate keys, this structure can return a list
     of values associated with a single key. *)
-type t
+type t with sexp
 
 (** Construct a fresh, empty map of HTTP headers *)
 val init : unit -> t
