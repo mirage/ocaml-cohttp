@@ -112,45 +112,35 @@ module Response = struct
 end
 
 let pipe_of_body read_chunk ic oc =
-  let rd,wr = Pipe.create () in
-  let rec aux () =
-    let open Cohttp.Transfer in
-    read_chunk ic
-    >>= function
-      | Chunk buf ->
-        Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
-        >>= (function
-            | `Closed ->
-              Writer.close oc
-              >>= fun () ->
-              Reader.close ic
-            |`Ok _ -> 
-              aux ()
-          )
-      | Final_chunk buf ->
-        Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
-        >>= (function
-            | `Closed ->
-              Writer.close oc
-              >>= fun () ->
-              Reader.close ic
-            |`Ok _ -> 
-              Pipe.close wr;
-              return ()
-          )
-      | Done ->
-        Pipe.close wr;
-        Writer.close oc
-        >>= fun () ->
-        Reader.close ic
-  in don't_wait_for (aux ());
+  let open Cohttp.Transfer in
+  let (rd, wr) = Pipe.create () in
+  let finished = Deferred.repeat_until_finished () begin fun () ->
+    read_chunk ic >>= function
+    | Chunk buf ->
+      begin
+        Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf) >>|
+        function
+        | `Closed -> `Finished ()
+        | `Ok _ -> `Repeat ()
+      end
+    | Final_chunk buf ->
+      Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf) >>|
+      fun _ -> `Finished ()
+    | Done -> return (`Finished ())
+  end in
+  don't_wait_for begin
+    finished >>= fun () ->
+    Writer.close oc >>= fun () ->
+    Reader.close ic >>= fun () ->
+    return (Pipe.close wr)
+  end;
   rd
 
 type body = string Pipe.Reader.t
 let body_to_string body =
   Pipe.to_list body 
   >>| String.concat
- 
+
 module Client = struct
 
   let call ?interrupt ?headers ?(chunked=false) ?body meth uri =
