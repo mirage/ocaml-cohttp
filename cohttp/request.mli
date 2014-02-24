@@ -48,6 +48,9 @@ val make : ?meth:Code.meth -> ?version:Code.version ->
   ?encoding:Transfer.encoding -> ?headers:Header.t ->
   Uri.t -> t
 
+(** Return true whether the connection should be reused *)
+val is_keep_alive : t -> bool
+
 val make_for_client:
   ?headers:Header.t ->
   ?chunked:bool ->

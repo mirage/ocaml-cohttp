@@ -75,3 +75,5 @@ val is_form : t -> bool
 
 val user_agent : string
 val prepend_user_agent : t -> string -> t
+
+val connection : t -> [`Keep_alive | `Close | `Unknown of string] option
