@@ -13,7 +13,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- *)
+*)
 
 open Core.Std
 open Async.Std
@@ -58,7 +58,7 @@ module Client : sig
 
   (** Send an HTTP POST request.
       [chunked] encoding is off by default as not many servers support it
-    *)
+  *)
   val post :
     ?interrupt:unit Deferred.t ->
     ?headers:Cohttp.Header.t ->
@@ -69,7 +69,7 @@ module Client : sig
 
   (** Send an HTTP PUT request.
       [chunked] encoding is off by default as not many servers support it
-    *)
+  *)
   val put :
     ?interrupt:unit Deferred.t ->
     ?headers:Cohttp.Header.t ->
@@ -80,7 +80,7 @@ module Client : sig
 
   (** Send an HTTP PATCH request.
       [chunked] encoding is off by default as not many servers support it
-    *)
+  *)
   val patch :
     ?interrupt:unit Deferred.t ->
     ?headers:Cohttp.Header.t ->
@@ -100,20 +100,28 @@ module Client : sig
     (Response.t * string Pipe.Reader.t) Deferred.t
 end
 
+module Body : sig
+  type t with sexp_of
+  val empty : t
+  val string : string -> t
+  val pipe : string Pipe.Reader.t -> t
+end
+
 module Server : sig
   type ('address, 'listening_on) t constraint 'address = [< Socket.Address.t ]
+  with sexp_of
 
   val close          : (_, _) t -> unit Deferred.t
   val close_finished : (_, _) t -> unit Deferred.t
   val is_closed      : (_, _) t -> bool
 
-  type response
+  type response with sexp_of
 
   val respond :
     ?flush:bool ->
     ?headers:Cohttp.Header.t ->
-    ?body:string Pipe.Reader.t ->
-    Cohttp.Code.status_code -> response
+    ?body:Body.t ->
+    Cohttp.Code.status_code -> response Deferred.t
 
   (** Resolve a URI and a docroot into a concrete local filename. *)
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
@@ -153,6 +161,6 @@ module Server : sig
                       | `Ignore
                       | `Raise ] ->
     ('address, 'listening_on) Tcp.Where_to_listen.t
-    -> (body:string Pipe.Reader.t option -> 'address -> Request.t -> response Deferred.t)
+    -> (body:Body.t -> 'address -> Request.t -> response Deferred.t)
     -> ('address, 'listening_on) t Deferred.t
 end
