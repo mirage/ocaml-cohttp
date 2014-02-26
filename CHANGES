@@ -1,3 +1,6 @@
+0.9.17 (trunk):
+* 
+
 0.9.16 (2014-01-30):
 * Add some module type equalities in `Cohttp_lwt_unix` so that
   `Cohttp_lwt_unix.Server.Request.IO.ic` can be equivalen to `Lwt_io.input_channel`.
