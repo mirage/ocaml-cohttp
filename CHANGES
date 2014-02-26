@@ -1,5 +1,7 @@
 0.9.17 (trunk):
-* 
+* Add `Cohttp.Header.is_keep_alive` to test if a connection should be reused.
+* [lwt] Respect the `keep-alive` header in the server request handling.
+* [async] Add a `Body` that takes a `Pipe` or a `string`, similarly to Lwt.
 
 0.9.16 (2014-01-30):
 * Add some module type equalities in `Cohttp_lwt_unix` so that
