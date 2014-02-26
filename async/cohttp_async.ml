@@ -13,7 +13,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- *)
+*)
 
 open Core.Std
 open Async.Std
@@ -21,8 +21,7 @@ open Async.Std
 module IO = struct
   let check_debug norm_fn debug_fn =
     try
-      (* XXX why does Async remove getenv? *)
-      ignore(Core.Std.Sys.getenv_exn "COHTTP_DEBUG");
+      let _ = Sys.getenv_exn "COHTTP_DEBUG" in
       debug_fn
     with Failure _ ->
       norm_fn
@@ -40,16 +39,16 @@ module IO = struct
   let read_line =
     check_debug
       (fun ic ->
-         Reader.read_line ic >>=
-         function
+         Reader.read_line ic
+         >>= function
          |`Ok s -> return (Some s)
          |`Eof -> return None
       )
       (fun ic ->
-         Reader.read_line ic >>=
-         function
-         |`Ok s -> Printf.eprintf "<<< %s\n" s; return (Some s)
-         |`Eof -> Printf.eprintf "<<<EOF\n"; return None
+         Reader.read_line ic
+         >>= function
+         |`Ok s -> eprintf "<<< %s\n" s; return (Some s)
+         |`Eof -> eprintf "<<<EOF\n"; return None
       )
 
   let read ic len =
@@ -71,7 +70,7 @@ module IO = struct
          Writer.write oc buf; 
          return ())
       (fun oc buf -> 
-         Printf.eprintf "\n%4d >>> %s" (Pid.to_int (Unix.getpid ())) buf; 
+         eprintf "\n%4d >>> %s" (Pid.to_int (Unix.getpid ())) buf; 
          Writer.write oc buf;
          return ())
 
@@ -83,7 +82,7 @@ module IO = struct
          return ()
       )
       (fun oc buf ->
-         Printf.eprintf "\n%4d >>>> %s\n" (Pid.to_int (Unix.getpid())) buf;
+         eprintf "\n%4d >>>> %s\n" (Pid.to_int (Unix.getpid())) buf;
          Writer.write oc buf;
          Writer.write oc "\r\n";
          return ()
@@ -105,7 +104,7 @@ module Request = struct
   include Cohttp.Request
   include Cohttp.Request.Make(IO)
 end
- 
+
 module Response = struct
   include Cohttp.Response
   include Cohttp.Response.Make(IO)
@@ -114,40 +113,85 @@ end
 let pipe_of_body read_chunk ic oc =
   let open Cohttp.Transfer in
   let (rd, wr) = Pipe.create () in
-  let finished = Deferred.repeat_until_finished () begin fun () ->
-    read_chunk ic >>= function
-    | Chunk buf ->
-      begin
-        Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf) >>|
-        function
-        | `Closed -> `Finished ()
-        | `Ok _ -> `Repeat ()
-      end
-    | Final_chunk buf ->
-      Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf) >>|
-      fun _ -> `Finished ()
-    | Done -> return (`Finished ())
-  end in
-  don't_wait_for begin
+  let finished =
+    Deferred.repeat_until_finished ()
+      (fun () ->
+         read_chunk ic 
+         >>= function
+         | Chunk buf ->
+           begin
+             Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
+             >>| function
+             | `Closed -> `Finished ()
+             | `Ok _ -> `Repeat ()
+           end
+         | Final_chunk buf ->
+           Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf) 
+           >>| fun _ -> `Finished ()
+         | Done -> return (`Finished ())
+      ) in
+  don't_wait_for (
     finished >>= fun () ->
     Writer.close oc >>= fun () ->
     Reader.close ic >>= fun () ->
     return (Pipe.close wr)
-  end;
+  );
   rd
 
-type body = string Pipe.Reader.t
 let body_to_string body =
   Pipe.to_list body 
   >>| String.concat
 
+module Body = struct
+  (* TODO: would be cool to have Buffer.t here as well and maybe even
+     a basic stream: unit -> string option *)
+  (* TODO: Ideally we unify this with way Lwt handles
+     bodies. Currently that method is Body.t without `Empty and
+     Pipe.Reader.t is Lwt_stream.t *)
+  type t = [
+    | `Pipe of string Pipe.Reader.t
+    | `String of string
+    (* we inline option because:
+       1. there's multiple ways to represent an empty body anyway so pattern matching
+       doesn't really tell us much about the body itself
+       2. more convenient in pattern matching
+       3. performance?
+    *)
+    | `Empty ]
+  with sexp_of
+
+  (* we only keep these abstract because lwt does so as well.  It
+     probably makes sense to lift this restriction however once the
+     situation with lwt is unified. *)
+
+  let empty = `Empty
+  let string s = `String s
+  let pipe p = `Pipe p
+
+  (* We only use Body.t to communicate with cohttp downstream so we
+     have no to_{pipe, string, etc. } *)
+
+  let write body response wr =
+    match body with
+    | `Empty -> return ()
+    | `String s -> Response.write_body response wr s
+    | `Pipe p ->
+      Pipe.iter p ~f:(fun buf ->
+          Response.write_body response wr buf 
+          >>= fun () ->
+          match Response.flush response with
+          | true -> Writer.flushed wr
+          | false -> return ())
+end
+
 module Client = struct
 
-  let call ?interrupt ?headers ?(chunked=false) ?body meth uri =
+  let call ?interrupt ?headers ?(chunked=false) ?(body=`Empty) meth uri =
     (* Convert the body Pipe to a list of chunks. *)
     (match body with
-     | None -> return []
-     | Some body -> Pipe.to_list body 
+     | `Empty -> return []
+     | `String s -> return [s]
+     | `Pipe body -> Pipe.to_list body 
     ) >>= fun body_bufs ->
     (* Figure out an appropriate transfer encoding *)
     let req =
@@ -200,73 +244,70 @@ module Client = struct
 end
 
 module Server = struct
-  type ('address, 'listening_on) t = {
-    server: ('address, 'listening_on) Tcp.Server.t;
-  }
 
-  type response = Writer.t -> unit Deferred.t
+  type ('address, 'listening_on) t = {
+    server: ('address, 'listening_on) Tcp.Server.t sexp_opaque;
+  } with sexp_of
+
+  type response = Response.t * Body.t with sexp_of
 
   let close t = Tcp.Server.close t.server
   let close_finished t = Tcp.Server.close_finished t.server
   let is_closed t = Tcp.Server.is_closed t.server
 
-  (* Turn an incoming TCP request into an HTTP request and
-     dispatch it to [handle_request] *)
-  let handle_client handle_request sock rd wr =
-    Request.read rd
-    >>= fun req ->
-    Option.value_exn ~message:"Error reading HTTP request" req
-    |> fun req ->
-    (* Create pipe for response body if it exists *)
-    let body =
-      match Request.has_body req with
-      | false -> None
-      | true ->
-        (* Create a Pipe for the body *)
-        let read_chunk = Request.read_body_chunk req in
-        Some (pipe_of_body read_chunk rd wr)
-    in
-    handle_request ~body sock req
-    >>= fun response ->
-    response wr
+  let read_body req rd wr =
+    match Request.has_body req with
+    | false -> `Empty
+    | true -> (* Create a Pipe for the body *)
+      let read_chunk = Request.read_body_chunk req in
+      `Pipe (pipe_of_body read_chunk rd wr)
 
-  let respond ?(flush=false) ?headers ?body status : response =
-    fun wr ->
-      let headers = Cohttp.Header.add_opt headers "connection" "close" in
+  let handle_client handle_request sock rd wr =
+    let requests_pipe = Reader.read_all rd (fun rd ->
+        Request.read rd >>| fun req ->
+        let req = Option.value_exn ~message:"Error reading HTTP request" req in
+        let body = read_body req rd wr in
+        if not (Request.is_keep_alive req)
+        then don't_wait_for (Reader.close rd);
+        `Ok (req, body)
+      ) in
+    Pipe.iter requests_pipe ~f:(fun (req, body) ->
+        handle_request ~body sock req >>= fun (res, body) ->
+        let keep_alive = Request.is_keep_alive req in
+        let res =
+          let headers = Cohttp.Header.add
+              (Cohttp.Response.headers res)
+              "connection"
+              (if keep_alive then "keep-alive" else "close") in
+          { res with Response.headers } in
+        Response.write_header res wr >>= fun () ->
+        Body.write body res wr >>= fun () ->
+        Response.write_footer res wr
+      ) 
+    >>= fun () ->
+    Writer.close wr
+
+  let respond ?(flush=false) ?(headers=Cohttp.Header.init ())
+      ?(body=`Empty) status : response Deferred.t =
+    let encoding =
+      let open Cohttp.Transfer in
       match body with
-      | None ->
-        let res = Response.make ~status ~flush ~encoding:(Cohttp.Transfer.Fixed 0) ~headers () in
-        Response.write_header res wr
-        >>= fun () ->
-        Response.write_footer res wr
-        >>= fun () ->
-        Writer.close wr
-      | Some body ->
-        let res = Response.make ~status ~flush ~encoding:Cohttp.Transfer.Chunked ~headers () in
-        Response.write_header res wr
-        >>= fun () ->
-        Pipe.iter body ~f:(fun buf ->
-          Response.write_body res wr buf
-          >>= fun () ->
-          (match flush with
-           | true -> Writer.flushed wr
-           | false -> return ())
-        )
-        >>= fun () ->
-        Response.write_footer res wr
-        >>= fun () ->
-        Writer.close wr
+      | `Empty -> Fixed 0
+      | `String s -> Fixed (String.length s)
+      | `Pipe p -> Chunked in
+    let resp = Response.make ~status ~flush ~encoding ~headers () in
+    return (resp, body)
 
   let respond_with_pipe ?flush ?headers ?(code=`OK) body =
-    return (respond ?flush ?headers ~body code)
+    respond ?flush ?headers ~body:(`Pipe body) code
 
   let respond_with_string ?flush ?headers ?(code=`OK) body =
-    let body = Pipe.of_list [body] in
-    return (respond ?flush ?headers ~body code)
+    respond ?flush ?headers ~body:(`String body) code
 
   let respond_with_redirect ?headers uri =
-    let headers = Cohttp.Header.add_opt headers "location" (Uri.to_string uri) in
-    return (respond ~flush:false ~headers `Found)
+    let headers = Cohttp.Header.add_opt headers
+        "location" (Uri.to_string uri) in
+    respond ~flush:false ~headers `Found
 
   let resolve_local_file ~docroot ~uri =
     (* This normalises the Uri and strips out .. characters *)
@@ -276,19 +317,17 @@ module Server = struct
   let error_body_default =
     "<html><body><h1>404 Not Found</h1></body></html>"
 
-  let respond_with_file ?flush ?headers ?error_body filename =
+  let respond_with_file ?flush ?headers ?(error_body=error_body_default) filename =
     Monitor.try_with ~run:`Now
       (fun () ->
          Reader.open_file filename
          >>= fun rd ->
-         let body = Reader.pipe rd in
-         return (respond ?flush ?headers ~body `OK)
+         let body = `Pipe (Reader.pipe rd) in
+         respond ?flush ?headers ~body `OK
       )
     >>= function
-      |Ok res -> return res
-      |Error exn ->
-        let error_body = Option.value ~default:error_body_default error_body in
-        respond_with_string ~code:`Not_found error_body
+    |Ok res -> return res
+    |Error exn -> respond_with_string ~code:`Not_found error_body
 
 
   let create ?max_connections ?max_pending_connections 

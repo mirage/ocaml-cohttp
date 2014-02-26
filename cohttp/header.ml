@@ -190,6 +190,13 @@ let prepend_user_agent headers user_agent =
     | Some ua -> replace headers k (user_agent^" "^ua)
     | None -> add headers k user_agent
 
+let connection h =
+  match get h "connection" with
+  | Some v when v = "keep-alive" -> Some `Keep_alive
+  | Some v when v = "close" -> Some `Close
+  | Some x -> Some (`Unknown x)
+  | x -> None
+
 open Sexplib.Std
 open Sexplib.Conv
 

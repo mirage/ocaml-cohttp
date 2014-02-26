@@ -1,4 +1,4 @@
-OPAM_DEPENDS="lwt async ssl uri re mirage-tcpip-unix mirage-tcpip-xen"
+OPAM_DEPENDS="lwt async ssl uri re"
 
 case "$OCAML_VERSION,$OPAM_VERSION" in
 4.00.1,1.0.0) ppa=avsm/ocaml40+opam10 ;;
@@ -25,8 +25,8 @@ opam init
 opam install ${OPAM_DEPENDS}
 
 eval `opam config env`
-make
-#make test
+make NETTESTS=--enable-nettests
+make test
 
 # Test out some upstream users of Cohttp
 opam pin cohttp .
