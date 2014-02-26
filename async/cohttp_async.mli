@@ -70,7 +70,7 @@ module Client : sig
     ?interrupt:unit Deferred.t ->
     ?headers:Cohttp.Header.t ->
     ?chunked:bool ->
-    ?body:string Pipe.Reader.t ->
+    ?body:Body.t ->
     Uri.t ->
     (Response.t * string Pipe.Reader.t) Deferred.t
 
@@ -81,7 +81,7 @@ module Client : sig
     ?interrupt:unit Deferred.t ->
     ?headers:Cohttp.Header.t ->
     ?chunked:bool ->
-    ?body:string Pipe.Reader.t ->
+    ?body:Body.t ->
     Uri.t ->
     (Response.t * string Pipe.Reader.t) Deferred.t
 
@@ -92,7 +92,7 @@ module Client : sig
     ?interrupt:unit Deferred.t ->
     ?headers:Cohttp.Header.t ->
     ?chunked:bool ->
-    ?body:string Pipe.Reader.t ->
+    ?body:Body.t ->
     Uri.t ->
     (Response.t * string Pipe.Reader.t) Deferred.t
 
@@ -101,7 +101,7 @@ module Client : sig
     ?interrupt:unit Deferred.t ->
     ?headers:Cohttp.Header.t ->
     ?chunked:bool ->
-    ?body:string Pipe.Reader.t ->
+    ?body:Body.t ->
     Cohttp.Code.meth ->
     Uri.t ->
     (Response.t * string Pipe.Reader.t) Deferred.t

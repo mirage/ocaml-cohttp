@@ -142,13 +142,56 @@ let body_to_string body =
   Pipe.to_list body 
   >>| String.concat
 
+module Body = struct
+  (* TODO: would be cool to have Buffer.t here as well and maybe even
+     a basic stream: unit -> string option *)
+  (* TODO: Ideally we unify this with way Lwt handles
+     bodies. Currently that method is Body.t without `Empty and
+     Pipe.Reader.t is Lwt_stream.t *)
+  type t = [
+    | `Pipe of string Pipe.Reader.t
+    | `String of string
+    (* we inline option because:
+       1. there's multiple ways to represent an empty body anyway so pattern matching
+       doesn't really tell us much about the body itself
+       2. more convenient in pattern matching
+       3. performance?
+    *)
+    | `Empty ]
+  with sexp_of
+
+  (* we only keep these abstract because lwt does so as well.  It
+     probably makes sense to lift this restriction however once the
+     situation with lwt is unified. *)
+
+  let empty = `Empty
+  let string s = `String s
+  let pipe p = `Pipe p
+
+  (* We only use Body.t to communicate with cohttp downstream so we
+     have no to_{pipe, string, etc. } *)
+
+  let write body response wr =
+    match body with
+    | `Empty -> return ()
+    | `String s -> Response.write_body response wr s
+    | `Pipe p ->
+      Pipe.iter p ~f:(fun buf ->
+          Response.write_body response wr buf 
+          >>= fun () ->
+          match Response.flush response with
+          | true -> Writer.flushed wr
+          | false -> return ())
+end
+
 module Client = struct
 
-  let call ?interrupt ?headers ?(chunked=false) ?body meth uri =
+  let call ?interrupt ?headers ?(chunked=false) ?(body=`Empty) meth uri =
     (* Convert the body Pipe to a list of chunks. *)
     (match body with
-     | None -> return []
-     | Some body -> Pipe.to_list body 
+     | `Empty -> return []
+     | `String s -> return [s]
+     | `Pipe body -> Pipe.to_list body 
     ) >>= fun body_bufs ->
     (* Figure out an appropriate transfer encoding *)
     let req =
@@ -198,48 +241,6 @@ module Client = struct
 
   let delete ?interrupt ?headers uri =
     call ?interrupt ?headers ~chunked:false `DELETE uri
-end
-
-module Body = struct
-  (* TODO: would be cool to have Buffer.t here as well and maybe even
-     a basic stream: unit -> string option *)
-  (* TODO: Ideally we unify this with way Lwt handles
-     bodies. Currently that method is Body.t without `Empty and
-     Pipe.Reader.t is Lwt_stream.t *)
-  type t = [
-    | `Pipe of string Pipe.Reader.t
-    | `String of string
-    (* we inline option because:
-       1. there's multiple ways to represent an empty body anyway so pattern matching
-       doesn't really tell us much about the body itself
-       2. more convenient in pattern matching
-       3. performance?
-    *)
-    | `Empty ]
-  with sexp_of
-
-  (* we only keep these abstract because lwt does so as well.  It
-     probably makes sense to lift this restriction however once the
-     situation with lwt is unified. *)
-
-  let empty = `Empty
-  let string s = `String s
-  let pipe p = `Pipe p
-
-  (* We only use Body.t to communicate with cohttp downstream so we
-     have no to_{pipe, string, etc. } *)
-
-  let write body response wr =
-    match body with
-    | `Empty -> return ()
-    | `String s -> Response.write_body response wr s
-    | `Pipe p ->
-      Pipe.iter p ~f:(fun buf ->
-          Response.write_body response wr buf 
-          >>= fun () ->
-          match Response.flush response with
-          | true -> Writer.flushed wr
-          | false -> return ())
 end
 
 module Server = struct
