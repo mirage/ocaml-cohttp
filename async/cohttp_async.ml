@@ -47,8 +47,8 @@ module IO = struct
       (fun ic ->
          Reader.read_line ic >>=
          function
-         |`Ok s -> Printf.eprintf "<<< %s\n" s; return (Some s)
-         |`Eof -> Printf.eprintf "<<<EOF\n"; return None
+         |`Ok s -> eprintf "<<< %s\n" s; return (Some s)
+         |`Eof -> eprintf "<<<EOF\n"; return None
       )
 
   let read ic len =
@@ -70,7 +70,7 @@ module IO = struct
          Writer.write oc buf; 
          return ())
       (fun oc buf -> 
-         Printf.eprintf "\n%4d >>> %s" (Pid.to_int (Unix.getpid ())) buf; 
+         eprintf "\n%4d >>> %s" (Pid.to_int (Unix.getpid ())) buf; 
          Writer.write oc buf;
          return ())
 
@@ -82,7 +82,7 @@ module IO = struct
          return ()
       )
       (fun oc buf ->
-         Printf.eprintf "\n%4d >>>> %s\n" (Pid.to_int (Unix.getpid())) buf;
+         eprintf "\n%4d >>>> %s\n" (Pid.to_int (Unix.getpid())) buf;
          Writer.write oc buf;
          Writer.write oc "\r\n";
          return ()
