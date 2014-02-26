@@ -210,6 +210,15 @@ Executable "cohttp-server"
   Install:            true
   BuildDepends:       cohttp, cohttp.async
 
+Executable "async-hello-world"
+  Path:               examples/async
+  MainIs:             hello_world.ml
+  Build$:             flag(async)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.async
+
 Test test_accept
   Run$:               flag(tests)
   Command:            $test_accept
