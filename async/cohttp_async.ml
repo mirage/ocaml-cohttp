@@ -21,8 +21,7 @@ open Async.Std
 module IO = struct
   let check_debug norm_fn debug_fn =
     try
-      (* XXX why does Async remove getenv? *)
-      ignore(Core.Std.Sys.getenv_exn "COHTTP_DEBUG");
+      let _ = Sys.getenv_exn "COHTTP_DEBUG" in
       debug_fn
     with Failure _ ->
       norm_fn
