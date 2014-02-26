@@ -33,6 +33,13 @@ module Response : sig
   include Cohttp.Response.S with module IO=IO
 end
 
+module Body : sig
+  type t with sexp_of
+  val empty : t
+  val string : string -> t
+  val pipe : string Pipe.Reader.t -> t
+end
+
 module Client : sig
 
   (** Send an HTTP GET request *)
@@ -98,13 +105,6 @@ module Client : sig
     Cohttp.Code.meth ->
     Uri.t ->
     (Response.t * string Pipe.Reader.t) Deferred.t
-end
-
-module Body : sig
-  type t with sexp_of
-  val empty : t
-  val string : string -> t
-  val pipe : string Pipe.Reader.t -> t
 end
 
 module Server : sig
