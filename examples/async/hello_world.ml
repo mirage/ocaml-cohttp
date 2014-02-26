@@ -4,8 +4,8 @@ open Core.Std
 open Async.Std
 open Cohttp_async
  
-(* given filename: simple_server.ml compile with: 
-   $ corebuild simple_server.native -pkg cohttp.async
+(* given filename: hello_world.ml compile with: 
+   $ corebuild hello_world.native -pkg cohttp.async
 *)
  
 let handler ~body:_ _sock req =
