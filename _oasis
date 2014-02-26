@@ -204,7 +204,7 @@ Executable test_net_async_server
 Executable "cohttp-server"
   Path:               bin
   MainIs:             cohttp_server_async.ml
-  Build$:             flag(tests) && flag(async)
+  Build$:             flag(async)
   Custom:             true
   CompiledObject:     best
   Install:            true
