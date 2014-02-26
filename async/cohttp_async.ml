@@ -39,14 +39,14 @@ module IO = struct
   let read_line =
     check_debug
       (fun ic ->
-         Reader.read_line ic >>=
-         function
+         Reader.read_line ic
+         >>= function
          |`Ok s -> return (Some s)
          |`Eof -> return None
       )
       (fun ic ->
-         Reader.read_line ic >>=
-         function
+         Reader.read_line ic
+         >>= function
          |`Ok s -> eprintf "<<< %s\n" s; return (Some s)
          |`Eof -> eprintf "<<<EOF\n"; return None
       )
@@ -113,26 +113,29 @@ end
 let pipe_of_body read_chunk ic oc =
   let open Cohttp.Transfer in
   let (rd, wr) = Pipe.create () in
-  let finished = Deferred.repeat_until_finished () begin fun () ->
-    read_chunk ic >>= function
-    | Chunk buf ->
-      begin
-        Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf) >>|
-        function
-        | `Closed -> `Finished ()
-        | `Ok _ -> `Repeat ()
-      end
-    | Final_chunk buf ->
-      Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf) >>|
-      fun _ -> `Finished ()
-    | Done -> return (`Finished ())
-  end in
-  don't_wait_for begin
+  let finished =
+    Deferred.repeat_until_finished ()
+      (fun () ->
+         read_chunk ic 
+         >>= function
+         | Chunk buf ->
+           begin
+             Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
+             >>| function
+             | `Closed -> `Finished ()
+             | `Ok _ -> `Repeat ()
+           end
+         | Final_chunk buf ->
+           Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf) 
+           >>| fun _ -> `Finished ()
+         | Done -> return (`Finished ())
+      ) in
+  don't_wait_for (
     finished >>= fun () ->
     Writer.close oc >>= fun () ->
     Reader.close ic >>= fun () ->
     return (Pipe.close wr)
-  end;
+  );
   rd
 
 let body_to_string body =
@@ -232,13 +235,15 @@ module Body = struct
     | `String s -> Response.write_body response wr s
     | `Pipe p ->
       Pipe.iter p ~f:(fun buf ->
-        Response.write_body response wr buf >>= fun () ->
-        match Response.flush response with
-        | true -> Writer.flushed wr
-        | false -> return ())
+          Response.write_body response wr buf 
+          >>= fun () ->
+          match Response.flush response with
+          | true -> Writer.flushed wr
+          | false -> return ())
 end
 
 module Server = struct
+
   type ('address, 'listening_on) t = {
     server: ('address, 'listening_on) Tcp.Server.t sexp_opaque;
   } with sexp_of
@@ -258,31 +263,31 @@ module Server = struct
 
   let handle_client handle_request sock rd wr =
     let requests_pipe = Reader.read_all rd (fun rd ->
-      Request.read rd >>| fun req ->
-      let req = Option.value_exn ~message:"Error reading HTTP request" req in
-      let body = read_body req rd wr in
-      if not (Request.is_keep_alive req)
-      then don't_wait_for (Reader.close rd);
-      `Ok (req, body)
-    ) in
-    Pipe.iter requests_pipe ~f:begin fun (req, body) ->
-      handle_request ~body sock req >>= fun (res, body) ->
-      let keep_alive = Request.is_keep_alive req in
-      let res =
-        let headers = Cohttp.Header.add
-                        (Cohttp.Response.headers res)
-                        "connection"
-                        (if keep_alive then "keep-alive" else "close") in
-        { res with Response.headers } in
-      Response.write_header res wr >>= fun () ->
-      Body.write body res wr >>= fun () ->
-      Response.write_footer res wr
-    end >>= fun () ->
+        Request.read rd >>| fun req ->
+        let req = Option.value_exn ~message:"Error reading HTTP request" req in
+        let body = read_body req rd wr in
+        if not (Request.is_keep_alive req)
+        then don't_wait_for (Reader.close rd);
+        `Ok (req, body)
+      ) in
+    Pipe.iter requests_pipe ~f:(fun (req, body) ->
+        handle_request ~body sock req >>= fun (res, body) ->
+        let keep_alive = Request.is_keep_alive req in
+        let res =
+          let headers = Cohttp.Header.add
+              (Cohttp.Response.headers res)
+              "connection"
+              (if keep_alive then "keep-alive" else "close") in
+          { res with Response.headers } in
+        Response.write_header res wr >>= fun () ->
+        Body.write body res wr >>= fun () ->
+        Response.write_footer res wr
+      ) 
+    >>= fun () ->
     Writer.close wr
 
-
   let respond ?(flush=false) ?(headers=Cohttp.Header.init ())
-        ?(body=`Empty) status : response Deferred.t =
+      ?(body=`Empty) status : response Deferred.t =
     let encoding =
       let open Cohttp.Transfer in
       match body with
@@ -300,7 +305,7 @@ module Server = struct
 
   let respond_with_redirect ?headers uri =
     let headers = Cohttp.Header.add_opt headers
-                    "location" (Uri.to_string uri) in
+        "location" (Uri.to_string uri) in
     respond ~flush:false ~headers `Found
 
   let resolve_local_file ~docroot ~uri =
@@ -325,7 +330,7 @@ module Server = struct
 
 
   let create ?max_connections ?max_pending_connections 
-        ?buffer_age_limit ?on_handler_error where_to_listen handle_request =
+      ?buffer_age_limit ?on_handler_error where_to_listen handle_request =
     Tcp.Server.create ?max_connections ?max_pending_connections 
       ?buffer_age_limit ?on_handler_error 
       where_to_listen (handle_client handle_request)
