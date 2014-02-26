@@ -2,6 +2,8 @@
 * Add `Cohttp.Header.is_keep_alive` to test if a connection should be reused.
 * [lwt] Respect the `keep-alive` header in the server request handling.
 * [async] Add a `Body` that takes a `Pipe` or a `string`, similarly to Lwt.
+* Install `cohttp-server` binary even if tests are disabled.
+* Begin an `examples` directory with some simple uses of the library.
 
 0.9.16 (2014-01-30):
 * Add some module type equalities in `Cohttp_lwt_unix` so that
