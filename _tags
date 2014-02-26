@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 1ff0e28ed44ab8fbe9000e26aee14bcb)
+# DO NOT EDIT (digest: 833f604460d4112f08e99e1d9da38061)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -311,5 +311,29 @@
 <bin/*.ml{,i}>: pkg_sexplib
 <bin/*.ml{,i}>: pkg_sexplib.syntax
 <bin/cohttp_server_async.{native,byte}>: custom
+# Executable async-hello-world
+<examples/async/hello_world.{native,byte}>: use_cohttp_async
+<examples/async/hello_world.{native,byte}>: use_cohttp
+<examples/async/hello_world.{native,byte}>: pkg_uri
+<examples/async/hello_world.{native,byte}>: pkg_threads
+<examples/async/hello_world.{native,byte}>: pkg_async
+<examples/async/hello_world.{native,byte}>: pkg_re
+<examples/async/hello_world.{native,byte}>: pkg_uri.services
+<examples/async/hello_world.{native,byte}>: pkg_fieldslib
+<examples/async/hello_world.{native,byte}>: pkg_fieldslib.syntax
+<examples/async/hello_world.{native,byte}>: pkg_sexplib
+<examples/async/hello_world.{native,byte}>: pkg_sexplib.syntax
+<examples/async/*.ml{,i}>: use_cohttp_async
+<examples/async/*.ml{,i}>: use_cohttp
+<examples/async/*.ml{,i}>: pkg_uri
+<examples/async/*.ml{,i}>: pkg_threads
+<examples/async/*.ml{,i}>: pkg_async
+<examples/async/*.ml{,i}>: pkg_re
+<examples/async/*.ml{,i}>: pkg_uri.services
+<examples/async/*.ml{,i}>: pkg_fieldslib
+<examples/async/*.ml{,i}>: pkg_fieldslib.syntax
+<examples/async/*.ml{,i}>: pkg_sexplib
+<examples/async/*.ml{,i}>: pkg_sexplib.syntax
+<examples/async/hello_world.{native,byte}>: custom
 # OASIS_STOP
 true: annot, bin_annot, debug, strict_sequence, principal
