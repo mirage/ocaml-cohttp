@@ -114,7 +114,7 @@ module Make_client
 
   let read_response ?closefn ic oc =
     match_lwt Response.read ic with
-    |None -> return None
+    |None -> Lwt.fail (Failure "Failed to read response")
     |Some res -> begin
         match Response.has_body res with
         |true ->
@@ -127,10 +127,10 @@ module Make_client
            |None -> ()
           );
           let body = Cohttp_lwt_body.body_of_stream stream in
-          return (Some (res, body))
+          return (res, body)
         |false ->
           (match closefn with |Some fn -> fn () |None -> ());
-          return (Some (res, None))
+          return (res, None)
       end
 
   let call ?headers ?(body:Cohttp_lwt_body.t) ?(chunked=true) meth uri =
@@ -156,9 +156,7 @@ module Make_client
   (* The HEAD should not have a response body *)
   let head ?headers uri =
     call ?headers ~chunked:false `HEAD uri
-    >|= function
-    |None -> None
-    |Some (res,body) -> Some res
+    >|= fst
 
   let get ?headers uri = call ?headers ~chunked:false `GET uri
   let delete ?headers uri = call ?headers ~chunked:false `DELETE uri
@@ -186,7 +184,10 @@ module Make_client
     let read_m = Lwt_mutex.create () in
     let resps = Lwt_stream.from (fun () ->
         let closefn () = Lwt_mutex.unlock read_m in
-        Lwt_mutex.with_lock read_m (fun () -> read_response ~closefn ic oc)
+        Lwt.catch (fun () ->
+          Lwt_mutex.with_lock read_m (fun () -> read_response ~closefn ic oc)
+          >|= (fun x -> Some x)
+        ) (fun _ -> return_none)
       ) in
     Lwt_stream.on_terminate resps (fun () -> Net.close ic oc);
     return resps
