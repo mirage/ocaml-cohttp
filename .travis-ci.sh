@@ -32,4 +32,7 @@ make clean
 opam pin cohttp .
 
 unset OPAMVERBOSE
+opam install github
+opam install cowabloga
 opam install mirage-www
+opam install irminsule
