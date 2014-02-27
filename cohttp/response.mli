@@ -13,7 +13,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- *)
+*)
 
 (** HTTP/1.1 response handling *)
 
@@ -24,24 +24,12 @@
     the separate {!S} module type, as it is dependent on the IO 
     implementation. *)
 type t = {
-  mutable encoding: Transfer.encoding;
-  mutable headers: Header.t;
-  mutable version: Code.version;
-  mutable status: Code.status_code;
+  mutable encoding: Transfer.encoding; (** Transfer encoding of this HTTP response *)
+  mutable headers: Header.t;    (** response HTTP headers *)
+  mutable version: Code.version; (** (** HTTP version, usually 1.1 *) *)
+  mutable status: Code.status_code; (** HTTP status code of the response *)
   mutable flush: bool;
 } with fields, sexp
-
-(** Retrieve response HTTP headers *)
-val headers : t -> Header.t
-
-(** Retrieve the transfer encoding of this HTTP response *)
-val encoding : t -> Transfer.encoding
-
-(** Retrieve HTTP version, usually 1.1 *)
-val version : t -> Code.version
-
-(** Retrieve HTTP status code of the response *)
-val status : t -> Code.status_code
 
 val make :
   ?version:Code.version -> 
