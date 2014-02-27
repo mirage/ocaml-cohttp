@@ -69,48 +69,48 @@ module type Client = sig
     ?body:Cohttp_lwt_body.contents ->
     ?chunked:bool ->
     Cohttp.Code.meth ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val head :
     ?headers:Cohttp.Header.t ->
-    Uri.t -> Response.t option Lwt.t
+    Uri.t -> Response.t Lwt.t
 
   val get :
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val delete :
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val post :
     ?body:Cohttp_lwt_body.contents ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val put :
     ?body:Cohttp_lwt_body.contents ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val patch :
     ?body:Cohttp_lwt_body.contents ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val post_form :
     ?headers:Cohttp.Header.t ->
     params:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val callv :
     ?ssl:bool ->
     string ->
     int ->
-    (Request.t * Cohttp_lwt_body.contents option) Lwt_stream.t ->
+    (Request.t * Cohttp_lwt_body.t) Lwt_stream.t ->
     (Response.t * Cohttp_lwt_body.t) Lwt_stream.t Lwt.t
 end
 
