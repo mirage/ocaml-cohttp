@@ -20,7 +20,11 @@
 (** This contains the metadata for a HTTP/1.1 request header, including
     the {!headers}, {!version}, {!meth} and {!uri}.  The body is handled by
     the separate {!S} module type, as it is dependent on the IO 
-    implementation. *)
+    implementation.
+
+    The interface exposes a [fieldslib] interface which provides individual
+    accessor functions for each of the records below.  It also provides [sexp]
+    serializers to convert to-and-from an {!Core.Std.Sexp.t}. *)
 type t = {
   mutable headers: Header.t;    (** HTTP request headers *)
   mutable meth: Code.meth;      (** HTTP request method *)

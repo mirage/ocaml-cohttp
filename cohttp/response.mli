@@ -22,7 +22,11 @@
     {!flush} the connection after every body chunk (useful for server-side
     events and other long-lived connection protocols). The body is handled by
     the separate {!S} module type, as it is dependent on the IO 
-    implementation. *)
+    implementation. 
+
+    The interface exposes a [fieldslib] interface which provides individual
+    accessor functions for each of the records below.  It also provides [sexp]
+    serializers to convert to-and-from an {!Core.Std.Sexp.t}. *)
 type t = {
   mutable encoding: Transfer.encoding; (** Transfer encoding of this HTTP response *)
   mutable headers: Header.t;    (** response HTTP headers *)
