@@ -77,7 +77,7 @@ module type S = sig
   val read_form : t -> IO.ic -> (string * string list) list IO.t
 end
 
-exception Parse_error of string
+exception Parse_error of string with sexp
 
 module Make(IO : IO.S) = struct
   module IO = IO
