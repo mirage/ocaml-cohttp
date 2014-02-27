@@ -46,6 +46,8 @@ val make_for_client:
   ?body_length:int ->
   Code.meth -> Uri.t -> t
 
+exception Parse_error of string
+
 module type S = sig
   module IO : IO.S
 
