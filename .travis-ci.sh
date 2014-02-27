@@ -30,4 +30,6 @@ make test
 
 # Test out some upstream users of Cohttp
 opam pin cohttp .
+
+unset OPAMVERBOSE
 opam install mirage-www
