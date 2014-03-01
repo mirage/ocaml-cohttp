@@ -19,7 +19,6 @@ open Core.Std
 open Async.Std
 
 (** Read in a full body and convert to a [string] *)
-val body_to_string : string Pipe.Reader.t -> string Deferred.t
 
 module IO : Cohttp.IO.S with type 'a t = 'a Deferred.t
 
@@ -34,10 +33,14 @@ module Response : sig
 end
 
 module Body : sig
-  type t with sexp_of
-  val empty : t
-  val string : string -> t
-  val pipe : string Pipe.Reader.t -> t
+  type t = [
+    | Cohttp.Body.t
+    | `Pipe of string Pipe.Reader.t
+  ] with sexp_of
+  include Cohttp.Body.S with type t := t
+  val to_string : t -> string Deferred.t
+  val to_pipe : t -> string Pipe.Reader.t
+  val of_pipe : string Pipe.Reader.t -> t
 end
 
 module Client : sig
@@ -47,7 +50,7 @@ module Client : sig
     ?interrupt:unit Deferred.t ->
     ?headers:Cohttp.Header.t ->
     Uri.t ->
-    (Response.t * string Pipe.Reader.t) Deferred.t
+    (Response.t * Body.t) Deferred.t
 
   (** Send an HTTP HEAD request *)
   val head :
@@ -61,7 +64,7 @@ module Client : sig
     ?interrupt:unit Deferred.t ->
     ?headers:Cohttp.Header.t ->
     Uri.t ->
-    (Response.t * string Pipe.Reader.t) Deferred.t
+    (Response.t * Body.t) Deferred.t
 
   (** Send an HTTP POST request.
       [chunked] encoding is off by default as not many servers support it
@@ -72,7 +75,7 @@ module Client : sig
     ?chunked:bool ->
     ?body:Body.t ->
     Uri.t ->
-    (Response.t * string Pipe.Reader.t) Deferred.t
+    (Response.t * Body.t) Deferred.t
 
   (** Send an HTTP PUT request.
       [chunked] encoding is off by default as not many servers support it
@@ -83,7 +86,7 @@ module Client : sig
     ?chunked:bool ->
     ?body:Body.t ->
     Uri.t ->
-    (Response.t * string Pipe.Reader.t) Deferred.t
+    (Response.t * Body.t) Deferred.t
 
   (** Send an HTTP PATCH request.
       [chunked] encoding is off by default as not many servers support it
@@ -94,9 +97,9 @@ module Client : sig
     ?chunked:bool ->
     ?body:Body.t ->
     Uri.t ->
-    (Response.t * string Pipe.Reader.t) Deferred.t
+    (Response.t * Body.t) Deferred.t
 
-  (** Send an HTTP request with arbitrary method and string Pipe.Reader.t *)
+  (** Send an HTTP request with arbitrary method and a body *)
   val call :
     ?interrupt:unit Deferred.t ->
     ?headers:Cohttp.Header.t ->
@@ -104,7 +107,7 @@ module Client : sig
     ?body:Body.t ->
     Cohttp.Code.meth ->
     Uri.t ->
-    (Response.t * string Pipe.Reader.t) Deferred.t
+    (Response.t * Body.t) Deferred.t
 end
 
 module Server : sig

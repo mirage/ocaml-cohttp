@@ -138,38 +138,34 @@ let pipe_of_body read_chunk ic oc =
   );
   rd
 
-let body_to_string body =
-  Pipe.to_list body 
-  >>| String.concat
-
 module Body = struct
-  (* TODO: would be cool to have Buffer.t here as well and maybe even
-     a basic stream: unit -> string option *)
-  (* TODO: Ideally we unify this with way Lwt handles
-     bodies. Currently that method is Body.t without `Empty and
-     Pipe.Reader.t is Lwt_stream.t *)
+  module B = Cohttp.Body
   type t = [
+    | B.t
     | `Pipe of string Pipe.Reader.t
-    | `String of string
-    (* we inline option because:
-       1. there's multiple ways to represent an empty body anyway so pattern matching
-       doesn't really tell us much about the body itself
-       2. more convenient in pattern matching
-       3. performance?
-    *)
-    | `Empty ]
+  ]
   with sexp_of
 
-  (* we only keep these abstract because lwt does so as well.  It
-     probably makes sense to lift this restriction however once the
-     situation with lwt is unified. *)
-
   let empty = `Empty
-  let string s = `String s
-  let pipe p = `Pipe p
+  let of_string s = ((B.of_string s) :> t)
+  let of_pipe p = `Pipe p
 
-  (* We only use Body.t to communicate with cohttp downstream so we
-     have no to_{pipe, string, etc. } *)
+  let to_string (body:t) =
+    match body with
+    | #Cohttp.Body.t as body -> return (B.to_string body)
+    | `Pipe s -> s |> Pipe.to_list >>| String.concat
+
+  let to_pipe = function
+    | `Empty -> Pipe.of_list []
+    | `String s -> Pipe.of_list [s]
+    | `Pipe p -> p
+
+  let transfer_encoding (t:t) =
+    match t with
+    | #B.t as t -> B.transfer_encoding t
+    | `Pipe _ -> Cohttp.Transfer.Chunked
+
+  let of_string_list strings = `Pipe (Pipe.of_list strings)
 
   let write body response wr =
     match body with
@@ -219,16 +215,19 @@ module Client = struct
     let res = Option.value_exn ~message:"Error reading HTTP response" res in
     (* Build a response pipe for the body *)
     let rd = pipe_of_body (Response.read_body_chunk res) ic oc in
-    return (res, rd)
+    return (res, `Pipe rd)
 
   let get ?interrupt ?headers uri =
     call ?interrupt ?headers ~chunked:false `GET uri
 
   let head ?interrupt ?headers uri =
     call ?interrupt ?headers ~chunked:false `HEAD uri
-    >>= fun (res, body) ->
-    Pipe.close_read body;
-    return res
+    >>= begin fun (res, body) ->
+      (match body with
+       | `Pipe p -> Pipe.close_read p;
+       | _ -> ());
+      return res
+    end
 
   let post ?interrupt ?headers ?(chunked=false) ?body uri =
     call ?interrupt ?headers ~chunked ?body `POST uri
