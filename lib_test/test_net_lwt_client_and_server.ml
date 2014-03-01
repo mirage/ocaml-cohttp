@@ -67,32 +67,35 @@ let lwt_test t ~name ~assert_ =
 let client () =
   (* Do a set of single calls first and consume the body *)
   for_lwt i = 0 to 1000 do
-    lwt_test ~name:"get 1" (Client.get url) ~assert_:(fun (r,b) -> assert(b = None)) >>= fun () -> 
-    lwt_test_s ~name:"post 1" (Client.post ?body:(Cohttp_lwt_body.of_string "foobar") url)
+    lwt_test ~name:"get 1" (Client.get url) ~assert_:(fun (_,b) -> assert(b = `Empty))
+    >>= fun () ->
+    lwt_test_s ~name:"post 1" (Client.post ~body:(Cohttp_lwt_body.of_string "foobar") url)
      ~assert_:(fun (r,b) ->
-       lwt b = Cohttp_lwt_body.string_of_body b in
-    not_none "get 1" (Client.get url) (fun (r,b) -> assert(b = `Empty)) >>= fun () -> 
-    not_none_s "post 1" (Client.post ~body:(Cohttp_lwt_body.of_string "foobar") url)
-     (fun (r,b) ->
+       lwt b = Cohttp_lwt_body.to_string b in
+    lwt_test ~name:"get 1" (Client.get url) ~assert_:(fun (_,b) -> assert(b = `Empty))
+    >>= fun () ->
+    lwt_test_s ~name:"post 1" (Client.post ~body:(Cohttp_lwt_body.of_string "foobar") url)
+     ~assert_:(fun (r,b) ->
        lwt b = Cohttp_lwt_body.to_string b in
        assert (b = "foobar");
        return ()
-     )
-  done >>= fun () -> 
+     ))
+  done >>= fun () ->
   (* Repeat but do not consume body *)
   for_lwt i = 0 to 2000 do
     try_lwt
-      lwt_test ~name:"get 1" (Client.get url) ~assert_:(fun (r,b) -> assert(b = None)) >>= fun () -> 
-      lwt_test_s ~name:"post 1" (Client.post ?body:(Cohttp_lwt_body.of_string "foobar") url)
-        ~assert_:(fun (r,b) -> return ()) 
+      lwt_test ~name:"get 1" (Client.get url) ~assert_:(fun (r,b) -> assert(b = `Empty))
+      >>= fun () ->
+      lwt_test_s ~name:"post 1" (Client.post ~body:(Cohttp_lwt_body.of_string "foobar") url)
+        ~assert_:(fun (r,b) -> return ())
     with exn ->
       printf "got error, running gc\n%!";
       Gc.compact ();
-      lwt_test ~name:"get 1" (Client.get url) ~assert_:(fun (r,b) -> assert(b = None)) >>= fun () -> 
-      lwt_test_s ~name:"post 1" (Client.post ?body:(Cohttp_lwt_body.of_string "foobar") url)
+      lwt_test ~name:"get 1" (Client.get url) ~assert_:(fun (r,b) -> assert(b = `Empty))
+      >>= fun () ->
+      lwt_test_s ~name:"post 1" (Client.post ~body:(Cohttp_lwt_body.of_string "foobar") url)
         ~assert_:(fun (r,b) -> return ()) 
-  done >>= fun () -> 
- 
+  done >>= fun () ->
   (* Do a callv *)
   let body () = Cohttp_lwt_body.of_string "foobar" in
   let body1 = body () in
