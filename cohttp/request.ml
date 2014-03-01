@@ -77,6 +77,8 @@ module type S = sig
   val read_form : t -> IO.ic -> (string * string list) list IO.t
 end
 
+exception Parse_error of string with sexp
+
 module Make(IO : IO.S) = struct
   module IO = IO
   module Header_IO = Header_io.Make(IO)
@@ -95,9 +97,9 @@ module Make(IO : IO.S) = struct
       | [ meth_raw; path; http_ver_raw ] -> begin
           match method_of_string meth_raw, version_of_string http_ver_raw with
           |Some m, Some v -> return (Some (m, path, v))
-          |_ -> return None
+          |_ -> raise (Parse_error "Error reading HTTP request")
       end
-      | _ -> return None
+      | _ -> raise (Parse_error "Error reading HTTP request")
     end
     |None -> return None
 

@@ -263,11 +263,13 @@ module Server = struct
   let handle_client handle_request sock rd wr =
     let requests_pipe = Reader.read_all rd (fun rd ->
         Request.read rd >>| fun req ->
-        let req = Option.value_exn ~message:"Error reading HTTP request" req in
-        let body = read_body req rd wr in
-        if not (Request.is_keep_alive req)
-        then don't_wait_for (Reader.close rd);
-        `Ok (req, body)
+        match req with
+          | Some(req) ->
+            let body = read_body req rd wr in
+            if not (Request.is_keep_alive req)
+            then don't_wait_for (Reader.close rd);
+            `Ok (req, body)
+          | None -> `Eof
       ) in
     Pipe.iter requests_pipe ~f:(fun (req, body) ->
         handle_request ~body sock req >>= fun (res, body) ->
