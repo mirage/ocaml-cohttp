@@ -7,7 +7,6 @@ NAME=cohttp
 LWT ?= $(shell if ocamlfind query lwt >/dev/null 2>&1; then echo --enable-lwt; fi)
 LWT_UNIX ?= $(shell if ocamlfind query lwt.ssl >/dev/null 2>&1; then echo --enable-lwt-unix; fi)
 ASYNC ?= $(shell if ocamlfind query async >/dev/null 2>&1; then echo --enable-async; fi)
-# disabled by default as they hang at the moment for Async
 NETTESTS ?= --enable-nettests
 
 setup.bin: setup.ml
