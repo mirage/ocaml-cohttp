@@ -106,12 +106,12 @@ let basic_req_parse () =
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_req) in
   CU.Request.read ic >>=
   function
-  |Some req ->
+  | `Ok req ->
     assert_equal (Cohttp.Request.version req) `HTTP_1_1;
     assert_equal (CU.Request.meth req) `GET;
     assert_equal (Uri.to_string (CU.Request.uri req)) "http://www.example.com/index.html";
     return ()
-  |None -> assert false
+  | _ -> assert false
 
 let basic_res_parse res () =
   let open Cohttp in
@@ -119,7 +119,7 @@ let basic_res_parse res () =
   let ic = ic_of_buffer (Lwt_bytes.of_string res) in
   Response.read ic >>=
   function
-  |Some res ->
+  | `Ok res ->
      (* Parse first line *)
      assert_equal (Response.version res) `HTTP_1_1;
      assert_equal (Response.status res) `OK;
@@ -129,25 +129,24 @@ let basic_res_parse res () =
      assert_equal (Header.get headers "content-type")
        (Some "text/html; charset=UTF-8");
      return ()
-  |None -> assert false
+  | _ -> assert false
 
 let req_parse () =
   let open Cohttp_lwt_unix in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_req) in
   Request.read ic >>= function
-  |None -> assert false
-  |Some req ->
+  | `Ok req ->
     assert_equal `GET (Request.meth req);
     assert_equal "/index.html" ((Uri.path (Request.uri req)));
     assert_equal `HTTP_1_1 (Request.version req);
     return ()
+  | _ -> assert false
 
 let post_form_parse () =
   let open Cohttp_lwt_unix in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_req) in
   Request.read ic >>= function
-  |None -> assert false
-  |Some req ->
+  | `Ok req ->
     assert_equal true (Request.is_form req);
     Request.read_form req ic >>= fun params ->
     assert_equal ["Cosby"] (List.assoc "home" params);
@@ -156,55 +155,55 @@ let post_form_parse () =
     (* multiple requests should still work *)
     assert_equal ["Cosby"] (List.assoc "home" params);
     return ()
+  | _ -> assert false
 
 let post_data_parse () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_data_req) in
   Request.read ic >>= function
-  |None -> assert false
-  |Some req ->
+  | `Ok req ->
     Request.read_body_chunk req ic >>= fun body ->
     assert_equal (Transfer.Final_chunk "home=Cosby&favorite+flavor=flies") body;
     (* A subsequent request for the body will have consumed it, therefore None *)
     Request.read_body_chunk req ic >>= fun body ->
     assert_equal Transfer.Done body;
     return ()
+  | _ -> assert false
 
 let post_chunked_parse () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_chunked_req) in
   Request.read ic >>= function
-  |None -> assert false
-  |Some req ->
+  | `Ok req ->
     assert_equal (Transfer.encoding_to_string (Request.encoding req)) "chunked";
     Request.read_body_chunk req ic >>= fun chunk ->
     assert_equal chunk (Transfer.Chunk "abcdefghijklmnopqrstuvwxyz");
     Request.read_body_chunk req ic >>= fun chunk ->
     assert_equal chunk (Transfer.Chunk "1234567890abcdef");
     return ()
+  | _ -> assert false
 
 let res_content_parse () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_res_content) in
   Response.read ic >>= function
-  |None -> assert false
-  |Some res ->
+  | `Ok res ->
      assert_equal `HTTP_1_1 (Response.version res);
      assert_equal `OK (Response.status res);
      Response.read_body_chunk res ic >>= fun body ->
      assert_equal (Transfer.Final_chunk "home=Cosby&favorite+flavor=flies") body;
      return ()
+  | _ -> assert false
 
 let res_chunked_parse () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
   let ic = ic_of_buffer (Lwt_bytes.of_string chunked_res) in
   Response.read ic >>= function
-  |None -> assert false
-  |Some res ->
+  | `Ok res ->
      assert_equal `HTTP_1_1 (Response.version res);
      assert_equal `OK (Response.status res);
      Response.read_body_chunk res ic >>= fun chunk ->
@@ -212,6 +211,7 @@ let res_chunked_parse () =
      Response.read_body_chunk res ic >>= fun chunk ->
      assert_equal chunk (Transfer.Chunk "1234567890abcdef");
      return ()
+  | _ -> assert false
 
 (* Extract the substring of the byte buffer that has been written to *)
 let get_substring oc buf =
