@@ -32,6 +32,7 @@ make clean
 opam pin cohttp .
 
 unset OPAMVERBOSE
+opam pin github git://github.com/avsm/ocaml-github
 opam install github
 opam install cowabloga
 opam install mirage-www
