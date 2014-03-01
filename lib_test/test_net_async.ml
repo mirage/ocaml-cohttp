@@ -59,9 +59,9 @@ let test_cases =
       Monitor.try_with ( fun () ->
           make_net_req () >>= make_net_post_req) >>=
       function
-      |Error exn -> 
-        (* TODO: how to dump out top-level errors in a nicer way? *)
-        Printf.fprintf stderr "err %s.\n%!" (Exn.backtrace ()); return ()
+      |Error exn ->
+        Printf.fprintf stderr "err %s.\n%!" (Exn.to_string exn);
+        return ()
       |Ok _ ->
 	Shutdown.exit 0
   ) in
