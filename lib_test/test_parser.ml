@@ -226,7 +226,7 @@ let write_req expected req =
   (* Use the low-level write_header/footer API *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
-  let body = Cohttp_lwt_body.body_of_string "foobar" in
+  let body = Cohttp_lwt_body.of_string "foobar" in
   Request.write (fun req oc ->
     Cohttp_lwt_body.write_body (Request.write_body req oc) body
   ) req oc >>= fun () ->
@@ -262,7 +262,7 @@ let make_simple_res () =
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
   let res = Response.make ~headers:(Header.of_list [("foo","bar")]) () in
-  let body = Cohttp_lwt_body.body_of_string "foobar" in
+  let body = Cohttp_lwt_body.of_string "foobar" in
   Response.write (fun res oc ->
     Cohttp_lwt_body.write_body (Response.write_body res oc) body
   ) res oc >>= fun () ->

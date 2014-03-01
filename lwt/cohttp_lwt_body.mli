@@ -13,21 +13,24 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- *)
+*)
 
-type contents
-type t = contents option
+type t = [
+  | Cohttp.Body.t
+  | `Stream of string Lwt_stream.t
+] with sexp
 
-val string_of_body : t -> string Lwt.t
-val stream_of_body : t -> string Lwt_stream.t
+include Cohttp.Body.S with type t := t
+
+val to_string : t -> string Lwt.t
+
+val to_stream : t -> string Lwt_stream.t
+val of_stream : string Lwt_stream.t -> t
+
 val create_stream : ('a -> Cohttp.Transfer.chunk Lwt.t) -> 'a -> string Lwt_stream.t
 
-val body_of_string : string -> t
-val body_of_string_list : string list -> t
-val body_of_stream : string Lwt_stream.t -> t
+val length : t -> (int * t) Lwt.t
 
-val get_transfer_encoding : t -> Cohttp.Transfer.encoding
-val get_length : t -> (int * t) Lwt.t
 val write_body : ?flush:(unit -> unit Lwt.t) -> (string -> unit Lwt.t) -> t -> unit Lwt.t
 
 val drain_body : t -> unit Lwt.t

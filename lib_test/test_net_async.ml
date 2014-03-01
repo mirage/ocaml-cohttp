@@ -28,7 +28,9 @@ let make_net_req () =
   Client.get ~headers uri 
   >>= fun (res, body) ->
    show_headers (Cohttp.Response.headers res);
-   Pipe.iter body ~f:(fun b -> prerr_endline ("XX " ^ b); return ())
+   body
+   |> Body.to_pipe
+   |> Pipe.iter ~f:(fun b -> prerr_endline ("XX " ^ b); return ())
 
 (* Create your own code from requestb.in *)
 let requestbin_code = "1f6i9op1"
@@ -41,11 +43,13 @@ let make_net_post_req () =
    function
    |0 -> acc
    |n -> make_body (sprintf "fooooobody%d" n :: acc) (n-1) in
-  let body = Body.pipe (Pipe.of_list (make_body [] 2)) in
+  let body = Body.of_pipe (Pipe.of_list (make_body [] 2)) in
   Client.call ~headers ~body `POST uri 
   >>= fun (res, body) ->
     show_headers (Cohttp.Response.headers res);
-    Pipe.iter body ~f:(fun b -> prerr_endline ("XY " ^ b); return ())
+    body
+    |> Body.to_pipe
+    |> Pipe.iter ~f:(fun b -> prerr_endline ("XY " ^ b); return ())
 
 let test_cases =
   (* TODO: can multiple async tests run with separate Schedulers? Is there
@@ -55,9 +59,9 @@ let test_cases =
       Monitor.try_with ( fun () ->
           make_net_req () >>= make_net_post_req) >>=
       function
-      |Error exn -> 
-        (* TODO: how to dump out top-level errors in a nicer way? *)
-        Printf.fprintf stderr "err %s.\n%!" (Exn.backtrace ()); return ()
+      |Error exn ->
+        Printf.fprintf stderr "err %s.\n%!" (Exn.to_string exn);
+        return ()
       |Ok _ ->
 	Shutdown.exit 0
   ) in

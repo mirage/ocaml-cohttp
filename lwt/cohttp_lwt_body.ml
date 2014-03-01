@@ -13,17 +13,19 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- *)
+*)
 
 open Cohttp
 open Lwt
+open Sexplib.Std
+open Sexplib.Conv
 
-type contents = [
-  |`Stream of string Lwt_stream.t
-  |`String of string
-]
+type t = [
+  | Body.t
+  | `Stream of string Lwt_stream.t sexp_opaque
+] with sexp
 
-type t = contents option
+let empty = (Body.empty :> t)
 
 let create_stream fn arg =
   let fin = ref false in
@@ -31,68 +33,62 @@ let create_stream fn arg =
     match !fin with
     |true -> return None
     |false -> begin
-      match_lwt fn arg with
-      |Transfer.Done -> 
-        return None
-      |Transfer.Final_chunk c ->
-        fin := true;
-        return (Some c);
-      |Transfer.Chunk c ->
-        return (Some c)
-    end
+        match_lwt fn arg with
+        |Transfer.Done -> 
+          return None
+        |Transfer.Final_chunk c ->
+          fin := true;
+          return (Some c);
+        |Transfer.Chunk c ->
+          return (Some c)
+      end
   )
 
-let string_of_body (body:t) =
+let to_string (body:t) =
   match body with
-  |None -> return ""
-  |Some (`String s) -> return s
-  |Some (`Stream s) ->
-     let b = Buffer.create 1024 in
-     Lwt_stream.iter (Buffer.add_string b) s >>= fun () ->
-     return (Buffer.contents b)
+  | #Body.t as body -> return (Body.to_string body)
+  |`Stream s ->
+    let b = Buffer.create 1024 in
+    Lwt_stream.iter (Buffer.add_string b) s >>= fun () ->
+    return (Buffer.contents b)
 
-let stream_of_body (body:t) =
+let of_string s = ((Body.of_string s) :> t)
+
+let to_stream (body:t) =
   match body with
-  |None -> Lwt_stream.of_list []
-  |Some (`Stream s) -> s
-  |Some (`String s) -> Lwt_stream.of_list [s]
+  |`Empty -> Lwt_stream.of_list []
+  |`Stream s -> s
+  |`String s -> Lwt_stream.of_list [s]
 
 let drain_body (body:t) =
   match body with
-  |None
-  |Some (`String _) -> return ()
-  |Some (`Stream s) -> Lwt_stream.junk_while (fun _ -> true) s
-  
-let body_of_string s : t =
-  Some (`String s)
+  |`Empty
+  |`String _ -> return ()
+  |`Stream s -> Lwt_stream.junk_while (fun _ -> true) s
 
-let body_of_string_list l : t =
-  Some (`Stream (Lwt_stream.of_list l))
+let of_string_list l : t =
+  `Stream (Lwt_stream.of_list l)
 
-let body_of_stream s : t =
-  Some (`Stream s)
+let of_stream s : t =
+  `Stream s
 
-let get_transfer_encoding (t:t) =
+let transfer_encoding (t:t) =
   match t with
-  |None -> Transfer.Fixed 0
-  |Some (`Stream _) -> Transfer.Chunked
-  |Some (`String s) -> Transfer.Fixed (String.length s)
+  |#Body.t as t -> Body.transfer_encoding t
+  |`Stream _ -> Transfer.Chunked
 
 (* This will consume the body and return a length, and a
  * new body that should be used instead of the input *)
-let get_length (body:t) : (int * t) Lwt.t =
+let length (body:t) : (int * t) Lwt.t =
   match body with
-  |None ->
-    return (0, body)
-  |Some (`String s) -> 
-    return (String.length s, body)
-  |Some (`Stream s) ->
-    lwt buf = string_of_body body in
+  |#Body.t as body -> return (Body.length body, body)
+  |`Stream s ->
+    lwt buf = to_string body in
     let len = String.length buf in
-    return (len, (Some (`String buf)))
+    return (len, `String buf)
 
 let write_body ?(flush=(fun () -> return_unit)) fn (body:t) =
   match body with
-  |None -> return ()
-  |Some (`Stream st) -> Lwt_stream.iter_s (fun b -> fn b >>= flush) st
-  |Some (`String s) -> fn s
+  |`Empty -> return ()
+  |`Stream st -> Lwt_stream.iter_s (fun b -> fn b >>= flush) st
+  |`String s -> fn s

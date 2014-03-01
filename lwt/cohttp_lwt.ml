@@ -54,7 +54,7 @@ module type Client = sig
 
   val call :
     ?headers:Cohttp.Header.t ->
-    ?body:Cohttp_lwt_body.contents ->
+    ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     Cohttp.Code.meth ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
@@ -72,19 +72,19 @@ module type Client = sig
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val post :
-    ?body:Cohttp_lwt_body.contents ->
+    ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val put :
-    ?body:Cohttp_lwt_body.contents ->
+    ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val patch :
-    ?body:Cohttp_lwt_body.contents ->
+    ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
@@ -126,14 +126,14 @@ module Make_client
              Gc.finalise gcfn stream
            |None -> ()
           );
-          let body = Cohttp_lwt_body.body_of_stream stream in
+          let body = Cohttp_lwt_body.of_stream stream in
           return (res, body)
         |false ->
           (match closefn with |Some fn -> fn () |None -> ());
-          return (res, None)
+          return (res, `Empty)
       end
 
-  let call ?headers ?(body:Cohttp_lwt_body.t) ?(chunked=true) meth uri =
+  let call ?headers ?(body=`Empty) ?(chunked=true) meth uri =
     let headers = match headers with None -> Header.init () | Some h -> h in
     lwt (ic,oc) = Net.connect_uri uri in
     let closefn () = Net.close ic oc in
@@ -146,7 +146,7 @@ module Make_client
       read_response ~closefn ic oc
     | false ->
       (* If chunked is not allowed, then obtain the body length and insert header *)
-      lwt (body_length, buf) = Cohttp_lwt_body.get_length body in
+      lwt (body_length, buf) = Cohttp_lwt_body.length body in
       let req = Request.make_for_client ~headers ~chunked ~body_length meth uri in
       Request.write (fun req oc ->
           Cohttp_lwt_body.write_body (Request.write_body req oc) buf) req oc
@@ -167,8 +167,8 @@ module Make_client
   let post_form ?headers ~params uri =
     let headers = Header.add_opt headers "content-type" "application/x-www-form-urlencoded" in
     let q = List.map (fun (k,v) -> k, [v]) (Header.to_list params) in
-    let body = Cohttp_lwt_body.body_of_string (Uri.encoded_of_query q) in
-    post ~chunked:false ~headers ?body uri
+    let body = Cohttp_lwt_body.of_string (Uri.encoded_of_query q) in
+    post ~chunked:false ~headers ~body uri
 
   let callv ?(ssl=false) host port reqs =
     let service = string_of_int port in
@@ -196,7 +196,7 @@ end
 type server = {
   callback :
     Cohttp.Connection.t ->
-    ?body:Cohttp_lwt_body.contents ->
+    body:Cohttp_lwt_body.t ->
     Cohttp.Request.t ->
     (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
   conn_closed:
@@ -212,7 +212,7 @@ module type Server = sig
   type t = server = {
     callback :
       Cohttp.Connection.t ->
-      ?body:Cohttp_lwt_body.contents ->
+      body:Cohttp_lwt_body.t ->
       Cohttp.Request.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
@@ -260,7 +260,7 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
   type t = server = {
     callback :
       Cohttp.Connection.t ->
-      ?body:Cohttp_lwt_body.contents ->
+      body:Cohttp_lwt_body.t ->
       Cohttp.Request.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
@@ -270,14 +270,14 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
   module Transfer_IO = Transfer_io.Make(IO)
 
   let respond ?headers ?(flush=false) ~status ~body () =
-    let encoding = Cohttp_lwt_body.get_transfer_encoding body in
+    let encoding = Cohttp_lwt_body.transfer_encoding body in
     let res = Response.make ~status ~flush ~encoding ?headers () in
     return (res, body)
 
   let respond_string ?headers ~status ~body () =
     let res = Response.make ~status
         ~encoding:(Transfer.Fixed (String.length body)) ?headers () in
-    let body = Cohttp_lwt_body.body_of_string body in
+    let body = Cohttp_lwt_body.of_string body in
     return (res,body)
 
   let respond_error ~status ~body () =
@@ -289,12 +289,12 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
       |None -> Header.init_with "location" (Uri.to_string uri)
       |Some h -> Header.add h "location" (Uri.to_string uri)
     in
-    respond ~headers ~status:`Found ~body:None ()
+    respond ~headers ~status:`Found ~body:`Empty ()
 
   let respond_need_auth ?headers ~auth () =
     let headers = match headers with |None -> Header.init () |Some h -> h in
     let headers = Header.add_authorization_req headers auth in
-    respond ~headers ~status:`Unauthorized ~body:None ()
+    respond ~headers ~status:`Unauthorized ~body:`Empty ()
 
   let respond_not_found ?uri () =
     let body = match uri with
@@ -327,19 +327,19 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
                 | true ->
                   let body_stream = Cohttp_lwt_body.create_stream (Request.read_body_chunk req) ic in
                   Lwt_stream.on_terminate body_stream (fun () -> Lwt_mutex.unlock read_m);
-                  let body = Cohttp_lwt_body.body_of_stream body_stream in
+                  let body = Cohttp_lwt_body.of_stream body_stream in
                   (* The read_m remains locked until the caller reads the body *)
                   return (Some (req, body))
                 | false ->
                   Lwt_mutex.unlock read_m;
-                  return (Some (req, None))
+                  return (Some (req, `Empty))
               end
         ) in
       (* Map the requests onto a response stream to serialise out *)
       let res_stream =
         Lwt_stream.map_s (fun (req, body) ->
           try_lwt
-            spec.callback conn_id ?body req
+            spec.callback conn_id ~body req
           with exn ->
             respond_error ~status:`Internal_server_error ~body:(Printexc.to_string exn) ()
           finally Cohttp_lwt_body.drain_body body

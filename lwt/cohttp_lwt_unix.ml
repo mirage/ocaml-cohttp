@@ -59,7 +59,7 @@ module Server = struct
       ) in
       Lwt_stream.on_terminate stream (fun () ->
         ignore_result (Lwt_io.close ic));
-      let body = Cohttp_lwt_body.body_of_stream stream in
+      let body = Cohttp_lwt_body.of_stream stream in
       let res = Cohttp.Response.make ~status:`OK ~encoding ?headers () in
       return (res, body)
     with
