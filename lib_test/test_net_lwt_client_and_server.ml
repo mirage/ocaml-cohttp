@@ -35,7 +35,7 @@ let make_server () =
     |"/post" -> begin
        lwt body = Cohttp_lwt_body.to_string body in
        Server.respond_string ~status:`OK ~body ()
-    end  
+    end
     |"/postnodrain" ->
        Server.respond_string ~status:`OK ~body:"nodrain" ()
     |_ -> exit 0
