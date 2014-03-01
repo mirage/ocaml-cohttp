@@ -1,5 +1,6 @@
+# OASIS_START
+# DO NOT EDIT (digest: 6e23765af0b0e0b9d610247caf90063c)
 Cohttp_lwt_unix_io
 Cohttp_lwt_unix
-Cohttp_lwt
-Cohttp_lwt_body
 Cohttp_lwt_unix_net
+# OASIS_STOP

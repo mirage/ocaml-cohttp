@@ -1,4 +1,4 @@
-0.9.17 (trunk):
+0.10.0 (trunk):
 * Interface change: Unify HTTP body handling across backends into a `Cohttp.Body`
   module.  This is extended by Async/Lwt implementations with their specific
   ways of handling bodies (Pipes for Async, or Lwt_stream for Lwt).
