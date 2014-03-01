@@ -34,7 +34,7 @@ opam pin cohttp .
 unset OPAMVERBOSE
 opam pin github git://github.com/avsm/ocaml-github
 opam install github
-opam pin github git://github.com/avsm/cowabloga#mor1-master
+opam pin cowabloga git://github.com/avsm/cowabloga#mor1-master
 opam install cowabloga
 opam install mirage-www
 opam install irminsule
