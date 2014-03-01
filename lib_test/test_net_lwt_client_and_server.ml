@@ -28,7 +28,7 @@ let url = Uri.of_string (sprintf "http://%s:%d/post" address port)
 let url_shutdown = Uri.of_string (sprintf "http://%s:%d/shutdown" address port)
 
 let make_server () =
-  let callback conn_id ~body req =
+  let callback conn_id req body =
     match Uri.path (Request.uri req) with
     |""|"/" ->
        Server.respond_string ~status:`OK ~body:"helloworld" ()

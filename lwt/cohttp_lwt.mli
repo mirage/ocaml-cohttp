@@ -128,8 +128,8 @@ module Make_client
 type server = {
   callback :
     Cohttp.Connection.t ->
-    body:Cohttp_lwt_body.t ->
     Cohttp.Request.t ->
+    Cohttp_lwt_body.t ->
     (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
   conn_closed:
     Cohttp.Connection.t -> unit -> unit;
@@ -143,8 +143,8 @@ module type Server = sig
   type t = server = {
     callback :
       Cohttp.Connection.t ->
-      body:Cohttp_lwt_body.t ->
       Cohttp.Request.t ->
+      Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
       Cohttp.Connection.t -> unit -> unit;

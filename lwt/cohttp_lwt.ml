@@ -197,8 +197,8 @@ end
 type server = {
   callback :
     Cohttp.Connection.t ->
-    body:Cohttp_lwt_body.t ->
     Cohttp.Request.t ->
+    Cohttp_lwt_body.t ->
     (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
   conn_closed:
     Cohttp.Connection.t -> unit -> unit;
@@ -213,8 +213,8 @@ module type Server = sig
   type t = server = {
     callback :
       Cohttp.Connection.t ->
-      body:Cohttp_lwt_body.t ->
       Cohttp.Request.t ->
+      Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
       Cohttp.Connection.t -> unit -> unit;
@@ -261,8 +261,8 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
   type t = server = {
     callback :
       Cohttp.Connection.t ->
-      body:Cohttp_lwt_body.t ->
       Cohttp.Request.t ->
+      Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
       Cohttp.Connection.t -> unit -> unit;
@@ -340,7 +340,7 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
       let res_stream =
         Lwt_stream.map_s (fun (req, body) ->
           try_lwt
-            spec.callback conn_id ~body req
+            spec.callback conn_id req body
           with exn ->
             respond_error ~status:`Internal_server_error ~body:(Printexc.to_string exn) ()
           finally Cohttp_lwt_body.drain_body body
