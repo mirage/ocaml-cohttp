@@ -63,7 +63,7 @@ let make_for_client ?headers ?(chunked=true) ?(body_length=0) meth uri =
 module type S = sig
   module IO : IO.S
 
-  val read : IO.ic -> t option IO.t
+  val read : IO.ic -> [ `Eof | `Invalid of string | `Ok of t ] IO.t
   val has_body : t -> bool
   val read_body_chunk :
     t -> IO.ic -> Transfer.chunk IO.t
@@ -90,21 +90,24 @@ module Make(IO : IO.S) = struct
   let parse_request_fst_line ic =
     let open Code in
     read_line ic >>= function
-    |Some request_line -> begin
+    | Some request_line -> begin
       match Re_str.split_delim pieces_sep request_line with
       | [ meth_raw; path; http_ver_raw ] -> begin
           match method_of_string meth_raw, version_of_string http_ver_raw with
-          |Some m, Some v -> return (Some (m, path, v))
-          |_ -> return None
+          | Some m, Some v -> return (`Ok (m, path, v))
+          | None, Some v -> return (`Invalid ("Malformed request method: " ^ meth_raw))
+          | Some v, None -> return (`Invalid ("Malformed request HTTP version: " ^ http_ver_raw))
+          | None, None -> return (`Invalid ("Malformed request method and version: " ^ request_line))
       end
-      | _ -> return None
+      | _ -> return (`Invalid ("Malformed request header: " ^ request_line))
     end
-    |None -> return None
+    | None -> return `Eof
 
   let read ic =
     parse_request_fst_line ic >>= function
-    |None -> return None
-    |Some (meth, path, version) ->
+    | `Eof -> return `Eof
+    | `Invalid reason as r -> return r
+    | `Ok (meth, path, version) ->
       Header_IO.parse ic >>= fun headers ->
       let uri = match (Header.get headers "host") with
         | None -> Uri.of_string path
@@ -112,7 +115,7 @@ module Make(IO : IO.S) = struct
           (* XXX: Could be https:// as well... *)
           Uri.of_string ("http://" ^ h ^ path) in
       let encoding = Header.get_transfer_encoding headers in
-      return (Some { headers; meth; uri; version; encoding })
+      return (`Ok { headers; meth; uri; version; encoding })
 
   let has_body req = Transfer.has_body req.encoding
   let read_body_chunk req ic = Transfer_IO.read req.encoding ic

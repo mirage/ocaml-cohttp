@@ -49,7 +49,7 @@ val make_for_client:
 module type S = sig
   module IO : IO.S
 
-  val read : IO.ic -> t option IO.t
+  val read : IO.ic -> [ `Eof | `Invalid of string | `Ok of t ] IO.t
   val has_body : t -> bool
   val read_body_chunk : t -> IO.ic -> Transfer.chunk IO.t
 

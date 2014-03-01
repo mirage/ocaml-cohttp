@@ -210,11 +210,13 @@ module Client = struct
     Request.write_footer req oc
     >>= fun () ->
     Response.read ic
-    >>= fun res ->
-    let res = Option.value_exn ~message:"Error reading HTTP response" res in
-    (* Build a response pipe for the body *)
-    let rd = pipe_of_body (Response.read_body_chunk res) ic oc in
-    return (res, `Pipe rd)
+    >>= function
+    | `Eof -> raise (Failure "Connection closed by remote host")
+    | `Invalid reason -> raise (Failure reason)
+    | `Ok res ->
+      (* Build a response pipe for the body *)
+      let rd = pipe_of_body (Response.read_body_chunk res) ic oc in
+      return (res, `Pipe rd)
 
   let get ?interrupt ?headers uri =
     call ?interrupt ?headers ~chunked:false `GET uri
@@ -261,13 +263,16 @@ module Server = struct
       `Pipe (pipe_of_body read_chunk rd wr)
 
   let handle_client handle_request sock rd wr =
-    let requests_pipe = Reader.read_all rd (fun rd ->
-        Request.read rd >>| fun req ->
-        let req = Option.value_exn ~message:"Error reading HTTP request" req in
-        let body = read_body req rd wr in
-        if not (Request.is_keep_alive req)
-        then don't_wait_for (Reader.close rd);
-        `Ok (req, body)
+    let requests_pipe =
+      Reader.read_all rd (fun rd ->
+        Request.read rd 
+        >>| function
+        | `Eof | `Invalid _ -> `Eof	
+        | `Ok req ->
+          let body = read_body req rd wr in
+          if not (Request.is_keep_alive req)
+          then don't_wait_for (Reader.close rd);
+          `Ok (req, body)
       ) in
     Pipe.iter requests_pipe ~f:(fun (req, body) ->
         handle_request ~body sock req >>= fun (res, body) ->

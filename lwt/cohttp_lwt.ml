@@ -113,11 +113,12 @@ module Make_client
   module Response = Response
 
   let read_response ?closefn ic oc =
-    match_lwt Response.read ic with
-    |None -> Lwt.fail (Failure "Failed to read response")
-    |Some res -> begin
+    Response.read ic >>= function
+    | `Invalid reason -> Lwt.fail (Failure ("Failed to read response: " ^ reason))
+    | `Eof -> Lwt.fail (Failure "Client connection was closed")
+    | `Ok res -> begin
         match Response.has_body res with
-        |true ->
+        | true ->
           let stream = Cohttp_lwt_body.create_stream (Response.read_body_chunk res) ic in
           (match closefn with
            |Some fn ->
@@ -128,7 +129,7 @@ module Make_client
           );
           let body = Cohttp_lwt_body.of_stream stream in
           return (res, body)
-        |false ->
+        | false ->
           (match closefn with |Some fn -> fn () |None -> ());
           return (res, `Empty)
       end
@@ -315,12 +316,12 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
           if !early_close
           then return None
           else
-            lwt () = Lwt_mutex.lock read_m in
-            match_lwt Request.read ic with
-            | None ->
+            Lwt_mutex.lock read_m >>= fun () ->
+            Request.read ic >>= function
+            | `Eof | `Invalid _ -> (* TODO: request logger for invalid req *)
               Lwt_mutex.unlock read_m;
               return None
-            | Some req -> begin
+            | `Ok req -> begin
                 early_close := not (Request.is_keep_alive req);
                 (* Ensure the input body has been fully read before reading again *)
                 match Request.has_body req with
