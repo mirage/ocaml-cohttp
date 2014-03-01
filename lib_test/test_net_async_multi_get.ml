@@ -1,14 +1,15 @@
 open Core.Std
 open Async.Std
+open Cohttp_async
 
 let fetch uri =
-  Cohttp_async.Client.get (Uri.of_string uri)
-  >>= fun (res, body) ->
-  Pipe.to_list body
-  >>= fun bufs ->
-  let buf = String.concat ~sep:"" bufs in
-  printf "%s -> %d bytes\n" uri (String.length buf);
-  return ()
+  uri
+  |> Uri.of_string
+  |> Client.get
+  >>| snd
+  >>= Body.to_string
+  >>| fun b ->
+  printf "%s -> %d bytes\n" uri (String.length b)
 
 let rec perform_get n =
   Printf.printf "%d\n%!" n;

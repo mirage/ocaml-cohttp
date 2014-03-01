@@ -8,7 +8,7 @@ let test () =
   |> Uri.of_string
   |> Client.get
   >>| snd
-  >>= body_to_string
+  >>= Body.to_string
   >>| print_endline
 
 let _ = 
