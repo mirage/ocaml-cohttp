@@ -10,7 +10,7 @@ module type S = sig
   val of_string : string -> t
   val of_string_list : string list -> t
   val transfer_encoding : t -> Transfer.encoding
-  val length : t -> int
 end
 
 include S with type t := t
+val length : t -> int

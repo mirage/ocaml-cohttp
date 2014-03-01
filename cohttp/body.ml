@@ -30,7 +30,6 @@ module type S = sig
   val of_string : string -> t
   val of_string_list : string list -> t
   val transfer_encoding : t -> Transfer.encoding
-  val length : t -> int
 end
 
 (* TODO: maybe add a functor here that uses IO.S *)
