@@ -209,7 +209,6 @@ module Client = struct
     >>= fun () ->
     Request.write_footer req oc
     >>= fun () ->
-    (* Read response *)
     Response.read ic
     >>= fun res ->
     let res = Option.value_exn ~message:"Error reading HTTP response" res in
