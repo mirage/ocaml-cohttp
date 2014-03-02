@@ -36,5 +36,7 @@ opam pin github git://github.com/avsm/ocaml-github
 opam install github
 opam pin cowabloga git://github.com/avsm/cowabloga#mor1-master
 opam install cowabloga
+opam pin mirage-www git://github.com/avsm/mirage-www
 opam install mirage-www
+opam pin irminsule git://github.com/avsm/irminsule#cohttp-0.10.0-api
 opam install irminsule
