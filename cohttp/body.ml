@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2014 Rudy Grinberg
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,22 +15,38 @@
  *
 *)
 
+open Sexplib.Std
+
 type t = [
-  | Cohttp.Body.t
-  | `Stream of string Lwt_stream.t
+  | `Empty
+  | `String of string
 ] with sexp
 
-include Cohttp.Body.S with type t := t
+let empty = `Empty
 
-val to_string : t -> string Lwt.t
+let to_string = function
+  | `Empty -> ""
+  | `String s -> s
 
-val to_stream : t -> string Lwt_stream.t
-val of_stream : string Lwt_stream.t -> t
+let of_string s = `String s
+let of_string_list s = `String (String.concat "" s)
 
-val create_stream : ('a -> Cohttp.Transfer.chunk Lwt.t) -> 'a -> string Lwt_stream.t
+let transfer_encoding (t:t) =
+  match t with
+  | `Empty -> Transfer.Fixed 0
+  | `String s -> Transfer.Fixed (String.length s)
 
-val length : t -> (int * t) Lwt.t
+let length = function
+  | `Empty -> 0
+  | `String s -> String.length s
 
-val write_body : ?flush:(unit -> unit Lwt.t) -> (string -> unit Lwt.t) -> t -> unit Lwt.t
+module type S = sig
+  type t
+  val to_string : t -> string
+  val empty : t
+  val of_string : string -> t
+  val of_string_list : string list -> t
+  val transfer_encoding : t -> Transfer.encoding
+end
 
-val drain_body : t -> unit Lwt.t
+(* TODO: maybe add a functor here that uses IO.S *)

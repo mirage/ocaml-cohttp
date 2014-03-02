@@ -23,20 +23,18 @@ open Cohttp_lwt_unix
      
 let make_net_req url () =
   let headers = Cohttp.Header.of_list ["connection","close"] in
-  Client.call ~headers `GET (Uri.of_string url) >>= function 
-  |None -> assert false
-  |Some (res, body) ->
-    let headers = Response.headers res in
-    Cohttp.Header.iter
-      (fun k v -> List.iter (Printf.eprintf "%s: %s\n%!" k) v) headers;
-    Lwt_stream.iter_s (fun s -> return ()) (Cohttp_lwt_body.stream_of_body body)
+  Client.call ~headers `GET (Uri.of_string url) >>= fun (res, body) ->
+  let headers = Response.headers res in
+  Cohttp.Header.iter
+    (fun k v -> List.iter (Printf.eprintf "%s: %s\n%!" k) v) headers;
+  Lwt_stream.iter_s (fun s -> return ()) (Cohttp_lwt_body.to_stream body)
 
 let make_net_reqv () =
   let last_header = Cohttp.Header.of_list ["connection","close"] in
   let reqs = [
-      Request.make ~meth:`GET (Uri.of_string "/foo"), None;
-      Request.make ~meth:`GET (Uri.of_string "/foo2"), None;
-      Request.make ~meth:`GET ~headers:last_header (Uri.of_string "/foo3"), None;
+      Request.make ~meth:`GET (Uri.of_string "/foo"), `Empty;
+      Request.make ~meth:`GET (Uri.of_string "/foo2"), `Empty;
+      Request.make ~meth:`GET ~headers:last_header (Uri.of_string "/foo3"), `Empty;
     ] in
   lwt resp = Client.callv "89.16.177.154" 80 (Lwt_stream.of_list reqs) in
   (* Consume the bodies, and we should get 3 responses *)
@@ -44,7 +42,7 @@ let make_net_reqv () =
   Lwt_stream.iter_s (fun (res,body) ->
     (* Consume the body *)
     incr num;
-    lwt body = Cohttp_lwt_body.string_of_body body in
+    lwt body = Cohttp_lwt_body.to_string body in
     assert_equal (Response.status res) `Not_found;
     return ()
   ) resp >>= fun () ->

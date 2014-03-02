@@ -20,33 +20,25 @@
 (** This contains the metadata for a HTTP/1.1 request header, including
     the {!headers}, {!version}, {!meth} and {!uri}.  The body is handled by
     the separate {!S} module type, as it is dependent on the IO 
-    implementation. *)
+    implementation.
+
+    The interface exposes a [fieldslib] interface which provides individual
+    accessor functions for each of the records below.  It also provides [sexp]
+    serializers to convert to-and-from an {!Core.Std.Sexp.t}. *)
 type t = {
-  mutable headers: Header.t;
-  mutable meth: Code.meth;
-  mutable uri: Uri.t;
-  mutable version: Code.version;
-  mutable encoding: Transfer.encoding;
+  mutable headers: Header.t;    (** HTTP request headers *)
+  mutable meth: Code.meth;      (** HTTP request method *)
+  mutable uri: Uri.t;           (** Full HTTP request uri *)
+  mutable version: Code.version; (** HTTP version, usually 1.1 *)
+  mutable encoding: Transfer.encoding; (** transfer encoding of this HTTP request *)
 } with fields, sexp
-
-(** Retrieve the HTTP request headers *)
-val headers : t -> Header.t
-
-(** Retrieve the HTTP request method *)
-val meth : t -> Code.meth
-
-(** Retrieve the full HTTP request uri *)
-val uri : t -> Uri.t
-
-(** Retrieve the HTTP version, usually 1.1 *)
-val version : t -> Code.version
-
-(** Retrieve the transfer encoding of this HTTP request *)
-val encoding : t -> Transfer.encoding
 
 val make : ?meth:Code.meth -> ?version:Code.version -> 
   ?encoding:Transfer.encoding -> ?headers:Header.t ->
   Uri.t -> t
+
+(** Return true whether the connection should be reused *)
+val is_keep_alive : t -> bool
 
 val make_for_client:
   ?headers:Header.t ->
@@ -57,7 +49,7 @@ val make_for_client:
 module type S = sig
   module IO : IO.S
 
-  val read : IO.ic -> t option IO.t
+  val read : IO.ic -> [ `Eof | `Invalid of string | `Ok of t ] IO.t
   val has_body : t -> bool
   val read_body_chunk : t -> IO.ic -> Transfer.chunk IO.t
 

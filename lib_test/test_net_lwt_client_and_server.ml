@@ -28,14 +28,14 @@ let url = Uri.of_string (sprintf "http://%s:%d/post" address port)
 let url_shutdown = Uri.of_string (sprintf "http://%s:%d/shutdown" address port)
 
 let make_server () =
-  let callback conn_id ?body req =
+  let callback conn_id req body =
     match Uri.path (Request.uri req) with
     |""|"/" ->
        Server.respond_string ~status:`OK ~body:"helloworld" ()
     |"/post" -> begin
-       lwt body = Cohttp_lwt_body.string_of_body body in
+       lwt body = Cohttp_lwt_body.to_string body in
        Server.respond_string ~status:`OK ~body ()
-    end  
+    end
     |"/postnodrain" ->
        Server.respond_string ~status:`OK ~body:"nodrain" ()
     |_ -> exit 0
@@ -54,31 +54,50 @@ let not_none_s n t fn =
   |None -> prerr_endline ("ERR None " ^ n); exit 1
   |Some x -> fn x >>= fun () -> return (prerr_endline ("OK " ^ n))
 
+let lwt_test_s t ~name ~assert_ =
+  Lwt.catch (fun () ->
+    t >>= assert_ >|= fun () -> prerr_endline ("OK " ^ name)
+  ) (fun _ ->
+    print_endline ("ERR " ^ name);
+    exit 1)
+
+let lwt_test t ~name ~assert_ =
+  lwt_test_s t ~name ~assert_:(fun a -> a |> assert_ |> return)
+
 let client () =
   (* Do a set of single calls first and consume the body *)
   for_lwt i = 0 to 1000 do
-    not_none "get 1" (Client.get url) (fun (r,b) -> assert(b = None)) >>= fun () -> 
-    not_none_s "post 1" (Client.post ?body:(Cohttp_lwt_body.body_of_string "foobar") url)
-     (fun (r,b) ->
-       lwt b = Cohttp_lwt_body.string_of_body b in
+    lwt_test ~name:"get 1" (Client.get url) ~assert_:(fun (_,b) -> assert(b = `Empty))
+    >>= fun () ->
+    lwt_test_s ~name:"post 1" (Client.post ~body:(Cohttp_lwt_body.of_string "foobar") url)
+     ~assert_:(fun (r,b) ->
+       lwt b = Cohttp_lwt_body.to_string b in
+    lwt_test ~name:"get 1" (Client.get url) ~assert_:(fun (_,b) -> assert(b = `Empty))
+    >>= fun () ->
+    lwt_test_s ~name:"post 1" (Client.post ~body:(Cohttp_lwt_body.of_string "foobar") url)
+     ~assert_:(fun (r,b) ->
+       lwt b = Cohttp_lwt_body.to_string b in
        assert (b = "foobar");
        return ()
-     ) 
-  done >>= fun () -> 
+     ))
+  done >>= fun () ->
   (* Repeat but do not consume body *)
   for_lwt i = 0 to 2000 do
     try_lwt
-      not_none "get 1" (Client.get url) (fun (r,b) -> assert(b = None)) >>= fun () -> 
-      not_none_s "post 1" (Client.post ?body:(Cohttp_lwt_body.body_of_string "foobar") url) (fun (r,b) -> return ()) 
+      lwt_test ~name:"get 1" (Client.get url) ~assert_:(fun (r,b) -> assert(b = `Empty))
+      >>= fun () ->
+      lwt_test_s ~name:"post 1" (Client.post ~body:(Cohttp_lwt_body.of_string "foobar") url)
+        ~assert_:(fun (r,b) -> return ())
     with exn ->
       printf "got error, running gc\n%!";
       Gc.compact ();
-      not_none "get 1" (Client.get url) (fun (r,b) -> assert(b = None)) >>= fun () -> 
-      not_none_s "post 1" (Client.post ?body:(Cohttp_lwt_body.body_of_string "foobar") url) (fun (r,b) -> return ()) 
-  done >>= fun () -> 
- 
+      lwt_test ~name:"get 1" (Client.get url) ~assert_:(fun (r,b) -> assert(b = `Empty))
+      >>= fun () ->
+      lwt_test_s ~name:"post 1" (Client.post ~body:(Cohttp_lwt_body.of_string "foobar") url)
+        ~assert_:(fun (r,b) -> return ()) 
+  done >>= fun () ->
   (* Do a callv *)
-  let body () = Cohttp_lwt_body.body_of_string "foobar" in
+  let body () = Cohttp_lwt_body.of_string "foobar" in
   let body1 = body () in
   let body2 = body () in
   let reqs = Lwt_stream.of_list [
@@ -88,7 +107,7 @@ let client () =
   ] in
   lwt resp = Client.callv address port reqs in
   Lwt_stream.iter_s (fun (res, body) ->
-    lwt body = Cohttp_lwt_body.string_of_body body in 
+    lwt body = Cohttp_lwt_body.to_string body in 
     assert(body="foobar");
     return ()
   ) resp >>= fun () -> 

@@ -7,10 +7,10 @@ let u3 = "http://twitter.com"
 let u4 = "http://www.rustorka.com:2710/announce?info_hash=/00%00%00%00%00%00%0000%000%00%00%00%00%00%000&peer_id=00000000000000000000"
 
 (* a simple function to access the content of the response *)
-let content = function
-  | Some (_, body) -> 
-      Cohttp_lwt_body.string_of_body body
-  | _ -> return ""
+let content t =
+  catch
+    (fun () -> t |> snd |> Cohttp_lwt_body.to_string)
+    (fun _ -> return "")
 
 (* launch both requests in parallel *)
 let t =

@@ -13,7 +13,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- *)
+*)
 
 (** HTTP/1.1 response handling *)
 
@@ -22,26 +22,18 @@
     {!flush} the connection after every body chunk (useful for server-side
     events and other long-lived connection protocols). The body is handled by
     the separate {!S} module type, as it is dependent on the IO 
-    implementation. *)
+    implementation. 
+
+    The interface exposes a [fieldslib] interface which provides individual
+    accessor functions for each of the records below.  It also provides [sexp]
+    serializers to convert to-and-from an {!Core.Std.Sexp.t}. *)
 type t = {
-  mutable encoding: Transfer.encoding;
-  mutable headers: Header.t;
-  mutable version: Code.version;
-  mutable status: Code.status_code;
+  mutable encoding: Transfer.encoding; (** Transfer encoding of this HTTP response *)
+  mutable headers: Header.t;    (** response HTTP headers *)
+  mutable version: Code.version; (** (** HTTP version, usually 1.1 *) *)
+  mutable status: Code.status_code; (** HTTP status code of the response *)
   mutable flush: bool;
 } with fields, sexp
-
-(** Retrieve response HTTP headers *)
-val headers : t -> Header.t
-
-(** Retrieve the transfer encoding of this HTTP response *)
-val encoding : t -> Transfer.encoding
-
-(** Retrieve HTTP version, usually 1.1 *)
-val version : t -> Code.version
-
-(** Retrieve HTTP status code of the response *)
-val status : t -> Code.status_code
 
 val make :
   ?version:Code.version -> 
@@ -54,7 +46,7 @@ val make :
 module type S = sig
   module IO : IO.S
 
-  val read : IO.ic -> t option IO.t
+  val read : IO.ic -> [ `Eof | `Invalid of string | `Ok of t ] IO.t
   val has_body : t -> bool
   val read_body_chunk : t -> IO.ic -> Transfer.chunk IO.t
 

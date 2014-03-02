@@ -1,5 +1,6 @@
 (*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2014 Rudy Grinberg
+ * Copyright (c) 2014 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,22 +16,25 @@
  *
 *)
 
+(** HTTP request and response body handling *)
+
+(** Every HTTP body can at least be an empty value or a [string] *)
 type t = [
-  | Cohttp.Body.t
-  | `Stream of string Lwt_stream.t
+  | `Empty
+  | `String of string
 ] with sexp
 
-include Cohttp.Body.S with type t := t
+(** Signature for the core of HTTP body handling.  Implementations
+    will extend this signature to add more functions for streaming
+    responses via backend-specific functionality.  *)
+module type S = sig
+  type t
+  val to_string : t -> string
+  val empty : t
+  val of_string : string -> t
+  val of_string_list : string list -> t
+  val transfer_encoding : t -> Transfer.encoding
+end
 
-val to_string : t -> string Lwt.t
-
-val to_stream : t -> string Lwt_stream.t
-val of_stream : string Lwt_stream.t -> t
-
-val create_stream : ('a -> Cohttp.Transfer.chunk Lwt.t) -> 'a -> string Lwt_stream.t
-
-val length : t -> (int * t) Lwt.t
-
-val write_body : ?flush:(unit -> unit Lwt.t) -> (string -> unit Lwt.t) -> t -> unit Lwt.t
-
-val drain_body : t -> unit Lwt.t
+include S with type t := t
+val length : t -> int

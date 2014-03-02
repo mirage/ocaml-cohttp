@@ -32,10 +32,9 @@ let make ?(version=`HTTP_1_1) ?(status=`OK) ?(flush=false) ?(encoding=Transfer.C
 module type S = sig
   module IO : IO.S
 
-  val read : IO.ic -> t option IO.t
+  val read : IO.ic -> [ `Eof | `Invalid of string | `Ok of t ] IO.t
   val has_body : t -> bool
-  val read_body_chunk :
-    t -> IO.ic -> Transfer.chunk IO.t
+  val read_body_chunk : t -> IO.ic -> Transfer.chunk IO.t
 
   val is_form: t -> bool
   val read_form : t -> IO.ic -> (string * string list) list IO.t
@@ -59,25 +58,26 @@ module Make(IO : IO.S) = struct
   let parse_response_fst_line ic =
     let open Code in
     read_line ic >>= function
-    |Some response_line -> begin
+    | Some response_line -> begin
       match Re_str.split_delim pieces_sep response_line with
       | version_raw :: code_raw :: _ -> begin
          match version_of_string version_raw with
-         |Some v -> return (Some (v, (status_of_code (int_of_string code_raw))))
-         |_ -> return None
+         | Some v -> return (`Ok (v, (status_of_code (int_of_string code_raw))))
+         | None -> return (`Invalid ("Malformed response version: " ^ version_raw))
       end
-      | _ -> return None
+      | _ -> return (`Invalid ("Malformed response first line: " ^ response_line))
     end
-    |None -> return None
+    | None -> return `Eof
  
   let read ic =
     parse_response_fst_line ic >>= function
-    |None -> return None
-    |Some (version, status) ->
+    | `Eof -> return `Eof
+    | `Invalid reason as r -> return r
+    | `Ok (version, status) ->
        Header_IO.parse ic >>= fun headers ->
        let encoding = Header.get_transfer_encoding headers in
        let flush = false in
-       return (Some { encoding; headers; version; status; flush })
+       return (`Ok { encoding; headers; version; status; flush })
 
   let has_body {encoding} = Transfer.has_body encoding
   let read_body_chunk {encoding} ic = Transfer_IO.read encoding ic

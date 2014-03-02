@@ -66,51 +66,51 @@ module type Client = sig
 
   val call :
     ?headers:Cohttp.Header.t ->
-    ?body:Cohttp_lwt_body.contents ->
+    ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     Cohttp.Code.meth ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val head :
     ?headers:Cohttp.Header.t ->
-    Uri.t -> Response.t option Lwt.t
+    Uri.t -> Response.t Lwt.t
 
   val get :
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val delete :
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val post :
-    ?body:Cohttp_lwt_body.contents ->
+    ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val put :
-    ?body:Cohttp_lwt_body.contents ->
+    ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val patch :
-    ?body:Cohttp_lwt_body.contents ->
+    ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val post_form :
     ?headers:Cohttp.Header.t ->
     params:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) option Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val callv :
     ?ssl:bool ->
     string ->
     int ->
-    (Request.t * Cohttp_lwt_body.contents option) Lwt_stream.t ->
+    (Request.t * Cohttp_lwt_body.t) Lwt_stream.t ->
     (Response.t * Cohttp_lwt_body.t) Lwt_stream.t Lwt.t
 end
 
@@ -128,8 +128,8 @@ module Make_client
 type server = {
   callback :
     Cohttp.Connection.t ->
-    ?body:Cohttp_lwt_body.contents ->
     Cohttp.Request.t ->
+    Cohttp_lwt_body.t ->
     (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
   conn_closed:
     Cohttp.Connection.t -> unit -> unit;
@@ -143,8 +143,8 @@ module type Server = sig
   type t = server = {
     callback :
       Cohttp.Connection.t ->
-      ?body:Cohttp_lwt_body.contents ->
       Cohttp.Request.t ->
+      Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
       Cohttp.Connection.t -> unit -> unit;
