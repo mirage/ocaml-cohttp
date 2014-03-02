@@ -1,4 +1,4 @@
-0.10.0 (trunk):
+0.10.0 (2014-03-02):
 * Interface change: The `Request` and `Response` module types now explictly
   signal `Eof` and `Invalid` (for errors), to help the backend distinguish them.
 * Interface change: Unify HTTP body handling across backends into a `Cohttp.Body`
