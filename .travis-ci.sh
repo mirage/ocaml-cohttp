@@ -20,8 +20,7 @@ echo OPAM versions
 opam --version
 opam --git-version
 
-# opam init git://github.com/ocaml/opam-repository >/dev/null 2>&1
-opam init
+opam init git://github.com/ocaml/opam-repository >/dev/null 2>&1
 opam install ${OPAM_DEPENDS}
 
 eval `opam config env`
@@ -32,11 +31,12 @@ make clean
 opam pin cohttp .
 
 unset OPAMVERBOSE
-opam pin github git://github.com/avsm/ocaml-github
 opam install github
-opam pin cowabloga git://github.com/avsm/cowabloga#mor1-master
 opam install cowabloga
-opam pin mirage-www git://github.com/avsm/mirage-www
 opam install mirage-www
-opam pin irminsule git://github.com/avsm/irminsule#cohttp-0.10.0-api
-opam install irminsule
+
+case "$OCAML_VERSION" in
+4.01.0)
+  opam install irminsule ;;
+*) echo Skipping irminsule ;;
+esac
