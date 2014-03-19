@@ -63,6 +63,12 @@ let valid_cookie () =
   assert_equal ~printer:cookie_printer
     ~msg:"headers" [ "foo", "bar"; "a", "b" ] cookies
 
+let get_media_type () =
+  let mt = " foo/bar ; charset=UTF-8" in
+  let header = Cohttp.Header.init_with "content-type" mt in
+  assert_equal ~msg:"media type"
+    (Some "foo/bar") (Cohttp.Header.get_media_type header)
+
 (* returns true if the result list contains successes only.
    Copied from oUnit source as it isnt exposed by the mli *)
 let rec was_successful =
@@ -78,6 +84,7 @@ let rec was_successful =
 
 let _ =
   let suites = [
+    "Media Type" >:: get_media_type;
     "Valid Auth" >:: valid_auth;
     "Valid Set-Cookie" >:: valid_set_cookie;
     "Valid Cookie" >:: valid_cookie;
