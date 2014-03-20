@@ -81,7 +81,7 @@ module Set_cookie_hdr = struct
   let extract_1_0 cstr alist =
     let attrs = Re_str.split_delim (Re_str.regexp ";[ \t]*") cstr in
     let attrs = List.map (fun attr ->
-      match Re_str.split_delim (Re_str.regexp_string "=") attr with
+      match Strings.split ~on:'=' attr with
         | [] -> ("","")
         | n::v -> (n,String.concat "=" v)
     ) attrs in
@@ -142,8 +142,7 @@ module Cookie_hdr = struct
   *)
 
   let cookie_re = Re_str.regexp "[;,][ \t]*"
-  let equals_re = Re_str.regexp_string "="
-
+  
   let extract hdr =
     List.fold_left
       (fun acc header ->
@@ -152,7 +151,7 @@ module Cookie_hdr = struct
              $else) *)
           let cookies = List.filter (fun s -> s.[0] != '$') comps in
           let split_pair nvp =
-            match Re_str.bounded_split equals_re nvp 2 with
+            match Strings.split ~on:'=' nvp ~max:2 with
             | [] -> ("","")
             | n :: [] -> (n, "")
             | n :: v :: _ -> (n, v)

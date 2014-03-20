@@ -52,14 +52,13 @@ module Make(IO : IO.S) = struct
 
   open IO
 
-  let pieces_sep = Re_str.regexp_string " "
   let header_sep = Re_str.regexp ": *"
   
   let parse_response_fst_line ic =
     let open Code in
     read_line ic >>= function
     | Some response_line -> begin
-      match Re_str.split_delim pieces_sep response_line with
+      match Strings.split response_line ~on:' ' with
       | version_raw :: code_raw :: _ -> begin
          match version_of_string version_raw with
          | Some v -> return (`Ok (v, (status_of_code (int_of_string code_raw))))

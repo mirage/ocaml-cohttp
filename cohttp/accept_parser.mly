@@ -18,7 +18,6 @@
 
 %{
   open Accept_types
-  module Str = Re_str
 
   type param = Q of int | Kv of (string * pv)
 
@@ -95,7 +94,7 @@ encodings :
 
 language :
 | TOK params {
-  (get_q $2, Language (Str.split (Str.regexp "-") (String.lowercase $1)))
+  (get_q $2, Language (Strings.split ~on:'-' (String.lowercase $1)))
 }
 | STAR params { (get_q $2, AnyLanguage) }
 
