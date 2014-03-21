@@ -2,6 +2,19 @@ open String
 
 let string_after s n = String.sub s n (String.length s - n)
 
+let quote s =
+  let len = String.length s in
+  let buf = String.create (2 * len) in
+  let pos = ref 0 in
+  for i = 0 to len - 1 do
+    match s.[i] with
+      '[' | ']' | '*' | '.' | '\\' | '?' | '+' | '^' | '$' as c ->
+      buf.[!pos] <- '\\'; buf.[!pos + 1] <- c; pos := !pos + 2
+    | c ->
+      buf.[!pos] <- c; pos := !pos + 1
+  done;
+  String.sub buf 0 !pos
+
 (* Not tail recursive for "performance", please choose low values for
    [max]. The idea is that max is always small because it's hard
    code *)
