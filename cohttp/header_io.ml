@@ -22,14 +22,13 @@ module Make(IO : IO.S) = struct
 
   module Transfer_IO = Transfer_io.Make(IO)
 
-  let header_sep = Re_str.regexp ": *"
   let parse ic =
     (* consume also trailing "^\r\n$" line *)
     let rec parse_headers' headers =
       read_line ic >>= function
       |Some "" | None -> return headers
       |Some line -> begin
-          match Re_str.bounded_split_delim header_sep line 2 with
+          match Strings.split_header line with
           | [hd;tl] ->
               let header = String.lowercase hd in
               parse_headers' (Header.add headers header tl);

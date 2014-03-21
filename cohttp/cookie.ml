@@ -79,7 +79,7 @@ module Set_cookie_hdr = struct
   let extract_1_1 cstr alist = alist
 
   let extract_1_0 cstr alist =
-    let attrs = Re_str.split_delim (Re_str.regexp ";[ \t]*") cstr in
+    let attrs = Strings.split_cookie_1_0 cstr in
     let attrs = List.map (fun attr ->
       match Strings.split ~on:'=' attr with
         | [] -> ("","")
@@ -103,7 +103,7 @@ module Set_cookie_hdr = struct
           if v = "" then raise Not_found
           else Some
             (String.lowercase
-               (if v.[0] = '.' then Re_str.string_after v 1 else v))
+               (if v.[0] = '.' then Strings.string_after v 1 else v))
         with Not_found -> None
       in
       (* TODO: trim wsp *)
@@ -141,12 +141,10 @@ module Cookie_hdr = struct
     port            =  "$Port" [ "=" <"> value <"> ]
   *)
 
-  let cookie_re = Re_str.regexp "[;,][ \t]*"
-  
   let extract hdr =
     List.fold_left
       (fun acc header ->
-          let comps = Re_str.split_delim cookie_re header in
+          let comps = Strings.split_cookie header in
           (* We don't handle $Path, $Domain, $Port, $Version (or $anything
              $else) *)
           let cookies = List.filter (fun s -> s.[0] != '$') comps in
