@@ -45,6 +45,7 @@ let split ?max s ~on =
   | None -> split_char_unbounded s ~on
   | Some max ->                 (* assert (max < 100); *)
     split_char_bounded s ~on ~max
+
 let trim_left ?(start=0) ?stop s ~on =
   let stop = match stop with
     | None -> String.length s
@@ -92,6 +93,12 @@ let split_trim_right str ~on ~trim =
       with Not_found -> (sub str 0 (offset + 1))::acc
     in loop [] (length str - 1)
 
+let split_cookie str =
+  split_trim_right str ~on:",;" ~trim:" \t"
+
+let split_cookie_1_0 str =
+  split_trim_right str ~on:";" ~trim:" \t"
+
 exception Found_int of int
 
 let first_char_ne s c =
@@ -111,3 +118,7 @@ let trim_left s =
     with Found_int non_space ->
       sub s non_space (len - non_space)
 
+let split_header str =
+  match str |> split ~max:2 ~on:':' with
+  | x::y::[] -> [x; trim_left y]
+  | x -> x
