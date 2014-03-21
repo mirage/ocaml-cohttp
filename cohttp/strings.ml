@@ -1,4 +1,7 @@
 open String
+
+let string_after s n = String.sub s n (String.length s - n)
+
 (* Not tail recursive for "performance", please choose low values for
    [max]. The idea is that max is always small because it's hard
    code *)
