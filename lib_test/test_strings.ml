@@ -3,16 +3,16 @@ open OUnit
 let printer = String.concat "-"
 
 let test_split_1 () =
-  let strings = Strings.split "test:one:two" ~on:':' in
+  let strings = Stringext.split "test:one:two" ~on:':' in
   assert_equal ~printer strings ["test";"one";"two"]
 
 let test_split_bounded_1 () =
-  let strings = Strings.split "testing:foo:bar" ~on:':' ~max:2 in
+  let strings = Stringext.split "testing:foo:bar" ~on:':' ~max:2 in
   assert_equal ~printer strings ["testing";"foo:bar"]
 
 let test_split_none () =
   let s = "foo:bar" in
-  assert_equal ~printer [s] (Strings.split s ~on:'=')
+  assert_equal ~printer [s] (Stringext.split s ~on:'=')
 
 let test_fixtures =
   "test various string functions" >:::

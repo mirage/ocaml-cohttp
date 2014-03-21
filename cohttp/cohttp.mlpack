@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 6d6149ad75bb841d1952471a34015283)
+# DO NOT EDIT (digest: 864572055a4878fe9af039f61056ce89)
 IO
 Code
 Header
@@ -18,5 +18,5 @@ Transfer_io
 Client
 Connection
 Body
-Strings
+Stringext
 # OASIS_STOP

@@ -90,7 +90,7 @@ module Make(IO : IO.S) = struct
     let open Code in
     read_line ic >>= function
     | Some request_line -> begin
-      match Strings.split request_line ~on:' ' with
+      match Stringext.split request_line ~on:' ' with
       | [ meth_raw; path; http_ver_raw ] -> begin
           match method_of_string meth_raw, version_of_string http_ver_raw with
           | Some m, Some v -> return (`Ok (m, path, v))

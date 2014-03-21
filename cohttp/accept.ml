@@ -40,7 +40,7 @@ let languages = function
 let rec string_of_pl = function
   | [] -> ""
   | (k,T v)::r -> sprintf ";%s=%s%s" k v (string_of_pl r)
-  | (k,S v)::r -> sprintf ";%s=\"%s\"%s" k (Strings.quote v) (string_of_pl r)
+  | (k,S v)::r -> sprintf ";%s=\"%s\"%s" k (Stringext.quote v) (string_of_pl r)
 
 let accept_el el pl q =
   sprintf "%s;q=%.3f%s" el ((float q)/.1000.) (string_of_pl pl)

@@ -79,9 +79,9 @@ module Set_cookie_hdr = struct
   let extract_1_1 cstr alist = alist
 
   let extract_1_0 cstr alist =
-    let attrs = Strings.split_cookie_1_0 cstr in
+    let attrs = Stringext.split_cookie_1_0 cstr in
     let attrs = List.map (fun attr ->
-      match Strings.split ~on:'=' attr with
+      match Stringext.split ~on:'=' attr with
         | [] -> ("","")
         | n::v -> (n,String.concat "=" v)
     ) attrs in
@@ -103,7 +103,7 @@ module Set_cookie_hdr = struct
           if v = "" then raise Not_found
           else Some
             (String.lowercase
-               (if v.[0] = '.' then Strings.string_after v 1 else v))
+               (if v.[0] = '.' then Stringext.string_after v 1 else v))
         with Not_found -> None
       in
       (* TODO: trim wsp *)
@@ -144,12 +144,12 @@ module Cookie_hdr = struct
   let extract hdr =
     List.fold_left
       (fun acc header ->
-          let comps = Strings.split_cookie header in
+          let comps = Stringext.split_cookie header in
           (* We don't handle $Path, $Domain, $Port, $Version (or $anything
              $else) *)
           let cookies = List.filter (fun s -> s.[0] != '$') comps in
           let split_pair nvp =
-            match Strings.split ~on:'=' nvp ~max:2 with
+            match Stringext.split ~on:'=' nvp ~max:2 with
             | [] -> ("","")
             | n :: [] -> (n, "")
             | n :: v :: _ -> (n, v)

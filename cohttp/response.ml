@@ -56,7 +56,7 @@ module Make(IO : IO.S) = struct
     let open Code in
     read_line ic >>= function
     | Some response_line -> begin
-      match Strings.split response_line ~on:' ' with
+      match Stringext.split response_line ~on:' ' with
       | version_raw :: code_raw :: _ -> begin
          match version_of_string version_raw with
          | Some v -> return (`Ok (v, (status_of_code (int_of_string code_raw))))

@@ -28,7 +28,7 @@ module Make(IO : IO.S) = struct
       read_line ic >>= function
       |Some "" | None -> return headers
       |Some line -> begin
-          match Strings.split_header line with
+          match Stringext.split_header line with
           | [hd;tl] ->
               let header = String.lowercase hd in
               parse_headers' (Header.add headers header tl);

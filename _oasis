@@ -13,7 +13,7 @@ Library cohttp
   Pack: true
   Modules: IO, Code, Header, Cookie, Request, Response, Transfer, Accept, Accept_parser,
            Accept_lexer, Accept_types, Base64, Auth, Header_io, Transfer_io, Client, Connection, Body
-  InternalModules: Strings
+  InternalModules: Stringext
   BuildDepends:	re, uri (>= 1.3.13), uri.services, fieldslib, fieldslib.syntax, sexplib, sexplib.syntax
 
 Flag lwt

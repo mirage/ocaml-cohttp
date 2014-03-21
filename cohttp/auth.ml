@@ -34,7 +34,7 @@ let to_string =
 let of_string v =
   try
     let b64 = Scanf.sscanf v "Basic %s" (fun b -> b) in
-    match Strings.split ~on:':' (Base64.decode b64) ~max:2 with
+    match Stringext.split ~on:':' (Base64.decode b64) ~max:2 with
     |[user;pass] -> Some (Basic (user,pass))
     |_ -> None
   with _ -> None
