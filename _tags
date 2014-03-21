@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: f308257cd8ed13415447a989e02db6e2)
+# DO NOT EDIT (digest: 94b391cd2b40dcfc668217d672bfe48a)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -33,6 +33,7 @@
 "cohttp/client.cmx": for-pack(Cohttp)
 "cohttp/connection.cmx": for-pack(Cohttp)
 "cohttp/body.cmx": for-pack(Cohttp)
+"cohttp/stringext.cmx": for-pack(Cohttp)
 <cohttp/*.ml{,i}>: pkg_fieldslib
 <cohttp/*.ml{,i}>: pkg_fieldslib.syntax
 <cohttp/*.ml{,i}>: pkg_re
@@ -88,6 +89,17 @@
 <lib_test/test_parser.{native,byte}>: use_cohttp_lwt
 <lib_test/test_parser.{native,byte}>: use_cohttp_lwt_unix
 <lib_test/test_parser.{native,byte}>: custom
+# Executable test_strings
+<lib_test/test_strings.{native,byte}>: pkg_fieldslib
+<lib_test/test_strings.{native,byte}>: pkg_fieldslib.syntax
+<lib_test/test_strings.{native,byte}>: pkg_oUnit
+<lib_test/test_strings.{native,byte}>: pkg_re
+<lib_test/test_strings.{native,byte}>: pkg_sexplib
+<lib_test/test_strings.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_strings.{native,byte}>: pkg_uri
+<lib_test/test_strings.{native,byte}>: pkg_uri.services
+<lib_test/test_strings.{native,byte}>: use_cohttp
+<lib_test/test_strings.{native,byte}>: custom
 # Executable test_accept
 <lib_test/test_accept.{native,byte}>: pkg_fieldslib
 <lib_test/test_accept.{native,byte}>: pkg_fieldslib.syntax

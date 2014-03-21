@@ -63,10 +63,14 @@ let valid_cookie () =
   assert_equal ~printer:cookie_printer
     ~msg:"headers" [ "foo", "bar"; "a", "b" ] cookies
 
+let opt_printer f = function
+  | None -> "nothing"
+  | Some x -> Printf.sprintf "'%s'" (f x)
+
 let get_media_type () =
   let mt = " foo/bar ; charset=UTF-8" in
   let header = Cohttp.Header.init_with "content-type" mt in
-  assert_equal ~msg:"media type"
+  assert_equal ~msg:"media type" ~printer:(opt_printer (fun x -> x))
     (Some "foo/bar") (Cohttp.Header.get_media_type header)
 
 (* returns true if the result list contains successes only.
