@@ -52,8 +52,6 @@ module Make(IO : IO.S) = struct
 
   open IO
 
-  let header_sep = Re_str.regexp ": *"
-  
   let parse_response_fst_line ic =
     let open Code in
     read_line ic >>= function
