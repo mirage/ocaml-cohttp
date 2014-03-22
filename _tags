@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 94b391cd2b40dcfc668217d672bfe48a)
+# DO NOT EDIT (digest: 4bca07030d0c39472f1646b01bac8b65)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -33,12 +33,12 @@
 "cohttp/client.cmx": for-pack(Cohttp)
 "cohttp/connection.cmx": for-pack(Cohttp)
 "cohttp/body.cmx": for-pack(Cohttp)
-"cohttp/stringext.cmx": for-pack(Cohttp)
 <cohttp/*.ml{,i}>: pkg_fieldslib
 <cohttp/*.ml{,i}>: pkg_fieldslib.syntax
 <cohttp/*.ml{,i}>: pkg_re
 <cohttp/*.ml{,i}>: pkg_sexplib
 <cohttp/*.ml{,i}>: pkg_sexplib.syntax
+<cohttp/*.ml{,i}>: pkg_stringext
 <cohttp/*.ml{,i}>: pkg_uri
 <cohttp/*.ml{,i}>: pkg_uri.services
 # Library cohttp_lwt
@@ -54,6 +54,7 @@
 <lwt/*.ml{,i}>: pkg_re
 <lwt/*.ml{,i}>: pkg_sexplib
 <lwt/*.ml{,i}>: pkg_sexplib.syntax
+<lwt/*.ml{,i}>: pkg_stringext
 <lwt/*.ml{,i}>: pkg_unix
 <lwt/*.ml{,i}>: pkg_uri
 <lwt/*.ml{,i}>: pkg_uri.services
@@ -67,6 +68,7 @@
 <async/*.ml{,i}>: pkg_re
 <async/*.ml{,i}>: pkg_sexplib
 <async/*.ml{,i}>: pkg_sexplib.syntax
+<async/*.ml{,i}>: pkg_stringext
 <async/*.ml{,i}>: pkg_threads
 <async/*.ml{,i}>: pkg_uri
 <async/*.ml{,i}>: pkg_uri.services
@@ -82,6 +84,7 @@
 <lib_test/test_parser.{native,byte}>: pkg_re
 <lib_test/test_parser.{native,byte}>: pkg_sexplib
 <lib_test/test_parser.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_parser.{native,byte}>: pkg_stringext
 <lib_test/test_parser.{native,byte}>: pkg_unix
 <lib_test/test_parser.{native,byte}>: pkg_uri
 <lib_test/test_parser.{native,byte}>: pkg_uri.services
@@ -89,17 +92,6 @@
 <lib_test/test_parser.{native,byte}>: use_cohttp_lwt
 <lib_test/test_parser.{native,byte}>: use_cohttp_lwt_unix
 <lib_test/test_parser.{native,byte}>: custom
-# Executable test_strings
-<lib_test/test_strings.{native,byte}>: pkg_fieldslib
-<lib_test/test_strings.{native,byte}>: pkg_fieldslib.syntax
-<lib_test/test_strings.{native,byte}>: pkg_oUnit
-<lib_test/test_strings.{native,byte}>: pkg_re
-<lib_test/test_strings.{native,byte}>: pkg_sexplib
-<lib_test/test_strings.{native,byte}>: pkg_sexplib.syntax
-<lib_test/test_strings.{native,byte}>: pkg_uri
-<lib_test/test_strings.{native,byte}>: pkg_uri.services
-<lib_test/test_strings.{native,byte}>: use_cohttp
-<lib_test/test_strings.{native,byte}>: custom
 # Executable test_accept
 <lib_test/test_accept.{native,byte}>: pkg_fieldslib
 <lib_test/test_accept.{native,byte}>: pkg_fieldslib.syntax
@@ -107,6 +99,7 @@
 <lib_test/test_accept.{native,byte}>: pkg_re
 <lib_test/test_accept.{native,byte}>: pkg_sexplib
 <lib_test/test_accept.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_accept.{native,byte}>: pkg_stringext
 <lib_test/test_accept.{native,byte}>: pkg_uri
 <lib_test/test_accept.{native,byte}>: pkg_uri.services
 <lib_test/test_accept.{native,byte}>: use_cohttp
@@ -118,6 +111,7 @@
 <lib_test/test_header.{native,byte}>: pkg_re
 <lib_test/test_header.{native,byte}>: pkg_sexplib
 <lib_test/test_header.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_header.{native,byte}>: pkg_stringext
 <lib_test/test_header.{native,byte}>: pkg_uri
 <lib_test/test_header.{native,byte}>: pkg_uri.services
 <lib_test/test_header.{native,byte}>: use_cohttp
@@ -133,6 +127,7 @@
 <lib_test/test_net_lwt.{native,byte}>: pkg_re
 <lib_test/test_net_lwt.{native,byte}>: pkg_sexplib
 <lib_test/test_net_lwt.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_lwt.{native,byte}>: pkg_stringext
 <lib_test/test_net_lwt.{native,byte}>: pkg_unix
 <lib_test/test_net_lwt.{native,byte}>: pkg_uri
 <lib_test/test_net_lwt.{native,byte}>: pkg_uri.services
@@ -150,6 +145,7 @@
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_re
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_sexplib
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_lwt_google.{native,byte}>: pkg_stringext
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_unix
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_uri
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_uri.services
@@ -167,6 +163,7 @@
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_re
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_sexplib
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_stringext
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_unix
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_uri
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_uri.services
@@ -184,6 +181,7 @@
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_re
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_sexplib
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_lwt_server.{native,byte}>: pkg_stringext
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_unix
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_uri
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_uri.services
@@ -201,6 +199,7 @@
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_re
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_sexplib
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_stringext
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_unix
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_uri
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_uri.services
@@ -218,6 +217,7 @@
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_re
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_sexplib
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_stringext
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_unix
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_uri
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_uri.services
@@ -240,6 +240,7 @@
 <lib_test/test_net_async.{native,byte}>: pkg_re
 <lib_test/test_net_async.{native,byte}>: pkg_sexplib
 <lib_test/test_net_async.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_async.{native,byte}>: pkg_stringext
 <lib_test/test_net_async.{native,byte}>: pkg_threads
 <lib_test/test_net_async.{native,byte}>: pkg_uri
 <lib_test/test_net_async.{native,byte}>: pkg_uri.services
@@ -254,6 +255,7 @@
 <lib_test/test_net_async_http10.{native,byte}>: pkg_re
 <lib_test/test_net_async_http10.{native,byte}>: pkg_sexplib
 <lib_test/test_net_async_http10.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_async_http10.{native,byte}>: pkg_stringext
 <lib_test/test_net_async_http10.{native,byte}>: pkg_threads
 <lib_test/test_net_async_http10.{native,byte}>: pkg_uri
 <lib_test/test_net_async_http10.{native,byte}>: pkg_uri.services
@@ -268,6 +270,7 @@
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_re
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_sexplib
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_async_multi_get.{native,byte}>: pkg_stringext
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_threads
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_uri
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_uri.services
@@ -282,6 +285,7 @@
 <lib_test/test_net_async_server.{native,byte}>: pkg_re
 <lib_test/test_net_async_server.{native,byte}>: pkg_sexplib
 <lib_test/test_net_async_server.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_async_server.{native,byte}>: pkg_stringext
 <lib_test/test_net_async_server.{native,byte}>: pkg_threads
 <lib_test/test_net_async_server.{native,byte}>: pkg_uri
 <lib_test/test_net_async_server.{native,byte}>: pkg_uri.services
@@ -294,6 +298,7 @@
 <lib_test/*.ml{,i}>: pkg_re
 <lib_test/*.ml{,i}>: pkg_sexplib
 <lib_test/*.ml{,i}>: pkg_sexplib.syntax
+<lib_test/*.ml{,i}>: pkg_stringext
 <lib_test/*.ml{,i}>: pkg_threads
 <lib_test/*.ml{,i}>: pkg_uri
 <lib_test/*.ml{,i}>: pkg_uri.services
@@ -307,6 +312,7 @@
 <bin/cohttp_server_async.{native,byte}>: pkg_re
 <bin/cohttp_server_async.{native,byte}>: pkg_sexplib
 <bin/cohttp_server_async.{native,byte}>: pkg_sexplib.syntax
+<bin/cohttp_server_async.{native,byte}>: pkg_stringext
 <bin/cohttp_server_async.{native,byte}>: pkg_threads
 <bin/cohttp_server_async.{native,byte}>: pkg_uri
 <bin/cohttp_server_async.{native,byte}>: pkg_uri.services
@@ -318,6 +324,7 @@
 <bin/*.ml{,i}>: pkg_re
 <bin/*.ml{,i}>: pkg_sexplib
 <bin/*.ml{,i}>: pkg_sexplib.syntax
+<bin/*.ml{,i}>: pkg_stringext
 <bin/*.ml{,i}>: pkg_threads
 <bin/*.ml{,i}>: pkg_uri
 <bin/*.ml{,i}>: pkg_uri.services
@@ -331,6 +338,7 @@
 <examples/async/hello_world.{native,byte}>: pkg_re
 <examples/async/hello_world.{native,byte}>: pkg_sexplib
 <examples/async/hello_world.{native,byte}>: pkg_sexplib.syntax
+<examples/async/hello_world.{native,byte}>: pkg_stringext
 <examples/async/hello_world.{native,byte}>: pkg_threads
 <examples/async/hello_world.{native,byte}>: pkg_uri
 <examples/async/hello_world.{native,byte}>: pkg_uri.services
@@ -342,6 +350,7 @@
 <examples/async/*.ml{,i}>: pkg_re
 <examples/async/*.ml{,i}>: pkg_sexplib
 <examples/async/*.ml{,i}>: pkg_sexplib.syntax
+<examples/async/*.ml{,i}>: pkg_stringext
 <examples/async/*.ml{,i}>: pkg_threads
 <examples/async/*.ml{,i}>: pkg_uri
 <examples/async/*.ml{,i}>: pkg_uri.services

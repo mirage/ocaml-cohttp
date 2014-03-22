@@ -79,7 +79,7 @@ module Set_cookie_hdr = struct
   let extract_1_1 cstr alist = alist
 
   let extract_1_0 cstr alist =
-    let attrs = Stringext.split_cookie_1_0 cstr in
+    let attrs = Stringext.split_trim_left cstr ~on:",;" ~trim:" \t" in
     let attrs = List.map (fun attr ->
       match Stringext.split ~on:'=' attr with
         | [] -> ("","")
@@ -144,7 +144,7 @@ module Cookie_hdr = struct
   let extract hdr =
     List.fold_left
       (fun acc header ->
-          let comps = Stringext.split_cookie header in
+          let comps = Stringext.split_trim_left ~on:";" ~trim:" \t" header in
           (* We don't handle $Path, $Domain, $Port, $Version (or $anything
              $else) *)
           let cookies = List.filter (fun s -> s.[0] != '$') comps in
