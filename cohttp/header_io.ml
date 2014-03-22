@@ -17,6 +17,11 @@
  *
  *)
 
+let split_header str =
+  match str |> Stringext.split ~max:2 ~on:':' with
+  | x::y::[] -> [x; Stringext.trim_left y]
+  | x -> x
+
 module Make(IO : IO.S) = struct
   open IO
 
@@ -28,7 +33,7 @@ module Make(IO : IO.S) = struct
       read_line ic >>= function
       |Some "" | None -> return headers
       |Some line -> begin
-          match Stringext.split_header line with
+          match split_header line with
           | [hd;tl] ->
               let header = String.lowercase hd in
               parse_headers' (Header.add headers header tl);
