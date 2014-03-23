@@ -128,7 +128,7 @@ let get_connection_close headers =
 
 let media_type_re =
   let re = Re_emacs.re ~case:true "[ \t]*\\([^ \t;]+\\)" in
-  [Re.start; re] |> Re.seq |> Re.compile
+  Re.(compile (seq ([start; re])))
 
 let get_first_match re s =
   try
