@@ -1,3 +1,6 @@
+0.10.1 (trunk):
+* Remove dependency on `ocaml-re` in order to make library POSIX thread-safe.
+
 0.10.0 (2014-03-02):
 * Interface change: The `Request` and `Response` module types now explictly
   signal `Eof` and `Invalid` (for errors), to help the backend distinguish them.
