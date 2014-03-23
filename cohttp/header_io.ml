@@ -18,7 +18,7 @@
  *)
 
 let split_header str =
-  match str |> Stringext.split ~max:2 ~on:':' with
+  match Stringext.split ~max:2 ~on:':' str with
   | x::y::[] -> [x; Stringext.trim_left y]
   | x -> x
 
