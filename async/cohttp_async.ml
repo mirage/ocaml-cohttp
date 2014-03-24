@@ -94,7 +94,7 @@ module IO = struct
 end
 
 module Net = struct
-  let connect ?interrupt ?ssl:(ssl=false) uri =
+  let connect ?interrupt ?(ssl=false) uri =
     let host = Option.value (Uri.host uri) ~default:"localhost" in
     match Uri_services.tcp_port_of_uri ~default:"http" uri with
     |None -> raise (Failure "Net.connect") (* TODO proper exception *)
