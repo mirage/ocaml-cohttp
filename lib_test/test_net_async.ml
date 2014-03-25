@@ -23,9 +23,9 @@ let show_headers h =
   Cohttp.Header.iter (fun k v -> List.iter v ~f:(Printf.eprintf "%s: %s\n%!" k)) h
 
 let make_net_req () =
-  let headers = Cohttp.Header.of_list ["connection","close"] in
-  let uri = Uri.of_string "http://anil.recoil.org/" in
-  Client.get ~headers uri 
+  let headers = Cohttp.Header.of_list [ "connection", "close" ] in
+  let uri = Uri.of_string "https://github.com/" in
+  Client.get ~headers uri
   >>= fun (res, body) ->
    show_headers (Cohttp.Response.headers res);
    body
@@ -44,7 +44,7 @@ let make_net_post_req () =
    |0 -> acc
    |n -> make_body (sprintf "fooooobody%d" n :: acc) (n-1) in
   let body = Body.of_pipe (Pipe.of_list (make_body [] 2)) in
-  Client.call ~headers ~body `POST uri 
+  Client.call ~headers ~body `POST uri
   >>= fun (res, body) ->
     show_headers (Cohttp.Response.headers res);
     body
