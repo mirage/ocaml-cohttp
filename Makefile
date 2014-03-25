@@ -17,7 +17,7 @@ setup.data: setup.bin
 	./setup.bin -configure $(LWT) $(ASYNC) $(LWT_UNIX) $(TESTS) $(NETTESTS) --prefix $(PREFIX)
 
 build: setup.data setup.bin
-	./setup.bin -build -classic-display
+	./setup.bin -build -classic-display -cflag -cclib -lflag -cclib -lflag -lrt
 
 doc: setup.data setup.bin
 	./setup.bin -doc

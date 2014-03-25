@@ -94,16 +94,15 @@ module IO = struct
 end
 
 module Net = struct
-  let connect ?interrupt ?(ssl=false) uri =
+  let connect ?interrupt uri =
     let host = Option.value (Uri.host uri) ~default:"localhost" in
     match Uri_services.tcp_port_of_uri ~default:"http" uri with
     |None -> raise (Failure "Net.connect") (* TODO proper exception *)
     |Some port ->
       Tcp.connect ?interrupt (Tcp.to_host_and_port host port)
       >>= fun (socket, net_to_ssl, ssl_to_net) ->
-      match ssl with
-      | false -> return (socket, net_to_ssl, ssl_to_net)
-      | true ->
+      match Uri.scheme uri with
+      | Some "https" ->
         let net_to_ssl = Reader.pipe net_to_ssl in
         let ssl_to_net = Writer.pipe ssl_to_net in
         let app_to_ssl, app_wr = Pipe.create () in
@@ -112,6 +111,8 @@ module Net = struct
         Reader.of_pipe (Info.of_string "cohttp_client_reader") app_rd >>= fun app_rd ->
         Writer.of_pipe (Info.of_string "cohttp_client_writer") app_wr >>| fun (app_wr,_) ->
         socket, app_rd, app_wr
+      |    _    ->
+        return (socket, net_to_ssl, ssl_to_net)
 end
 
 module Request = struct
@@ -196,7 +197,7 @@ end
 
 module Client = struct
 
-  let call ?interrupt ?ssl ?headers ?(chunked=false) ?(body=`Empty) meth uri =
+  let call ?interrupt ?headers ?(chunked=false) ?(body=`Empty) meth uri =
     (* Convert the body Pipe to a list of chunks. *)
     (match body with
      | `Empty -> return []
@@ -214,7 +215,7 @@ module Client = struct
         Request.make_for_client ?headers ~chunked meth uri
     in
     (* Connect to the remote side *)
-    Net.connect ?interrupt ?ssl uri
+    Net.connect ?interrupt uri
     >>= fun (_,ic,oc) ->
     (* Write request down the wire *)
     Request.write_header req oc
@@ -232,10 +233,10 @@ module Client = struct
       let rd = pipe_of_body (Response.read_body_chunk res) ic oc in
       return (res, `Pipe rd)
 
-  let get ?interrupt ?ssl ?headers uri =
+  let get ?interrupt ?headers uri =
     call ?interrupt ?headers ~chunked:false `GET uri
 
-  let head ?interrupt ?ssl ?headers uri =
+  let head ?interrupt ?headers uri =
     call ?interrupt ?headers ~chunked:false `HEAD uri
     >>= begin fun (res, body) ->
       (match body with
@@ -244,17 +245,17 @@ module Client = struct
       return res
     end
 
-  let post ?interrupt ?ssl ?headers ?(chunked=false) ?body uri =
-    call ?interrupt ?ssl ?headers ~chunked ?body `POST uri
+  let post ?interrupt ?headers ?(chunked=false) ?body uri =
+    call ?interrupt ?headers ~chunked ?body `POST uri
 
-  let put ?interrupt ?ssl ?headers ?(chunked=false) ?body uri =
-    call ?interrupt ?ssl ?headers ~chunked ?body `PUT uri
+  let put ?interrupt ?headers ?(chunked=false) ?body uri =
+    call ?interrupt ?headers ~chunked ?body `PUT uri
 
-  let patch ?interrupt ?ssl ?headers ?(chunked=false) ?body uri =
-    call ?interrupt ?ssl ?headers ~chunked ?body `PATCH uri
+  let patch ?interrupt ?headers ?(chunked=false) ?body uri =
+    call ?interrupt ?headers ~chunked ?body `PATCH uri
 
-  let delete ?interrupt ?ssl ?headers uri =
-    call ?interrupt ?ssl ?headers ~chunked:false `DELETE uri
+  let delete ?interrupt ?headers uri =
+    call ?interrupt ?headers ~chunked:false `DELETE uri
 end
 
 module Server = struct

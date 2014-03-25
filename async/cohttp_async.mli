@@ -48,7 +48,6 @@ module Client : sig
   (** Send an HTTP GET request *)
   val get :
     ?interrupt:unit Deferred.t ->
-    ?ssl:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t ->
     (Response.t * Body.t) Deferred.t
@@ -56,7 +55,6 @@ module Client : sig
   (** Send an HTTP HEAD request *)
   val head :
     ?interrupt:unit Deferred.t ->
-    ?ssl:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t ->
     Response.t Deferred.t
@@ -64,7 +62,6 @@ module Client : sig
   (** Send an HTTP DELETE request *)
   val delete :
     ?interrupt:unit Deferred.t ->
-    ?ssl:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t ->
     (Response.t * Body.t) Deferred.t
@@ -74,7 +71,6 @@ module Client : sig
   *)
   val post :
     ?interrupt:unit Deferred.t ->
-    ?ssl:bool ->
     ?headers:Cohttp.Header.t ->
     ?chunked:bool ->
     ?body:Body.t ->
@@ -86,7 +82,6 @@ module Client : sig
   *)
   val put :
     ?interrupt:unit Deferred.t ->
-    ?ssl:bool ->
     ?headers:Cohttp.Header.t ->
     ?chunked:bool ->
     ?body:Body.t ->
@@ -98,7 +93,6 @@ module Client : sig
   *)
   val patch :
     ?interrupt:unit Deferred.t ->
-    ?ssl:bool ->
     ?headers:Cohttp.Header.t ->
     ?chunked:bool ->
     ?body:Body.t ->
@@ -108,7 +102,6 @@ module Client : sig
   (** Send an HTTP request with arbitrary method and a body *)
   val call :
     ?interrupt:unit Deferred.t ->
-    ?ssl:bool ->
     ?headers:Cohttp.Header.t ->
     ?chunked:bool ->
     ?body:Body.t ->
