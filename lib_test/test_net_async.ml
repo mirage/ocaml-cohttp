@@ -32,6 +32,16 @@ let make_net_req () =
    |> Body.to_pipe
    |> Pipe.iter ~f:(fun b -> prerr_endline ("XX " ^ b); return ())
 
+let make_net_ssl_req () =
+  let headers = Cohttp.Header.of_list ["connection","close"] in
+  let uri = Uri.of_string "https://github.com/" in
+  Client.get ~headers uri 
+  >>= fun (res, body) ->
+   show_headers (Cohttp.Response.headers res);
+   body
+   |> Body.to_pipe
+   |> Pipe.iter ~f:(fun b -> prerr_endline ("XX " ^ b); return ())
+
 (* Create your own code from requestb.in *)
 let requestbin_code = "1f6i9op1"
 
@@ -57,7 +67,10 @@ let test_cases =
   let _ =  Scheduler.within' (
     fun () ->
       Monitor.try_with ( fun () ->
-          make_net_req () >>= make_net_post_req) >>=
+          make_net_req () 
+          >>= make_net_post_req
+          >>= make_net_ssl_req
+      ) >>=
       function
       |Error exn ->
         Printf.fprintf stderr "err %s.\n%!" (Exn.to_string exn);
