@@ -8,8 +8,8 @@ libraries:
   library.
 * `Cohttp_lwt` exposes an OS-independent Lwt interface, which is used
   by the the [Mirage](http://www.openmirage.org) interface
-  to generate standalone microkernels (see the [xen](https://github.com/mirage/mirage-http-xen)
-  and [unix](https://github.com/mirage/mirage-http-unix) respectively).
+  to generate standalone microkernels (see the [mirage-http](https://github.com/mirage/mirage-http)
+  repository).
 
 You can implement other targets using the parser very easily.  Look at the
 `lib/IO.mli` signature and implement that in the desired backend.

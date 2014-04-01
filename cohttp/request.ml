@@ -86,12 +86,11 @@ module Make(IO : IO.S) = struct
 
   let url_decode url = Uri.pct_decode url
 
-  let pieces_sep = Re_str.regexp_string " "
   let parse_request_fst_line ic =
     let open Code in
     read_line ic >>= function
     | Some request_line -> begin
-      match Re_str.split_delim pieces_sep request_line with
+      match Stringext.split request_line ~on:' ' with
       | [ meth_raw; path; http_ver_raw ] -> begin
           match method_of_string meth_raw, version_of_string http_ver_raw with
           | Some m, Some v -> return (`Ok (m, path, v))

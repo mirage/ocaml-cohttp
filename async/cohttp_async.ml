@@ -17,6 +17,7 @@
 
 open Core.Std
 open Async.Std
+open Async_ssl.Std
 
 module IO = struct
   let check_debug norm_fn debug_fn =
@@ -34,7 +35,7 @@ module IO = struct
   type oc = Writer.t
 
   let iter fn x =
-    Deferred.List.iter x ~f:fn 
+    Deferred.List.iter x ~f:fn
 
   let read_line =
     check_debug
@@ -66,11 +67,11 @@ module IO = struct
 
   let write =
     check_debug
-      (fun oc buf -> 
-         Writer.write oc buf; 
+      (fun oc buf ->
+         Writer.write oc buf;
          return ())
-      (fun oc buf -> 
-         eprintf "\n%4d >>> %s" (Pid.to_int (Unix.getpid ())) buf; 
+      (fun oc buf ->
+         eprintf "\n%4d >>> %s" (Pid.to_int (Unix.getpid ())) buf;
          Writer.write oc buf;
          return ())
 
@@ -97,7 +98,21 @@ module Net = struct
     let host = Option.value (Uri.host uri) ~default:"localhost" in
     match Uri_services.tcp_port_of_uri ~default:"http" uri with
     |None -> raise (Failure "Net.connect") (* TODO proper exception *)
-    |Some port -> Tcp.connect ?interrupt (Tcp.to_host_and_port host port)
+    |Some port ->
+      Tcp.connect ?interrupt (Tcp.to_host_and_port host port)
+      >>= fun (socket, net_to_ssl, ssl_to_net) ->
+      match Uri.scheme uri with
+      | Some "https" ->
+        let net_to_ssl = Reader.pipe net_to_ssl in
+        let ssl_to_net = Writer.pipe ssl_to_net in
+        let app_to_ssl, app_wr = Pipe.create () in
+        let app_rd, ssl_to_app = Pipe.create () in
+        don't_wait_for (Ssl.client ~app_to_ssl ~ssl_to_app ~net_to_ssl ~ssl_to_net ());
+        Reader.of_pipe (Info.of_string "cohttp_client_reader") app_rd >>= fun app_rd ->
+        Writer.of_pipe (Info.of_string "cohttp_client_writer") app_wr >>| fun (app_wr,_) ->
+        socket, app_rd, app_wr
+      |    _    ->
+        return (socket, net_to_ssl, ssl_to_net)
 end
 
 module Request = struct
@@ -116,7 +131,7 @@ let pipe_of_body read_chunk ic oc =
   let finished =
     Deferred.repeat_until_finished ()
       (fun () ->
-         read_chunk ic 
+         read_chunk ic
          >>= function
          | Chunk buf ->
            begin
@@ -126,7 +141,7 @@ let pipe_of_body read_chunk ic oc =
              | `Ok _ -> `Repeat ()
            end
          | Final_chunk buf ->
-           Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf) 
+           Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
            >>| fun _ -> `Finished ()
          | Done -> return (`Finished ())
       ) in
@@ -173,7 +188,7 @@ module Body = struct
     | `String s -> Response.write_body response wr s
     | `Pipe p ->
       Pipe.iter p ~f:(fun buf ->
-          Response.write_body response wr buf 
+          Response.write_body response wr buf
           >>= fun () ->
           match Response.flush response with
           | true -> Writer.flushed wr
@@ -187,7 +202,7 @@ module Client = struct
     (match body with
      | `Empty -> return []
      | `String s -> return [s]
-     | `Pipe body -> Pipe.to_list body 
+     | `Pipe body -> Pipe.to_list body
     ) >>= fun body_bufs ->
     (* Figure out an appropriate transfer encoding *)
     let req =
@@ -195,7 +210,7 @@ module Client = struct
       | [],true     (* Dont used chunked encoding with an empty body *)
       | _,false ->  (* If we dont want chunked, calculate a content length *)
         let body_length = List.fold ~init:0 ~f:(fun a b -> String.length b + a) body_bufs in
-        Request.make_for_client ?headers ~chunked:false ~body_length meth uri 
+        Request.make_for_client ?headers ~chunked:false ~body_length meth uri
       | _,true ->   (* Use chunked encoding if there is a body *)
         Request.make_for_client ?headers ~chunked meth uri
     in
@@ -262,12 +277,32 @@ module Server = struct
       let read_chunk = Request.read_body_chunk req in
       `Pipe (pipe_of_body read_chunk rd wr)
 
-  let handle_client handle_request sock rd wr =
+  let handle_client ?ssl handle_request sock rd wr =
+    begin match ssl with
+    | None -> return (rd, wr)
+    | Some (`Crt_file_path crt_file, `Key_file_path key_file) ->
+      let net_to_ssl = Reader.pipe rd in
+      let ssl_to_net = Writer.pipe wr in
+      let app_to_ssl, app_wr = Pipe.create () in
+      let app_rd, ssl_to_app = Pipe.create () in
+      Ssl.server
+        ~crt_file
+        ~key_file
+        ~app_to_ssl
+        ~ssl_to_app
+        ~net_to_ssl
+        ~ssl_to_net
+        () |> don't_wait_for;
+      Reader.of_pipe (Info.of_string "cohttp_server_reader") app_rd >>= fun app_rd ->
+      Writer.of_pipe (Info.of_string "cohttp_server_writer") app_wr >>| fun (app_wr,_) ->
+      app_rd, app_wr
+    end
+    >>= fun (rd, wr) ->
     let requests_pipe =
       Reader.read_all rd (fun rd ->
-        Request.read rd 
+        Request.read rd
         >>| function
-        | `Eof | `Invalid _ -> `Eof	
+        | `Eof | `Invalid _ -> `Eof
         | `Ok req ->
           let body = read_body req rd wr in
           if not (Request.is_keep_alive req)
@@ -333,11 +368,11 @@ module Server = struct
     |Error exn -> respond_with_string ~code:`Not_found error_body
 
 
-  let create ?max_connections ?max_pending_connections 
+  let create ?max_connections ?ssl ?max_pending_connections
       ?buffer_age_limit ?on_handler_error where_to_listen handle_request =
-    Tcp.Server.create ?max_connections ?max_pending_connections 
-      ?buffer_age_limit ?on_handler_error 
-      where_to_listen (handle_client handle_request)
+    Tcp.Server.create ?max_connections ?max_pending_connections
+      ?buffer_age_limit ?on_handler_error
+      where_to_listen (handle_client ?ssl handle_request)
     >>| fun server ->
     { server }
 

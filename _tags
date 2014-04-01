@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: f308257cd8ed13415447a989e02db6e2)
+# DO NOT EDIT (digest: 0d6d27d868506a69073c6a0001cd8522)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -35,9 +35,10 @@
 "cohttp/body.cmx": for-pack(Cohttp)
 <cohttp/*.ml{,i}>: pkg_fieldslib
 <cohttp/*.ml{,i}>: pkg_fieldslib.syntax
-<cohttp/*.ml{,i}>: pkg_re
+<cohttp/*.ml{,i}>: pkg_re.emacs
 <cohttp/*.ml{,i}>: pkg_sexplib
 <cohttp/*.ml{,i}>: pkg_sexplib.syntax
+<cohttp/*.ml{,i}>: pkg_stringext
 <cohttp/*.ml{,i}>: pkg_uri
 <cohttp/*.ml{,i}>: pkg_uri.services
 # Library cohttp_lwt
@@ -50,9 +51,10 @@
 <lwt/*.ml{,i}>: pkg_lwt.ssl
 <lwt/*.ml{,i}>: pkg_lwt.syntax
 <lwt/*.ml{,i}>: pkg_lwt.unix
-<lwt/*.ml{,i}>: pkg_re
+<lwt/*.ml{,i}>: pkg_re.emacs
 <lwt/*.ml{,i}>: pkg_sexplib
 <lwt/*.ml{,i}>: pkg_sexplib.syntax
+<lwt/*.ml{,i}>: pkg_stringext
 <lwt/*.ml{,i}>: pkg_unix
 <lwt/*.ml{,i}>: pkg_uri
 <lwt/*.ml{,i}>: pkg_uri.services
@@ -61,11 +63,13 @@
 # Library cohttp_async
 "async/cohttp_async.cmxs": use_cohttp_async
 <async/*.ml{,i}>: pkg_async
+<async/*.ml{,i}>: pkg_async_ssl
 <async/*.ml{,i}>: pkg_fieldslib
 <async/*.ml{,i}>: pkg_fieldslib.syntax
-<async/*.ml{,i}>: pkg_re
+<async/*.ml{,i}>: pkg_re.emacs
 <async/*.ml{,i}>: pkg_sexplib
 <async/*.ml{,i}>: pkg_sexplib.syntax
+<async/*.ml{,i}>: pkg_stringext
 <async/*.ml{,i}>: pkg_threads
 <async/*.ml{,i}>: pkg_uri
 <async/*.ml{,i}>: pkg_uri.services
@@ -78,9 +82,10 @@
 <lib_test/test_parser.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_parser.{native,byte}>: pkg_lwt.unix
 <lib_test/test_parser.{native,byte}>: pkg_oUnit
-<lib_test/test_parser.{native,byte}>: pkg_re
+<lib_test/test_parser.{native,byte}>: pkg_re.emacs
 <lib_test/test_parser.{native,byte}>: pkg_sexplib
 <lib_test/test_parser.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_parser.{native,byte}>: pkg_stringext
 <lib_test/test_parser.{native,byte}>: pkg_unix
 <lib_test/test_parser.{native,byte}>: pkg_uri
 <lib_test/test_parser.{native,byte}>: pkg_uri.services
@@ -92,9 +97,10 @@
 <lib_test/test_accept.{native,byte}>: pkg_fieldslib
 <lib_test/test_accept.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_accept.{native,byte}>: pkg_oUnit
-<lib_test/test_accept.{native,byte}>: pkg_re
+<lib_test/test_accept.{native,byte}>: pkg_re.emacs
 <lib_test/test_accept.{native,byte}>: pkg_sexplib
 <lib_test/test_accept.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_accept.{native,byte}>: pkg_stringext
 <lib_test/test_accept.{native,byte}>: pkg_uri
 <lib_test/test_accept.{native,byte}>: pkg_uri.services
 <lib_test/test_accept.{native,byte}>: use_cohttp
@@ -103,9 +109,10 @@
 <lib_test/test_header.{native,byte}>: pkg_fieldslib
 <lib_test/test_header.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_header.{native,byte}>: pkg_oUnit
-<lib_test/test_header.{native,byte}>: pkg_re
+<lib_test/test_header.{native,byte}>: pkg_re.emacs
 <lib_test/test_header.{native,byte}>: pkg_sexplib
 <lib_test/test_header.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_header.{native,byte}>: pkg_stringext
 <lib_test/test_header.{native,byte}>: pkg_uri
 <lib_test/test_header.{native,byte}>: pkg_uri.services
 <lib_test/test_header.{native,byte}>: use_cohttp
@@ -118,9 +125,10 @@
 <lib_test/test_net_lwt.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt.{native,byte}>: pkg_lwt.unix
 <lib_test/test_net_lwt.{native,byte}>: pkg_oUnit
-<lib_test/test_net_lwt.{native,byte}>: pkg_re
+<lib_test/test_net_lwt.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_lwt.{native,byte}>: pkg_sexplib
 <lib_test/test_net_lwt.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_lwt.{native,byte}>: pkg_stringext
 <lib_test/test_net_lwt.{native,byte}>: pkg_unix
 <lib_test/test_net_lwt.{native,byte}>: pkg_uri
 <lib_test/test_net_lwt.{native,byte}>: pkg_uri.services
@@ -135,9 +143,10 @@
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt.unix
-<lib_test/test_net_lwt_google.{native,byte}>: pkg_re
+<lib_test/test_net_lwt_google.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_sexplib
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_lwt_google.{native,byte}>: pkg_stringext
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_unix
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_uri
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_uri.services
@@ -152,9 +161,10 @@
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_lwt.unix
-<lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_re
+<lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_sexplib
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_stringext
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_unix
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_uri
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_uri.services
@@ -169,9 +179,10 @@
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt.unix
-<lib_test/test_net_lwt_server.{native,byte}>: pkg_re
+<lib_test/test_net_lwt_server.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_sexplib
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_lwt_server.{native,byte}>: pkg_stringext
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_unix
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_uri
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_uri.services
@@ -186,9 +197,10 @@
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_lwt.unix
-<lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_re
+<lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_sexplib
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_stringext
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_unix
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_uri
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_uri.services
@@ -203,9 +215,10 @@
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt.ssl
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt.unix
-<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_re
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_sexplib
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_stringext
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_unix
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_uri
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_uri.services
@@ -222,12 +235,14 @@
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: custom
 # Executable test_net_async
 <lib_test/test_net_async.{native,byte}>: pkg_async
+<lib_test/test_net_async.{native,byte}>: pkg_async_ssl
 <lib_test/test_net_async.{native,byte}>: pkg_fieldslib
 <lib_test/test_net_async.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_net_async.{native,byte}>: pkg_oUnit
-<lib_test/test_net_async.{native,byte}>: pkg_re
+<lib_test/test_net_async.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_async.{native,byte}>: pkg_sexplib
 <lib_test/test_net_async.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_async.{native,byte}>: pkg_stringext
 <lib_test/test_net_async.{native,byte}>: pkg_threads
 <lib_test/test_net_async.{native,byte}>: pkg_uri
 <lib_test/test_net_async.{native,byte}>: pkg_uri.services
@@ -236,12 +251,14 @@
 <lib_test/test_net_async.{native,byte}>: custom
 # Executable test_net_async_http10
 <lib_test/test_net_async_http10.{native,byte}>: pkg_async
+<lib_test/test_net_async_http10.{native,byte}>: pkg_async_ssl
 <lib_test/test_net_async_http10.{native,byte}>: pkg_fieldslib
 <lib_test/test_net_async_http10.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_net_async_http10.{native,byte}>: pkg_oUnit
-<lib_test/test_net_async_http10.{native,byte}>: pkg_re
+<lib_test/test_net_async_http10.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_async_http10.{native,byte}>: pkg_sexplib
 <lib_test/test_net_async_http10.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_async_http10.{native,byte}>: pkg_stringext
 <lib_test/test_net_async_http10.{native,byte}>: pkg_threads
 <lib_test/test_net_async_http10.{native,byte}>: pkg_uri
 <lib_test/test_net_async_http10.{native,byte}>: pkg_uri.services
@@ -250,12 +267,14 @@
 <lib_test/test_net_async_http10.{native,byte}>: custom
 # Executable test_net_async_multi_get
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_async
+<lib_test/test_net_async_multi_get.{native,byte}>: pkg_async_ssl
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_fieldslib
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_oUnit
-<lib_test/test_net_async_multi_get.{native,byte}>: pkg_re
+<lib_test/test_net_async_multi_get.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_sexplib
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_async_multi_get.{native,byte}>: pkg_stringext
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_threads
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_uri
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_uri.services
@@ -264,24 +283,28 @@
 <lib_test/test_net_async_multi_get.{native,byte}>: custom
 # Executable test_net_async_server
 <lib_test/test_net_async_server.{native,byte}>: pkg_async
+<lib_test/test_net_async_server.{native,byte}>: pkg_async_ssl
 <lib_test/test_net_async_server.{native,byte}>: pkg_fieldslib
 <lib_test/test_net_async_server.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_net_async_server.{native,byte}>: pkg_oUnit
-<lib_test/test_net_async_server.{native,byte}>: pkg_re
+<lib_test/test_net_async_server.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_async_server.{native,byte}>: pkg_sexplib
 <lib_test/test_net_async_server.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_async_server.{native,byte}>: pkg_stringext
 <lib_test/test_net_async_server.{native,byte}>: pkg_threads
 <lib_test/test_net_async_server.{native,byte}>: pkg_uri
 <lib_test/test_net_async_server.{native,byte}>: pkg_uri.services
 <lib_test/test_net_async_server.{native,byte}>: use_cohttp
 <lib_test/test_net_async_server.{native,byte}>: use_cohttp_async
 <lib_test/*.ml{,i}>: pkg_async
+<lib_test/*.ml{,i}>: pkg_async_ssl
 <lib_test/*.ml{,i}>: pkg_fieldslib
 <lib_test/*.ml{,i}>: pkg_fieldslib.syntax
 <lib_test/*.ml{,i}>: pkg_oUnit
-<lib_test/*.ml{,i}>: pkg_re
+<lib_test/*.ml{,i}>: pkg_re.emacs
 <lib_test/*.ml{,i}>: pkg_sexplib
 <lib_test/*.ml{,i}>: pkg_sexplib.syntax
+<lib_test/*.ml{,i}>: pkg_stringext
 <lib_test/*.ml{,i}>: pkg_threads
 <lib_test/*.ml{,i}>: pkg_uri
 <lib_test/*.ml{,i}>: pkg_uri.services
@@ -290,22 +313,26 @@
 <lib_test/test_net_async_server.{native,byte}>: custom
 # Executable cohttp-server
 <bin/cohttp_server_async.{native,byte}>: pkg_async
+<bin/cohttp_server_async.{native,byte}>: pkg_async_ssl
 <bin/cohttp_server_async.{native,byte}>: pkg_fieldslib
 <bin/cohttp_server_async.{native,byte}>: pkg_fieldslib.syntax
-<bin/cohttp_server_async.{native,byte}>: pkg_re
+<bin/cohttp_server_async.{native,byte}>: pkg_re.emacs
 <bin/cohttp_server_async.{native,byte}>: pkg_sexplib
 <bin/cohttp_server_async.{native,byte}>: pkg_sexplib.syntax
+<bin/cohttp_server_async.{native,byte}>: pkg_stringext
 <bin/cohttp_server_async.{native,byte}>: pkg_threads
 <bin/cohttp_server_async.{native,byte}>: pkg_uri
 <bin/cohttp_server_async.{native,byte}>: pkg_uri.services
 <bin/cohttp_server_async.{native,byte}>: use_cohttp
 <bin/cohttp_server_async.{native,byte}>: use_cohttp_async
 <bin/*.ml{,i}>: pkg_async
+<bin/*.ml{,i}>: pkg_async_ssl
 <bin/*.ml{,i}>: pkg_fieldslib
 <bin/*.ml{,i}>: pkg_fieldslib.syntax
-<bin/*.ml{,i}>: pkg_re
+<bin/*.ml{,i}>: pkg_re.emacs
 <bin/*.ml{,i}>: pkg_sexplib
 <bin/*.ml{,i}>: pkg_sexplib.syntax
+<bin/*.ml{,i}>: pkg_stringext
 <bin/*.ml{,i}>: pkg_threads
 <bin/*.ml{,i}>: pkg_uri
 <bin/*.ml{,i}>: pkg_uri.services
@@ -314,22 +341,26 @@
 <bin/cohttp_server_async.{native,byte}>: custom
 # Executable async-hello-world
 <examples/async/hello_world.{native,byte}>: pkg_async
+<examples/async/hello_world.{native,byte}>: pkg_async_ssl
 <examples/async/hello_world.{native,byte}>: pkg_fieldslib
 <examples/async/hello_world.{native,byte}>: pkg_fieldslib.syntax
-<examples/async/hello_world.{native,byte}>: pkg_re
+<examples/async/hello_world.{native,byte}>: pkg_re.emacs
 <examples/async/hello_world.{native,byte}>: pkg_sexplib
 <examples/async/hello_world.{native,byte}>: pkg_sexplib.syntax
+<examples/async/hello_world.{native,byte}>: pkg_stringext
 <examples/async/hello_world.{native,byte}>: pkg_threads
 <examples/async/hello_world.{native,byte}>: pkg_uri
 <examples/async/hello_world.{native,byte}>: pkg_uri.services
 <examples/async/hello_world.{native,byte}>: use_cohttp
 <examples/async/hello_world.{native,byte}>: use_cohttp_async
 <examples/async/*.ml{,i}>: pkg_async
+<examples/async/*.ml{,i}>: pkg_async_ssl
 <examples/async/*.ml{,i}>: pkg_fieldslib
 <examples/async/*.ml{,i}>: pkg_fieldslib.syntax
-<examples/async/*.ml{,i}>: pkg_re
+<examples/async/*.ml{,i}>: pkg_re.emacs
 <examples/async/*.ml{,i}>: pkg_sexplib
 <examples/async/*.ml{,i}>: pkg_sexplib.syntax
+<examples/async/*.ml{,i}>: pkg_stringext
 <examples/async/*.ml{,i}>: pkg_threads
 <examples/async/*.ml{,i}>: pkg_uri
 <examples/async/*.ml{,i}>: pkg_uri.services
@@ -337,4 +368,3 @@
 <examples/async/*.ml{,i}>: use_cohttp_async
 <examples/async/hello_world.{native,byte}>: custom
 # OASIS_STOP
-true: annot, bin_annot, debug, strict_sequence, principal

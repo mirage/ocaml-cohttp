@@ -131,26 +131,26 @@ module Server : sig
 
   (** Respond with a [string] Pipe that provides the response string Pipe.Reader.t.
       @param code Default is HTTP 200 `OK *)
-  val respond_with_pipe : 
+  val respond_with_pipe :
     ?flush:bool ->
-    ?headers:Cohttp.Header.t -> ?code:Cohttp.Code.status_code -> 
+    ?headers:Cohttp.Header.t -> ?code:Cohttp.Code.status_code ->
     string Pipe.Reader.t -> response Deferred.t
 
-  (** Respond with a static [string] 
+  (** Respond with a static [string]
       @param code Default is HTTP 200 `OK *)
-  val respond_with_string : 
+  val respond_with_string :
     ?flush:bool ->
-    ?headers:Cohttp.Header.t -> ?code:Cohttp.Code.status_code -> 
+    ?headers:Cohttp.Header.t -> ?code:Cohttp.Code.status_code ->
     string -> response Deferred.t
 
   (** Respond with a redirect to an absolute [uri]
       @param uri Absolute URI to redirect the client to *)
-  val respond_with_redirect : 
+  val respond_with_redirect :
     ?headers:Cohttp.Header.t -> Uri.t -> response Deferred.t
 
 
   (** Respond with file contents, and [error_string Pipe.Reader.t] if the file isn't found *)
-  val respond_with_file : 
+  val respond_with_file :
     ?flush:bool ->
     ?headers:Cohttp.Header.t -> ?error_body:string ->
     string -> response Deferred.t
@@ -158,6 +158,7 @@ module Server : sig
   (** Build a HTTP server, based on the [Tcp.Server] interface *)
   val create :
     ?max_connections:int ->
+    ?ssl:([ `Crt_file_path of string ] * [ `Key_file_path of string ]) ->
     ?max_pending_connections:int ->
     ?buffer_age_limit: Writer.buffer_age_limit ->
     ?on_handler_error:[ `Call of 'address -> exn  -> unit

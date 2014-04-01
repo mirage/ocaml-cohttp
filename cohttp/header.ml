@@ -124,18 +124,24 @@ let get_connection_close headers =
   match get headers "connection" with
   | Some "close" -> true
   | _ -> false
-  
-let get_media_type =
-  (* Grab "foo/bar" from " foo/bar ; charset=UTF-8" *)
-  let media_type_re = Re_str.regexp "[ \t]*\\([^ \t;]+\\)" in
-  fun headers ->
-    match get headers "content-type" with
-    | Some s ->
-      if Re_str.string_match media_type_re s 0 then
-        Some (Re_str.matched_group 1 s)
-      else
-        None
-    | None -> None
+
+
+let media_type_re =
+  let re = Re_emacs.re ~case:true "[ \t]*\\([^ \t;]+\\)" in
+  Re.(compile (seq ([start; re])))
+
+let get_first_match re s =
+  try
+    let subs = Re.exec ~pos:0 media_type_re s in
+    let (start, stop) = Re.get_ofs subs 1 in
+    Some (String.sub s start (stop - start))
+  with Not_found -> None
+
+(* Grab "foo/bar" from " foo/bar ; charset=UTF-8" *)
+let get_media_type headers =
+  match get headers "content-type" with
+  | Some s -> get_first_match media_type_re s
+  | None -> None
 
 let get_acceptable_media_ranges headers =
   Accept.media_ranges (get headers "accept")

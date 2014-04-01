@@ -1,3 +1,7 @@
+0.10.1 (2014-04-01):
+* Remove dependency on `ocaml-re` in order to make library POSIX thread-safe.
+* Add Async-SSL support for both client and server (#102).
+
 0.10.0 (2014-03-02):
 * Interface change: The `Request` and `Response` module types now explictly
   signal `Eof` and `Invalid` (for errors), to help the backend distinguish them.
