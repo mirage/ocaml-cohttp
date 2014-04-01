@@ -1,4 +1,4 @@
-0.10.1 (trunk):
+0.10.1 (2014-04-01):
 * Remove dependency on `ocaml-re` in order to make library POSIX thread-safe.
 * Add Async-SSL support for both client and server (#102).
 
