@@ -59,7 +59,7 @@ let handler ~body sock req =
     |> Server.respond_with_file
 
 let make_net_server ?ssl port =
-  Server.create ?ssl ~on_handler_error:`Ignore (Tcp.on_port port) handler
+  Server.create ?ssl ~on_handler_error:`Raise (Tcp.on_port port) handler
 
 let _ = 
   let _server = make_net_server 8080 in
