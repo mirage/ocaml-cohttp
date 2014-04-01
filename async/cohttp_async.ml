@@ -297,7 +297,7 @@ module Server = struct
       Writer.of_pipe (Info.of_string "cohttp_server_writer") app_wr >>| fun (app_wr,_) ->
       app_rd, app_wr
     end
-    >>= fun (reader, writer) ->
+    >>= fun (rd, wr) ->
     let requests_pipe =
       Reader.read_all rd (fun rd ->
         Request.read rd
