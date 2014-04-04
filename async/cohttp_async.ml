@@ -147,8 +147,6 @@ let pipe_of_body read_chunk ic oc =
       ) in
   don't_wait_for (
     finished >>= fun () ->
-    Writer.close oc >>= fun () ->
-    Reader.close ic >>= fun () ->
     return (Pipe.close wr)
   );
   rd
@@ -322,8 +320,8 @@ module Server = struct
         Body.write body res wr >>= fun () ->
         Response.write_footer res wr
       )
-    >>= fun () ->
-    Writer.close wr
+    >>= fun () -> Writer.close wr
+    >>= fun () -> Reader.close rd
 
   let respond ?(flush=false) ?(headers=Cohttp.Header.init ())
       ?(body=`Empty) status : response Deferred.t =
