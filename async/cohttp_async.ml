@@ -17,7 +17,15 @@
 
 open Core.Std
 open Async.Std
+
+#let ssl = true
+
+#if ssl
 open Async_ssl.Std
+#else
+let raise_ssl_unsupported () =
+  raise (Failure "SSL not supported. Install async_ssl via OPAM to activate it.")
+#endif
 
 module IO = struct
   let check_debug norm_fn debug_fn =
@@ -103,6 +111,7 @@ module Net = struct
       >>= fun (socket, net_to_ssl, ssl_to_net) ->
       match Uri.scheme uri with
       | Some "https" ->
+#if ssl
         let net_to_ssl = Reader.pipe net_to_ssl in
         let ssl_to_net = Writer.pipe ssl_to_net in
         let app_to_ssl, app_wr = Pipe.create () in
@@ -111,6 +120,9 @@ module Net = struct
         Reader.of_pipe (Info.of_string "cohttp_client_reader") app_rd >>= fun app_rd ->
         Writer.of_pipe (Info.of_string "cohttp_client_writer") app_wr >>| fun (app_wr,_) ->
         socket, app_rd, app_wr
+#else
+        raise_ssl_unsupported ()
+#endif
       |    _    ->
         return (socket, net_to_ssl, ssl_to_net)
 end
@@ -281,6 +293,7 @@ module Server = struct
     begin match ssl with
     | None -> return (rd, wr)
     | Some (`Crt_file_path crt_file, `Key_file_path key_file) ->
+#if ssl
       let net_to_ssl = Reader.pipe rd in
       let ssl_to_net = Writer.pipe wr in
       let app_to_ssl, app_wr = Pipe.create () in
@@ -296,6 +309,9 @@ module Server = struct
       Reader.of_pipe (Info.of_string "cohttp_server_reader") app_rd >>= fun app_rd ->
       Writer.of_pipe (Info.of_string "cohttp_server_writer") app_wr >>| fun (app_wr,_) ->
       app_rd, app_wr
+#else
+    raise_ssl_unsupported ()
+#endif
     end
     >>= fun (rd, wr) ->
     let requests_pipe =

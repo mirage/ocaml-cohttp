@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 0d6d27d868506a69073c6a0001cd8522)
+# DO NOT EDIT (digest: b06facdaaf27136c8f4b5c20b9bfe79f)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -62,6 +62,10 @@
 <lwt/*.ml{,i}>: use_cohttp_lwt
 # Library cohttp_async
 "async/cohttp_async.cmxs": use_cohttp_async
+<async/cohttp_async.{cma,cmxa}>: oasis_library_cohttp_async_byte
+<async/*.ml{,i}>: oasis_library_cohttp_async_byte
+<async/cohttp_async.{cma,cmxa}>: oasis_library_cohttp_async_native
+<async/*.ml{,i}>: oasis_library_cohttp_async_native
 <async/*.ml{,i}>: pkg_async
 <async/*.ml{,i}>: pkg_async_ssl
 <async/*.ml{,i}>: pkg_fieldslib
@@ -368,3 +372,4 @@
 <examples/async/*.ml{,i}>: use_cohttp_async
 <examples/async/hello_world.{native,byte}>: custom
 # OASIS_STOP
+<async/**>: syntax_camlp4o, pkg_optcomp
