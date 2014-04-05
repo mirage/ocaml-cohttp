@@ -9,7 +9,8 @@ PKG lwt.unix
 PKG core
 PKG async
 PKG uri
-PKG re.str
+PKG async_ssl
+PKG stringext
 
 B _build/
 B _build/lwt
