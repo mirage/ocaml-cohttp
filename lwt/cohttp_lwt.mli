@@ -150,6 +150,9 @@ module type Server = sig
       Cohttp.Connection.t -> unit -> unit;
   }
 
+  (** Resolve a URI and a docroot into a concrete local filename. *)
+  val resolve_local_file : docroot:string -> uri:Uri.t -> string
+
   val respond :
     ?headers:Cohttp.Header.t ->
     ?flush:bool ->

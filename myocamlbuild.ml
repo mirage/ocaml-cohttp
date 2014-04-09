@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 72cf2d13942cacfc33091904e4c642cf) *)
+(* DO NOT EDIT (digest: 52c11beeb42a0bfb5136fda0433f4835) *)
 module OASISGettext = struct
 (* # 22 "src/oasis/OASISGettext.ml" *)
 
@@ -603,51 +603,13 @@ let package_default =
           ("cohttp_async", ["async"], [])
        ];
      lib_c = [];
-     flags =
-       [
-          (["oasis_library_cohttp_async_byte"; "ocaml"; "link"; "byte"],
-            [
-               (OASISExpr.EBool true,
-                 S [A "-ppopt"; A "-let"; A "-ppopt"; A "ssl=true"])
-            ]);
-          (["oasis_library_cohttp_async_native"; "ocaml"; "link"; "native"],
-            [
-               (OASISExpr.EBool true,
-                 S [A "-ppopt"; A "-let"; A "-ppopt"; A "ssl=true"])
-            ]);
-          (["oasis_library_cohttp_async_byte"; "ocaml"; "ocamldep"; "byte"],
-            [
-               (OASISExpr.EBool true,
-                 S [A "-ppopt"; A "-let"; A "-ppopt"; A "ssl=true"])
-            ]);
-          ([
-              "oasis_library_cohttp_async_native";
-              "ocaml";
-              "ocamldep";
-              "native"
-           ],
-            [
-               (OASISExpr.EBool true,
-                 S [A "-ppopt"; A "-let"; A "-ppopt"; A "ssl=true"])
-            ]);
-          (["oasis_library_cohttp_async_byte"; "ocaml"; "compile"; "byte"],
-            [
-               (OASISExpr.EBool true,
-                 S [A "-ppopt"; A "-let"; A "-ppopt"; A "ssl=true"])
-            ]);
-          (["oasis_library_cohttp_async_native"; "ocaml"; "compile"; "native"
-           ],
-            [
-               (OASISExpr.EBool true,
-                 S [A "-ppopt"; A "-let"; A "-ppopt"; A "ssl=true"])
-            ])
-       ];
+     flags = [];
      includes =
        [
           ("lwt", ["cohttp"]);
           ("lib_test", ["async"; "cohttp"; "lwt"]);
           ("examples/async", ["async"; "cohttp"]);
-          ("bin", ["async"; "cohttp"]);
+          ("bin", ["async"; "cohttp"; "lwt"]);
           ("async", ["cohttp"])
        ]
   }
@@ -655,6 +617,6 @@ let package_default =
 
 let dispatch_default = MyOCamlbuildBase.dispatch_default package_default;;
 
-# 659 "myocamlbuild.ml"
+# 621 "myocamlbuild.ml"
 (* OASIS_STOP *)
 Ocamlbuild_plugin.dispatch dispatch_default;;

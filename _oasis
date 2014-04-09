@@ -201,7 +201,7 @@ Executable test_net_async_server
   Install:            false
   BuildDepends:       cohttp, cohttp.async, oUnit (>= 1.0.2)
 
-Executable "cohttp-server"
+Executable "cohttp-server-async"
   Path:               bin
   MainIs:             cohttp_server_async.ml
   Build$:             flag(async)
@@ -209,6 +209,15 @@ Executable "cohttp-server"
   CompiledObject:     best
   Install:            true
   BuildDepends:       cohttp, cohttp.async
+
+Executable "cohttp-server-lwt"
+  Path:               bin
+  MainIs:             cohttp_server_lwt.ml
+  Build$:             flag(lwt)
+  Custom:             true
+  CompiledObject:     best
+  Install:            true
+  BuildDepends:       cohttp, cohttp.lwt
 
 Executable "async-hello-world"
   Path:               examples/async
