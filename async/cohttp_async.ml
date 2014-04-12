@@ -30,7 +30,7 @@ module Net = struct
           match Uri.scheme uri with
           | Some "https" -> `SSL
           | _ -> `TCP in
-        Async_conduit.connect ?interrupt ~mode ~host ~port ()
+        Async_conduit.Client.connect ?interrupt ~mode ~host ~port ()
       end
 end
 
