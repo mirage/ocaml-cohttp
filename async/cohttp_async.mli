@@ -158,12 +158,12 @@ module Server : sig
   (** Build a HTTP server, based on the [Tcp.Server] interface *)
   val create :
     ?max_connections:int ->
-    ?ssl:([ `Crt_file_path of string ] * [ `Key_file_path of string ]) ->
     ?max_pending_connections:int ->
     ?buffer_age_limit: Writer.buffer_age_limit ->
     ?on_handler_error:[ `Call of 'address -> exn  -> unit
                       | `Ignore
                       | `Raise ] ->
+    ?mode:Async_conduit.Server.mode ->
     ('address, 'listening_on) Tcp.Where_to_listen.t
     -> (body:Body.t -> 'address -> Request.t -> response Deferred.t)
     -> ('address, 'listening_on) t Deferred.t

@@ -18,113 +18,20 @@
 open Core.Std
 open Async.Std
 
-#let ssl = true
-
-#if ssl
-open Async_ssl.Std
-#else
-let raise_ssl_unsupported () =
-  raise (Failure "SSL not supported. Install async_ssl via OPAM to activate it.")
-#endif
-
-module IO = struct
-  let check_debug norm_fn debug_fn =
-    try
-      let _ = Sys.getenv_exn "COHTTP_DEBUG" in
-      debug_fn
-    with Failure _ ->
-      norm_fn
-
-  type 'a t = 'a Deferred.t
-  let (>>=) = Deferred.(>>=)
-  let return = Deferred.return
-
-  type ic = Reader.t
-  type oc = Writer.t
-
-  let iter fn x =
-    Deferred.List.iter x ~f:fn
-
-  let read_line =
-    check_debug
-      (fun ic ->
-         Reader.read_line ic
-         >>= function
-         |`Ok s -> return (Some s)
-         |`Eof -> return None
-      )
-      (fun ic ->
-         Reader.read_line ic
-         >>= function
-         |`Ok s -> eprintf "<<< %s\n" s; return (Some s)
-         |`Eof -> eprintf "<<<EOF\n"; return None
-      )
-
-  let read ic len =
-    let buf = String.create len in
-    Reader.read ic ~len buf >>= function
-    | `Ok len' -> return (String.sub buf 0 len')
-    | `Eof -> return ""
-
-  let read_exactly ic len =
-    let buf = String.create len in
-    Reader.really_read ic ~pos:0 ~len buf >>=
-    function
-    |`Ok -> return (Some buf)
-    |`Eof _ -> return None
-
-  let write =
-    check_debug
-      (fun oc buf ->
-         Writer.write oc buf;
-         return ())
-      (fun oc buf ->
-         eprintf "\n%4d >>> %s" (Pid.to_int (Unix.getpid ())) buf;
-         Writer.write oc buf;
-         return ())
-
-  let write_line oc buf =
-    check_debug
-      (fun oc buf ->
-         Writer.write oc buf;
-         Writer.write oc "\r\n";
-         return ()
-      )
-      (fun oc buf ->
-         eprintf "\n%4d >>>> %s\n" (Pid.to_int (Unix.getpid())) buf;
-         Writer.write oc buf;
-         Writer.write oc "\r\n";
-         return ()
-      )
-
-  let flush oc =
-    Writer.flushed oc
-end
+module IO = Cohttp_async_io
 
 module Net = struct
-  let connect ?interrupt uri =
+  let connect_uri ?interrupt uri =
     let host = Option.value (Uri.host uri) ~default:"localhost" in
     match Uri_services.tcp_port_of_uri ~default:"http" uri with
-    |None -> raise (Failure "Net.connect") (* TODO proper exception *)
-    |Some port ->
-      Tcp.connect ?interrupt (Tcp.to_host_and_port host port)
-      >>= fun (socket, net_to_ssl, ssl_to_net) ->
-      match Uri.scheme uri with
-      | Some "https" ->
-#if ssl
-        let net_to_ssl = Reader.pipe net_to_ssl in
-        let ssl_to_net = Writer.pipe ssl_to_net in
-        let app_to_ssl, app_wr = Pipe.create () in
-        let app_rd, ssl_to_app = Pipe.create () in
-        don't_wait_for (Ssl.client ~app_to_ssl ~ssl_to_app ~net_to_ssl ~ssl_to_net ());
-        Reader.of_pipe (Info.of_string "cohttp_client_reader") app_rd >>= fun app_rd ->
-        Writer.of_pipe (Info.of_string "cohttp_client_writer") app_wr >>| fun (app_wr,_) ->
-        socket, app_rd, app_wr
-#else
-        raise_ssl_unsupported ()
-#endif
-      |    _    ->
-        return (socket, net_to_ssl, ssl_to_net)
+    | None -> raise (Failure "Net.connect") (* TODO proper exception *)
+    | Some port -> begin
+        let mode = 
+          match Uri.scheme uri with
+          | Some "https" -> `SSL
+          | _ -> `TCP in
+        Async_conduit.connect ?interrupt ~mode ~host ~port ()
+      end
 end
 
 module Request = struct
@@ -225,8 +132,8 @@ module Client = struct
         Request.make_for_client ?headers ~chunked meth uri
     in
     (* Connect to the remote side *)
-    Net.connect ?interrupt uri
-    >>= fun (_,ic,oc) ->
+    Net.connect_uri ?interrupt uri
+    >>= fun (ic,oc) ->
     (* Write request down the wire *)
     Request.write_header req oc
     >>= fun () ->
@@ -287,42 +194,18 @@ module Server = struct
       let read_chunk = Request.read_body_chunk req in
       `Pipe (pipe_of_body read_chunk rd wr)
 
-  let handle_client ?ssl handle_request sock rd wr =
-    begin match ssl with
-    | None -> return (rd, wr)
-    | Some (`Crt_file_path crt_file, `Key_file_path key_file) ->
-#if ssl
-      let net_to_ssl = Reader.pipe rd in
-      let ssl_to_net = Writer.pipe wr in
-      let app_to_ssl, app_wr = Pipe.create () in
-      let app_rd, ssl_to_app = Pipe.create () in
-      Ssl.server
-        ~crt_file
-        ~key_file
-        ~app_to_ssl
-        ~ssl_to_app
-        ~net_to_ssl
-        ~ssl_to_net
-        () |> don't_wait_for;
-      Reader.of_pipe (Info.of_string "cohttp_server_reader") app_rd >>= fun app_rd ->
-      Writer.of_pipe (Info.of_string "cohttp_server_writer") app_wr >>| fun (app_wr,_) ->
-      app_rd, app_wr
-#else
-    raise_ssl_unsupported ()
-#endif
-    end
-    >>= fun (rd, wr) ->
+  let handle_client handle_request sock rd wr =
     let requests_pipe =
       Reader.read_all rd (fun rd ->
-        Request.read rd
-        >>| function
-        | `Eof | `Invalid _ -> `Eof
-        | `Ok req ->
-          let body = read_body req rd wr in
-          if not (Request.is_keep_alive req)
-          then don't_wait_for (Reader.close rd);
-          `Ok (req, body)
-      ) in
+          Request.read rd
+          >>| function
+          | `Eof | `Invalid _ -> `Eof
+          | `Ok req ->
+            let body = read_body req rd wr in
+            if not (Request.is_keep_alive req)
+            then don't_wait_for (Reader.close rd);
+            `Ok (req, body)
+        ) in
     Pipe.iter requests_pipe ~f:(fun (req, body) ->
         handle_request ~body sock req >>= fun (res, body) ->
         let keep_alive = Request.is_keep_alive req in
@@ -381,12 +264,11 @@ module Server = struct
     |Ok res -> return res
     |Error exn -> respond_with_string ~code:`Not_found error_body
 
-
-  let create ?max_connections ?ssl ?max_pending_connections
-      ?buffer_age_limit ?on_handler_error where_to_listen handle_request =
-    Tcp.Server.create ?max_connections ?max_pending_connections
-      ?buffer_age_limit ?on_handler_error
-      where_to_listen (handle_client ?ssl handle_request)
+  let create ?max_connections ?max_pending_connections
+      ?buffer_age_limit ?on_handler_error ?(mode=`TCP) where_to_listen handle_request =
+    Async_conduit.Server.create ?max_connections ?max_pending_connections
+      ?buffer_age_limit ?on_handler_error mode
+      where_to_listen (handle_client handle_request)
     >>| fun server ->
     { server }
 
