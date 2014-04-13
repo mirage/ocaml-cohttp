@@ -70,7 +70,7 @@ module Server = struct
          respond_error ~status:`Internal_server_error ~body ()
 
   let create ?(mode=`TCP) ?timeout ~address ~port spec =
-    lwt sockaddr = Lwt_unix_conduit.build_sockaddr address port in
+    lwt sockaddr = Lwt_unix_net.build_sockaddr address (string_of_int port) in
     Lwt_unix_conduit.serve ~mode ~sockaddr ?timeout (callback spec)
 end
 
