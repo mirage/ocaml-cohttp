@@ -66,10 +66,10 @@ let test_cases =
    * an Async-aware oUnit instead? *)
   let _ =  Scheduler.within' (
     fun () ->
-      Monitor.try_with ( fun () ->
-  (*        make_net_req () 
+      Monitor.try_with (fun () ->
+          make_net_req () 
           >>= make_net_post_req
-          >>= *) make_net_ssl_req ()
+          >>= make_net_ssl_req
       ) >>=
       function
       |Error exn ->
