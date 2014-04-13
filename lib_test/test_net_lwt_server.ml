@@ -81,6 +81,11 @@ let make_server () =
     Printf.eprintf "conn %s closed\n%!" (Connection.to_string conn_id)
   in
   let config = { Server.callback; conn_closed } in
-  Server.create ~address:"0.0.0.0" ~port:8081 config
+  let address = "0.0.0.0" in
+  let port = 8081 in
+  let ssl = `SSL (`Crt_file_path "server.crt", `Key_file_path "server.key") in
+  let t1 = Server.create ~address ~port config in
+  let t2 = Server.create ~mode:ssl ~address ~port:(port+1) config in
+  t1 <&> t2
 
 let _ = Lwt_unix.run (make_server ())
