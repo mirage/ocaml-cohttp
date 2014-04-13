@@ -67,9 +67,9 @@ let test_cases =
   let _ =  Scheduler.within' (
     fun () ->
       Monitor.try_with ( fun () ->
-          make_net_req () 
+  (*        make_net_req () 
           >>= make_net_post_req
-          >>= make_net_ssl_req
+          >>= *) make_net_ssl_req ()
       ) >>=
       function
       |Error exn ->

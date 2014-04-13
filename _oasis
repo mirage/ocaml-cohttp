@@ -1,6 +1,6 @@
 OASISFormat: 0.3
 Name:        cohttp
-Version:     0.10.1
+Version:     0.11.0
 Synopsis:    HTTP library for Lwt, Async and Mirage
 Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire, David Scott, Rudy Grinberg
 License:     ISC
@@ -37,7 +37,7 @@ Library cohttp_lwt
   Path: lwt
   Findlibname: lwt-core
   FindlibParent: cohttp
-  BuildDepends: lwt, uri, cohttp, lwt.syntax
+  BuildDepends: lwt, uri, cohttp, lwt.syntax, conduit.lwt
   Modules: Cohttp_lwt_body, Cohttp_lwt
 
 Library cohttp_lwt_unix
@@ -55,8 +55,8 @@ Library cohttp_async
   Path: async
   Findlibname: async
   FindlibParent: cohttp
-  BuildDepends: uri, cohttp, threads, async, async_ssl
-  Modules: Cohttp_async
+  BuildDepends: uri, cohttp, threads, async, async_ssl, conduit.async
+  Modules: Cohttp_async_io, Cohttp_async
 
 Document cohttp
   Title:                Cohttp docs

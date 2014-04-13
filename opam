@@ -1,0 +1,28 @@
+opam-version: "1"
+maintainer: "anil@recoil.org"
+tags: [
+  "org:mirage"
+  "org:xapi-project"
+]
+build: [
+  [make "PREFIX=%{prefix}%"]
+  [make "PREFIX=%{prefix}%" "install"]
+]
+remove: [["ocamlfind" "remove" "cohttp"]]
+depends: [
+  "ocamlfind"
+  "re"
+  "uri" {>= "1.5.0"}
+  "ounit"
+  "fieldslib" {>= "109.20.00"}
+  "sexplib" {>= "109.53.00"}
+  "conduit"
+]
+depopts: [
+  "async"
+  "lwt"
+]
+conflicts: [
+  "async" {<"109.15.00"}
+  "lwt" {<"2.4.3"}
+]
