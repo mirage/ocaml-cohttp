@@ -377,5 +377,4 @@
 <examples/async/*.ml{,i}>: use_cohttp_async
 <examples/async/hello_world.{native,byte}>: custom
 # OASIS_STOP
-<async/**>: syntax_camlp4o, pkg_optcomp
 true: annot, bin_annot, principal, strict_sequence, debug
