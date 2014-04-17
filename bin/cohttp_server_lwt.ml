@@ -108,9 +108,10 @@ let arglist = [
 
 let _ =
   try Arg.parse arglist (fun x -> rest := x :: !rest) usage;
-    if List.length !rest = 0
-    then Lwt_unix.run (start_server "." !port !host !index !verbose ())
-    else Lwt_unix.run (start_server (List.hd !rest) !port !host !index !verbose ())
+    begin match !rest with
+    | [] -> Lwt_unix.run (start_server "." !port !host !index !verbose ())
+    | dir::_ -> Lwt_unix.run (start_server dir !port !host !index !verbose ())
+    end
   with
   | Failure s -> print_endline s
   | Sys_error s -> print_endline s
