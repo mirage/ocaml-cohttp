@@ -1,4 +1,4 @@
-OPAM_DEPENDS="lwt async stringext async_ssl ssl uri re conduit"
+OPAM_DEPENDS="lwt stringext ssl uri re conduit"
 
 case "$OCAML_VERSION,$OPAM_VERSION" in
 4.00.1,1.0.0) ppa=avsm/ocaml40+opam10 ;;
@@ -6,6 +6,11 @@ case "$OCAML_VERSION,$OPAM_VERSION" in
 4.01.0,1.0.0) ppa=avsm/ocaml41+opam10 ;;
 4.01.0,1.1.0) ppa=avsm/ocaml41+opam11 ;;
 *) echo Unknown $OCAML_VERSION,$OPAM_VERSION; exit 1 ;;
+esac
+
+case "$OCAML_VERSION" in
+4.00.*) ;;
+*) OPAM_DEPENDS="$OPAM_DEPENDS async async_ssl" ;;
 esac
 
 echo "yes" | sudo add-apt-repository ppa:$ppa
