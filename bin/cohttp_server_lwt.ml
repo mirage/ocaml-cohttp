@@ -54,7 +54,7 @@ let rec handler ~info ~docroot ~verbose ~index sock req body =
             Lwt.try_bind
               (fun () -> Lwt_unix.stat file_name)
               (fun stat ->
-                 let li l = Printf.sprintf "<li><a href=\"%s\">%s</a>/</li>" (Uri.to_string l) in
+                 let li l = Printf.sprintf "<li><a href=\"%s\">%s</a></li>" (Uri.to_string l) in
                  let link = Uri.with_path uri (Filename.concat path f) in
                  match stat.Unix.st_kind with
                  | Unix.S_DIR -> Lwt.return (li link (Printf.sprintf "<i>%s/</i>" f))

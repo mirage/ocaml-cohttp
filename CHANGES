@@ -1,6 +1,7 @@
 0.11.1 (2014-04-17):
 * Remove an errant async_ssl reference left in the _oasis file that is
   now handled by the Conduit library (#116).
+* Add an Lwt-based SimpleHTTPServer equivalent as `cohttp-server-lwt` (#108).
 
 0.11.0 (2014-04-01):
 * Remove dependency on `ocaml-re` in order to make library POSIX thread-safe.
