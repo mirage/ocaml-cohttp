@@ -22,7 +22,12 @@ it from <http://github.com/ocaml/opam>.
 
 ## Simple HTTP server
 
-If you install the Async dependency, then a `cohttp-server` binary will also be
-built and installed that acts in a similar fashion to the Python
-`SimpleHTTPServer`.  Just run `cohttp-server` in a directory and it will
+If you install the Async dependency, then a `cohttp-server-async` binary will
+also be built and installed that acts in a similar fashion to the Python
+`SimpleHTTPServer`.  Just run `cohttp-server-async` in a directory and it will
 open up a local port and serve the files over HTTP.
+
+There is also an Lwt version of the SimpleHTTPServer installed as the
+`cohttp-server-lwt` binary.  The source code for both is in the `bin/`
+subdirectory and is a good starting point for how to write servers using
+the library.
