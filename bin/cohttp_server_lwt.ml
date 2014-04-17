@@ -1,5 +1,6 @@
 (*
  * Copyright (c) 2014 Romain Calascibetta <romain.calascibetta@gmail.com>
+ * Copyright (c) 2014 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,12 +21,11 @@ open Cohttp
 open Cohttp_lwt_unix
 
 let serve_file ~docroot ~uri =
-  Server.resolve_local_file ~docroot ~uri
-  |> (fun x -> Server.respond_file ~fname:x ())
+  let fname = Server.resolve_local_file ~docroot ~uri in
+  Server.respond_file ~fname ()
 
 let ls_dir dir =
-  Lwt_unix.files_of_directory dir
-  |> Lwt_stream.to_list
+  Lwt_stream.to_list (Lwt_unix.files_of_directory dir)
 
 let rec handler ~info ~docroot ~verbose ~index sock req body =
   let uri = Cohttp.Request.uri req in
@@ -63,9 +63,8 @@ let rec handler ~info ~docroot ~verbose ~index sock req body =
               (fun exn ->
                  Lwt.return (Printf.sprintf "<li>Error with file: %s</li>" file_name)))
         >>= fun html ->
-        String.concat "\n" html
-        |> fun contents ->
-        Printf.sprintf "
+        let contents = String.concat "\n" html in
+        let body = Printf.sprintf "
               <html>
                 <body>
                 <h2>Directory Listing for %s</h2>
@@ -73,8 +72,8 @@ let rec handler ~info ~docroot ~verbose ~index sock req body =
                 <hr>%s
                 </body>
               </html>"
-          file_name contents info
-        |> (fun x -> Server.respond_string ~status:`OK ~body:x ())
+          file_name contents info in
+        Server.respond_string ~status:`OK ~body ()
     end
   | Unix.S_REG -> serve_file ~docroot ~uri
   | _ ->
