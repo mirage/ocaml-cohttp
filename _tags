@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 9f61341386d8460dd634acc0b58e1f16)
+# DO NOT EDIT (digest: 461ff145897a38d39b0605489824a885)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -64,7 +64,6 @@
 # Library cohttp_async
 "async/cohttp_async.cmxs": use_cohttp_async
 <async/*.ml{,i}>: pkg_async
-<async/*.ml{,i}>: pkg_async_ssl
 <async/*.ml{,i}>: pkg_conduit.async
 <async/*.ml{,i}>: pkg_fieldslib
 <async/*.ml{,i}>: pkg_fieldslib.syntax
@@ -245,7 +244,6 @@
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: custom
 # Executable test_net_async
 <lib_test/test_net_async.{native,byte}>: pkg_async
-<lib_test/test_net_async.{native,byte}>: pkg_async_ssl
 <lib_test/test_net_async.{native,byte}>: pkg_conduit.async
 <lib_test/test_net_async.{native,byte}>: pkg_fieldslib
 <lib_test/test_net_async.{native,byte}>: pkg_fieldslib.syntax
@@ -262,7 +260,6 @@
 <lib_test/test_net_async.{native,byte}>: custom
 # Executable test_net_async_http10
 <lib_test/test_net_async_http10.{native,byte}>: pkg_async
-<lib_test/test_net_async_http10.{native,byte}>: pkg_async_ssl
 <lib_test/test_net_async_http10.{native,byte}>: pkg_conduit.async
 <lib_test/test_net_async_http10.{native,byte}>: pkg_fieldslib
 <lib_test/test_net_async_http10.{native,byte}>: pkg_fieldslib.syntax
@@ -279,7 +276,6 @@
 <lib_test/test_net_async_http10.{native,byte}>: custom
 # Executable test_net_async_multi_get
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_async
-<lib_test/test_net_async_multi_get.{native,byte}>: pkg_async_ssl
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_conduit.async
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_fieldslib
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_fieldslib.syntax
@@ -296,7 +292,6 @@
 <lib_test/test_net_async_multi_get.{native,byte}>: custom
 # Executable test_net_async_server
 <lib_test/test_net_async_server.{native,byte}>: pkg_async
-<lib_test/test_net_async_server.{native,byte}>: pkg_async_ssl
 <lib_test/test_net_async_server.{native,byte}>: pkg_conduit.async
 <lib_test/test_net_async_server.{native,byte}>: pkg_fieldslib
 <lib_test/test_net_async_server.{native,byte}>: pkg_fieldslib.syntax
@@ -311,7 +306,6 @@
 <lib_test/test_net_async_server.{native,byte}>: use_cohttp
 <lib_test/test_net_async_server.{native,byte}>: use_cohttp_async
 <lib_test/*.ml{,i}>: pkg_async
-<lib_test/*.ml{,i}>: pkg_async_ssl
 <lib_test/*.ml{,i}>: pkg_conduit.async
 <lib_test/*.ml{,i}>: pkg_fieldslib
 <lib_test/*.ml{,i}>: pkg_fieldslib.syntax
@@ -328,7 +322,6 @@
 <lib_test/test_net_async_server.{native,byte}>: custom
 # Executable cohttp-server
 <bin/cohttp_server_async.{native,byte}>: pkg_async
-<bin/cohttp_server_async.{native,byte}>: pkg_async_ssl
 <bin/cohttp_server_async.{native,byte}>: pkg_conduit.async
 <bin/cohttp_server_async.{native,byte}>: pkg_fieldslib
 <bin/cohttp_server_async.{native,byte}>: pkg_fieldslib.syntax
@@ -342,7 +335,6 @@
 <bin/cohttp_server_async.{native,byte}>: use_cohttp
 <bin/cohttp_server_async.{native,byte}>: use_cohttp_async
 <bin/*.ml{,i}>: pkg_async
-<bin/*.ml{,i}>: pkg_async_ssl
 <bin/*.ml{,i}>: pkg_conduit.async
 <bin/*.ml{,i}>: pkg_fieldslib
 <bin/*.ml{,i}>: pkg_fieldslib.syntax
@@ -358,7 +350,6 @@
 <bin/cohttp_server_async.{native,byte}>: custom
 # Executable async-hello-world
 <examples/async/hello_world.{native,byte}>: pkg_async
-<examples/async/hello_world.{native,byte}>: pkg_async_ssl
 <examples/async/hello_world.{native,byte}>: pkg_conduit.async
 <examples/async/hello_world.{native,byte}>: pkg_fieldslib
 <examples/async/hello_world.{native,byte}>: pkg_fieldslib.syntax
@@ -372,7 +363,6 @@
 <examples/async/hello_world.{native,byte}>: use_cohttp
 <examples/async/hello_world.{native,byte}>: use_cohttp_async
 <examples/async/*.ml{,i}>: pkg_async
-<examples/async/*.ml{,i}>: pkg_async_ssl
 <examples/async/*.ml{,i}>: pkg_conduit.async
 <examples/async/*.ml{,i}>: pkg_fieldslib
 <examples/async/*.ml{,i}>: pkg_fieldslib.syntax
