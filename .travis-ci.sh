@@ -36,9 +36,7 @@ make clean
 opam pin cohttp .
 
 unset OPAMVERBOSE
-opam install github
-opam install cowabloga
-opam install mirage-www
+opam install github cowabloga mirage-www -j 2
 
 case "$OCAML_VERSION" in
 4.01.0)
