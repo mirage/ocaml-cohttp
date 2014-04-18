@@ -114,7 +114,17 @@ end
 
 module Client = struct
 
-  let call ?interrupt ?headers ?(chunked=false) ?(body=`Empty) meth uri =
+  type full_response = (Response.t * Body.t) Deferred.t
+
+  type 'response request =
+    ?interrupt:unit Deferred.t
+    -> ?headers:Cohttp.Header.t
+    -> Uri.t
+    -> 'response
+
+  type 'response with_body = ?chunked:bool -> ?body:Body.t -> 'response
+
+  let call ?(chunked=false) ?(body=`Empty) ?interrupt ?headers meth uri =
     (* Convert the body Pipe to a list of chunks. *)
     (match body with
      | `Empty -> return []
@@ -162,13 +172,13 @@ module Client = struct
       return res
     end
 
-  let post ?interrupt ?headers ?(chunked=false) ?body uri =
+  let post ?(chunked=false) ?body  ?interrupt ?headers uri =
     call ?interrupt ?headers ~chunked ?body `POST uri
 
-  let put ?interrupt ?headers ?(chunked=false) ?body uri =
+  let put ?(chunked=false) ?body ?interrupt ?headers uri =
     call ?interrupt ?headers ~chunked ?body `PUT uri
 
-  let patch ?interrupt ?headers ?(chunked=false) ?body uri =
+  let patch ?(chunked=false) ?body  ?interrupt ?headers uri =
     call ?interrupt ?headers ~chunked ?body `PATCH uri
 
   let delete ?interrupt ?headers uri =
