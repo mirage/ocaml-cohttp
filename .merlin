@@ -1,7 +1,11 @@
+PRJ cohttp
+
 S async
 S cohttp
 S lib_test
+S examples/async
 S lwt
+S bin
 
 PKG lwt
 PKG lwt.syntax
@@ -9,11 +13,21 @@ PKG lwt.unix
 PKG core
 PKG async
 PKG uri
-PKG async_ssl
+PKG re
+PKG re.emacs
 PKG stringext
+PKG fieldslib
+PKG fieldslib.syntax
+PKG sexplib
+PKG sexplib.syntax
+PKG conduit
+PKG conduit.async
+PKG conduit.lwt
 
 B _build/
 B _build/lwt
 B _build/lib_test
 B _build/async
 B _build/cohttp
+B _build/examples/async
+B _build/bin
