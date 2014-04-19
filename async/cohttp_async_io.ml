@@ -19,11 +19,9 @@ open Core.Std
 open Async.Std
 
 let check_debug norm_fn debug_fn =
-  try
-    let _ = Sys.getenv_exn "COHTTP_DEBUG" in
-    debug_fn
-  with Failure _ ->
-    norm_fn
+  match Sys.getenv "COHTTP_DEBUG" with
+  | Some _ -> debug_fn
+  | None -> norm_fn
 
 type 'a t = 'a Deferred.t
 let (>>=) = Deferred.(>>=)
