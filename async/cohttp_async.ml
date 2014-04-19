@@ -114,7 +114,7 @@ end
 
 module Client = struct
 
-  type response_and_body = (Response.t * Body.t) Deferred.t
+  type response_with_body = (Response.t * Body.t) Deferred.t
 
   type 'response request =
     ?interrupt:unit Deferred.t

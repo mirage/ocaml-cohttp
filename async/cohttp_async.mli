@@ -46,7 +46,7 @@ end
 module Client : sig
 
   (** Full response consisting of headers, status code, and body *)
-  type response_and_body = (Response.t * Body.t) Deferred.t
+  type response_with_body = (Response.t * Body.t) Deferred.t
 
   (** Basic http request that returns [response] *)
   type 'response request =
@@ -60,29 +60,29 @@ module Client : sig
   type 'response with_body = ?chunked:bool -> ?body:Body.t -> 'response
 
   (** Send an HTTP GET request *)
-  val get : response_and_body request
+  val get : response_with_body request
 
   (** Send an HTTP HEAD request *)
   val head : Response.t Deferred.t request
 
   (** Send an HTTP DELETE request *)
-  val delete : response_and_body request
+  val delete : response_with_body request
 
   (** Send an HTTP POST request.  *)
-  val post : response_and_body request with_body
+  val post : response_with_body request with_body
 
   (** Send an HTTP PUT request.  *)
-  val put : response_and_body request with_body
+  val put : response_with_body request with_body
 
   (** Send an HTTP PATCH request.  *)
-  val patch : response_and_body request with_body
+  val patch : response_with_body request with_body
 
   (** Send an HTTP request with arbitrary method and a body *)
   val call : (?interrupt:unit Deferred.t
               -> ?headers:Cohttp.Header.t
               -> Cohttp.Code.meth
               -> Uri.t
-              -> response_and_body) with_body
+              -> response_with_body) with_body
 
 end
 
