@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2014 Rudy Grinberg
+ * Copyright (c) 2014 Rudi Grinberg
  * Copyright (c) 2014 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any

@@ -19,11 +19,9 @@ open Core.Std
 open Async.Std
 
 let check_debug norm_fn debug_fn =
-  try
-    let _ = Sys.getenv_exn "COHTTP_DEBUG" in
-    debug_fn
-  with Failure _ ->
-    norm_fn
+  match Sys.getenv "COHTTP_DEBUG" with
+  | Some _ -> debug_fn
+  | None -> norm_fn
 
 type 'a t = 'a Deferred.t
 let (>>=) = Deferred.(>>=)
@@ -39,29 +37,29 @@ let read_line =
   check_debug
     (fun ic ->
        Reader.read_line ic
-       >>= function
-       |`Ok s -> return (Some s)
-       |`Eof -> return None
+       >>| function
+       |`Ok s -> Some s
+       |`Eof -> None
     )
     (fun ic ->
        Reader.read_line ic
-       >>= function
-       |`Ok s -> eprintf "<<< %s\n" s; return (Some s)
-       |`Eof -> eprintf "<<<EOF\n"; return None
+       >>| function
+       |`Ok s -> eprintf "<<< %s\n" s; Some s
+       |`Eof -> eprintf "<<<EOF\n"; None
     )
 
 let read ic len =
   let buf = String.create len in
-  Reader.read ic ~len buf >>= function
-  | `Ok len' -> return (String.sub buf 0 len')
-  | `Eof -> return ""
+  Reader.read ic ~len buf >>| function
+  | `Ok len' -> String.sub buf 0 len'
+  | `Eof -> ""
 
 let read_exactly ic len =
   let buf = String.create len in
-  Reader.really_read ic ~pos:0 ~len buf >>=
+  Reader.really_read ic ~pos:0 ~len buf >>|
   function
-  |`Ok -> return (Some buf)
-  |`Eof _ -> return None
+  |`Ok -> Some buf
+  |`Eof _ -> None
 
 let write =
   check_debug
@@ -87,5 +85,4 @@ let write_line oc buf =
        return ()
     )
 
-let flush oc =
-  Writer.flushed oc
+let flush = Writer.flushed
