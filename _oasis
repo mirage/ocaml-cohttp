@@ -1,6 +1,6 @@
 OASISFormat: 0.3
 Name:        cohttp
-Version:     0.11.1
+Version:     0.11.2
 Synopsis:    HTTP library for Lwt, Async and Mirage
 Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire, David Scott, Rudi Grinberg
 License:     ISC
@@ -213,7 +213,7 @@ Executable "cohttp-server-async"
 Executable "cohttp-server-lwt"
   Path:               bin
   MainIs:             cohttp_server_lwt.ml
-  Build$:             flag(lwt)
+  Build$:             flag(lwt) && flag(lwt_unix)
   Custom:             true
   CompiledObject:     best
   Install:            true

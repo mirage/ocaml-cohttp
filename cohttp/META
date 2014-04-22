@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: 3ebd0d55b017be9529a25ab3145c25b1)
-version = "0.11.1"
+# DO NOT EDIT (digest: 5befc71dded4d98b9a913959c39cfb57)
+version = "0.11.2"
 description = "HTTP library for Lwt, Async and Mirage"
 requires =
 "re.emacs stringext uri uri.services fieldslib fieldslib.syntax sexplib sexplib.syntax"
@@ -10,7 +10,7 @@ archive(native) = "cohttp.cmxa"
 archive(native, plugin) = "cohttp.cmxs"
 exists_if = "cohttp.cma"
 package "lwt-core" (
- version = "0.11.1"
+ version = "0.11.2"
  description = "HTTP library for Lwt, Async and Mirage"
  requires = "lwt uri cohttp lwt.syntax conduit.lwt"
  archive(byte) = "cohttp_lwt.cma"
@@ -21,7 +21,7 @@ package "lwt-core" (
 )
 
 package "lwt" (
- version = "0.11.1"
+ version = "0.11.2"
  description = "HTTP library for Lwt, Async and Mirage"
  requires = "cohttp.lwt-core unix lwt.unix lwt.ssl"
  archive(byte) = "cohttp_lwt_unix.cma"
@@ -32,7 +32,7 @@ package "lwt" (
 )
 
 package "async" (
- version = "0.11.1"
+ version = "0.11.2"
  description = "HTTP library for Lwt, Async and Mirage"
  requires = "uri cohttp threads async conduit.async"
  archive(byte) = "cohttp_async.cma"
