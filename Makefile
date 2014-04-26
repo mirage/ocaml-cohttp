@@ -10,7 +10,7 @@ ASYNC ?= $(shell if ocamlfind query async >/dev/null 2>&1; then echo --enable-as
 #NETTESTS ?= --enable-tests --enable-nettests
 
 setup.bin: setup.ml
-	ocamlopt.opt -o $@ $< || ocamlopt -o $@ $< || ocamlc -o $@ $<
+	ocamlopt.opt -o $@ $< 2>/dev/null || ocamlopt -o $@ $< 2>/dev/null || ocamlc -o $@ $<
 	rm -f setup.cmx setup.cmi setup.o setup.cmo
 
 setup.data: setup.bin
