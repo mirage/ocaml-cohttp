@@ -2,8 +2,7 @@
 # DO NOT EDIT (digest: 5befc71dded4d98b9a913959c39cfb57)
 version = "0.11.2"
 description = "HTTP library for Lwt, Async and Mirage"
-requires =
-"re.emacs stringext uri uri.services fieldslib fieldslib.syntax sexplib sexplib.syntax"
+requires = "re.emacs stringext uri uri.services fieldslib sexplib"
 archive(byte) = "cohttp.cma"
 archive(byte, plugin) = "cohttp.cma"
 archive(native) = "cohttp.cmxa"
@@ -12,7 +11,7 @@ exists_if = "cohttp.cma"
 package "lwt-core" (
  version = "0.11.2"
  description = "HTTP library for Lwt, Async and Mirage"
- requires = "lwt uri cohttp lwt.syntax conduit.lwt"
+ requires = "lwt uri cohttp conduit.lwt"
  archive(byte) = "cohttp_lwt.cma"
  archive(byte, plugin) = "cohttp_lwt.cma"
  archive(native) = "cohttp_lwt.cmxa"
