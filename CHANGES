@@ -1,5 +1,8 @@
+0.11.3 (trunk):
+* Remove link-time dependency on camlp4 via META fixes (#127).
+
 0.11.2 (2014-04-21)
-* Fix build by add a missing build-deps in _oasis
+* Fix build by add a missing build-deps in _oasis.
 
 0.11.1 (2014-04-17):
 * Remove an errant async_ssl reference left in the _oasis file that is
