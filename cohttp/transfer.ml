@@ -35,8 +35,8 @@ let encoding_to_string =
 
 let has_body =
   function
-  | Chunked -> true
-  | Fixed 0 -> false
-  | Unknown -> false
-  | Fixed _ -> true
+  | Fixed 0 -> `No
+  | Chunked
+  | Fixed _ -> `Yes
+  | Unknown -> `Unknown
 

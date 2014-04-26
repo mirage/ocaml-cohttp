@@ -50,7 +50,7 @@ module type S = sig
   module IO : IO.S
 
   val read : IO.ic -> [ `Eof | `Invalid of string | `Ok of t ] IO.t
-  val has_body : t -> bool
+  val has_body : t -> [ `No | `Unknown | `Yes ]
   val read_body_chunk : t -> IO.ic -> Transfer.chunk IO.t
 
   val write_header : t -> IO.oc -> unit IO.t

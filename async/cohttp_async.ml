@@ -189,8 +189,9 @@ module Server = struct
 
   let read_body req rd wr =
     match Request.has_body req with
-    | false -> `Empty
-    | true -> (* Create a Pipe for the body *)
+    (* TODO maybe attempt to read body *)
+    | `No | `Unknown -> `Empty
+    | `Yes -> (* Create a Pipe for the body *)
       let read_chunk = Request.read_body_chunk req in
       `Pipe (pipe_of_body read_chunk rd wr)
 

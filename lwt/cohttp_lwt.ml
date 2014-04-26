@@ -118,7 +118,7 @@ module Make_client
     | `Eof -> Lwt.fail (Failure "Client connection was closed")
     | `Ok res -> begin
         match Response.has_body res with
-        | true ->
+        | `Yes | `Unknown ->
           let stream = Cohttp_lwt_body.create_stream (Response.read_body_chunk res) ic in
           (match closefn with
            |Some fn ->
@@ -129,7 +129,7 @@ module Make_client
           );
           let body = Cohttp_lwt_body.of_stream stream in
           return (res, body)
-        | false ->
+        | `No ->
           (match closefn with |Some fn -> fn () |None -> ());
           return (res, `Empty)
       end
@@ -330,13 +330,16 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
                 early_close := not (Request.is_keep_alive req);
                 (* Ensure the input body has been fully read before reading again *)
                 match Request.has_body req with
-                | true ->
+                | `Yes ->
                   let body_stream = Cohttp_lwt_body.create_stream (Request.read_body_chunk req) ic in
                   Lwt_stream.on_terminate body_stream (fun () -> Lwt_mutex.unlock read_m);
                   let body = Cohttp_lwt_body.of_stream body_stream in
                   (* The read_m remains locked until the caller reads the body *)
                   return (Some (req, body))
-                | false ->
+                (* TODO for now we are just repeating the old behaviour
+                 * of ignoring the body in the request. Perhaps it should
+                 * be changed it did for responses *)
+                | `No | `Unknown ->
                   Lwt_mutex.unlock read_m;
                   return (Some (req, `Empty))
               end
