@@ -37,4 +37,4 @@ with sexp
 (** Convert the encoding format to a human-readable string *)
 val encoding_to_string : encoding -> string
 
-val has_body : encoding -> bool
+val has_body : encoding -> [ `No | `Unknown | `Yes ]
