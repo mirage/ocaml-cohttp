@@ -351,7 +351,7 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
       (* Transmit the responses *)
       for_lwt (res,body) in res_stream do
         let flush =
-          if res.Response.flush then
+          if Response.flush res then
             fun () -> IO.flush oc
           else
             fun () -> return_unit
