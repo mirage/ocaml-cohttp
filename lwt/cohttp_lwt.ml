@@ -194,23 +194,13 @@ module Make_client
     return resps
 end
 
-type server = {
-  callback :
-    Cohttp.Connection.t ->
-    Cohttp.Request.t ->
-    Cohttp_lwt_body.t ->
-    (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
-  conn_closed:
-    Cohttp.Connection.t -> unit -> unit;
-}
-
 (** Configuration of servers. *)
 module type Server = sig
   module IO : IO.S
   module Request : Request
   module Response : Response
 
-  type t = server = {
+  type t = {
     callback :
       Cohttp.Connection.t ->
       Cohttp.Request.t ->
@@ -260,7 +250,7 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
   module Request = Request
   module Response = Response
 
-  type t = server = {
+  type t = {
     callback :
       Cohttp.Connection.t ->
       Cohttp.Request.t ->
