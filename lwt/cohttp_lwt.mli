@@ -116,12 +116,12 @@ module type Client = sig
     (Response.t * Cohttp_lwt_body.t) Lwt_stream.t Lwt.t
 end
 
-(** The [Make_client] functor glues together a {! Cohttp.IO.S } implementation
+(** The [Make_client] functor glues together a {! Cohttp.S.IO } implementation
     with {! Cohttp.Request } and {! Cohttp.Response } to send requests down
     a connection that is established by the  {! Net } module.
     The resulting module satisfies the {! Client } module type. *)
 module Make_client
-    (IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
+    (IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
     (Request:Request with module IO = IO)
     (Response:Response with module IO = IO)
     (Net:Net with module IO = IO) :
@@ -175,12 +175,12 @@ module type Server = sig
 
 end
 
-(** The [Make_server] functor glues together a {! Cohttp.IO.S } implementation
+(** The [Make_server] functor glues together a {! Cohttp.S.IO } implementation
     with {! Cohttp.Request } and {! Cohttp.Response } to send requests down
     a connection that is established by the  {! Net } module.
     The resulting module satisfies the {! Server } module type. *)
 module Make_server
-    (IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
+    (IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
     (Request:Request with module IO=IO)
     (Response:Response with module IO=IO)
     (Net:Net with module IO = IO) :

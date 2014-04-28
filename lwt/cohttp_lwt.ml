@@ -244,7 +244,7 @@ module type Server = sig
 end
 
 
-module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
+module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
     (Request:Request with module IO=IO)
     (Response:Response with module IO=IO)
     (Net:Net with module IO=IO) = struct

@@ -20,7 +20,7 @@ open Async.Std
 
 (** Read in a full body and convert to a [string] *)
 
-module IO : Cohttp.IO.S with type 'a t = 'a Deferred.t
+module IO : Cohttp.S.IO with type 'a t = 'a Deferred.t
 
 module Request : sig
   type t = Cohttp.Request.t
