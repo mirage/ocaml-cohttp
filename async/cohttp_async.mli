@@ -39,7 +39,7 @@ module Body : sig
     | Cohttp.Body.t
     | `Pipe of string Pipe.Reader.t
   ] with sexp_of
-  include Cohttp.Body.S with type t := t
+  include Cohttp.S.Body with type t := t
   val to_string : t -> string Deferred.t
   val to_pipe : t -> string Pipe.Reader.t
   val of_pipe : string Pipe.Reader.t -> t
