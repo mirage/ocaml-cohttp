@@ -60,24 +60,9 @@ let make_for_client ?headers ?(chunked=true) ?(body_length=0) meth uri =
   in
   make ~meth ~encoding ?headers uri
 
-module type S = sig
-  module IO : IO.S
-
-  val read : IO.ic -> [ `Eof | `Invalid of string | `Ok of t ] IO.t
-  val has_body : t -> [ `No | `Unknown | `Yes ]
-  val read_body_chunk :
-    t -> IO.ic -> Transfer.chunk IO.t
-
-  val write_header : t -> IO.oc -> unit IO.t
-  val write_body : t -> IO.oc -> string -> unit IO.t
-  val write_footer : t -> IO.oc -> unit IO.t
-  val write : (t -> IO.oc -> unit IO.t) -> t -> IO.oc -> unit IO.t
-
-  val is_form: t -> bool
-  val read_form : t -> IO.ic -> (string * string list) list IO.t
-end
-
+type tt = t
 module Make(IO : IO.S) = struct
+  type t = tt
   module IO = IO
   module Header_IO = Header_io.Make(IO)
   module Transfer_IO = Transfer_io.Make(IO)

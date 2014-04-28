@@ -27,36 +27,5 @@
     The interface exposes a [fieldslib] interface which provides individual
     accessor functions for each of the records below.  It also provides [sexp]
     serializers to convert to-and-from an {!Core.Std.Sexp.t}. *)
-type t = {
-  mutable encoding: Transfer.encoding; (** Transfer encoding of this HTTP response *)
-  mutable headers: Header.t;    (** response HTTP headers *)
-  mutable version: Code.version; (** (** HTTP version, usually 1.1 *) *)
-  mutable status: Code.status_code; (** HTTP status code of the response *)
-  mutable flush: bool;
-} with fields, sexp
-
-val make :
-  ?version:Code.version -> 
-  ?status:Code.status_code ->
-  ?flush:bool ->
-  ?encoding:Transfer.encoding -> 
-  ?headers:Header.t -> 
-  unit -> t
-
-module type S = sig
-  module IO : IO.S
-
-  val read : IO.ic -> [ `Eof | `Invalid of string | `Ok of t ] IO.t
-  val has_body : t -> [ `No | `Unknown | `Yes ]
-  val read_body_chunk : t -> IO.ic -> Transfer.chunk IO.t
-
-  val is_form: t -> bool
-  val read_form : t -> IO.ic -> (string * string list) list IO.t
-
-  val write_header : t -> IO.oc -> unit IO.t
-  val write_body : t -> IO.oc -> string -> unit IO.t
-  val write_footer : t -> IO.oc -> unit IO.t
-  val write : (t -> IO.oc -> unit IO.t) -> t -> IO.oc -> unit IO.t
-end
-
-module Make(IO : IO.S) : S with module IO = IO
+include S.Response
+module Make(IO : IO.S) : S.Http_io with type t = t and module IO = IO
