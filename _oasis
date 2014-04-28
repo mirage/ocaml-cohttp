@@ -11,8 +11,8 @@ Library cohttp
   Path: cohttp
   Findlibname: cohttp
   Pack: true
-  Modules: IO, Code, Header, Cookie, Request, Response, Transfer, Accept, Accept_parser,
-           Accept_lexer, Accept_types, Base64, Auth, Header_io, Transfer_io, Client, Connection, Body
+  Modules: S, Code, Header, Cookie, Request, Response, Transfer, Accept, Accept_parser,
+           Accept_lexer, Accept_types, Base64, Auth, Header_io, Transfer_io, Connection, Body
   BuildDepends:	re.emacs, stringext ,uri (>= 1.3.13), uri.services, fieldslib, fieldslib.syntax, sexplib, sexplib.syntax
   XMETARequires: re.emacs, stringext, uri, uri.services, fieldslib, sexplib
 
