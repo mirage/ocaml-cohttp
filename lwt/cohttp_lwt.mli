@@ -36,8 +36,9 @@ end
 (** The [Request] module combines the {! Cohttp.Request } module with
     the IO functions, to have them conveniently in one place. *)
 module type Request = sig
-  include module type of Cohttp.Request with type t = Cohttp.Request.t
-  include Cohttp.Request.S
+  type t = Cohttp.Request.t
+  include Cohttp.S.Request with type t := Cohttp.Request.t
+  include Cohttp.S.Http_io with type t := Cohttp.Request.t
 end
 
 (** Functor to build a concrete {! Request } from an IO implementation *)
@@ -46,8 +47,9 @@ module Make_request(IO:IO.S) : Request with module IO = IO
 (** The [Response] module combines the {! Cohttp.Request } module with
     the IO functions, to have them conveniently in one place. *)
 module type Response = sig
-  include module type of Cohttp.Response with type t = Cohttp.Response.t
-  include Cohttp.Response.S
+  type t = Cohttp.Response.t
+  include Cohttp.S.Response with type t := Cohttp.Response.t
+  include Cohttp.S.Http_io with type t := Cohttp.Response.t
 end
 
 (** Functor to build a concrete {! Response } from an IO implementation *)

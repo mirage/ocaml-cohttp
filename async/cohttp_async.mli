@@ -23,13 +23,15 @@ open Async.Std
 module IO : Cohttp.IO.S with type 'a t = 'a Deferred.t
 
 module Request : sig
-  include module type of Cohttp.Request with type t = Cohttp.Request.t
-  include Cohttp.Request.S with module IO=IO
+  type t = Cohttp.Request.t
+  include Cohttp.S.Request with type t := Cohttp.Request.t
+  include Cohttp.S.Http_io with type t := Cohttp.Request.t and module IO=IO
 end
 
 module Response : sig
-  include module type of Cohttp.Response with type t = Cohttp.Response.t
-  include Cohttp.Response.S with module IO=IO
+  type t = Cohttp.Response.t
+  include Cohttp.S.Response with type t := Cohttp.Response.t
+  include Cohttp.S.Http_io with type t := Cohttp.Response.t and module IO=IO
 end
 
 module Body : sig

@@ -28,23 +28,25 @@ module type Net = sig
 end
 
 module type Request = sig
-  include module type of Cohttp.Request with type t = Cohttp.Request.t
-  include Cohttp.Request.S
+  type t = Cohttp.Request.t
+  include Cohttp.S.Request with type t := Cohttp.Request.t
+  include Cohttp.S.Http_io with type t := Cohttp.Request.t
 end
 
 module Make_request(IO:IO.S) = struct
   include Cohttp.Request
-  include Cohttp.Request.Make(IO)
+  include (Make(IO) : module type of Make(IO) with type t := t)
 end
 
 module type Response = sig
-  include module type of Cohttp.Response with type t = Cohttp.Response.t
-  include Cohttp.Response.S
+  type t = Cohttp.Response.t
+  include Cohttp.S.Response with type t := Cohttp.Response.t
+  include Cohttp.S.Http_io with type t := Cohttp.Response.t
 end
 
 module Make_response(IO:IO.S) = struct
   include Cohttp.Response
-  include Cohttp.Response.Make(IO)
+  include (Make(IO) : module type of Make(IO) with type t := t)
 end
 
 module type Client = sig
