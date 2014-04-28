@@ -30,7 +30,7 @@ let make ?(version=`HTTP_1_1) ?(status=`OK) ?(flush=false) ?(encoding=Transfer.C
   { encoding; headers; version; flush; status }
 
 type tt = t
-module Make(IO : IO.S) = struct
+module Make(IO : S.IO) = struct
   type t = tt
   module IO = IO
   module Header_IO = Header_io.Make(IO)

@@ -61,7 +61,7 @@ let make_for_client ?headers ?(chunked=true) ?(body_length=0) meth uri =
   make ~meth ~encoding ?headers uri
 
 type tt = t
-module Make(IO : IO.S) = struct
+module Make(IO : S.IO) = struct
   type t = tt
   module IO = IO
   module Header_IO = Header_io.Make(IO)

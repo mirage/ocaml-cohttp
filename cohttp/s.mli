@@ -1,6 +1,6 @@
 module type Http_io = sig
   type t
-  module IO : IO.S
+  module IO : IO
 
   val read : IO.ic -> [ `Eof | `Invalid of string | `Ok of t ] IO.t
   val has_body : t -> [ `No | `Unknown | `Yes ]

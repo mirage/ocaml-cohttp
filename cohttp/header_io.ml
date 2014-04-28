@@ -22,7 +22,7 @@ let split_header str =
   | x::y::[] -> [x; Stringext.trim_left y]
   | x -> x
 
-module Make(IO : IO.S) = struct
+module Make(IO : S.IO) = struct
   open IO
 
   module Transfer_IO = Transfer_io.Make(IO)

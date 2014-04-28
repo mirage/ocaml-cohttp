@@ -25,7 +25,7 @@ open Cohttp
 (** The [Net] module type defines how to connect to a remote node
     and close the resulting channels to clean up. *)
 module type Net = sig
-  module IO : IO.S
+  module IO : S.IO
   val connect_uri : Uri.t -> (IO.ic * IO.oc) Lwt.t
   val connect : ?ssl:bool -> host:string -> service:string -> unit -> (IO.ic * IO.oc) Lwt.t
   val close_in : IO.ic -> unit
@@ -42,7 +42,7 @@ module type Request = sig
 end
 
 (** Functor to build a concrete {! Request } from an IO implementation *)
-module Make_request(IO:IO.S) : Request with module IO = IO
+module Make_request(IO:S.IO) : Request with module IO = IO
 
 (** The [Response] module combines the {! Cohttp.Request } module with
     the IO functions, to have them conveniently in one place. *)
@@ -53,7 +53,7 @@ module type Response = sig
 end
 
 (** Functor to build a concrete {! Response } from an IO implementation *)
-module Make_response(IO:IO.S) : Response with module IO = IO
+module Make_response(IO:S.IO) : Response with module IO = IO
 
 (** The [Client] module implements non-pipelined single HTTP client
     calls.  Each call will open a separate {! Net } connection.  For
@@ -62,7 +62,7 @@ module Make_response(IO:IO.S) : Response with module IO = IO
     fashion.  It will still be finalized by a GC hook if it is not used
     up, but this can take some additional time to happen. *)
 module type Client = sig
-  module IO : IO.S
+  module IO : S.IO
   module Request : Request
   module Response : Response
 
@@ -129,7 +129,7 @@ module Make_client
 
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)
 module type Server = sig
-  module IO : IO.S
+  module IO : S.IO
   module Request : Request
   module Response : Response
   type t = {
