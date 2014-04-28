@@ -125,22 +125,12 @@ module Make_client
     (Net:Net with module IO = IO) :
     Client with module IO=IO and module Request=Request and module Response=Response
 
-type server = {
-  callback :
-    Cohttp.Connection.t ->
-    Cohttp.Request.t ->
-    Cohttp_lwt_body.t ->
-    (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
-  conn_closed:
-    Cohttp.Connection.t -> unit -> unit;
-}
-
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)
 module type Server = sig
   module IO : IO.S
   module Request : Request
   module Response : Response
-  type t = server = {
+  type t = {
     callback :
       Cohttp.Connection.t ->
       Cohttp.Request.t ->
@@ -179,7 +169,7 @@ module type Server = sig
   val respond_not_found :
     ?uri:Uri.t -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
-  val callback : server -> IO.ic -> IO.oc -> unit Lwt.t
+  val callback : t -> IO.ic -> IO.oc -> unit Lwt.t
 
 end
 
