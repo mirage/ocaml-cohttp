@@ -1,3 +1,20 @@
+module type IO = sig
+  type +'a t
+  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
+  val return : 'a -> 'a t
+
+  type ic
+  type oc
+
+  val iter : ('a -> unit t) -> 'a list -> unit t
+  val read_line : ic -> string option t
+  val read : ic -> int -> string t
+  val read_exactly : ic -> int -> string option t
+
+  val write : oc -> string -> unit t
+  val flush : oc -> unit t
+end
+
 module type Http_io = sig
   type t
   module IO : IO
@@ -62,21 +79,4 @@ module type Body = sig
   val of_string : string -> t
   val of_string_list : string list -> t
   val transfer_encoding : t -> Transfer.encoding
-end
-
-module type IO = sig
-  type +'a t
-  val (>>=) : 'a t -> ('a -> 'b t) -> 'b t
-  val return : 'a -> 'a t
-
-  type ic
-  type oc
-
-  val iter : ('a -> unit t) -> 'a list -> unit t
-  val read_line : ic -> string option t
-  val read : ic -> int -> string t
-  val read_exactly : ic -> int -> string option t
-
-  val write : oc -> string -> unit t
-  val flush : oc -> unit t
 end
