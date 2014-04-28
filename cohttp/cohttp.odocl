@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 180029a8e7db46e4bb21011e58c5dc68)
+# DO NOT EDIT (digest: 0d72ded3b0421924125b316fcfa2e0b0)
 S
 IO
 Code
@@ -16,7 +16,6 @@ Base64
 Auth
 Header_io
 Transfer_io
-Client
 Connection
 Body
 # OASIS_STOP
