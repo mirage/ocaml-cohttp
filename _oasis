@@ -41,6 +41,7 @@ Library cohttp_lwt
   BuildDepends: lwt, uri, cohttp, lwt.syntax, conduit.lwt
   XMETARequires: lwt, uri, cohttp, conduit.lwt
   Modules: Cohttp_lwt_body, Cohttp_lwt
+  InternalModules: Slwt
 
 Library cohttp_lwt_unix
   Build$: flag(lwt_unix)
