@@ -1,8 +1,10 @@
-0.11.3 (trunk):
+0.12.3 (trunk):
 * Remove link-time dependency on camlp4 via META fixes (#127).
 * The `has_body` function in the Request and Response modules now
   explicitly signals when the body size is unknown, to help deal with
   broken HTTP 1.0 responses.
+* Move all the module type signatures into `Cohttp.S`.
+* [lwt] Remove the `Cohttp_lwt.Server.server` type synonym to `t`.
 
 0.11.2 (2014-04-21)
 * Fix build by add a missing build-deps in _oasis.
