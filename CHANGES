@@ -1,3 +1,6 @@
+1.2.0 (03-05-2014):
+* Use the Cohttp.0.12.0 interface.
+
 1.1.0 (05-02-2014):
 * Functorize the HTTP Mirage layer, so that the library is now
   OS-independent and compatible with Mirage 1.1.x signatures.
