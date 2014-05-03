@@ -15,7 +15,7 @@
  *
  *)
 
-module Make(IO : IO.S) : sig
+module Make(IO : S.IO) : sig
   val parse: IO.ic -> Header.t IO.t
   val parse_form : Header.t -> IO.ic -> (string * string list) list IO.t
 end

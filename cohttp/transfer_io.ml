@@ -17,7 +17,7 @@
 
 open Transfer
 
-module Make(IO : IO.S) = struct
+module Make(IO : S.IO) = struct
   open IO
 
   module Chunked = struct
