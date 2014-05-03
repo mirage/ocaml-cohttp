@@ -1,4 +1,4 @@
-0.12.3 (trunk):
+0.12.0 (trunk):
 * Remove link-time dependency on camlp4 via META fixes (#127).
 * The `has_body` function in the Request and Response modules now
   explicitly signals when the body size is unknown, to help deal with
