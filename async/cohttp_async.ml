@@ -36,12 +36,12 @@ end
 
 module Request = struct
   include Cohttp.Request
-  include Cohttp.Request.Make(IO)
+  include (Make(IO) : module type of Make(IO) with type t := t)
 end
 
 module Response = struct
   include Cohttp.Response
-  include Cohttp.Response.Make(IO)
+  include (Make(IO) : module type of Make(IO) with type t := t)
 end
 
 let pipe_of_body read_chunk ic oc =
