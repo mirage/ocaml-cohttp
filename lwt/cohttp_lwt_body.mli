@@ -20,7 +20,7 @@ type t = [
   | `Stream of string Lwt_stream.t
 ] with sexp
 
-include Cohttp.Body.S with type t := t
+include Cohttp.S.Body with type t := t
 
 val to_string : t -> string Lwt.t
 

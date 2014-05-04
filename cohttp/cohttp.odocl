@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: 29e0ea4d0e1ed876a097feb2eb07169b)
-IO
+# DO NOT EDIT (digest: 64a7d2066d82b8b688286835e91a55b8)
+S
 Code
 Header
 Cookie
@@ -15,7 +15,6 @@ Base64
 Auth
 Header_io
 Transfer_io
-Client
 Connection
 Body
 # OASIS_STOP

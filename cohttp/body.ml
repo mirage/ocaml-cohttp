@@ -40,13 +40,4 @@ let length = function
   | `Empty -> 0
   | `String s -> String.length s
 
-module type S = sig
-  type t
-  val to_string : t -> string
-  val empty : t
-  val of_string : string -> t
-  val of_string_list : string list -> t
-  val transfer_encoding : t -> Transfer.encoding
-end
-
 (* TODO: maybe add a functor here that uses IO.S *)

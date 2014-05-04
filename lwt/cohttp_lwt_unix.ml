@@ -76,9 +76,9 @@ end
 
 module type S = sig
 
-  include Cohttp_lwt.Server with module IO = Cohttp_lwt_unix_io
-                             and module Request = Request
-                             and module Response = Response
+  include Slwt.Server with module IO = Cohttp_lwt_unix_io
+                       and module Request = Request
+                       and module Response = Response
 
   val resolve_file :
     docroot:string -> uri:Uri.t -> string

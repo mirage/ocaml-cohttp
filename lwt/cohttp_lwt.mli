@@ -15,170 +15,38 @@
  *
  *)
 
-open Cohttp
+module type S = (module type of Slwt)
+
+open Slwt
 
 (** Portable Lwt implementation of HTTP client and server, without
     depending on a particular I/O implementation.  The various [Make]
     functors must be instantiated by an implementation that provides
     a concrete IO monad. *)
 
-(** The [Net] module type defines how to connect to a remote node
-    and close the resulting channels to clean up. *)
-module type Net = sig
-  module IO : IO.S
-  val connect_uri : Uri.t -> (IO.ic * IO.oc) Lwt.t
-  val connect : ?ssl:bool -> host:string -> service:string -> unit -> (IO.ic * IO.oc) Lwt.t
-  val close_in : IO.ic -> unit
-  val close_out : IO.oc -> unit
-  val close : IO.ic -> IO.oc -> unit
-end
-
-(** The [Request] module combines the {! Cohttp.Request } module with
-    the IO functions, to have them conveniently in one place. *)
-module type Request = sig
-  include module type of Cohttp.Request with type t = Cohttp.Request.t
-  include Cohttp.Request.S
-end
-
 (** Functor to build a concrete {! Request } from an IO implementation *)
-module Make_request(IO:IO.S) : Request with module IO = IO
-
-(** The [Response] module combines the {! Cohttp.Request } module with
-    the IO functions, to have them conveniently in one place. *)
-module type Response = sig
-  include module type of Cohttp.Response with type t = Cohttp.Response.t
-  include Cohttp.Response.S
-end
+module Make_request(IO:Cohttp.S.IO) : Request with module IO = IO
 
 (** Functor to build a concrete {! Response } from an IO implementation *)
-module Make_response(IO:IO.S) : Response with module IO = IO
+module Make_response(IO:Cohttp.S.IO) : Response with module IO = IO
 
-(** The [Client] module implements non-pipelined single HTTP client
-    calls.  Each call will open a separate {! Net } connection.  For
-    best results, the {! Cohttp_lwt_body } that is returned should be
-    consumed in order to close the file descriptor in a timely
-    fashion.  It will still be finalized by a GC hook if it is not used
-    up, but this can take some additional time to happen. *)
-module type Client = sig
-  module IO : IO.S
-  module Request : Request
-  module Response : Response
-
-  val call :
-    ?headers:Cohttp.Header.t ->
-    ?body:Cohttp_lwt_body.t ->
-    ?chunked:bool ->
-    Cohttp.Code.meth ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
-
-  val head :
-    ?headers:Cohttp.Header.t ->
-    Uri.t -> Response.t Lwt.t
-
-  val get :
-    ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
-
-  val delete :
-    ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
-
-  val post :
-    ?body:Cohttp_lwt_body.t ->
-    ?chunked:bool ->
-    ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
-
-  val put :
-    ?body:Cohttp_lwt_body.t ->
-    ?chunked:bool ->
-    ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
-
-  val patch :
-    ?body:Cohttp_lwt_body.t ->
-    ?chunked:bool ->
-    ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
-
-  val post_form :
-    ?headers:Cohttp.Header.t ->
-    params:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
-
-  val callv :
-    ?ssl:bool ->
-    string ->
-    int ->
-    (Request.t * Cohttp_lwt_body.t) Lwt_stream.t ->
-    (Response.t * Cohttp_lwt_body.t) Lwt_stream.t Lwt.t
-end
-
-(** The [Make_client] functor glues together a {! Cohttp.IO.S } implementation
+(** The [Make_client] functor glues together a {! Cohttp.S.IO } implementation
     with {! Cohttp.Request } and {! Cohttp.Response } to send requests down
     a connection that is established by the  {! Net } module.
     The resulting module satisfies the {! Client } module type. *)
 module Make_client
-    (IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
+    (IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
     (Request:Request with module IO = IO)
     (Response:Response with module IO = IO)
     (Net:Net with module IO = IO) :
     Client with module IO=IO and module Request=Request and module Response=Response
 
-(** The [Server] module implements a pipelined HTTP/1.1 server. *)
-module type Server = sig
-  module IO : IO.S
-  module Request : Request
-  module Response : Response
-  type t = {
-    callback :
-      Cohttp.Connection.t ->
-      Cohttp.Request.t ->
-      Cohttp_lwt_body.t ->
-      (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
-    conn_closed:
-      Cohttp.Connection.t -> unit -> unit;
-  }
-
-  (** Resolve a URI and a docroot into a concrete local filename. *)
-  val resolve_local_file : docroot:string -> uri:Uri.t -> string
-
-  val respond :
-    ?headers:Cohttp.Header.t ->
-    ?flush:bool ->
-    status:Cohttp.Code.status_code ->
-    body:Cohttp_lwt_body.t -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
-
-  val respond_string :
-    ?headers:Cohttp.Header.t ->
-    status:Cohttp.Code.status_code ->
-    body:string -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
-
-  val respond_error :
-    status:Cohttp.Code.status_code ->
-    body:string -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
-
-  val respond_redirect :
-    ?headers:Cohttp.Header.t ->
-    uri:Uri.t -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
-
-  val respond_need_auth :
-    ?headers:Cohttp.Header.t ->
-    auth:Cohttp.Auth.req -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
-
-  val respond_not_found :
-    ?uri:Uri.t -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
-
-  val callback : t -> IO.ic -> IO.oc -> unit Lwt.t
-
-end
-
-(** The [Make_server] functor glues together a {! Cohttp.IO.S } implementation
+(** The [Make_server] functor glues together a {! Cohttp.S.IO } implementation
     with {! Cohttp.Request } and {! Cohttp.Response } to send requests down
     a connection that is established by the  {! Net } module.
     The resulting module satisfies the {! Server } module type. *)
 module Make_server
-    (IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
+    (IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
     (Request:Request with module IO=IO)
     (Response:Response with module IO=IO)
     (Net:Net with module IO = IO) :
