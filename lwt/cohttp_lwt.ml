@@ -202,12 +202,13 @@ module type Server = sig
 
   type t = {
     callback :
+      Lwt_unix.sockaddr ->
       Cohttp.Connection.t ->
       Cohttp.Request.t ->
       Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
-      Cohttp.Connection.t -> unit -> unit;
+      Lwt_unix.sockaddr -> Cohttp.Connection.t -> unit -> unit;
   }
 
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
@@ -238,7 +239,7 @@ module type Server = sig
   val respond_not_found :
     ?uri:Uri.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
-  val callback: t -> IO.ic -> IO.oc -> unit Lwt.t
+  val callback: t -> Lwt_unix.sockaddr -> IO.ic -> IO.oc -> unit Lwt.t
 end
 
 
@@ -252,12 +253,13 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
 
   type t = {
     callback :
+      Lwt_unix.sockaddr ->
       Cohttp.Connection.t ->
       Cohttp.Request.t ->
       Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
-      Cohttp.Connection.t -> unit -> unit;
+      Lwt_unix.sockaddr -> Cohttp.Connection.t -> unit -> unit;
   }
 
   module Transfer_IO = Transfer_io.Make(IO)
@@ -299,7 +301,7 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
     respond_string ~status:`Not_found ~body ()
 
   let callback spec =
-    let daemon_callback ic oc =
+    let daemon_callback sockaddr ic oc =
       let conn_id = Connection.create () in
       let read_m = Lwt_mutex.create () in
       (* If the request is HTTP version 1.0 then the request stream should be
@@ -338,14 +340,14 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
       let res_stream =
         Lwt_stream.map_s (fun (req, body) ->
           try_lwt
-            spec.callback conn_id req body
+            spec.callback sockaddr conn_id req body
           with exn ->
             respond_error ~status:`Internal_server_error ~body:(Printexc.to_string exn) ()
           finally Cohttp_lwt_body.drain_body body
         ) req_stream in
       (* Clean up resources when the response stream terminates and call
        * the user callback *)
-      Lwt_stream.on_terminate res_stream (spec.conn_closed conn_id);
+      Lwt_stream.on_terminate res_stream (spec.conn_closed sockaddr conn_id);
       (* Transmit the responses *)
       for_lwt (res,body) in res_stream do
         let flush =

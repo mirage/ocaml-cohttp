@@ -132,12 +132,13 @@ module type Server = sig
   module Response : Response
   type t = {
     callback :
+      Lwt_unix.sockaddr ->
       Cohttp.Connection.t ->
       Cohttp.Request.t ->
       Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
-      Cohttp.Connection.t -> unit -> unit;
+      Lwt_unix.sockaddr -> Cohttp.Connection.t -> unit -> unit;
   }
 
   (** Resolve a URI and a docroot into a concrete local filename. *)
@@ -169,7 +170,7 @@ module type Server = sig
   val respond_not_found :
     ?uri:Uri.t -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
-  val callback : t -> IO.ic -> IO.oc -> unit Lwt.t
+  val callback : t -> Lwt_unix.sockaddr -> IO.ic -> IO.oc -> unit Lwt.t
 
 end
 
