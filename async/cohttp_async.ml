@@ -115,6 +115,8 @@ module Body = struct
     match t with
     | #Body.t as t -> (B.map t ~f :> t)
     | `Pipe p -> `Pipe (Pipe.map p ~f)
+
+  let as_pipe t ~f = `Pipe (t |> to_pipe |> f)
 end
 
 module Client = struct
