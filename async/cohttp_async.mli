@@ -41,6 +41,7 @@ module Body : sig
   val to_string : t -> string Deferred.t
   val to_pipe : t -> string Pipe.Reader.t
   val of_pipe : string Pipe.Reader.t -> t
+  val map : t -> f:(string -> string) -> t
 end
 
 module Client : sig

@@ -92,3 +92,8 @@ let write_body ?(flush=(fun () -> return_unit)) fn (body:t) =
   |`Empty -> return ()
   |`Stream st -> Lwt_stream.iter_s (fun b -> fn b >>= flush) st
   |`String s -> fn s
+
+let map t ~f =
+  match t with
+  | #Body.t as t -> (Body.map t ~f :> t)
+  | `Stream s -> `Stream (Lwt_stream.map f s)

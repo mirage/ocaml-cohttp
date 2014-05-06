@@ -33,6 +33,7 @@ module type S = sig
   val empty : t
   val of_string : string -> t
   val of_string_list : string list -> t
+  val map : t -> f:(string -> string) -> t
   val transfer_encoding : t -> Transfer.encoding
 end
 
