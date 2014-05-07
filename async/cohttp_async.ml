@@ -110,6 +110,13 @@ module Body = struct
           match Response.flush response with
           | true -> Writer.flushed wr
           | false -> return ())
+
+  let map t ~f =
+    match t with
+    | #Body.t as t -> (B.map t ~f :> t)
+    | `Pipe p -> `Pipe (Pipe.map p ~f)
+
+  let as_pipe t ~f = `Pipe (t |> to_pipe |> f)
 end
 
 module Client = struct
