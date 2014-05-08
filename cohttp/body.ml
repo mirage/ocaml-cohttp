@@ -40,6 +40,7 @@ let length = function
   | `Empty -> 0
   | `String s -> String.length s
 
+<<<<<<< HEAD
 let map t ~f =
   match t with
   | `Empty -> `Empty
@@ -55,4 +56,6 @@ module type S = sig
   val transfer_encoding : t -> Transfer.encoding
 end
 
+=======
+>>>>>>> cf6ae92a6b411b7de6f1920ff37dd70541a1fab8
 (* TODO: maybe add a functor here that uses IO.S *)

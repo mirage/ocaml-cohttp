@@ -27,6 +27,7 @@ type t = [
 (** Signature for the core of HTTP body handling.  Implementations
     will extend this signature to add more functions for streaming
     responses via backend-specific functionality.  *)
+<<<<<<< HEAD
 module type S = sig
   type t
   val to_string : t -> string
@@ -36,6 +37,8 @@ module type S = sig
   val map : t -> f:(string -> string) -> t
   val transfer_encoding : t -> Transfer.encoding
 end
+=======
+>>>>>>> cf6ae92a6b411b7de6f1920ff37dd70541a1fab8
 
-include S with type t := t
+include S.Body with type t := t
 val length : t -> int
