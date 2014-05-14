@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: d1b9eabdc57162cb5ae82563271be388)
-IO
+# DO NOT EDIT (digest: f17cd7a9f116daed647cd9ab299df03e)
+S
 Endpoint
 Code
 Header
@@ -16,7 +16,6 @@ Base64
 Auth
 Header_io
 Transfer_io
-Client
 Connection
 Body
 # OASIS_STOP

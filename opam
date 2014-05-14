@@ -17,6 +17,7 @@ depends: [
   "fieldslib" {>= "109.20.00"}
   "sexplib" {>= "109.53.00"}
   "conduit"
+  "stringext"
 ]
 depopts: [
   "async"

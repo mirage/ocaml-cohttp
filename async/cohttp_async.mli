@@ -20,16 +20,18 @@ open Async.Std
 
 (** Read in a full body and convert to a [string] *)
 
-module IO : Cohttp.IO.S with type 'a t = 'a Deferred.t
+module IO : Cohttp.S.IO with type 'a t = 'a Deferred.t
 
 module Request : sig
-  include module type of Cohttp.Request with type t = Cohttp.Request.t
-  include Cohttp.Request.S with module IO=IO
+  type t = Cohttp.Request.t
+  include Cohttp.S.Request with type t := Cohttp.Request.t
+  include Cohttp.S.Http_io with type t := Cohttp.Request.t and module IO=IO
 end
 
 module Response : sig
-  include module type of Cohttp.Response with type t = Cohttp.Response.t
-  include Cohttp.Response.S with module IO=IO
+  type t = Cohttp.Response.t
+  include Cohttp.S.Response with type t := Cohttp.Response.t
+  include Cohttp.S.Http_io with type t := Cohttp.Response.t and module IO=IO
 end
 
 module Body : sig
@@ -37,10 +39,12 @@ module Body : sig
     | Cohttp.Body.t
     | `Pipe of string Pipe.Reader.t
   ] with sexp_of
-  include Cohttp.Body.S with type t := t
+  include Cohttp.S.Body with type t := t
   val to_string : t -> string Deferred.t
   val to_pipe : t -> string Pipe.Reader.t
   val of_pipe : string Pipe.Reader.t -> t
+  val map : t -> f:(string -> string) -> t
+  val as_pipe : t -> f:(string Pipe.Reader.t -> string Pipe.Reader.t) -> t
 end
 
 module Client : sig

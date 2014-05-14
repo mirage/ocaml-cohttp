@@ -19,7 +19,7 @@ open Cohttp
 open Lwt
 
 module type Net = sig
-  module IO : IO.S
+  module IO : S.IO
   module Endpoint : Endpoint.S
   val connect_uri : Uri.t -> (IO.ic * IO.oc) Lwt.t
   val connect : ?ssl:bool -> host:string -> service:string -> unit -> (IO.ic * IO.oc) Lwt.t
@@ -29,27 +29,29 @@ module type Net = sig
 end
 
 module type Request = sig
-  include module type of Cohttp.Request with type t = Cohttp.Request.t
-  include Cohttp.Request.S
+  type t = Cohttp.Request.t
+  include Cohttp.S.Request with type t := Cohttp.Request.t
+  include Cohttp.S.Http_io with type t := Cohttp.Request.t
 end
 
-module Make_request(IO:IO.S) = struct
+module Make_request(IO:S.IO) = struct
   include Cohttp.Request
-  include Cohttp.Request.Make(IO)
+  include (Make(IO) : module type of Make(IO) with type t := t)
 end
 
 module type Response = sig
-  include module type of Cohttp.Response with type t = Cohttp.Response.t
-  include Cohttp.Response.S
+  type t = Cohttp.Response.t
+  include Cohttp.S.Response with type t := Cohttp.Response.t
+  include Cohttp.S.Http_io with type t := Cohttp.Response.t
 end
 
-module Make_response(IO:IO.S) = struct
+module Make_response(IO:S.IO) = struct
   include Cohttp.Response
-  include Cohttp.Response.Make(IO)
+  include (Make(IO) : module type of Make(IO) with type t := t)
 end
 
 module type Client = sig
-  module IO : IO.S
+  module IO : S.IO
   module Request : Request
   module Response : Response
 
@@ -104,7 +106,7 @@ module type Client = sig
 end
 
 module Make_client
-    (IO:IO.S with type 'a t = 'a Lwt.t)
+    (IO:S.IO with type 'a t = 'a Lwt.t)
     (Request:Request with module IO = IO)
     (Response:Response with module IO = IO)
     (Net:Net with module IO = IO) = struct
@@ -197,7 +199,7 @@ end
 
 (** Configuration of servers. *)
 module type Server = sig
-  module IO : IO.S
+  module IO : S.IO
   module Endpoint : Endpoint.S
   module Request : Request
   module Response : Response
@@ -245,7 +247,7 @@ module type Server = sig
 end
 
 
-module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
+module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
     (Endpoint:Cohttp.Endpoint.S)
     (Request:Request with module IO=IO)
     (Response:Response with module IO=IO)
@@ -355,7 +357,7 @@ module Make_server(IO:Cohttp.IO.S with type 'a t = 'a Lwt.t)
       (* Transmit the responses *)
       for_lwt (res,body) in res_stream do
         let flush =
-          if res.Response.flush then
+          if Response.flush res then
             fun () -> IO.flush oc
           else
             fun () -> return_unit
