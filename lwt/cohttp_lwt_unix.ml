@@ -71,7 +71,7 @@ module Server = struct
          respond_error ~status:`Internal_server_error ~body ()
 
   let to_endpoint = function
-    | Lwt_unix.ADDR_INET (a, p) -> (a, p)
+    | Unix.ADDR_INET (a, p) -> Cohttp_lwt_unix_endpoint.make (Unix.string_of_inet_addr a) p
     | _ -> raise (Invalid_argument "Cohttp_lwt_unix.Server.to_endpoint")
 
   let create ?(mode=`TCP) ?timeout ~address ~port spec =
