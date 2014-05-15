@@ -204,15 +204,20 @@ module type Server = sig
   module Request : Request
   module Response : Response
 
+  (* VVV: I don't known how name this record *)
+  type i = {
+    conn_id : Cohttp.Connection.t;
+    endpoint : Endpoint.t;
+  } (* with fieldslib/sexplib ? *)
+
   type t = {
     callback :
-      Endpoint.t ->
-      Cohttp.Connection.t ->
+      i ->
       Cohttp.Request.t ->
       Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
-      Endpoint.t -> Cohttp.Connection.t -> unit -> unit;
+      i -> unit -> unit;
   }
 
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
@@ -257,15 +262,19 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
   module Request = Request
   module Response = Response
 
+  type i = {
+    conn_id : Cohttp.Connection.t;
+    endpoint : Endpoint.t;
+  }
+
   type t = {
     callback :
-      Endpoint.t ->
-      Cohttp.Connection.t ->
+      i ->
       Cohttp.Request.t ->
       Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
-      Endpoint.t -> Cohttp.Connection.t -> unit -> unit;
+      i -> unit -> unit;
   }
 
   module Transfer_IO = Transfer_io.Make(IO)
@@ -346,14 +355,14 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
       let res_stream =
         Lwt_stream.map_s (fun (req, body) ->
           try_lwt
-            spec.callback endpoint conn_id req body
+            spec.callback { conn_id; endpoint; } req body
           with exn ->
             respond_error ~status:`Internal_server_error ~body:(Printexc.to_string exn) ()
           finally Cohttp_lwt_body.drain_body body
         ) req_stream in
       (* Clean up resources when the response stream terminates and call
        * the user callback *)
-      Lwt_stream.on_terminate res_stream (spec.conn_closed endpoint conn_id);
+      Lwt_stream.on_terminate res_stream (spec.conn_closed { conn_id; endpoint; });
       (* Transmit the responses *)
       for_lwt (res,body) in res_stream do
         let flush =

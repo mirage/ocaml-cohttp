@@ -134,15 +134,18 @@ module type Server = sig
   module Endpoint : S.Endpoint
   module Request : Request
   module Response : Response
+  type i = {
+    conn_id : Cohttp.Connection.t;
+    endpoint : Endpoint.t;
+  }
   type t = {
     callback :
-      Endpoint.t ->
-      Cohttp.Connection.t ->
+      i ->
       Cohttp.Request.t ->
       Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
-      Endpoint.t -> Cohttp.Connection.t -> unit -> unit;
+      i -> unit -> unit;
   }
 
   (** Resolve a URI and a docroot into a concrete local filename. *)
