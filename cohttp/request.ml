@@ -77,11 +77,10 @@ module Make(IO : S.IO) = struct
     | Some request_line -> begin
       match Stringext.split request_line ~on:' ' with
       | [ meth_raw; path; http_ver_raw ] -> begin
-          match method_of_string meth_raw, version_of_string http_ver_raw with
-          | Some m, Some v -> return (`Ok (m, path, v))
-          | None, Some v -> return (`Invalid ("Malformed request method: " ^ meth_raw))
-          | Some v, None -> return (`Invalid ("Malformed request HTTP version: " ^ http_ver_raw))
-          | None, None -> return (`Invalid ("Malformed request method and version: " ^ request_line))
+          let m = method_of_string meth_raw in
+          match version_of_string http_ver_raw with
+          | Some v -> return (`Ok (m, path, v))
+          | None -> return (`Invalid ("Malformed request HTTP version: " ^ http_ver_raw))
       end
       | _ -> return (`Invalid ("Malformed request header: " ^ request_line))
     end
