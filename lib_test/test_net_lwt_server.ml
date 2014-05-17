@@ -23,7 +23,7 @@ open Cohttp
 open Cohttp_lwt_unix
 
 let make_server () =
-  let callback conn req body =
+  let callback _ req body =
     let uri = Request.uri req in
     Printf.printf "%s\n%!" (Uri.to_string uri);
     match Uri.path uri with
