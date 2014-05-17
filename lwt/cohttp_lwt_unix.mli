@@ -36,7 +36,7 @@ module Client : Cohttp_lwt.Client with module IO = Cohttp_lwt_unix_io
   the server to a socket and respond to incoming requests. *)
 module type S = sig
   include Cohttp_lwt.Server with module IO = Cohttp_lwt_unix_io
-                             and module Endpoint = Cohttp_lwt_unix_endpoint
+                             and module Connection = Cohttp_lwt_unix_connection
                              and module Request = Request
                              and module Response = Response
 

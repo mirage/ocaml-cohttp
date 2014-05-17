@@ -100,7 +100,7 @@ module type Body = sig
   val transfer_encoding : t -> Transfer.encoding
 end
 
-module type Endpoint = sig
+module type Connection = sig
   type version = IPv4 | IPv6
   type t
 

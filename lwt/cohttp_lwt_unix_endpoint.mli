@@ -1,1 +1,0 @@
-include Cohttp.S.Endpoint

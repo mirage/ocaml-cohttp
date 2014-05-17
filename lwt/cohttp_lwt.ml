@@ -20,7 +20,7 @@ open Lwt
 
 module type Net = sig
   module IO : S.IO
-  module Endpoint : S.Endpoint
+  module Connection : S.Connection
   val connect_uri : Uri.t -> (IO.ic * IO.oc) Lwt.t
   val connect : ?ssl:bool -> host:string -> service:string -> unit -> (IO.ic * IO.oc) Lwt.t
   val close_in : IO.ic -> unit
@@ -200,24 +200,18 @@ end
 (** Configuration of servers. *)
 module type Server = sig
   module IO : S.IO
-  module Endpoint : S.Endpoint
+  module Connection : S.Connection
   module Request : Request
   module Response : Response
 
-  (* VVV: I don't known how name this record *)
-  type i = {
-    conn_id : Cohttp.Connection.t;
-    endpoint : Endpoint.t;
-  } (* with fieldslib/sexplib ? *)
-
   type t = {
     callback :
-      i ->
+      Connection.t ->
       Cohttp.Request.t ->
       Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
-      i -> unit -> unit;
+      Connection.t -> unit -> unit;
   }
 
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
@@ -248,33 +242,28 @@ module type Server = sig
   val respond_not_found :
     ?uri:Uri.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
-  val callback: t -> Endpoint.t -> IO.ic -> IO.oc -> unit Lwt.t
+  val callback: t -> Connection.t -> IO.ic -> IO.oc -> unit Lwt.t
 end
 
 
 module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
-    (Endpoint:Cohttp.S.Endpoint)
+    (Connection:Cohttp.S.Connection)
     (Request:Request with module IO=IO)
     (Response:Response with module IO=IO)
-    (Net:Net with module IO=IO and module Endpoint=Endpoint) = struct
-  module Endpoint = Endpoint
+    (Net:Net with module IO=IO and module Connection=Connection) = struct
+  module Connection = Connection
   module IO = IO
   module Request = Request
   module Response = Response
 
-  type i = {
-    conn_id : Cohttp.Connection.t;
-    endpoint : Endpoint.t;
-  }
-
   type t = {
     callback :
-      i ->
+      Connection.t ->
       Cohttp.Request.t ->
       Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
-      i -> unit -> unit;
+      Connection.t -> unit -> unit;
   }
 
   module Transfer_IO = Transfer_io.Make(IO)
@@ -316,8 +305,7 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
     respond_string ~status:`Not_found ~body ()
 
   let callback spec =
-    let daemon_callback endpoint ic oc =
-      let conn_id = Connection.create () in
+    let daemon_callback connection ic oc =
       let read_m = Lwt_mutex.create () in
       (* If the request is HTTP version 1.0 then the request stream should be
          considered closed after the first request/response. *)
@@ -355,14 +343,14 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
       let res_stream =
         Lwt_stream.map_s (fun (req, body) ->
           try_lwt
-            spec.callback { conn_id; endpoint; } req body
+            spec.callback connection req body
           with exn ->
             respond_error ~status:`Internal_server_error ~body:(Printexc.to_string exn) ()
           finally Cohttp_lwt_body.drain_body body
         ) req_stream in
       (* Clean up resources when the response stream terminates and call
        * the user callback *)
-      Lwt_stream.on_terminate res_stream (spec.conn_closed { conn_id; endpoint; });
+      Lwt_stream.on_terminate res_stream (spec.conn_closed connection);
       (* Transmit the responses *)
       for_lwt (res,body) in res_stream do
         let flush =

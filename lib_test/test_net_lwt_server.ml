@@ -23,7 +23,7 @@ open Cohttp
 open Cohttp_lwt_unix
 
 let make_server () =
-  let callback { Server.conn_id; Server.endpoint; } req body =
+  let callback conn req body =
     let uri = Request.uri req in
     Printf.printf "%s\n%!" (Uri.to_string uri);
     match Uri.path uri with
@@ -77,8 +77,8 @@ let make_server () =
        let fname = Server.resolve_file ~docroot:"." ~uri:(Request.uri req) in
        Server.respond_file ~fname ()
   in
-  let conn_closed { Server.conn_id; Server.endpoint; } () =
-    Printf.eprintf "conn %s closed\n%!" (Connection.to_string conn_id)
+  let conn_closed conn () =
+    Printf.eprintf "conn %s closed\n%!" (Server.Connection.to_string conn)
   in
   let config = { Server.callback; conn_closed } in
   let address = "0.0.0.0" in
