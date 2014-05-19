@@ -1,10 +1,14 @@
 open Lwt
 open Unix
+open Sexplib.Std
+open Sexplib.Conv
 
-type version = IPv4 | IPv6
+type version = IPv4 | IPv6 with sexp
 type t = Lwt_unix.inet_addr * int
 
-let loopback version port = match version with
+let sexp_of_t = sexp_of_pair sexp_of_opaque sexp_of_int
+
+let loopback version ~port = match version with
   | IPv6 -> inet6_addr_loopback, port
   | IPv4 -> inet_addr_loopback, port
 

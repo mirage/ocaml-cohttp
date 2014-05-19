@@ -101,8 +101,8 @@ module type Body = sig
 end
 
 module type Connection = sig
-  type version = IPv4 | IPv6
-  type t
+  type version = IPv4 | IPv6 with sexp
+  type t with sexp_of
 
   val loopback : version -> int -> t
   val any : version -> int -> t
