@@ -71,7 +71,8 @@ module Server = struct
          respond_error ~status:`Internal_server_error ~body ()
 
   let to_connection = function
-    | Unix.ADDR_INET (a, p) -> Cohttp_lwt_unix_connection.make (Unix.string_of_inet_addr a) p
+    | Unix.ADDR_INET (a, port) ->
+      Cohttp_lwt_unix_connection.make (Unix.string_of_inet_addr a) ~port
     | _ -> raise (Invalid_argument "Cohttp_lwt_unix.Server.to_connection")
 
   let create ?(mode=`TCP) ?timeout ~address ~port spec =

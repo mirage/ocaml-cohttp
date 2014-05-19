@@ -104,10 +104,10 @@ module type Connection = sig
   type version = IPv4 | IPv6 with sexp
   type t with sexp_of
 
-  val loopback : version -> int -> t
-  val any : version -> int -> t
+  val loopback : version -> port:int -> t
+  val any : version -> port:int -> t
 
-  val make : string -> int -> t
+  val make : string -> port:int -> t
   val to_string : t -> string
   val addr : t -> string
   val port : t -> int
