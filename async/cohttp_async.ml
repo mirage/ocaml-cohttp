@@ -205,15 +205,12 @@ module Server = struct
   let handle_client handle_request sock rd wr =
     let requests_pipe =
       Reader.read_all rd (fun rd ->
-          Request.read rd
-          >>| function
-          | `Eof | `Invalid _ -> `Eof
-          | `Ok req ->
-            let body = read_body req rd wr in
-            if not (Request.is_keep_alive req)
-            then don't_wait_for (Reader.close rd);
-            `Ok (req, body)
-        ) in
+        Request.read rd >>| function
+        | `Eof | `Invalid _ -> `Eof
+        | `Ok req ->
+          let body = read_body req rd wr in
+          `Ok (req, body)
+      ) in
     Pipe.iter requests_pipe ~f:(fun (req, body) ->
         handle_request ~body sock req >>= fun (res, body) ->
         let keep_alive = Request.is_keep_alive req in
