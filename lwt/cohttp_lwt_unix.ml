@@ -16,6 +16,7 @@
  *)
 
 
+module Connection = Cohttp_lwt_unix_connection
 module Request = Cohttp_lwt.Make_request(Cohttp_lwt_unix_io)
 module Response = Cohttp_lwt.Make_response(Cohttp_lwt_unix_io)
 
@@ -23,7 +24,7 @@ module Client = Cohttp_lwt.Make_client
   (Cohttp_lwt_unix_io)(Request)(Response)(Cohttp_lwt_unix_net)
 
 module Server_core = Cohttp_lwt.Make_server
-  (Cohttp_lwt_unix_io)(Request)(Response)(Cohttp_lwt_unix_net)
+  (Cohttp_lwt_unix_io)(Cohttp_lwt_unix_connection)(Request)(Response)(Cohttp_lwt_unix_net)
 
 module Server = struct
   include Server_core
@@ -69,14 +70,21 @@ module Server = struct
          let body = Printexc.to_string exn in
          respond_error ~status:`Internal_server_error ~body ()
 
+  let to_connection = function
+    | Unix.ADDR_INET (a, port) ->
+      Cohttp_lwt_unix_connection.make (Unix.string_of_inet_addr a) ~port
+    | _ -> raise (Invalid_argument "Cohttp_lwt_unix.Server.to_connection")
+
   let create ?(mode=`TCP) ?timeout ~address ~port spec =
     lwt sockaddr = Lwt_unix_net.build_sockaddr address (string_of_int port) in
-    Lwt_unix_conduit.serve ~mode ~sockaddr ?timeout (callback spec)
+    Lwt_unix_conduit.serve ~mode ~sockaddr ?timeout
+      (fun sockaddr -> (callback spec) (to_connection sockaddr))
 end
 
 module type S = sig
 
   include Cohttp_lwt.Server with module IO = Cohttp_lwt_unix_io
+                             and module Connection = Cohttp_lwt_unix_connection
                              and module Request = Request
                              and module Response = Response
 

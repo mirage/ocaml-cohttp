@@ -26,6 +26,7 @@ open Cohttp
     and close the resulting channels to clean up. *)
 module type Net = sig
   module IO : S.IO
+  module Connection : S.Connection
   val connect_uri : Uri.t -> (IO.ic * IO.oc) Lwt.t
   val connect : ?ssl:bool -> host:string -> service:string -> unit -> (IO.ic * IO.oc) Lwt.t
   val close_in : IO.ic -> unit
@@ -130,16 +131,17 @@ module Make_client
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)
 module type Server = sig
   module IO : S.IO
+  module Connection : S.Connection
   module Request : Request
   module Response : Response
+
   type t = {
     callback :
-      Cohttp.Connection.t ->
+      Connection.t ->
       Cohttp.Request.t ->
       Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
-    conn_closed:
-      Cohttp.Connection.t -> unit -> unit;
+    conn_closed: Connection.t -> unit -> unit;
   }
 
   (** Resolve a URI and a docroot into a concrete local filename. *)
@@ -171,7 +173,7 @@ module type Server = sig
   val respond_not_found :
     ?uri:Uri.t -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
-  val callback : t -> IO.ic -> IO.oc -> unit Lwt.t
+  val callback : t -> Connection.t -> IO.ic -> IO.oc -> unit Lwt.t
 
 end
 
@@ -181,9 +183,11 @@ end
     The resulting module satisfies the {! Server } module type. *)
 module Make_server
     (IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
+    (Connection:Cohttp.S.Connection)
     (Request:Request with module IO=IO)
     (Response:Response with module IO=IO)
-    (Net:Net with module IO = IO) :
+    (Net:Net with module IO = IO and module Connection = Connection) :
     Server with module IO = IO
+            and module Connection = Connection
             and module Request = Request
             and module Response = Response

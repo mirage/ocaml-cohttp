@@ -99,3 +99,16 @@ module type Body = sig
   val map : t -> f:(string -> string) -> t
   val transfer_encoding : t -> Transfer.encoding
 end
+
+module type Connection = sig
+  type version = IPv4 | IPv6 with sexp
+  type t with sexp_of
+
+  val loopback : version -> port:int -> t
+  val any : version -> port:int -> t
+
+  val make : string -> port:int -> t
+  val to_string : t -> string
+  val addr : t -> string
+  val port : t -> int
+end
