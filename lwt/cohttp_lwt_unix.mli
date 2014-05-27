@@ -45,7 +45,8 @@ module type S = sig
     ?headers:Cohttp.Header.t ->
     fname:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
-  val create : ?mode:Lwt_unix_conduit.server_mode -> ?timeout:int -> 
+  val create : ?mode:Lwt_unix_conduit.server_mode ->
+    ?stop:(unit Lwt.t) -> ?timeout:int ->
     address:string -> port:int -> t -> unit Lwt.t
 end
 
