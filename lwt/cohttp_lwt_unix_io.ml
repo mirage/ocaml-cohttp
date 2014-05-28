@@ -30,6 +30,7 @@ let return = Lwt.return
 
 type ic = Lwt_io.input_channel
 type oc = Lwt_io.output_channel
+type conn = Lwt_unix_conduit.conn
 
 let iter fn x = Lwt_list.iter_s fn x
 
