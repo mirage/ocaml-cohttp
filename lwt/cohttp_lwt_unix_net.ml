@@ -29,20 +29,21 @@ type oc = Lwt_io.output_channel
 let connect_uri uri =
   (match Uri_services.tcp_port_of_uri uri with
     |None -> Lwt.fail (Invalid_argument "unknown scheme")
-    |Some p -> Lwt.return (string_of_int p))
+    |Some p -> Lwt.return p)
   >>= fun service ->
-  let mode = 
-    match Uri.scheme uri with
-    | Some "https" -> `SSL
-    | _ -> `TCP
-  in
   let host = match Uri.host uri with None -> "localhost" | Some x -> x in
-  Lwt_unix_conduit.connect ~mode ~host ~service ()
+  let mode =
+    match Uri.scheme uri with
+    | Some "https" -> `SSL (host, service)
+    | _ -> `TCP (host, service)
+  in
+  Lwt_unix_conduit.Client.connect mode
 
 let connect ?(ssl=false) ~host ~service () =
-  match ssl with
-  | true -> Lwt_unix_conduit.connect ~mode:`SSL ~host ~service ()
-  | false -> Lwt_unix_conduit.connect ~mode:`TCP ~host ~service ()
+  let mode = match ssl with
+  | true -> `SSL (host, int_of_string service)
+  | false -> `TCP (host, int_of_string service)
+  in Lwt_unix_conduit.Client.connect mode
 
 let close_in ic =
   ignore_result (try_lwt Lwt_io.close ic with _ -> return ())

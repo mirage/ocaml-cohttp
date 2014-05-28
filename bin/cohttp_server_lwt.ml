@@ -27,7 +27,7 @@ let serve_file ~docroot ~uri =
 let ls_dir dir =
   Lwt_stream.to_list (Lwt_unix.files_of_directory dir)
 
-let rec handler ~info ~docroot ~verbose ~index sock req body =
+let rec handler ~info ~docroot ~verbose ~index conn req body =
   let uri = Cohttp.Request.uri req in
   let path = Uri.path uri in
   (* Get a canonical filename from the URL and docroot *)
@@ -82,14 +82,19 @@ let rec handler ~info ~docroot ~verbose ~index sock req body =
         <p>This is not a normal file or directory</p></body>/html>"
       ()
 
+let string_of_sockaddr = function
+  | Unix.ADDR_UNIX x -> x
+  | Unix.ADDR_INET (inet_addr, port) ->
+    (Unix.string_of_inet_addr inet_addr) ^ ":" ^ (string_of_int port)
+
 let start_server docroot port host index verbose () =
   Printf.printf "Listening for HTTP request on: %s %d\n" host port;
   let info = Printf.sprintf "Served by Cohttp/Lwt listening on %s:%d" host port in
-  let conn_closed id () = Printf.printf "connection %s closed\n%!"
-      (Connection.to_string id) in
+  let conn_closed conn () = Printf.printf "connection %s closed\n%!"
+      (string_of_sockaddr (Lwt_unix_conduit.sockname conn)) in
   let callback = handler ~info ~docroot ~verbose ~index in
   let config = { Server.callback; conn_closed } in
-  Server.create ~address:host ~port:port config
+  Server.create ~port:port config
 
 let host = ref "0.0.0.0"
 let port = ref 8080

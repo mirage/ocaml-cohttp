@@ -26,8 +26,8 @@ open Cohttp
     and close the resulting channels to clean up. *)
 module type Net = sig
   module IO : S.IO
-  val connect_uri : Uri.t -> (IO.ic * IO.oc) Lwt.t
-  val connect : ?ssl:bool -> host:string -> service:string -> unit -> (IO.ic * IO.oc) Lwt.t
+  val connect_uri : Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
+  val connect : ?ssl:bool -> host:string -> service:string -> unit -> (IO.conn * IO.ic * IO.oc) Lwt.t
   val close_in : IO.ic -> unit
   val close_out : IO.oc -> unit
   val close : IO.ic -> IO.oc -> unit
@@ -134,12 +134,12 @@ module type Server = sig
   module Response : Response
   type t = {
     callback :
-      Cohttp.Connection.t ->
+      IO.conn ->
       Cohttp.Request.t ->
       Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
-      Cohttp.Connection.t -> unit -> unit;
+      IO.conn -> unit -> unit;
   }
 
   (** Resolve a URI and a docroot into a concrete local filename. *)
@@ -171,7 +171,7 @@ module type Server = sig
   val respond_not_found :
     ?uri:Uri.t -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
-  val callback : t -> IO.ic -> IO.oc -> unit Lwt.t
+  val callback : t -> IO.conn -> IO.ic -> IO.oc -> unit Lwt.t
 
 end
 

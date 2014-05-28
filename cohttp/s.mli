@@ -23,6 +23,7 @@ module type IO = sig
 
   type ic
   type oc
+  type conn
 
   val iter : ('a -> unit t) -> 'a list -> unit t
   val read_line : ic -> string option t
