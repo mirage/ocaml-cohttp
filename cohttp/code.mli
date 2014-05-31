@@ -3,7 +3,9 @@
 open Sexplib.Std
 type version = [ `HTTP_1_0 | `HTTP_1_1 ] with sexp
 
-type meth = [ `GET | `POST | `HEAD | `DELETE | `PATCH | `PUT | `OPTIONS ] with sexp
+type standard_meth = [ `GET | `POST | `HEAD | `DELETE | `PATCH | `PUT | `OPTIONS ] with sexp
+
+type meth = [ standard_meth | `Other of string ] with sexp
 
 type informational_status =
   [ `Continue (** Client should continue with request *)
@@ -114,8 +116,11 @@ val version_of_string: string -> version option
 val string_of_method: meth -> string
 (** Convert a method to a string. *)
 
-val method_of_string: string -> meth option
+val method_of_string: string -> meth
 (** Convert a string to a method. Return [None] if the conversion fails. *)
+
+val compare_method : meth -> meth -> int
+(** Compare two methods by name. *)
 
 
 val status_of_code: int -> status_code
