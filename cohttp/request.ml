@@ -79,8 +79,8 @@ module Make(IO : S.IO) = struct
       | [ meth_raw; path; http_ver_raw ] -> begin
           let m = method_of_string meth_raw in
           match version_of_string http_ver_raw with
-          | Some v -> return (`Ok (m, path, v))
-          | None -> return (`Invalid ("Malformed request HTTP version: " ^ http_ver_raw))
+          | `HTTP_1_1 | `HTTP_1_0 as v -> return (`Ok (m, path, v))
+          | `Other _ -> return (`Invalid ("Malformed request HTTP version: " ^ http_ver_raw))
       end
       | _ -> return (`Invalid ("Malformed request header: " ^ request_line))
     end
