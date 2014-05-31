@@ -27,6 +27,7 @@ opam --git-version
 
 opam init git://github.com/ocaml/opam-repository >/dev/null 2>&1
 opam pin mirage-http git://github.com/mirage/mirage-http
+opam pin conduit git://github.com/mirage/ocaml-conduit
 opam install ${OPAM_DEPENDS}
 
 eval `opam config env`
