@@ -41,8 +41,10 @@ let make_server () =
     |_ -> exit 0
   in
   let conn_closed _ () = () in
+  lwt ctx = Lwt_unix_conduit.init ~src:address () in
+  let mode = `TCP (`Port port) in
   let config = { Server.callback; conn_closed } in
-  Server.create ~address ~port config
+  Server.create ~ctx ~mode config
 
 let not_none n t fn =
   match_lwt t with

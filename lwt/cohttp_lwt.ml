@@ -204,12 +204,12 @@ module type Server = sig
 
   type t = {
     callback :
-      IO.conn ->
+      (IO.conn * Cohttp.Connection.t) ->
       Cohttp.Request.t ->
       Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
-      IO.conn -> unit -> unit;
+      (IO.conn * Cohttp.Connection.t) -> unit -> unit;
   }
 
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
@@ -254,12 +254,12 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
 
   type t = {
     callback :
-      IO.conn ->
+      (IO.conn * Cohttp.Connection.t) ->
       Cohttp.Request.t ->
       Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
-      IO.conn -> unit -> unit;
+      (IO.conn * Cohttp.Connection.t) -> unit -> unit;
   }
 
   module Transfer_IO = Transfer_io.Make(IO)
@@ -301,7 +301,8 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
     respond_string ~status:`Not_found ~body ()
 
   let callback spec =
-    let daemon_callback conn_id ic oc =
+    let daemon_callback io_id ic oc =
+      let conn_id = Connection.create () in
       let read_m = Lwt_mutex.create () in
       (* If the request is HTTP version 1.0 then the request stream should be
          considered closed after the first request/response. *)
@@ -339,14 +340,14 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
       let res_stream =
         Lwt_stream.map_s (fun (req, body) ->
           try_lwt
-            spec.callback conn_id req body
+            spec.callback (io_id,conn_id) req body
           with exn ->
             respond_error ~status:`Internal_server_error ~body:(Printexc.to_string exn) ()
           finally Cohttp_lwt_body.drain_body body
         ) req_stream in
       (* Clean up resources when the response stream terminates and call
        * the user callback *)
-      Lwt_stream.on_terminate res_stream (spec.conn_closed conn_id);
+      Lwt_stream.on_terminate res_stream (spec.conn_closed (io_id,conn_id));
       (* Transmit the responses *)
       for_lwt (res,body) in res_stream do
         let flush =

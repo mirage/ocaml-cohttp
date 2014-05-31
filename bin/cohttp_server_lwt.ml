@@ -27,7 +27,7 @@ let serve_file ~docroot ~uri =
 let ls_dir dir =
   Lwt_stream.to_list (Lwt_unix.files_of_directory dir)
 
-let rec handler ~info ~docroot ~verbose ~index conn req body =
+let handler ~info ~docroot ~verbose ~index (conduit,conn) req body =
   let uri = Cohttp.Request.uri req in
   let path = Uri.path uri in
   (* Get a canonical filename from the URL and docroot *)
@@ -90,11 +90,12 @@ let string_of_sockaddr = function
 let start_server docroot port host index verbose () =
   Printf.printf "Listening for HTTP request on: %s %d\n" host port;
   let info = Printf.sprintf "Served by Cohttp/Lwt listening on %s:%d" host port in
-  let conn_closed conn () = Printf.printf "connection %s closed\n%!"
-      (string_of_sockaddr (Lwt_unix_conduit.sockname conn)) in
+  let conn_closed (ch,conn) () =
+    Printf.printf "connection %s closed\n%!"
+      (string_of_sockaddr (Lwt_unix_conduit.sockname ch)) in
   let callback = handler ~info ~docroot ~verbose ~index in
   let config = { Server.callback; conn_closed } in
-  Server.create ~port:port config
+  Server.create ~mode:(`TCP (`Port port)) config
 
 let host = ref "0.0.0.0"
 let port = ref 8080

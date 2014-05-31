@@ -134,12 +134,12 @@ module type Server = sig
   module Response : Response
   type t = {
     callback :
-      IO.conn ->
+      (IO.conn * Cohttp.Connection.t) ->
       Cohttp.Request.t ->
       Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
-      IO.conn -> unit -> unit;
+      (IO.conn * Cohttp.Connection.t) -> unit -> unit;
   }
 
   (** Resolve a URI and a docroot into a concrete local filename. *)

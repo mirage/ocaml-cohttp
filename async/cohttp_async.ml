@@ -28,9 +28,10 @@ module Net = struct
     | Some port -> begin
         let mode = 
           match Uri.scheme uri with
-          | Some "https" -> `SSL
-          | _ -> `TCP in
-        Async_conduit.Client.connect ?interrupt ~mode ~host ~port ()
+          | Some "https" -> `SSL (host, port)
+          | _ -> `TCP (host, port)
+        in
+        Async_conduit.Client.connect ?interrupt mode
       end
 end
 
