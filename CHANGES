@@ -8,6 +8,7 @@
 * [async] In the Async server, do not close the Reader too early.
 * Port to the latest Conduit (0.6.0+) API.
 * Add a `httpunix://` scheme to support HTTP over Unix domain sockets.
+* [lwt] Add `stop` thread to terminate a running server if it finishes (#147).
 
 0.11.2 (2014-04-21)
 * Fix build by add a missing build-deps in _oasis.
