@@ -1,4 +1,4 @@
-OPAM_DEPENDS="lwt stringext ssl uri re conduit sexplib fieldslib"
+OPAM_DEPENDS="lwt stringext ssl uri re conduit sexplib fieldslib ipaddr"
 
 case "$OCAML_VERSION,$OPAM_VERSION" in
 4.00.1,1.0.0) ppa=avsm/ocaml40+opam10 ;;
