@@ -29,6 +29,7 @@ module Net = struct
         let mode = 
           match Uri.scheme uri with
           | Some "https" -> `SSL (host, port)
+          | Some "httpunix" -> `Unix_domain_socket host
           | _ -> `TCP (host, port)
         in
         Async_conduit.Client.connect ?interrupt mode

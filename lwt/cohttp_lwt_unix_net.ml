@@ -35,6 +35,7 @@ let connect_uri uri =
   let mode =
     match Uri.scheme uri with
     | Some "https" -> `SSL (host, service)
+    | Some "httpunix" -> `Unix_domain_socket host
     | _ -> `TCP (host, service)
   in
   Lwt_unix_conduit.Client.connect mode

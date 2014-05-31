@@ -1,12 +1,13 @@
 0.12.0 (trunk):
 * Remove link-time dependency on camlp4 via META fixes (#127).
 * The `has_body` function in the Request and Response modules now
-  explicitly signals when the body size is unknown, to help deal with
+  explicitly signals when the body size is unknown.
 * Add `Body.map` and `Body.as_pipe` to work with HTTP bodies more easily.
 * Move all the module type signatures into `Cohttp.S`.
 * [lwt] Remove the `Cohttp_lwt.Server.server` type synonym to `t`.
 * [async] In the Async server, do not close the Reader too early.
 * Port to the latest Conduit (0.6.0+) API.
+* Add a `httpunix://` scheme to support HTTP over Unix domain sockets.
 
 0.11.2 (2014-04-21)
 * Fix build by add a missing build-deps in _oasis.
