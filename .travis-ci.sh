@@ -41,6 +41,6 @@ opam install github cowabloga mirage-www -j 2
 
 case "$OCAML_VERSION" in
 4.01.0)
-  opam install irminsule ;;
-*) echo Skipping irminsule ;;
+  opam install irmin ;;
+*) echo Skipping irmin ;;
 esac
