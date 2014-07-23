@@ -53,14 +53,15 @@ module Make(IO : S.IO) = struct
   end
   
   module Fixed = struct
-    let read ~len ic =
+    let read ~remaining ic =
       (* TODO functorise string to a bigbuffer *)
-      match len with
+      match !remaining with
       |0 -> return Done
       |len ->
-        read_exactly ic len >>= function
-        |None -> return Done
-        |Some buf -> return (Final_chunk buf)
+        read ic len >>= fun buf ->
+        remaining := !remaining - String.length buf;
+        if !remaining = 0 then return (Final_chunk buf)
+        else return (Chunk buf)
 
     (* TODO enforce that the correct length is written? *)
     let write oc buf =
@@ -80,7 +81,7 @@ module Make(IO : S.IO) = struct
   let read =
     function
     | Chunked -> Chunked.read
-    | Fixed len -> Fixed.read ~len
+    | Fixed len -> Fixed.read ~remaining:(ref len)
     | Unknown -> Unknown.read
 
   let write =
