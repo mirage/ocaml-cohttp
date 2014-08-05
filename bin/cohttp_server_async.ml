@@ -32,7 +32,7 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
   Unix.stat file_name
   >>= fun stat ->
   (* Log the request to the console *)
-  printf "%s %s %s\n" 
+  printf "%s %s %s\n%!"
     (Cohttp.(Code.string_of_method (Request.meth req)))
     path
     (match verbose with
@@ -84,7 +84,7 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
         <p>This is not a normal file or directory</p></body></html>"
 
 let start_server docroot port host index verbose () =
-  printf "Listening for HTTP requests on: %s %d\n" host port;
+  printf "Listening for HTTP requests on: %s %d\n%!" host port;
   let info = sprintf "Served by Cohttp/Async listening on %s:%d" host port in
   Unix.Inet_addr.of_string_or_getbyname host
   >>= fun host ->

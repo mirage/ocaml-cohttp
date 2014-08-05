@@ -35,7 +35,7 @@ let rec handler ~info ~docroot ~verbose ~index sock req body =
   Lwt_unix.stat file_name
   >>= fun stat ->
   (* Log the request to the console *)
-  Printf.printf "%s %s %s"
+  Printf.printf "%s %s %s\n%!"
     (Cohttp.(Code.string_of_method (Request.meth req)))
     path
     (match verbose with
@@ -83,7 +83,7 @@ let rec handler ~info ~docroot ~verbose ~index sock req body =
       ()
 
 let start_server docroot port host index verbose () =
-  Printf.printf "Listening for HTTP request on: %s %d\n" host port;
+  Printf.printf "Listening for HTTP request on: %s %d\n%!" host port;
   let info = Printf.sprintf "Served by Cohttp/Lwt listening on %s:%d" host port in
   let conn_closed id () = Printf.printf "connection %s closed\n%!"
       (Connection.to_string id) in
