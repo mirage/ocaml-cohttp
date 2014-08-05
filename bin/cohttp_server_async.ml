@@ -72,7 +72,7 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
            <hr>%s
            </body>
          </html>"
-          file_name contents info
+          path contents info
         |> Server.respond_with_string
     end
   (* Serve the local file contents *)

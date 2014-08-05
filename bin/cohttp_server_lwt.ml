@@ -72,7 +72,7 @@ let rec handler ~info ~docroot ~verbose ~index sock req body =
                 <hr>%s
                 </body>
               </html>"
-          file_name contents info in
+          path contents info in
         Server.respond_string ~status:`OK ~body ()
     end
   | Unix.S_REG -> serve_file ~docroot ~uri
