@@ -102,7 +102,7 @@ module Make(IO : S.IO) = struct
       return (`Ok { headers; meth; uri; version; encoding })
 
   let has_body req = Transfer.has_body req.encoding
-  let read_body_chunk req ic = Transfer_IO.read req.encoding ic
+  let read_body_chunk req = Transfer_IO.read req.encoding
 
   let write_header req oc =
    let fst_line = Printf.sprintf "%s %s %s\r\n" (Code.string_of_method req.meth)
