@@ -1,5 +1,6 @@
 (*
  * Copyright (c) 2013 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2014 David Sheets <sheets@alum.mit.edu>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,9 +20,28 @@ open Core.Std
 open Async.Std
 open Cohttp_async
 
+let ( / ) = Filename.concat
+
 let serve_file ~docroot ~uri =
   Server.resolve_local_file ~docroot ~uri
   |> Server.respond_with_file
+
+let compare_kind = function
+  | `Directory, `Directory -> 0
+  | `Directory, _          -> -1
+  | _         , `Directory -> 1
+  | `File     , `File      -> 0
+  | `File     , _          -> 1
+  | _         , `File      -> -1
+  | _         , _          -> 0
+
+let sort = List.sort ~cmp:(fun (ka,a) (kb,b) ->
+  let c = compare_kind (ka,kb) in
+  if c <> 0 then c
+  else String.compare (String.lowercase a) (String.lowercase b)
+)
+
+let li l = sprintf "<li><a href=\"%s\">%s</a></li>" (Uri.to_string l)
 
 (** HTTP handler *)
 let rec handler ~info ~docroot ~verbose ~index ~body sock req =
@@ -43,27 +63,28 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
   (* Get a list of current files and map to HTML *)
   | `Directory -> begin
       (* Check if the index file exists *)
-      Sys.file_exists (Filename.concat file_name index)
+      Sys.file_exists (file_name / index)
       >>= function
       | `Yes -> (* Serve the index file directly *)
-        let uri = Uri.with_path uri (Filename.concat path index) in
+        let uri = Uri.with_path uri (path / index) in
         Server.respond_with_redirect uri
       | `No | `Unknown -> (* Do a directory listing *)
         Sys.ls_dir file_name
         >>= Deferred.List.map ~f:(fun f ->
-            let file_name = Filename.concat file_name f in
-            Unix.stat file_name
-            >>= fun stat ->
-            let li l = sprintf "<li><a href=\"%s\">%s</a></li>" (Uri.to_string l) in
-            let link = Uri.with_path uri (Filename.concat path f) in
-            match stat.Unix.Stats.kind with
-            | `Directory -> return (li link (sprintf "<i>%s/</i>" f))
-            | `File -> return (li link f)
-            | `Socket|`Block|`Fifo|`Char|`Link -> return (sprintf "<s>%s</s>" f))
+          let file_name = file_name / f in
+          Unix.stat file_name
+          >>= fun stat -> return (stat.Unix.Stats.kind, f))
+        >>= fun listing ->
+        let html = List.map (sort listing) ~f:(fun (kind, f) ->
+          let link = Uri.with_path uri (path / f) in
+          match kind with
+          | `Directory -> li link (sprintf "<i>%s/</i>" f)
+          | `File -> li link f
+          | `Socket|`Block|`Fifo|`Char|`Link -> sprintf "<s>%s</s>" f)
+        in
         (* Concatenate the HTML into a response *)
-        >>= fun html ->
         String.concat ~sep:"\n" html
-        |> fun contents ->
+      |> fun contents ->
         sprintf "
          <html>
            <body>
@@ -73,8 +94,8 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
            </body>
          </html>"
           path contents info
-        |> Server.respond_with_string
-    end
+      |> Server.respond_with_string
+  end
   (* Serve the local file contents *)
   | `File -> serve_file ~docroot ~uri
   (* Any other file type is simply forbidden *)
