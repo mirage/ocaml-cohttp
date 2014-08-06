@@ -101,6 +101,8 @@ let oc_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.output buf
 
 open Lwt
 
+let p_sexp f x = x |> f |> Sexplib.Sexp.to_string
+
 let basic_req_parse () =
   let module CU = Cohttp_lwt_unix in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_req) in
@@ -163,11 +165,12 @@ let post_data_parse () =
   let ic = ic_of_buffer (Lwt_bytes.of_string post_data_req) in
   Request.read ic >>= function
   | `Ok req ->
+    let printer = p_sexp Transfer.sexp_of_chunk in
     Request.read_body_chunk req ic >>= fun body ->
-    assert_equal (Transfer.Final_chunk "home=Cosby&favorite+flavor=flies") body;
+    assert_equal ~printer (Transfer.Final_chunk "home=Cosby&favorite+flavor=flies") body;
     (* A subsequent request for the body will have consumed it, therefore None *)
     Request.read_body_chunk req ic >>= fun body ->
-    assert_equal Transfer.Done body;
+    assert_equal ~printer Transfer.Done body;
     return ()
   | _ -> assert false
 
