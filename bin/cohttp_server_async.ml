@@ -75,12 +75,13 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
           Unix.stat file_name
           >>= fun stat -> return (stat.Unix.Stats.kind, f))
         >>= fun listing ->
-        let html = List.map (sort listing) ~f:(fun (kind, f) ->
+        let html = List.map ~f:(fun (kind, f) ->
           let link = Uri.with_path uri (path / f) in
           match kind with
           | `Directory -> li link (sprintf "<i>%s/</i>" f)
           | `File -> li link f
-          | `Socket|`Block|`Fifo|`Char|`Link -> sprintf "<s>%s</s>" f)
+          | `Socket|`Block|`Fifo|`Char|`Link -> sprintf "<s>%s</s>" f
+        ) (sort ((`Directory,"..")::listing))
         in
         (* Concatenate the HTML into a response *)
         String.concat ~sep:"\n" html
