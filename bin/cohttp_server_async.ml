@@ -27,13 +27,13 @@ let serve_file ~docroot ~uri =
   |> Server.respond_with_file
 
 let compare_kind = function
-  | `Directory, `Directory -> 0
-  | `Directory, _          -> -1
-  | _         , `Directory -> 1
-  | `File     , `File      -> 0
-  | `File     , _          -> 1
-  | _         , `File      -> -1
-  | _         , _          -> 0
+  | Some `Directory, Some `Directory -> 0
+  | Some `Directory, _               -> -1
+  | _              , Some `Directory -> 1
+  | Some `File     , Some `File      -> 0
+  | Some `File     , _               -> 1
+  | _              , Some `File      -> -1
+  | _              , _               -> 0
 
 let sort = List.sort ~cmp:(fun (ka,a) (kb,b) ->
   let c = compare_kind (ka,kb) in
@@ -47,21 +47,21 @@ let li l = sprintf "<li><a href=\"%s\">%s</a></li>" (Uri.to_string l)
 let rec handler ~info ~docroot ~verbose ~index ~body sock req =
   let uri = Cohttp.Request.uri req in
   let path = Uri.path uri in
+  (* Log the request to the console *)
+  printf "%s %s%!"
+    (Cohttp.(Code.string_of_method (Request.meth req)))
+    path;
   (* Get a canonical filename from the URL and docroot *)
   let file_name = Server.resolve_local_file ~docroot ~uri in
-  Unix.stat file_name
-  >>= fun stat ->
-  (* Log the request to the console *)
-  printf "%s %s %s\n%!"
-    (Cohttp.(Code.string_of_method (Request.meth req)))
-    path
-    (match verbose with
-     | true -> Sexp.to_string_hum (Unix.Stats.sexp_of_t stat)
-     | false -> ""
-    );
-  match stat.Unix.Stats.kind with
-  (* Get a list of current files and map to HTML *)
-  | `Directory -> begin
+  try_with (fun () ->
+    Unix.stat file_name
+    >>= fun stat ->
+    printf " %s\n%!" (if verbose
+      then Sexp.to_string_hum (Unix.Stats.sexp_of_t stat)
+      else "");
+    match stat.Unix.Stats.kind with
+    (* Get a list of current files and map to HTML *)
+    | `Directory -> begin
       (* Check if the index file exists *)
       Sys.file_exists (file_name / index)
       >>= function
@@ -72,16 +72,20 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
         Sys.ls_dir file_name
         >>= Deferred.List.map ~f:(fun f ->
           let file_name = file_name / f in
-          Unix.stat file_name
-          >>= fun stat -> return (stat.Unix.Stats.kind, f))
+          try_with (fun () ->
+            Unix.stat file_name
+            >>| fun stat -> (Some stat.Unix.Stats.kind, f)
+          ) >>| function Ok v -> v | Error _ -> (None, f))
         >>= fun listing ->
         let html = List.map ~f:(fun (kind, f) ->
           let link = Uri.with_path uri (path / f) in
           match kind with
-          | `Directory -> li link (sprintf "<i>%s/</i>" f)
-          | `File -> li link f
-          | `Socket|`Block|`Fifo|`Char|`Link -> sprintf "<s>%s</s>" f
-        ) (sort ((`Directory,"..")::listing))
+          | Some `Directory -> li link (sprintf "<i>%s/</i>" f)
+          | Some `File -> li link f
+          | Some (`Socket|`Block|`Fifo|`Char|`Link) ->
+            sprintf "<li><s>%s</s></li>" f
+          | None -> sprintf "<li>Error with file: %s</li>" f
+        ) (sort ((Some `Directory,"..")::listing))
         in
         (* Concatenate the HTML into a response *)
         String.concat ~sep:"\n" html
@@ -96,14 +100,32 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
          </html>"
           path contents info
       |> Server.respond_with_string
-  end
-  (* Serve the local file contents *)
-  | `File -> serve_file ~docroot ~uri
-  (* Any other file type is simply forbidden *)
-  | `Socket | `Block | `Fifo | `Char | `Link ->
-    Server.respond_with_string ~code:`Forbidden
-      "<html><body><h2>Forbidden</h2>
-        <p>This is not a normal file or directory</p></body></html>"
+    end
+    (* Serve the local file contents *)
+    | `File -> serve_file ~docroot ~uri
+    (* Any other file type is simply forbidden *)
+    | `Socket | `Block | `Fifo | `Char | `Link ->
+      Server.respond_with_string ~code:`Forbidden
+        (sprintf "<html><body><h2>Forbidden</h2>
+         <p><b>%s</b> is not a normal file or directory</p>
+         <hr />%s</body></html>" path info)
+  )
+  >>= (function
+  | Ok res -> return res
+  | Error exn ->
+    printf "\n%!"; (* Close the request logging line. *)
+    begin match Monitor.extract_exn exn with
+    | Unix.Unix_error (Unix.ENOENT, "stat", p) as e ->
+      if p = ("((filename "^file_name^"))") (* Really? *)
+      then Server.respond_with_string ~code:`Not_found
+        (sprintf "<html><body><h2>Not Found</h2>
+         <p><b>%s</b> was not found on this server</p>
+         <hr />%s</body></html>" path info)
+      else raise exn
+    | _e -> raise exn
+    end
+  )
+
 
 let start_server docroot port host index verbose () =
   printf "Listening for HTTP requests on: %s %d\n%!" host port;
@@ -116,7 +138,7 @@ let start_server docroot port host index verbose () =
       ~listening_on:(fun _ -> port)
   in
   Server.create
-    ~on_handler_error:`Ignore 
+    ~on_handler_error:`Ignore
     listen_on 
     (handler ~info ~docroot ~index ~verbose)
   >>= fun _ -> never ()

@@ -17,6 +17,8 @@
  *
  *)
 
+open Printf
+
 open Lwt
 open Cohttp
 open Cohttp_lwt_unix
@@ -42,7 +44,7 @@ let sort = List.sort (fun (ka,a) (kb,b) ->
   else String.compare (String.lowercase a) (String.lowercase b)
 )
 
-let li l = Printf.sprintf "<li><a href=\"%s\">%s</a></li>" (Uri.to_string l)
+let li l = sprintf "<li><a href=\"%s\">%s</a></li>" (Uri.to_string l)
 
 let ls_dir dir =
   Lwt_stream.to_list
@@ -52,63 +54,76 @@ let ls_dir dir =
 let rec handler ~info ~docroot ~verbose ~index sock req body =
   let uri = Cohttp.Request.uri req in
   let path = Uri.path uri in
-  (* Get a canonical filename from the URL and docroot *)
-  let file_name = Server.resolve_local_file ~docroot ~uri in
-  Lwt_unix.stat file_name
-  >>= fun stat ->
   (* Log the request to the console *)
-  Printf.printf "%s %s %s\n%!"
+  printf "%s %s %s\n%!"
     (Cohttp.(Code.string_of_method (Request.meth req)))
     path
     (match verbose with
-     | true -> ""
-     | false -> ""
+    | true -> ""
+    | false -> ""
     );
-  match stat.Unix.st_kind with
-  | Unix.S_DIR -> begin
-    match Sys.file_exists (file_name / index) with
-    | true -> let uri = Uri.with_path uri (path / index) in
-              Server.respond_redirect uri ()
-    | false ->
-      ls_dir file_name
-      >>= Lwt_list.map_s (fun f ->
-        let file_name = file_name / f in
-        Lwt.try_bind
-          (fun () -> Lwt_unix.stat file_name)
-          (fun stat -> return (Some stat.Unix.st_kind, f))
-          (fun exn -> return (None, f)))
-      >>= fun listing ->
-      let html = List.map (fun (kind, f) ->
-        let link = Uri.with_path uri (path / f) in
-        match kind with
-        | Some Unix.S_DIR -> li link (Printf.sprintf "<i>%s/</i>" f)
-        | Some Unix.S_REG -> li link f
-        | Some _ -> Printf.sprintf "<s>%s</s>" f
-        | None -> Printf.sprintf "<li>Error with file: %s</li>" path
-      ) (sort listing) in
-      let contents = String.concat "\n" html in
-      let body = Printf.sprintf "
+  (* Get a canonical filename from the URL and docroot *)
+  let file_name = Server.resolve_local_file ~docroot ~uri in
+  catch (fun () ->
+    Lwt_unix.stat file_name
+    >>= fun stat ->
+    match stat.Unix.st_kind with
+    | Unix.S_DIR -> begin
+      match Sys.file_exists (file_name / index) with
+      | true -> let uri = Uri.with_path uri (path / index) in
+                Server.respond_redirect uri ()
+      | false ->
+        ls_dir file_name
+        >>= Lwt_list.map_s (fun f ->
+          let file_name = file_name / f in
+          Lwt.try_bind
+            (fun () -> Lwt_unix.stat file_name)
+            (fun stat -> return (Some stat.Unix.st_kind, f))
+            (fun exn -> return (None, f)))
+        >>= fun listing ->
+        let html = List.map (fun (kind, f) ->
+          let link = Uri.with_path uri (path / f) in
+          match kind with
+          | Some Unix.S_DIR -> li link (sprintf "<i>%s/</i>" f)
+          | Some Unix.S_REG -> li link f
+          | Some _ -> sprintf "<li><s>%s</s></li>" f
+          | None -> sprintf "<li>Error with file: %s</li>" f
+        ) (sort listing) in
+        let contents = String.concat "\n" html in
+        let body = sprintf "
               <html>
                 <body>
                 <h2>Directory Listing for %s</h2>
                 <ul>%s</ul>
-                <hr>%s
+                <hr />%s
                 </body>
               </html>"
-        path contents info in
-      Server.respond_string ~status:`OK ~body ()
-  end
-  | Unix.S_REG -> serve_file ~docroot ~uri
-  | _ ->
-    Server.respond_string ~status:`Forbidden
-      ~body:"<html><body><h2>Forbidden</h2>
-        <p>This is not a normal file or directory</p></body>/html>"
+          path contents info in
+        Server.respond_string ~status:`OK ~body ()
+    end
+    | Unix.S_REG -> serve_file ~docroot ~uri
+    | _ ->
+      Server.respond_string ~status:`Forbidden
+        ~body:(sprintf "<html><body><h2>Forbidden</h2>
+        <p><b>%s</b> is not a normal file or directory</p>
+        <hr />%s</body></html>" path info)
+        ()
+  ) (function
+  | Unix.Unix_error(Unix.ENOENT, "stat", p) as e ->
+    if p = file_name
+    then Server.respond_string ~status:`Not_found
+      ~body:(sprintf "<html><body><h2>Not Found</h2>
+      <p><b>%s</b> was not found on this server</p>
+      <hr />%s</body></html>" path info)
       ()
+    else fail e
+  | e -> fail e
+  )
 
 let start_server docroot port host index verbose () =
-  Printf.printf "Listening for HTTP request on: %s %d\n%!" host port;
-  let info = Printf.sprintf "Served by Cohttp/Lwt listening on %s:%d" host port in
-  let conn_closed id () = Printf.printf "connection %s closed\n%!"
+  printf "Listening for HTTP request on: %s %d\n%!" host port;
+  let info = sprintf "Served by Cohttp/Lwt listening on %s:%d" host port in
+  let conn_closed id () = printf "connection %s closed\n%!"
       (Connection.to_string id) in
   let callback = handler ~info ~docroot ~verbose ~index in
   let config = { Server.callback; conn_closed } in
