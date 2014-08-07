@@ -58,10 +58,13 @@ module Make(IO : S.IO) = struct
       match !remaining with
       |0 -> return Done
       |len ->
-        read ic len >>= fun buf ->
-        remaining := !remaining - String.length buf;
-        if !remaining = 0 then return (Final_chunk buf)
-        else return (Chunk buf)
+        read ic len >>= function
+        | "" -> return Done
+        | buf ->
+          remaining := !remaining - String.length buf;
+          return (match !remaining with
+                  | 0 -> Final_chunk buf
+                  | _ -> Chunk buf)
 
     (* TODO enforce that the correct length is written? *)
     let write oc buf =

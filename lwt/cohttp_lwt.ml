@@ -265,7 +265,9 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
   module Transfer_IO = Transfer_io.Make(IO)
 
   let resolve_local_file ~docroot ~uri =
-    Filename.concat docroot (Uri.path (Uri.resolve "" (Uri.of_string "") uri))
+    let path = Uri.path (Uri.resolve "http" (Uri.of_string "/") uri) in
+    let rel_path = String.sub path 1 (String.length path - 1) in
+    Filename.concat docroot rel_path
 
   let respond ?headers ?(flush=false) ~status ~body () =
     let encoding = Cohttp_lwt_body.transfer_encoding body in
