@@ -45,8 +45,11 @@ module type S = sig
     ?headers:Cohttp.Header.t ->
     fname:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
-  val create : ?mode:Lwt_unix_conduit.server_mode -> ?timeout:int -> 
-    address:string -> port:int -> t -> unit Lwt.t
+  val create :
+    ?timeout:int -> 
+    ?stop:unit Lwt.t ->
+    ?ctx:Lwt_unix_conduit.ctx ->
+    ?mode:Conduit.Server.t -> t -> unit Lwt.t
 end
 
 (** The [Server] module implement the full UNIX HTTP server interface,

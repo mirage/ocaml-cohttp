@@ -20,8 +20,8 @@ open Lwt
 
 module type Net = sig
   module IO : S.IO
-  val connect_uri : Uri.t -> (IO.ic * IO.oc) Lwt.t
-  val connect : ?ssl:bool -> host:string -> service:string -> unit -> (IO.ic * IO.oc) Lwt.t
+  val connect_uri : Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
+  val connect : ?ssl:bool -> host:string -> service:string -> unit -> (IO.conn * IO.ic * IO.oc) Lwt.t
   val close_in : IO.ic -> unit
   val close_out : IO.oc -> unit
   val close : IO.ic -> IO.oc -> unit
@@ -138,7 +138,7 @@ module Make_client
 
   let call ?headers ?(body=`Empty) ?(chunked=true) meth uri =
     let headers = match headers with None -> Header.init () | Some h -> h in
-    lwt (ic,oc) = Net.connect_uri uri in
+    lwt (conn,ic,oc) = Net.connect_uri uri in
     let closefn () = Net.close ic oc in
     match chunked with
     | true ->
@@ -175,7 +175,7 @@ module Make_client
 
   let callv ?(ssl=false) host port reqs =
     let service = string_of_int port in
-    lwt (ic, oc) = Net.connect ~ssl ~host ~service () in
+    lwt (conn, ic, oc) = Net.connect ~ssl ~host ~service () in
     (* Serialise the requests out to the wire *)
     let _ = Lwt_stream.iter_s (fun (req,body) ->
         Request.write (fun req oc ->
@@ -204,12 +204,12 @@ module type Server = sig
 
   type t = {
     callback :
-      Cohttp.Connection.t ->
+      (IO.conn * Cohttp.Connection.t) ->
       Cohttp.Request.t ->
       Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
-      Cohttp.Connection.t -> unit -> unit;
+      (IO.conn * Cohttp.Connection.t) -> unit -> unit;
   }
 
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
@@ -240,7 +240,7 @@ module type Server = sig
   val respond_not_found :
     ?uri:Uri.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
-  val callback: t -> IO.ic -> IO.oc -> unit Lwt.t
+  val callback: t -> IO.conn -> IO.ic -> IO.oc -> unit Lwt.t
 end
 
 
@@ -254,12 +254,12 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
 
   type t = {
     callback :
-      Cohttp.Connection.t ->
+      (IO.conn * Cohttp.Connection.t) ->
       Cohttp.Request.t ->
       Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
-      Cohttp.Connection.t -> unit -> unit;
+      (IO.conn * Cohttp.Connection.t) -> unit -> unit;
   }
 
   module Transfer_IO = Transfer_io.Make(IO)
@@ -303,7 +303,7 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
     respond_string ~status:`Not_found ~body ()
 
   let callback spec =
-    let daemon_callback ic oc =
+    let daemon_callback io_id ic oc =
       let conn_id = Connection.create () in
       let read_m = Lwt_mutex.create () in
       (* If the request is HTTP version 1.0 then the request stream should be
@@ -342,14 +342,14 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
       let res_stream =
         Lwt_stream.map_s (fun (req, body) ->
           try_lwt
-            spec.callback conn_id req body
+            spec.callback (io_id,conn_id) req body
           with exn ->
             respond_error ~status:`Internal_server_error ~body:(Printexc.to_string exn) ()
           finally Cohttp_lwt_body.drain_body body
         ) req_stream in
       (* Clean up resources when the response stream terminates and call
        * the user callback *)
-      Lwt_stream.on_terminate res_stream (spec.conn_closed conn_id);
+      Lwt_stream.on_terminate res_stream (spec.conn_closed (io_id,conn_id));
       (* Transmit the responses *)
       for_lwt (res,body) in res_stream do
         let flush =

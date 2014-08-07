@@ -1,4 +1,4 @@
-OPAM_DEPENDS="lwt stringext ssl uri re conduit sexplib fieldslib"
+OPAM_DEPENDS="lwt stringext ssl uri re conduit sexplib fieldslib ipaddr"
 
 case "$OCAML_VERSION,$OPAM_VERSION" in
 4.00.1,1.0.0) ppa=avsm/ocaml40+opam10 ;;
@@ -27,6 +27,7 @@ opam --git-version
 
 opam init git://github.com/ocaml/opam-repository >/dev/null 2>&1
 opam pin mirage-http git://github.com/mirage/mirage-http
+opam pin conduit git://github.com/mirage/ocaml-conduit
 opam install ${OPAM_DEPENDS}
 
 eval `opam config env`

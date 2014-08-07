@@ -23,7 +23,7 @@ open Cohttp
 open Cohttp_lwt_unix
 
 let make_server () =
-  let callback conn_id req body =
+  let callback (ch,conn_id) req body =
     let uri = Request.uri req in
     Printf.printf "%s\n%!" (Uri.to_string uri);
     match Uri.path uri with
@@ -77,15 +77,16 @@ let make_server () =
        let fname = Server.resolve_file ~docroot:"." ~uri:(Request.uri req) in
        Server.respond_file ~fname ()
   in
-  let conn_closed conn_id () =
+  let conn_closed (ch,conn_id) () =
     Printf.eprintf "conn %s closed\n%!" (Connection.to_string conn_id)
   in
   let config = { Server.callback; conn_closed } in
-  let address = "0.0.0.0" in
+  lwt ctx = Lwt_unix_conduit.init ~src:"0.0.0.0" () in
   let port = 8081 in
-  let ssl = `SSL (`Crt_file_path "server.crt", `Key_file_path "server.key") in
-  let t1 = Server.create ~address ~port config in
-  let t2 = Server.create ~mode:ssl ~address ~port:(port+1) config in
+  let tcp_mode = `TCP (`Port port) in
+  let ssl_mode = `SSL (`Crt_file_path "server.crt", `Key_file_path "server.key", `No_password, `Port (port+1)) in
+  let t1 = Server.create ~ctx ~mode:tcp_mode config in
+  let t2 = Server.create ~ctx ~mode:ssl_mode config in
   t1 <&> t2
 
 let _ = Lwt_unix.run (make_server ())
