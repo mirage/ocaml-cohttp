@@ -128,7 +128,6 @@ module Make(IO : S.IO) = struct
        IO.write oc "0\r\n\r\n"
     |Transfer.Fixed _ | Transfer.Unknown -> return ()
 
-  (* TODO: remove either write' or write *)
   let write write_body req oc =
     write_header req oc >>= fun () ->
     write_body req oc >>= fun () ->
