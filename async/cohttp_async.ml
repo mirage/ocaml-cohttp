@@ -26,7 +26,7 @@ module Net = struct
     match Uri_services.tcp_port_of_uri ~default:"http" uri with
     | None -> raise (Failure "Net.connect") (* TODO proper exception *)
     | Some port -> begin
-        let mode = 
+        let mode =
           match Uri.scheme uri with
           | Some "https" -> `SSL
           | _ -> `TCP in
