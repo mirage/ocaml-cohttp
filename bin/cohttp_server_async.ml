@@ -67,7 +67,7 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
       >>= function
       | `Yes -> (* Serve the index file directly *)
         let uri = Uri.with_path uri (path / index) in
-        Server.respond_with_redirect uri
+        serve_file ~docroot ~uri
       | `No | `Unknown -> (* Do a directory listing *)
         Sys.ls_dir file_name
         >>= Deferred.List.map ~f:(fun f ->
