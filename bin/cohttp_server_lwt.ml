@@ -71,7 +71,10 @@ let rec handler ~info ~docroot ~verbose ~index sock req body =
     | Unix.S_DIR -> begin
       match Sys.file_exists (file_name / index) with
       | true -> let uri = Uri.with_path uri (path / index) in
-                serve_file ~docroot ~uri
+                let path_len = String.length path in
+                if path_len <> 0 && path.[path_len - 1] <> '/'
+                then Server.respond_redirect (Uri.with_path uri (path^"/")) ()
+                else serve_file ~docroot ~uri
       | false ->
         ls_dir file_name
         >>= Lwt_list.map_s (fun f ->
