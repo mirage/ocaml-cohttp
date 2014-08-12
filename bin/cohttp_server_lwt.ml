@@ -69,12 +69,12 @@ let rec handler ~info ~docroot ~verbose ~index sock req body =
     >>= fun stat ->
     match stat.Unix.st_kind with
     | Unix.S_DIR -> begin
-      match Sys.file_exists (file_name / index) with
+      let path_len = String.length path in
+      if path_len <> 0 && path.[path_len - 1] <> '/'
+      then Server.respond_redirect (Uri.with_path uri (path^"/")) ()
+      else match Sys.file_exists (file_name / index) with
       | true -> let uri = Uri.with_path uri (path / index) in
-                let path_len = String.length path in
-                if path_len <> 0 && path.[path_len - 1] <> '/'
-                then Server.respond_redirect (Uri.with_path uri (path^"/")) ()
-                else serve_file ~docroot ~uri
+                serve_file ~docroot ~uri
       | false ->
         ls_dir file_name
         >>= Lwt_list.map_s (fun f ->
@@ -85,10 +85,14 @@ let rec handler ~info ~docroot ~verbose ~index sock req body =
             (fun exn -> return (None, f)))
         >>= fun listing ->
         let html = List.map (fun (kind, f) ->
-          let link = Uri.with_path uri (path / (Uri.pct_encode f)) in
+          let encoded_f = Uri.pct_encode f in
           match kind with
-          | Some Unix.S_DIR -> li link (sprintf "<i>%s/</i>" f)
-          | Some Unix.S_REG -> li link f
+          | Some Unix.S_DIR ->
+            let link = Uri.with_path uri (path / encoded_f / "") in
+            li link (sprintf "<i>%s/</i>" f)
+          | Some Unix.S_REG ->
+            let link = Uri.with_path uri (path / encoded_f) in
+            li link f
           | Some _ -> sprintf "<li><s>%s</s></li>" f
           | None -> sprintf "<li>Error with file: %s</li>" f
         ) (sort listing) in
