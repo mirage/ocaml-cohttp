@@ -85,7 +85,7 @@ let rec handler ~info ~docroot ~verbose ~index sock req body =
             (fun exn -> return (None, f)))
         >>= fun listing ->
         let html = List.map (fun (kind, f) ->
-          let link = Uri.with_path uri (path / f) in
+          let link = Uri.with_path uri (path / (Uri.pct_encode f)) in
           match kind with
           | Some Unix.S_DIR -> li link (sprintf "<i>%s/</i>" f)
           | Some Unix.S_REG -> li link f
@@ -96,12 +96,12 @@ let rec handler ~info ~docroot ~verbose ~index sock req body =
         let body = sprintf "
               <html>
                 <body>
-                <h2>Directory Listing for %s</h2>
+                <h2>Directory Listing for <em>%s</em></h2>
                 <ul>%s</ul>
                 <hr />%s
                 </body>
               </html>"
-          path contents info in
+          (Uri.pct_decode path) contents info in
         Server.respond_string ~status:`OK ~body ()
     end
     | Unix.S_REG -> serve_file ~docroot ~uri

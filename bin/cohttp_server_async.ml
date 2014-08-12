@@ -81,7 +81,7 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
           ) >>| function Ok v -> v | Error _ -> (None, f))
         >>= fun listing ->
         let html = List.map ~f:(fun (kind, f) ->
-          let link = Uri.with_path uri (path / f) in
+          let link = Uri.with_path uri (path / (Uri.pct_encode f)) in
           match kind with
           | Some `Directory -> li link (sprintf "<i>%s/</i>" f)
           | Some `File -> li link f
@@ -96,12 +96,12 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
         sprintf "
          <html>
            <body>
-           <h2>Directory Listing for %s</h2>
+           <h2>Directory Listing for <em>%s</em></h2>
            <ul>%s</ul>
            <hr>%s
            </body>
          </html>"
-          path contents info
+          (Uri.pct_decode path) contents info
       |> Server.respond_with_string
     end
     (* Serve the local file contents *)
