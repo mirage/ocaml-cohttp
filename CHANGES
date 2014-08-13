@@ -9,6 +9,9 @@
 * Fix `Cohttp_async.resolve_local_file` directory traversal vulnerability (#158)
 * `cohttp_server_lwt` and `cohttp_server_async` now return better errors (#158)
 * `cohttp_server_lwt` and `cohttp_server_async` now serve indexes directly (#162)
+* Breaking: if users have percent-encoded file names, their resolution is
+  changed: `resolve_local_file` in `Cohttp_async` and `Cohttp_lwt` now always
+  percent-decode paths (#157)
 
 0.11.2 (2014-04-21)
 * Fix build by add a missing build-deps in _oasis.

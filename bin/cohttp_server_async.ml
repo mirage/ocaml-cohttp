@@ -62,15 +62,15 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
     match stat.Unix.Stats.kind with
     (* Get a list of current files and map to HTML *)
     | `Directory -> begin
+      let path_len = String.length path in
+      if path_len <> 0 && path.[path_len - 1] <> '/'
+      then Server.respond_with_redirect (Uri.with_path uri (path^"/"))
       (* Check if the index file exists *)
-      Sys.file_exists (file_name / index)
+      else Sys.file_exists (file_name / index)
       >>= function
       | `Yes -> (* Serve the index file directly *)
         let uri = Uri.with_path uri (path / index) in
-        let path_len = String.length path in
-        if path_len <> 0 && path.[path_len - 1] <> '/'
-        then Server.respond_with_redirect (Uri.with_path uri (path^"/"))
-        else serve_file ~docroot ~uri
+        serve_file ~docroot ~uri
       | `No | `Unknown -> (* Do a directory listing *)
         Sys.ls_dir file_name
         >>= Deferred.List.map ~f:(fun f ->
@@ -81,10 +81,13 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
           ) >>| function Ok v -> v | Error _ -> (None, f))
         >>= fun listing ->
         let html = List.map ~f:(fun (kind, f) ->
-          let link = Uri.with_path uri (path / f) in
           match kind with
-          | Some `Directory -> li link (sprintf "<i>%s/</i>" f)
-          | Some `File -> li link f
+          | Some `Directory ->
+            let link = Uri.with_path uri (path / (Uri.pct_encode f) / "") in
+            li link (sprintf "<i>%s/</i>" f)
+          | Some `File ->
+            let link = Uri.with_path uri (path / (Uri.pct_encode f)) in
+            li link f
           | Some (`Socket|`Block|`Fifo|`Char|`Link) ->
             sprintf "<li><s>%s</s></li>" f
           | None -> sprintf "<li>Error with file: %s</li>" f
@@ -96,12 +99,12 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
         sprintf "
          <html>
            <body>
-           <h2>Directory Listing for %s</h2>
+           <h2>Directory Listing for <em>%s</em></h2>
            <ul>%s</ul>
            <hr>%s
            </body>
          </html>"
-          path contents info
+          (Uri.pct_decode path) contents info
       |> Server.respond_with_string
     end
     (* Serve the local file contents *)

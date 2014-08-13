@@ -251,7 +251,7 @@ module Server = struct
 
   let resolve_local_file ~docroot ~uri =
     (* This normalises the Uri and strips out .. characters *)
-    Uri.path (Uri.resolve "" (Uri.of_string "/") uri)
+    Uri.(pct_decode (path (resolve "" (of_string "/") uri)))
     |> Filename.concat docroot
 
   let error_body_default =

@@ -265,7 +265,7 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
   module Transfer_IO = Transfer_io.Make(IO)
 
   let resolve_local_file ~docroot ~uri =
-    let path = Uri.path (Uri.resolve "http" (Uri.of_string "/") uri) in
+    let path = Uri.(pct_decode (path (resolve "http" (of_string "/") uri))) in
     let rel_path = String.sub path 1 (String.length path - 1) in
     Filename.concat docroot rel_path
 
