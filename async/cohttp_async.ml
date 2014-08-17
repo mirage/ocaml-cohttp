@@ -155,6 +155,10 @@ module Client = struct
     | `Ok res ->
       (* Build a response pipe for the body *)
       let rd = pipe_of_body (Response.read_body_chunk res) ic oc in
+      don't_wait_for (
+        Pipe.closed rd >>= fun () ->
+        Deferred.all_ignore [Reader.close ic; Writer.close oc]
+      );
       return (res, `Pipe rd)
 
   let get ?interrupt ?headers uri =
