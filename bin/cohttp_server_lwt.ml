@@ -142,7 +142,7 @@ let index = ref "index.html"
 let verbose = ref false
 let rest = ref []
 
-let usage = "usage " ^ Sys.argv.(0) ^ " input [-o output]"
+let usage = "usage " ^ Sys.argv.(0) ^ " [DOCROOT]"
 
 let arglist = [
   ("-p", Arg.Int (fun i -> port := i), ": TCP port to listen on");
