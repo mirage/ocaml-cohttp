@@ -48,8 +48,8 @@ Library cohttp_lwt_unix
   Path:          lwt
   Findlibname:   lwt
   FindlibParent: cohttp
-  BuildDepends:  cohttp.lwt-core, unix, lwt.unix, lwt.ssl, conduit.lwt
-  XMETARequires: cohttp.lwt-core, unix, lwt.unix, lwt.ssl, conduit.lwt
+  BuildDepends:  cohttp.lwt-core, unix, lwt.unix, lwt.ssl, conduit.lwt-unix
+  XMETARequires: cohttp.lwt-core, unix, lwt.unix, lwt.ssl, conduit.lwt-unix
   Modules:       Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt_unix_net
 
 Library cohttp_async
