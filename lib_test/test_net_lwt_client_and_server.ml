@@ -107,7 +107,7 @@ let client () =
     Request.make ~encoding:Transfer.Chunked ~headers:(Header.of_list ["connection","close"])
       (Uri.of_string "/post"), body2;
   ] in
-  lwt resp = Client.callv address port reqs in
+  lwt resp = Client.callv url reqs in
   Lwt_stream.iter_s (fun (res, body) ->
     lwt body = Cohttp_lwt_body.to_string body in 
     assert(body="foobar");
