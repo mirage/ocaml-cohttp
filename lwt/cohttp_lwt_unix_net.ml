@@ -25,26 +25,12 @@ module IO = Cohttp_lwt_unix_io
 type 'a io = 'a Lwt.t
 type ic = Lwt_io.input_channel
 type oc = Lwt_io.output_channel
+type ctx = Lwt_unix_conduit.ctx
 
-let connect_uri uri =
-  (match Uri_services.tcp_port_of_uri uri with
-    |None -> Lwt.fail (Invalid_argument "unknown scheme")
-    |Some p -> Lwt.return p)
-  >>= fun service ->
-  let host = match Uri.host uri with None -> "localhost" | Some x -> x in
-  let mode =
-    match Uri.scheme uri with
-    | Some "https" -> `SSL (host, service)
-    | Some "httpunix" -> `Unix_domain_socket host
-    | _ -> `TCP (host, service)
-  in
-  Lwt_unix_conduit.Client.connect mode
+let resolver = Lwt_unix_resolver.system
 
-let connect ?(ssl=false) ~host ~service () =
-  let mode = match ssl with
-  | true -> `SSL (host, int_of_string service)
-  | false -> `TCP (host, int_of_string service)
-  in Lwt_unix_conduit.Client.connect mode
+let connect_uri ?ctx uri =
+  Lwt_unix_conduit.Client.connect_to_uri ?ctx uri
 
 let close_in ic =
   ignore_result (try_lwt Lwt_io.close ic with _ -> return ())
