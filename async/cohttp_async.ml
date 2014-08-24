@@ -21,19 +21,28 @@ open Async.Std
 module IO = Cohttp_async_io
 
 module Net = struct
-  let connect_uri ?interrupt uri =
+
+  let lookup uri =
     let host = Option.value (Uri.host uri) ~default:"localhost" in
     match Uri_services.tcp_port_of_uri ~default:"http" uri with
     | None -> raise (Failure "Net.connect") (* TODO proper exception *)
-    | Some port -> begin
-        let mode = 
-          match Uri.scheme uri with
-          | Some "https" -> `SSL (host, port)
-          | Some "httpunix" -> `Unix_domain_socket host
-          | _ -> `TCP (host, port)
-        in
-        Async_conduit.Client.connect ?interrupt mode
-      end
+    | Some port ->
+      let open Unix in
+      Addr_info.get ~host [Addr_info.AI_FAMILY PF_INET; Addr_info.AI_SOCKTYPE SOCK_STREAM] 
+      >>= function
+      | {Addr_info.ai_addr=ADDR_INET(addr,_)}::_ ->
+        return (host, Ipaddr_unix.of_inet_addr addr, port)
+      | _ -> raise (Failure "resolution failed")
+ 
+  let connect_uri ?interrupt uri =
+     lookup uri >>= fun (host, addr, port) ->
+     let mode =
+       match Uri.scheme uri with
+       | Some "https" -> `OpenSSL (host, addr, port)
+       | Some "httpunix" -> `Unix_domain_socket host
+       | _ -> `TCP (addr, port)
+     in
+     Async_conduit.Client.connect ?interrupt mode
 end
 
 module Request = struct
