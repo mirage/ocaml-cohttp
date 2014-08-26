@@ -95,24 +95,25 @@ let to_lines h = List.rev (fold (fun k v acc -> (header_line k v)::acc) h [])
 
 let parse_content_range s =
   try
-    let start, fini, total = 
-      Scanf.sscanf s "bytes %d-%d/%d" (fun start fini total -> start, fini, total) in
+    let start, fini, total =
+      Scanf.sscanf s "bytes %Ld-%Ld/%Ld" (fun start fini total -> start, fini, total) in
     Some (start, fini, total)
   with Scanf.Scan_failure _ -> None
-  
+
 (* If we see a "Content-Range" header, than we should limit the
    number of bytes we attempt to read *)
-let get_content_range headers = 
+let get_content_range headers =
   match get headers "content-length" with
-  | Some clen -> (try Some (int_of_string clen) with _ -> None)
+  | Some clen -> (try Some (Int64.of_string clen) with _ -> None)
   | None -> begin
     match get headers "content-range" with
     | Some range_s -> begin
       match parse_content_range range_s with
       | Some (start, fini, total) ->
         (* some sanity checking before we act on these values *)
-        if fini < total && start <= total && 0 <= start && 0 <= total then (
-          let num_bytes_to_read = fini - start + 1 in
+        if fini < total && start <= total && 0L <= start && 0L <= total
+        then (
+          let num_bytes_to_read = Int64.add (Int64.sub fini start) 1L in
           Some num_bytes_to_read
         ) else None
       | None -> None
@@ -173,7 +174,7 @@ let add_transfer_encoding headers enc =
   |Fixed _,_  (* App has supplied a content length, so use that *)
   |Chunked,_ -> headers (* TODO: this is a protocol violation *)
   |Unknown, Chunked -> add headers "transfer-encoding" "chunked"
-  |Unknown, Fixed len -> add headers "content-length" (string_of_int len)
+  |Unknown, Fixed len -> add headers "content-length" (Int64.to_string len)
   |Unknown, Unknown -> headers
 
 let add_authorization_req headers req =

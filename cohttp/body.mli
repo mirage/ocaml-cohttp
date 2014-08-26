@@ -29,4 +29,4 @@ type t = [
     responses via backend-specific functionality.  *)
 include S.Body with type t := t
 
-val length : t -> int
+val length : t -> int64

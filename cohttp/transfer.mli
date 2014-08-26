@@ -21,10 +21,10 @@
 
 (** The encoding format detected from the [transfer-encoding] and
   * [content-length] headers *)
-type encoding = 
- | Chunked         (** dynamic chunked encoding *)
- | Fixed of int    (** fixed size content *)
- | Unknown         (** unknown body size, which leads to best-effort *)
+type encoding =
+ | Chunked             (** dynamic chunked encoding *)
+ | Fixed of int64      (** fixed size content *)
+ | Unknown             (** unknown body size, which leads to best-effort *)
 with sexp
 
 (** A chunk of body that also signals if there to more to arrive *)

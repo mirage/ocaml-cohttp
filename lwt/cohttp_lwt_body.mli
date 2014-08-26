@@ -29,7 +29,7 @@ val of_stream : string Lwt_stream.t -> t
 
 val create_stream : ('a -> Cohttp.Transfer.chunk Lwt.t) -> 'a -> string Lwt_stream.t
 
-val length : t -> (int * t) Lwt.t
+val length : t -> (int64 * t) Lwt.t
 
 val write_body : ?flush:(unit -> unit Lwt.t) -> (string -> unit Lwt.t) -> t -> unit Lwt.t
 

@@ -34,7 +34,7 @@ let create_stream fn arg =
     |true -> return None
     |false -> begin
         match_lwt fn arg with
-        |Transfer.Done -> 
+        |Transfer.Done ->
           return None
         |Transfer.Final_chunk c ->
           fin := true;
@@ -79,12 +79,12 @@ let transfer_encoding (t:t) =
 
 (* This will consume the body and return a length, and a
  * new body that should be used instead of the input *)
-let length (body:t) : (int * t) Lwt.t =
+let length (body:t) : (int64 * t) Lwt.t =
   match body with
   |#Body.t as body -> return (Body.length body, body)
   |`Stream s ->
     lwt buf = to_string body in
-    let len = String.length buf in
+    let len = Int64.of_int (String.length buf) in
     return (len, `String buf)
 
 let write_body ?(flush=(fun () -> return_unit)) fn (body:t) =
