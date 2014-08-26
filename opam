@@ -5,7 +5,10 @@ tags: [
   "org:xapi-project"
 ]
 build: [
-  ["sh" "configure" "--%{lwt:enable}%-lwt" "--%{async:enable}%-async"]
+  ["sh" "configure"
+      "--%{lwt:enable}%-lwt"
+      "--%{async:enable}%-async"
+      "--%{base-unix:enable}%-lwt-unix"]
   [make "PREFIX=%{prefix}%"]
   [make "PREFIX=%{prefix}%" "install"]
 ]
