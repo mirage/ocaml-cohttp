@@ -1,40 +1,41 @@
-.PHONY: all clean install build
-all: build test doc
+# OASIS_START
+# DO NOT EDIT (digest: a3c674b4239234cbbe53afe090018954)
 
-PREFIX ?= /usr/local
-NAME=cohttp
+SETUP = ocaml setup.ml
 
-LWT ?= $(shell if ocamlfind query lwt >/dev/null 2>&1; then echo --enable-lwt; fi)
-LWT_UNIX ?= $(shell if ocamlfind query lwt.ssl >/dev/null 2>&1; then echo --enable-lwt-unix; fi)
-ASYNC ?= $(shell if ocamlfind query async >/dev/null 2>&1; then echo --enable-async; fi)
-#NETTESTS ?= --enable-tests --enable-nettests
+build: setup.data
+	$(SETUP) -build $(BUILDFLAGS)
 
-setup.bin: setup.ml
-	ocamlopt.opt -o $@ $< 2>/dev/null || ocamlopt -o $@ $< 2>/dev/null || ocamlc -o $@ $<
-	rm -f setup.cmx setup.cmi setup.o setup.cmo
+doc: setup.data build
+	$(SETUP) -doc $(DOCFLAGS)
 
-setup.data: setup.bin
-	./setup.bin -configure $(LWT) $(ASYNC) $(LWT_UNIX) $(TESTS) $(NETTESTS) --prefix $(PREFIX)
+test: setup.data build
+	$(SETUP) -test $(TESTFLAGS)
 
-build: setup.data setup.bin
-	./setup.bin -build -classic-display
+all:
+	$(SETUP) -all $(ALLFLAGS)
 
-doc: setup.data setup.bin
-	./setup.bin -doc
+install: setup.data
+	$(SETUP) -install $(INSTALLFLAGS)
 
-install: setup.bin
-	./setup.bin -install
+uninstall: setup.data
+	$(SETUP) -uninstall $(UNINSTALLFLAGS)
 
-test: setup.bin build
-	./setup.bin -test
-
-fulltest: setup.bin build
-	./setup.bin -test
-
-reinstall: setup.bin
-	ocamlfind remove $(NAME) || true
-	./setup.bin -reinstall
+reinstall: setup.data
+	$(SETUP) -reinstall $(REINSTALLFLAGS)
 
 clean:
-	ocamlbuild -clean
-	rm -f setup.data setup.log setup.bin
+	$(SETUP) -clean $(CLEANFLAGS)
+
+distclean:
+	$(SETUP) -distclean $(DISTCLEANFLAGS)
+
+setup.data:
+	$(SETUP) -configure $(CONFIGUREFLAGS)
+
+configure:
+	$(SETUP) -configure $(CONFIGUREFLAGS)
+
+.PHONY: build doc test all install uninstall reinstall clean distclean configure
+
+# OASIS_STOP
