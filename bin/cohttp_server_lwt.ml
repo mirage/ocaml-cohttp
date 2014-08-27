@@ -51,17 +51,18 @@ let ls_dir dir =
     (Lwt_stream.filter ((<>) ".")
        (Lwt_unix.files_of_directory dir))
 
-let handler ~info ~docroot ~verbose ~index (conduit,conn) req body =
+let handler ~info ~docroot ~verbose ~index (ch,conn) req body =
   let uri = Cohttp.Request.uri req in
   let path = Uri.path uri in
   (* Log the request to the console *)
-  printf "%s %s %s\n%!"
+  printf "%s %s %s %s\n%!"
     (Cohttp.(Code.string_of_method (Request.meth req)))
     path
     (match verbose with
     | true -> ""
     | false -> ""
-    );
+    )
+    (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch));
   (* Get a canonical filename from the URL and docroot *)
   let file_name = Server.resolve_local_file ~docroot ~uri in
   catch (fun () ->
@@ -130,7 +131,7 @@ let start_server docroot port host index verbose () =
   let info = sprintf "Served by Cohttp/Lwt listening on %s:%d" host port in
   let conn_closed (ch,conn) () =
     printf "connection %s closed\n%!"
-      (string_of_sockaddr (Lwt_unix_conduit.sockname ch)) in
+      (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)) in
   let callback = handler ~info ~docroot ~verbose ~index in
   let config = { Server.callback; conn_closed } in
   Server.create ~mode:(`TCP (`Port port)) config

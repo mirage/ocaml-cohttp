@@ -42,7 +42,7 @@ module Net = struct
        | Some "httpunix" -> `Unix_domain_socket host
        | _ -> `TCP (addr, port)
      in
-     Async_conduit.Client.connect ?interrupt mode
+     Conduit_async.connect ?interrupt mode
 end
 
 module Request = struct
@@ -282,7 +282,7 @@ module Server = struct
 
   let create ?max_connections ?max_pending_connections
       ?buffer_age_limit ?on_handler_error ?(mode=`TCP) where_to_listen handle_request =
-    Async_conduit.Server.create ?max_connections ?max_pending_connections
+    Conduit_async.serve ?max_connections ?max_pending_connections
       ?buffer_age_limit ?on_handler_error mode
       where_to_listen (handle_client handle_request)
     >>| fun server ->

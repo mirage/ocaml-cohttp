@@ -81,7 +81,7 @@ let make_server () =
     Printf.eprintf "conn %s closed\n%!" (Connection.to_string conn_id)
   in
   let config = { Server.callback; conn_closed } in
-  lwt ctx = Lwt_unix_conduit.init ~src:"0.0.0.0" () in
+  let ctx = Cohttp_lwt_unix_net.init () in
   let port = 8081 in
   let tcp_mode = `TCP (`Port port) in
   let ssl_mode = `OpenSSL (`Crt_file_path "server.crt", `Key_file_path "server.key", `No_password, `Port (port+1)) in

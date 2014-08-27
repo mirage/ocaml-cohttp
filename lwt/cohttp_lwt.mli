@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2013 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2013-2014 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -27,7 +27,8 @@ open Cohttp
 module type Net = sig
   module IO : S.IO
   type ctx
-  val connect_uri : ?ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
+  val default_ctx: ctx
+  val connect_uri : ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
   val close_in : IO.ic -> unit
   val close_out : IO.oc -> unit
   val close : IO.ic -> IO.oc -> unit
@@ -66,7 +67,11 @@ module type Client = sig
   module Request : Request
   module Response : Response
 
+  type ctx
+  val default_ctx : ctx
+
   val call :
+    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
@@ -74,41 +79,49 @@ module type Client = sig
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val head :
+    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> Response.t Lwt.t
 
   val get :
+    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val delete :
+    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val post :
+    ?ctx:ctx ->
     ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val put :
+    ?ctx:ctx ->
     ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val patch :
+    ?ctx:ctx ->
     ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val post_form :
+    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     params:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val callv :
+    ?ctx:ctx ->
     Uri.t ->
     (Request.t * Cohttp_lwt_body.t) Lwt_stream.t ->
     (Response.t * Cohttp_lwt_body.t) Lwt_stream.t Lwt.t
@@ -130,6 +143,10 @@ module type Server = sig
   module IO : S.IO
   module Request : Request
   module Response : Response
+
+  type ctx
+  val default_ctx : ctx
+
   type t = {
     callback :
       (IO.conn * Cohttp.Connection.t) ->
@@ -185,3 +202,4 @@ module Make_server
     Server with module IO = IO
             and module Request = Request
             and module Response = Response
+            and type ctx = Net.ctx

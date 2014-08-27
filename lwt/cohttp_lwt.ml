@@ -21,7 +21,8 @@ open Lwt
 module type Net = sig
   module IO : S.IO
   type ctx
-  val connect_uri : ?ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
+  val default_ctx: ctx
+  val connect_uri : ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
   val close_in : IO.ic -> unit
   val close_out : IO.oc -> unit
   val close : IO.ic -> IO.oc -> unit
@@ -54,7 +55,11 @@ module type Client = sig
   module Request : Request
   module Response : Response
 
+  type ctx
+  val default_ctx : ctx
+
   val call :
+    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
@@ -62,41 +67,49 @@ module type Client = sig
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val head :
+    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> Response.t Lwt.t
 
   val get :
+    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val delete :
+    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val post :
+    ?ctx:ctx ->
     ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val put :
+    ?ctx:ctx ->
     ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val patch :
+    ?ctx:ctx ->
     ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val post_form :
+    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     params:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val callv :
+    ?ctx:ctx ->
     Uri.t ->
     (Request.t * Cohttp_lwt_body.t) Lwt_stream.t ->
     (Response.t * Cohttp_lwt_body.t) Lwt_stream.t Lwt.t
@@ -111,6 +124,9 @@ module Make_client
   module IO = IO
   module Request = Request
   module Response = Response
+
+  type ctx = Net.ctx
+  let default_ctx = Net.default_ctx
 
   let read_response ?closefn ic oc =
     Response.read ic >>= function
@@ -134,9 +150,9 @@ module Make_client
           return (res, `Empty)
       end
 
-  let call ?headers ?(body=`Empty) ?(chunked=true) meth uri =
+  let call ?(ctx=default_ctx) ?headers ?(body=`Empty) ?(chunked=true) meth uri =
     let headers = match headers with None -> Header.init () | Some h -> h in
-    lwt (conn,ic,oc) = Net.connect_uri uri in
+    lwt (conn,ic,oc) = Net.connect_uri ~ctx uri in
     let closefn () = Net.close ic oc in
     match chunked with
     | true ->
@@ -155,24 +171,24 @@ module Make_client
       read_response ~closefn ic oc
 
   (* The HEAD should not have a response body *)
-  let head ?headers uri =
+  let head ?ctx ?headers uri =
     call ?headers ~chunked:false `HEAD uri
     >|= fst
 
-  let get ?headers uri = call ?headers ~chunked:false `GET uri
-  let delete ?headers uri = call ?headers ~chunked:false `DELETE uri
-  let post ?body ?chunked ?headers uri = call ?headers ?body ?chunked `POST uri
-  let put ?body ?chunked ?headers uri = call ?headers ?body ?chunked `PUT uri
-  let patch ?body ?chunked ?headers uri = call ?headers ?body ?chunked `PATCH uri
+  let get ?ctx ?headers uri = call ?ctx ?headers ~chunked:false `GET uri
+  let delete ?ctx ?headers uri = call ?ctx ?headers ~chunked:false `DELETE uri
+  let post ?ctx ?body ?chunked ?headers uri = call ?ctx ?headers ?body ?chunked `POST uri
+  let put ?ctx ?body ?chunked ?headers uri = call ?ctx ?headers ?body ?chunked `PUT uri
+  let patch ?ctx ?body ?chunked ?headers uri = call ?ctx ?headers ?body ?chunked `PATCH uri
 
-  let post_form ?headers ~params uri =
+  let post_form ?ctx ?headers ~params uri =
     let headers = Header.add_opt headers "content-type" "application/x-www-form-urlencoded" in
     let q = List.map (fun (k,v) -> k, [v]) (Header.to_list params) in
     let body = Cohttp_lwt_body.of_string (Uri.encoded_of_query q) in
-    post ~chunked:false ~headers ~body uri
+    post ?ctx ~chunked:false ~headers ~body uri
 
-  let callv uri reqs =
-    lwt (conn, ic, oc) = Net.connect_uri uri in
+  let callv ?(ctx=default_ctx) uri reqs =
+    lwt (conn, ic, oc) = Net.connect_uri ~ctx uri in
     (* Serialise the requests out to the wire *)
     let _ = Lwt_stream.iter_s (fun (req,body) ->
         Request.write (fun req oc ->
@@ -198,6 +214,9 @@ module type Server = sig
   module IO : S.IO
   module Request : Request
   module Response : Response
+
+  type ctx
+  val default_ctx : ctx
 
   type t = {
     callback :
@@ -248,6 +267,9 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
   module IO = IO
   module Request = Request
   module Response = Response
+
+  type ctx = Net.ctx
+  let default_ctx = Net.default_ctx
 
   type t = {
     callback :
