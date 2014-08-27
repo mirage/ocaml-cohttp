@@ -19,3 +19,4 @@ module Make(Channel:V1_LWT.CHANNEL) : Cohttp.S.IO
   with type 'a t = 'a Lwt.t
    and type ic = Channel.t
    and type oc = Channel.t
+   and type conn = Channel.t

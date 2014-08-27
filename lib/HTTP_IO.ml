@@ -24,6 +24,7 @@ module Make(Channel:V1_LWT.CHANNEL) = struct
 
   type ic = Channel.t
   type oc = Channel.t
+  type conn = Channel.t
 
   let iter fn x = Lwt_list.iter_s fn x
 

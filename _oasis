@@ -13,4 +13,4 @@ Library "mirage-http"
   Findlibname:        mirage-http
   Modules:            HTTP
   InternalModules:    HTTP_IO
-  BuildDepends:       cohttp.lwt-core, tcpip.channel, lwt.syntax
+  BuildDepends:       cohttp.lwt-core, tcpip.channel, lwt.syntax, conduit.mirage
