@@ -18,10 +18,9 @@
 
 open Lwt
 
-module Make(S:V1_LWT.STACKV4) = struct
+module Make(Conduit:Conduit_mirage.S) = struct
 
-  module Conduit = Conduit_mirage.Make(S)
-  module Channel = Channel.Make(S.TCPV4)
+  module Channel = Channel.Make(Conduit.Flow)
   module HTTP_IO = HTTP_IO.Make(Channel)
 
   module Net_IO = struct
@@ -29,18 +28,28 @@ module Make(S:V1_LWT.STACKV4) = struct
     module IO = HTTP_IO
 
     type 'a io = 'a Lwt.t
-    type ic = Conduit.ic
-    type oc = Conduit.oc
+    type ic = Channel.t
+    type oc = Channel.t
     type flow = Conduit.flow
     
     type ctx = {
-      foo: unit;
+      resolver: Conduit_resolver_lwt.t;
+      ctx: Conduit.ctx;
     }
 
-    let default_ctx = { foo=() }
+    let default_ctx = 
+      { resolver = Conduit_resolver_mirage.localhost;
+        ctx = Conduit.default_ctx }
 
     let connect_uri ~ctx uri =
-      fail (Failure "TODO")
+      Conduit_resolver_lwt.resolve_uri ~uri ctx.resolver
+      >>= fun endp ->
+      Conduit.endp_to_client ~ctx:ctx.ctx endp
+      >>= fun client ->
+      Conduit.connect ~ctx:ctx.ctx client
+      >>= fun (flow,ic,oc) ->
+      let ch = Channel.create flow in
+      return (flow, ch, ch)
 
     let close_in ic = ()
     let close_out ic = ()
@@ -59,9 +68,8 @@ module Make(S:V1_LWT.STACKV4) = struct
   module Server = struct
     include Server_core
 
-    let listen spec flow =
+    let listen spec flow ic oc =
       let ch = Channel.create flow in
-      Server_core.callback spec ch ch ch 
-
+      Server_core.callback spec flow ch ch
   end
 end
