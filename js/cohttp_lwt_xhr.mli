@@ -15,7 +15,7 @@
  *
  *)
 
-(** HTTP client for javascript using XMLHttpRequest. *)
+(** Prototype HTTP client for javascript using XMLHttpRequest. *)
 
 type ic' = 
   {
@@ -24,6 +24,7 @@ type ic' =
     len : int;
   }
 
+(** IO is implemented with strings *)
 module String_io : Cohttp.S.IO
  with type 'a t = 'a Lwt.t
  and type ic = ic'

@@ -1,3 +1,4 @@
+(* input channel type - a string with a (file) position and length *)
 type ic' = 
   {
     str : string;
@@ -13,8 +14,11 @@ module String_io = struct
     let rec iter = Lwt_list.iter_s
     
     type ic = ic'
+
+    (* output channels are just buffers *)
     type oc = Buffer.t
     
+    (* the following read/write logic has only been lightly tested... *)
     let read_rest x = 
       let s = String.sub x.str x.pos (x.len-x.pos) in
       x.pos <- x.len;
@@ -85,7 +89,9 @@ module Client = struct
       let xml = XmlHttpRequest.create () in
       let () = xml##_open(Js.string (C.Code.string_of_method meth),
                           Js.string (Uri.to_string uri),
-                          Js._false) (* async??? *)
+                          Js._false) (* For simplicity, do a sync call.  We should
+                                        really make this async. See js_of_ocaml apis
+                                        for an example *)
       in
       (* set request headers *)
       let () = 
@@ -94,6 +100,8 @@ module Client = struct
           | Some(headers) ->
             C.Header.iter 
               (fun k v -> List.iter 
+                (* some headers lead to errors in the javascript console, should
+                   we filter then out here? *)
                 (fun v -> 
                   log "[req header] %s: %s" k v;
                   xml##setRequestHeader(Js.string k, Js.string v)) v) 
@@ -162,10 +170,8 @@ module Client = struct
       let body = Cohttp_lwt_body.of_string (Uri.encoded_of_query q) in
       post ~chunked:false ~headers ~body uri
 
+    (* No implementation (can it be done?).  What should the failure exception be? *)
     exception Cohttp_lwt_xhr_not_implemented
-
-    (* no implementation (can it be done?).  
-      * what should the failure exception be? *)
     let callv ?(ssl=false) host port reqs = Lwt.fail Cohttp_lwt_xhr_not_implemented (* ??? *)
         
 end
