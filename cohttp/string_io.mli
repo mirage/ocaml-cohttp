@@ -1,6 +1,6 @@
 (*
  * Copyright (c) 2014 Andy Ray
- * Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2014 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,16 +14,16 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- *)
+*)
 
-(** HTTP client for JavaScript using XMLHttpRequest. *)
+type buf =
+  {
+    str : string;
+    mutable pos : int;
+    len : int;
+  }
 
-(** The [Request] module holds the information about a HTTP request *)
-module Request : Cohttp_lwt.Request with module IO = Cohttp.String_io.M
-
-(** The [Response] module holds the information about a HTTP response *)
-module Response : Cohttp_lwt.Response with module IO = Cohttp.String_io.M
-
-(** The [Client] module implements an HTTP client interface. *)
-module Client : Cohttp_lwt.Client with module IO = Cohttp.String_io.M
-
+module M : S.IO
+ with type 'a t = 'a
+ and type ic = buf
+ and type oc = Buffer.t

@@ -7,6 +7,7 @@ NAME=cohttp
 LWT ?= $(shell if ocamlfind query lwt >/dev/null 2>&1; then echo --enable-lwt; fi)
 LWT_UNIX ?= $(shell if ocamlfind query lwt.ssl >/dev/null 2>&1; then echo --enable-lwt-unix; fi)
 ASYNC ?= $(shell if ocamlfind query async >/dev/null 2>&1; then echo --enable-async; fi)
+JS ?= $(shell if ocamlfind query js_of_ocaml >/dev/null 2>&1; then echo --enable-js; fi)
 #NETTESTS ?= --enable-tests --enable-nettests
 
 setup.bin: setup.ml

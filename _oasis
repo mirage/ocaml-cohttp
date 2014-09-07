@@ -1,8 +1,8 @@
 OASISFormat: 0.3
 Name:        cohttp
 Version:     0.12.0
-Synopsis:    HTTP library for Lwt, Async and Mirage
-Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire, David Scott, Rudi Grinberg
+Synopsis:    HTTP library for Lwt, Async, JavaScript and Mirage
+Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire, David Scott, Rudi Grinberg, Andy Ray
 License:     ISC
 Plugins:     META (0.3)
 BuildTools:  ocamlbuild
@@ -12,7 +12,7 @@ Library cohttp
   Findlibname:   cohttp
   Pack:          true
   Modules:       S, Code, Header, Cookie, Request, Response, Transfer, Accept, Accept_parser,
-                 Accept_lexer, Accept_types, Base64, Auth, Header_io, Transfer_io, Connection, Body
+                 Accept_lexer, Accept_types, Base64, Auth, Header_io, Transfer_io, Connection, Body, String_io
   BuildDepends:  re.emacs, stringext, uri (>= 1.3.13), uri.services, fieldslib, fieldslib.syntax, sexplib, sexplib.syntax
   XMETARequires: re.emacs, stringext, uri, uri.services, fieldslib, sexplib
 
