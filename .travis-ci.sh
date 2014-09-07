@@ -23,7 +23,7 @@ sudo apt-get update -qq
 sudo apt-get install -qq ocaml ocaml-native-compilers camlp4-extra opam time libssl-dev
 
 export OPAMYES=1
-export OPAMVERBOSE=1
+export OPAMJOBS=2
 echo OCaml version
 ocaml -version
 echo OPAM versions
@@ -42,7 +42,7 @@ make clean
 # Test out some upstream users of Cohttp
 opam pin cohttp .
 
-unset OPAMVERBOSE
+export OPAMVERBOSE=1
 opam install github cowabloga mirage-www -j 2
 
 case "$OCAML_VERSION" in
