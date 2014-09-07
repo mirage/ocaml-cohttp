@@ -25,56 +25,56 @@ type buf =
   }
 
 module M = struct
-    type 'a t = 'a
-    let return a = a
-    type conn = buf
-    let (>>=) = (|>)
-    let iter = List.iter
-    type ic = buf
+  type 'a t = 'a
+  let return a = a
+  type conn = buf
+  let (>>=) = (|>)
+  let iter = List.iter
+  type ic = buf
 
-    (* output channels are just buffers *)
-    type oc = Buffer.t
+  (* output channels are just buffers *)
+  type oc = Buffer.t
 
-    (* the following read/write logic has only been lightly tested... *)
-    let read_rest x =
-      let s = String.sub x.str x.pos (x.len-x.pos) in
-      x.pos <- x.len;
-      s
+  (* the following read/write logic has only been lightly tested... *)
+  let read_rest x =
+    let s = String.sub x.str x.pos (x.len-x.pos) in
+    x.pos <- x.len;
+    s
 
-    let read_line' x =
-      if x.pos < x.len then
-        let start = x.pos in
-        try
-          while x.str.[x.pos] != '\n' do
-            x.pos <- x.pos + 1
-          done;
-          let s = String.sub x.str start (x.pos-start) in
-          x.pos <- x.pos + 1;
-          Some s
-        with _ ->
-          Some (read_rest x)
-      else
-        None
-
-    let read_line x = return (read_line' x)
-
-    let read_exactly' x n =
-      if x.len-x.pos < n then None
-      else begin
-        let s = String.sub x.str x.pos n in
-        x.pos <- x.pos + n;
+  let read_line' x =
+    if x.pos < x.len then
+      let start = x.pos in
+      try
+        while x.str.[x.pos] != '\n' do
+          x.pos <- x.pos + 1
+        done;
+        let s = String.sub x.str start (x.pos-start) in
+        x.pos <- x.pos + 1;
         Some s
-      end
+      with _ ->
+        Some (read_rest x)
+    else
+      None
 
-    let read_exactly x n = return (read_exactly' x n)
+  let read_line x = return (read_line' x)
 
-    let read x n =
-      match read_exactly' x n with
-      | None when x.pos >= x.len -> raise End_of_file
-      | None -> return (read_rest x)
-      | Some(x) -> return x
+  let read_exactly' x n =
+    if x.len-x.pos < n then None
+    else begin
+      let s = String.sub x.str x.pos n in
+      x.pos <- x.pos + n;
+      Some s
+    end
 
-    let rec write x s = Buffer.add_string x s; return ()
+  let read_exactly x n = return (read_exactly' x n)
 
-    let flush x = return ()
+  let read x n =
+    match read_exactly' x n with
+    | None when x.pos >= x.len -> raise End_of_file
+    | None -> return (read_rest x)
+    | Some(x) -> return x
+
+  let rec write x s = Buffer.add_string x s; return ()
+
+  let flush x = return ()
 end
