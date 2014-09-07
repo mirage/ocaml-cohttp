@@ -35,6 +35,9 @@ reinstall: setup.bin
 	ocamlfind remove $(NAME) || true
 	./setup.bin -reinstall
 
+generate:
+	cd scripts && ocaml generate.ml
+
 clean:
 	ocamlbuild -clean
 	rm -f setup.data setup.log setup.bin

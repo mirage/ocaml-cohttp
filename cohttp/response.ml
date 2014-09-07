@@ -45,8 +45,8 @@ module Make(IO : S.IO) = struct
       match Stringext.split response_line ~on:' ' with
       | version_raw :: code_raw :: _ -> begin
          match version_of_string version_raw with
-         | Some v -> return (`Ok (v, (status_of_code (int_of_string code_raw))))
-         | None -> return (`Invalid ("Malformed response version: " ^ version_raw))
+         | `HTTP_1_0 | `HTTP_1_1 as v -> return (`Ok (v, (status_of_code (int_of_string code_raw))))
+         | `Other _ -> return (`Invalid ("Malformed response version: " ^ version_raw))
       end
       | _ -> return (`Invalid ("Malformed response first line: " ^ response_line))
     end

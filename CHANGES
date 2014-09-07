@@ -1,7 +1,9 @@
 0.12.0 (trunk):
+* Add a JavaScript backend.
+* Support HTTP methods and versions other than the standard ones. (#142).
 * Remove link-time dependency on camlp4 via META fixes (#127).
 * The `has_body` function in the Request and Response modules now
-  explicitly signals when the body size is unknown, to help deal with
+  explicitly signals when the body size is unknown.
 * Add `Body.map` and `Body.as_pipe` to work with HTTP bodies more easily.
 * Move all the module type signatures into `Cohttp.S`.
 * [lwt] Remove the `Cohttp_lwt.Server.server` type synonym to `t`.
@@ -13,6 +15,8 @@
 * Breaking: if users have percent-encoded file names, their resolution is
   changed: `resolve_local_file` in `Cohttp_async` and `Cohttp_lwt` now always
   percent-decode paths (#157)
+* Port to the latest Conduit (0.6.0+) API.
+* [lwt] Add `stop` thread to terminate a running server if it finishes (#147).
 
 0.11.2 (2014-04-21)
 * Fix build by add a missing build-deps in _oasis.

@@ -63,7 +63,7 @@ let make_net_server ?mode port =
 
 let _ = 
   let _server = make_net_server 8080 in
-  let mode = `SSL (`Crt_file_path "server.crt", `Key_file_path "server.key") in
+  let mode = `OpenSSL (`Crt_file_path "server.crt", `Key_file_path "server.key") in
   let _ssl_server = make_net_server ~mode 8443 in
   let () = every (sec 3.0) (fun () ->
       Gc.compact ();

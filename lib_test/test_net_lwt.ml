@@ -36,7 +36,8 @@ let make_net_reqv () =
       Request.make ~meth:`GET (Uri.of_string "/foo2"), `Empty;
       Request.make ~meth:`GET ~headers:last_header (Uri.of_string "/foo3"), `Empty;
     ] in
-  lwt resp = Client.callv "89.16.177.154" 80 (Lwt_stream.of_list reqs) in
+  let uri = Uri.of_string "http://89.16.177.154" in
+  lwt resp = Client.callv uri (Lwt_stream.of_list reqs) in
   (* Consume the bodies, and we should get 3 responses *)
   let num = ref 0 in
   Lwt_stream.iter_s (fun (res,body) ->
@@ -49,7 +50,7 @@ let make_net_reqv () =
   assert_equal !num 3;
   (* Run the callv without consuming bodies (i.e. a bug), and we only
      get one *)
-  lwt resp = Client.callv "89.16.177.154" 80 (Lwt_stream.of_list reqs) in
+  lwt resp = Client.callv uri (Lwt_stream.of_list reqs) in
   let num = ref 0 in
   Lwt_stream.iter_s (fun (res,body) ->
     (* Do not consume the body *)

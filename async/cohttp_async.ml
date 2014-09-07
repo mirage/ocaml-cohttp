@@ -21,17 +21,28 @@ open Async.Std
 module IO = Cohttp_async_io
 
 module Net = struct
-  let connect_uri ?interrupt uri =
+
+  let lookup uri =
     let host = Option.value (Uri.host uri) ~default:"localhost" in
     match Uri_services.tcp_port_of_uri ~default:"http" uri with
     | None -> raise (Failure "Net.connect") (* TODO proper exception *)
-    | Some port -> begin
-        let mode = 
-          match Uri.scheme uri with
-          | Some "https" -> `SSL
-          | _ -> `TCP in
-        Async_conduit.Client.connect ?interrupt ~mode ~host ~port ()
-      end
+    | Some port ->
+      let open Unix in
+      Addr_info.get ~host [Addr_info.AI_FAMILY PF_INET; Addr_info.AI_SOCKTYPE SOCK_STREAM] 
+      >>= function
+      | {Addr_info.ai_addr=ADDR_INET(addr,_)}::_ ->
+        return (host, Ipaddr_unix.of_inet_addr addr, port)
+      | _ -> raise (Failure "resolution failed")
+ 
+  let connect_uri ?interrupt uri =
+     lookup uri >>= fun (host, addr, port) ->
+     let mode =
+       match Uri.scheme uri with
+       | Some "https" -> `OpenSSL (host, addr, port)
+       | Some "httpunix" -> `Unix_domain_socket host
+       | _ -> `TCP (addr, port)
+     in
+     Conduit_async.connect ?interrupt mode
 end
 
 module Request = struct
@@ -271,7 +282,7 @@ module Server = struct
 
   let create ?max_connections ?max_pending_connections
       ?buffer_age_limit ?on_handler_error ?(mode=`TCP) where_to_listen handle_request =
-    Async_conduit.Server.create ?max_connections ?max_pending_connections
+    Conduit_async.serve ?max_connections ?max_pending_connections
       ?buffer_age_limit ?on_handler_error mode
       where_to_listen (handle_client handle_request)
     >>| fun server ->

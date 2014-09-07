@@ -29,6 +29,7 @@ let return = Deferred.return
 
 type ic = Reader.t
 type oc = Writer.t
+type conn = unit
 
 let iter fn x =
   Deferred.List.iter x ~f:fn

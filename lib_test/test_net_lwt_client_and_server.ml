@@ -41,8 +41,11 @@ let make_server () =
     |_ -> exit 0
   in
   let conn_closed _ () = () in
+  lwt ctx = Conduit_lwt_unix.init ~src:address () in
+  let ctx = Cohttp_lwt_unix_net.init ~ctx () in
+  let mode = `TCP (`Port port) in
   let config = { Server.callback; conn_closed } in
-  Server.create ~address ~port config
+  Server.create ~ctx ~mode config
 
 let not_none n t fn =
   match_lwt t with
@@ -105,7 +108,7 @@ let client () =
     Request.make ~encoding:Transfer.Chunked ~headers:(Header.of_list ["connection","close"])
       (Uri.of_string "/post"), body2;
   ] in
-  lwt resp = Client.callv address port reqs in
+  lwt resp = Client.callv url reqs in
   Lwt_stream.iter_s (fun (res, body) ->
     lwt body = Cohttp_lwt_body.to_string body in 
     assert(body="foobar");

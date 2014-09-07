@@ -167,7 +167,7 @@ module Server : sig
     ?on_handler_error:[ `Call of 'address -> exn  -> unit
                       | `Ignore
                       | `Raise ] ->
-    ?mode:Async_conduit.Server.mode ->
+    ?mode:Conduit_async.server ->
     ('address, 'listening_on) Tcp.Where_to_listen.t
     -> (body:Body.t -> 'address -> Request.t -> response Deferred.t)
     -> ('address, 'listening_on) t Deferred.t
