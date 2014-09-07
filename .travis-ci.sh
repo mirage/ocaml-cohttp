@@ -5,9 +5,9 @@ case "$OCAML_VERSION,$OPAM_VERSION" in
 4.00.1,1.1.0) ppa=avsm/ocaml40+opam11 ;;
 4.01.0,1.0.0) ppa=avsm/ocaml41+opam10 ;;
 4.01.0,1.1.0) ppa=avsm/ocaml41+opam11 ;;
-4.01.0,1.2.0) ppa=avsm/ocaml41+opam12 ;;
+4.01.0,1.2.0) ppa=avsm/ocaml41+opam12; pin="add" ;;
 4.02.0,1.1.0) ppa=avsm/ocaml42+opam11 ;;
-4.02.0,1.2.0) ppa=avsm/ocaml42+opam12 ;;
+4.02.0,1.2.0) ppa=avsm/ocaml42+opam12; pin="add" ;;
 *) echo Unknown $OCAML_VERSION,$OPAM_VERSION; exit 1 ;;
 esac
 
@@ -28,9 +28,9 @@ echo OPAM versions
 opam --version
 opam --git-version
 
-opam init git://github.com/ocaml/opam-repository >/dev/null 2>&1
-opam pin add conduit git://github.com/mirage/ocaml-conduit
-opam pin add mirage-http git://github.com/mirage/mirage-http
+opam init git://github.com/ocaml/opam-repository
+opam pin $pin conduit git://github.com/mirage/ocaml-conduit
+opam pin $pin mirage-http git://github.com/mirage/mirage-http
 opam install ${OPAM_DEPENDS}
 
 eval `opam config env`
