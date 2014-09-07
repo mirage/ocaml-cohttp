@@ -30,7 +30,7 @@ echo OPAM versions
 opam --version
 opam --git-version
 
-opam init 
+opam init
 opam pin $pin conduit git://github.com/mirage/ocaml-conduit
 opam pin $pin mirage-http git://github.com/mirage/mirage-http
 opam install ${OPAM_DEPENDS}
@@ -43,7 +43,7 @@ make clean
 opam pin cohttp .
 
 export OPAMVERBOSE=1
-opam install github cowabloga mirage-www -j 2
+opam install github cowabloga mirage-www
 
 case "$OCAML_VERSION" in
 4.01.0)
