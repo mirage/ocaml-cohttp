@@ -28,6 +28,10 @@ Flag async
   Description: build the Core/Async library
   Default:     false
 
+Flag js
+  Description: build the Javascript XHR client library
+  Default:     false
+
 Flag nettests
   Description: run the internet-using tests
   Default:     false
@@ -51,6 +55,16 @@ Library cohttp_lwt_unix
   BuildDepends:  cohttp.lwt-core, unix, lwt.unix, lwt.ssl, conduit.lwt
   XMETARequires: cohttp.lwt-core, unix, lwt.unix, lwt.ssl, conduit.lwt
   Modules:       Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt_unix_net
+
+Library cohttp_lwt_xhr
+  Build$:        flag(lwt) && flag(js)
+  Install$:      flag(lwt) && flag(js)
+  Path:          js
+  Findlibname:   js
+  FindlibParent: cohttp
+  BuildDepends:  cohttp.lwt-core, js_of_ocaml, js_of_ocaml.syntax
+  XMETARequires: cohttp.lwt-core, js_of_ocaml
+  Modules:       Cohttp_lwt_xhr
 
 Library cohttp_async
   Build$:        flag(async)
