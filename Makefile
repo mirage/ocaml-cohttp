@@ -15,7 +15,7 @@ setup.bin: setup.ml
 	rm -f setup.cmx setup.cmi setup.o setup.cmo
 
 setup.data: setup.bin
-	./setup.bin -configure $(LWT) $(ASYNC) $(LWT_UNIX) $(TESTS) $(NETTESTS) --prefix $(PREFIX)
+	./setup.bin -configure $(LWT) $(ASYNC) $(LWT_UNIX) $(JS) $(TESTS) $(NETTESTS) --prefix $(PREFIX)
 
 build: setup.data setup.bin
 	./setup.bin -build -classic-display
