@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: a3c9129481ad50253d7b74ad3ede3dbd)
+# DO NOT EDIT (digest: 7fcc86205df6bf1109d091bd98c630d4)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -419,7 +419,6 @@
 "lib_test/test_xhr.byte": pkg_stringext
 "lib_test/test_xhr.byte": pkg_uri
 "lib_test/test_xhr.byte": pkg_uri.services
-"lib_test/test_xhr.byte": pkg_yojson
 "lib_test/test_xhr.byte": use_cohttp
 "lib_test/test_xhr.byte": use_cohttp_lwt
 "lib_test/test_xhr.byte": use_cohttp_lwt_xhr
@@ -435,7 +434,6 @@
 <lib_test/*.ml{,i}>: pkg_stringext
 <lib_test/*.ml{,i}>: pkg_uri
 <lib_test/*.ml{,i}>: pkg_uri.services
-<lib_test/*.ml{,i}>: pkg_yojson
 <lib_test/*.ml{,i}>: use_cohttp
 <lib_test/*.ml{,i}>: use_cohttp_lwt
 <lib_test/*.ml{,i}>: use_cohttp_lwt_xhr

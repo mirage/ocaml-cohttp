@@ -252,7 +252,7 @@ Executable "test_xhr"
   Custom:             true
   CompiledObject:     byte
   Install:            false
-  BuildDepends:       cohttp, cohttp.js, yojson, lwt.syntax, js_of_ocaml.syntax
+  BuildDepends:       cohttp, cohttp.js, lwt.syntax, js_of_ocaml.syntax
 
 Test test_accept
   Run$:               flag(tests)
