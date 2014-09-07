@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 313e637245f1f50cb65af4a61de329ce)
+# DO NOT EDIT (digest: a3c9129481ad50253d7b74ad3ede3dbd)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -249,12 +249,9 @@
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: use_cohttp_lwt
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: use_cohttp_lwt_unix
 <lib_test/*.ml{,i}>: pkg_conduit.lwt
-<lib_test/*.ml{,i}>: pkg_lwt
 <lib_test/*.ml{,i}>: pkg_lwt.ssl
-<lib_test/*.ml{,i}>: pkg_lwt.syntax
 <lib_test/*.ml{,i}>: pkg_lwt.unix
 <lib_test/*.ml{,i}>: pkg_unix
-<lib_test/*.ml{,i}>: use_cohttp_lwt
 <lib_test/*.ml{,i}>: use_cohttp_lwt_unix
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: custom
 # Executable test_net_async
@@ -322,17 +319,8 @@
 <lib_test/test_net_async_server.{native,byte}>: use_cohttp_async
 <lib_test/*.ml{,i}>: pkg_async
 <lib_test/*.ml{,i}>: pkg_conduit.async
-<lib_test/*.ml{,i}>: pkg_fieldslib
-<lib_test/*.ml{,i}>: pkg_fieldslib.syntax
 <lib_test/*.ml{,i}>: pkg_oUnit
-<lib_test/*.ml{,i}>: pkg_re.emacs
-<lib_test/*.ml{,i}>: pkg_sexplib
-<lib_test/*.ml{,i}>: pkg_sexplib.syntax
-<lib_test/*.ml{,i}>: pkg_stringext
 <lib_test/*.ml{,i}>: pkg_threads
-<lib_test/*.ml{,i}>: pkg_uri
-<lib_test/*.ml{,i}>: pkg_uri.services
-<lib_test/*.ml{,i}>: use_cohttp
 <lib_test/*.ml{,i}>: use_cohttp_async
 <lib_test/test_net_async_server.{native,byte}>: custom
 # Executable cohttp-server-async
@@ -418,5 +406,39 @@
 <examples/async/*.ml{,i}>: use_cohttp
 <examples/async/*.ml{,i}>: use_cohttp_async
 <examples/async/hello_world.{native,byte}>: custom
+# Executable test_xhr
+"lib_test/test_xhr.byte": pkg_fieldslib
+"lib_test/test_xhr.byte": pkg_fieldslib.syntax
+"lib_test/test_xhr.byte": pkg_js_of_ocaml
+"lib_test/test_xhr.byte": pkg_js_of_ocaml.syntax
+"lib_test/test_xhr.byte": pkg_lwt
+"lib_test/test_xhr.byte": pkg_lwt.syntax
+"lib_test/test_xhr.byte": pkg_re.emacs
+"lib_test/test_xhr.byte": pkg_sexplib
+"lib_test/test_xhr.byte": pkg_sexplib.syntax
+"lib_test/test_xhr.byte": pkg_stringext
+"lib_test/test_xhr.byte": pkg_uri
+"lib_test/test_xhr.byte": pkg_uri.services
+"lib_test/test_xhr.byte": pkg_yojson
+"lib_test/test_xhr.byte": use_cohttp
+"lib_test/test_xhr.byte": use_cohttp_lwt
+"lib_test/test_xhr.byte": use_cohttp_lwt_xhr
+<lib_test/*.ml{,i}>: pkg_fieldslib
+<lib_test/*.ml{,i}>: pkg_fieldslib.syntax
+<lib_test/*.ml{,i}>: pkg_js_of_ocaml
+<lib_test/*.ml{,i}>: pkg_js_of_ocaml.syntax
+<lib_test/*.ml{,i}>: pkg_lwt
+<lib_test/*.ml{,i}>: pkg_lwt.syntax
+<lib_test/*.ml{,i}>: pkg_re.emacs
+<lib_test/*.ml{,i}>: pkg_sexplib
+<lib_test/*.ml{,i}>: pkg_sexplib.syntax
+<lib_test/*.ml{,i}>: pkg_stringext
+<lib_test/*.ml{,i}>: pkg_uri
+<lib_test/*.ml{,i}>: pkg_uri.services
+<lib_test/*.ml{,i}>: pkg_yojson
+<lib_test/*.ml{,i}>: use_cohttp
+<lib_test/*.ml{,i}>: use_cohttp_lwt
+<lib_test/*.ml{,i}>: use_cohttp_lwt_xhr
+"lib_test/test_xhr.byte": custom
 # OASIS_STOP
 true: annot, bin_annot, principal, strict_sequence, debug
