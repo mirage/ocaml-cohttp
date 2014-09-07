@@ -245,6 +245,15 @@ Executable "async-hello-world"
   Install:            false
   BuildDepends:       cohttp, cohttp.async
 
+Executable "test_xhr"
+  Path:               lib_test
+  MainIs:             test_xhr.ml
+  Build$:             flag(tests) && flag(lwt) && flag(js)
+  Custom:             true
+  CompiledObject:     byte
+  Install:            false
+  BuildDepends:       cohttp, cohttp.js, lwt.syntax, js_of_ocaml.syntax
+
 Test test_accept
   Run$:               flag(tests)
   Command:            $test_accept

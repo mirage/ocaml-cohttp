@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2014 Andy Ray
+ * Copyright (c) 2014 Andy Ray <andy.ray@ujamjar.com>
  * Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
