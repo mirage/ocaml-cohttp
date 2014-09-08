@@ -32,8 +32,7 @@ opam --git-version
 opam init
 opam remote add mirage-dev git://github.com/mirage/mirage-dev
 sudo apt-get install -qq `opam install -e ubuntu ${OPAM_DEPENDS}`
-opam install -j 2 core_kernel
-export OPAMVERBOSE=1
+opam install -v -j 2 core_kernel
 opam install ${OPAM_DEPENDS}
 eval `opam config env`
 make NETTESTS=--enable-nettests
