@@ -39,12 +39,10 @@ eval `opam config env`
 make NETTESTS=--enable-nettests
 make test
 make clean
-export OPAMVERBOSE=0
 export OPAMJOBS=2
 # Test out some upstream users of Cohttp
 opam pin $pin cohttp .
-
-opam install github cowabloga mirage-www
+opam install -j 2 github cowabloga mirage-www
 
 case "$OCAML_VERSION" in
 4.01.0)
