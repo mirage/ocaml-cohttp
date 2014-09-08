@@ -32,7 +32,7 @@ opam --git-version
 
 opam init
 opam remote add mirage-dev git://github.com/mirage/mirage-dev
-sudo opam install -y -e ubuntu ${OPAM_DEPENDS}
+sudo apt-get install -qq `opam install -e ubuntu ${OPAM_DEPENDS}`
 opam install ${OPAM_DEPENDS}
 
 eval `opam config env`
