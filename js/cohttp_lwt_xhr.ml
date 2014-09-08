@@ -93,7 +93,7 @@ module Client = struct
         ~version:`HTTP_1_1
         ~status:(Cohttp.Code.status_of_code xml##status)
         ~flush:false
-        ~encoding:(Cohttp.Transfer.Fixed (String.length body_str))
+        ~encoding:(Cohttp.Transfer.Fixed (Int64.of_int (String.length body_str)))
         ~headers:resp_headers 
         ()
       in

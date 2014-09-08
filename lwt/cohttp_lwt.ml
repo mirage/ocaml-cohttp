@@ -295,7 +295,8 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
 
   let respond_string ?headers ~status ~body () =
     let res = Response.make ~status
-        ~encoding:(Transfer.Fixed (String.length body)) ?headers () in
+        ~encoding:(Transfer.Fixed (Int64.of_int (String.length body)))
+        ?headers () in
     let body = Cohttp_lwt_body.of_string body in
     return (res,body)
 

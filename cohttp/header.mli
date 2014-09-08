@@ -59,7 +59,7 @@ val of_list : (string * string) list -> t
 val to_list : t -> (string * string) list
 val to_lines : t -> string list
 
-val get_content_range : t -> int option
+val get_content_range : t -> Int64.t option
 val get_media_type : t -> string option
 val get_connection_close : t -> bool
 val get_acceptable_media_ranges : t -> (Accept.media_range * Accept.p list) Accept.qlist

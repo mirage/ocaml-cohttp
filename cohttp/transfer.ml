@@ -19,7 +19,7 @@ open Sexplib.Std
 
 type encoding =
 | Chunked
-| Fixed of int
+| Fixed of int64
 | Unknown with sexp
 
 type chunk =
@@ -30,12 +30,12 @@ type chunk =
 let encoding_to_string =
   function
   | Chunked -> "chunked"
-  | Fixed i -> Printf.sprintf "fixed[%d]" i
+  | Fixed i -> Printf.sprintf "fixed[%Ld]" i
   | Unknown -> "unknown"
 
 let has_body =
   function
-  | Fixed 0 -> `No
+  | Fixed 0L -> `No
   | Chunked
   | Fixed _ -> `Yes
   | Unknown -> `Unknown

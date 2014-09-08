@@ -44,7 +44,7 @@ module Server = struct
        if Unix.((stat fname).st_kind <> S_REG) then raise Isnt_a_file) in
       lwt ic = Lwt_io.open_file ~buffer_size:16384 ~mode:Lwt_io.input fname in
       lwt len = Lwt_io.length ic in
-      let encoding = Cohttp.Transfer.Fixed (Int64.to_int len) in
+      let encoding = Cohttp.Transfer.Fixed len in
       let count = 16384 in
       let stream = Lwt_stream.from (fun () ->
         try_lwt

@@ -17,7 +17,7 @@
 
 open Sexplib.Std
 
-type t = { 
+type t = {
   mutable headers: Header.t;
   mutable meth: Code.meth;
   mutable uri: Uri.t;
@@ -26,7 +26,7 @@ type t = {
 } with fields, sexp
 
 let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
-  let headers = 
+  let headers =
     match headers with
     | None -> Header.init ()
     | Some h -> h in
@@ -36,7 +36,7 @@ let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
        (* Check for a content-length in the supplied headers first *)
        match Header.get_content_range headers with
        | Some clen -> Transfer.Fixed clen
-       | None -> Transfer.Fixed 0 
+       | None -> Transfer.Fixed Int64.zero
      end
     | Some e -> e
   in
@@ -52,7 +52,7 @@ let is_keep_alive { version; headers; _ } =
    adding content headers if appropriate.
    @param chunked Forces chunked encoding
  *)
-let make_for_client ?headers ?(chunked=true) ?(body_length=0) meth uri =
+let make_for_client ?headers ?(chunked=true) ?(body_length=Int64.zero) meth uri =
   let encoding =
     match chunked with
     | true -> Transfer.Chunked
@@ -66,7 +66,7 @@ module Make(IO : S.IO) = struct
   module IO = IO
   module Header_IO = Header_io.Make(IO)
   module Transfer_IO = Transfer_io.Make(IO)
-  
+
   open IO
 
   let url_decode url = Uri.pct_decode url

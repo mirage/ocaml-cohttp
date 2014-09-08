@@ -33,12 +33,12 @@ let of_string_list s = `String (String.concat "" s)
 
 let transfer_encoding (t:t) =
   match t with
-  | `Empty -> Transfer.Fixed 0
-  | `String s -> Transfer.Fixed (String.length s)
+  | `Empty -> Transfer.Fixed 0L
+  | `String s -> Transfer.Fixed (Int64.of_int (String.length s))
 
 let length = function
-  | `Empty -> 0
-  | `String s -> String.length s
+  | `Empty -> 0L
+  | `String s -> Int64.of_int (String.length s)
 
 let map t ~f =
   match t with
