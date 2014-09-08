@@ -25,7 +25,7 @@ module Make(IO : S.IO) = struct
       (* Read chunk size *)
       read_line ic >>= function
       |Some chunk_size_hex -> begin
-        let chunk_size = 
+        let chunk_size =
           let hex =
             (* chunk size is optionally delimited by ; *)
             try String.sub chunk_size_hex 0 (String.rindex chunk_size_hex ';')
@@ -44,33 +44,33 @@ module Make(IO : S.IO) = struct
         end
       end
       |None -> return Done
- 
+
     let write oc buf =
       let len = String.length buf in
       write oc (Printf.sprintf "%x\r\n" len) >>= fun () ->
       write oc buf >>= fun () ->
       write oc "\r\n"
   end
-  
+
   module Fixed = struct
     let read ~remaining ic =
       (* TODO functorise string to a bigbuffer *)
       match !remaining with
-      |0 -> return Done
+      |0L -> return Done
       |len ->
-        read ic len >>= function
+        read ic (Int64.to_int len) >>= function
         | "" -> return Done
         | buf ->
-          remaining := !remaining - String.length buf;
+          remaining := Int64.sub !remaining (Int64.of_int (String.length buf));
           return (match !remaining with
-                  | 0 -> Final_chunk buf
+                  | 0L -> Final_chunk buf
                   | _ -> Chunk buf)
 
     (* TODO enforce that the correct length is written? *)
     let write oc buf =
       write oc buf
   end
-  
+
   module Unknown = struct
     (* If we have no idea, then read one chunk and return it.
      * TODO should this be a read with an explicit timeout? *)
@@ -80,7 +80,7 @@ module Make(IO : S.IO) = struct
     let write oc buf =
       write oc buf
   end
-  
+
   let read =
     function
     | Chunked -> Chunked.read

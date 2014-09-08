@@ -144,7 +144,8 @@ module Client = struct
       match body_bufs,chunked with
       | [],true     (* Dont used chunked encoding with an empty body *)
       | _,false ->  (* If we dont want chunked, calculate a content length *)
-        let body_length = List.fold ~init:0 ~f:(fun a b -> String.length b + a) body_bufs in
+        let body_length = List.fold ~init:0L ~f:(
+          fun a b -> Int64.((of_int (String.length b)) + a)) body_bufs in
         Request.make_for_client ?headers ~chunked:false ~body_length meth uri
       | _,true ->   (* Use chunked encoding if there is a body *)
         Request.make_for_client ?headers ~chunked meth uri
@@ -219,11 +220,17 @@ module Server = struct
 
   let handle_client handle_request sock rd wr =
     let requests_pipe =
+      let last_body_pipe_closed = ref Deferred.unit in
       Reader.read_all rd (fun rd ->
+        !last_body_pipe_closed >>= fun () ->
         Request.read rd >>| function
         | `Eof | `Invalid _ -> `Eof
         | `Ok req ->
           let body = read_body req rd wr in
+          last_body_pipe_closed :=
+            (match body with
+            | `Pipe p -> Pipe.closed p
+            | _       -> Deferred.unit);
           `Ok (req, body)
       ) in
     Pipe.iter requests_pipe ~f:(fun (req, body) ->
@@ -247,8 +254,8 @@ module Server = struct
     let encoding =
       let open Cohttp.Transfer in
       match body with
-      | `Empty -> Fixed 0
-      | `String s -> Fixed (String.length s)
+      | `Empty -> Fixed 0L
+      | `String s -> Fixed (Int64.of_int (String.length s))
       | `Pipe p -> Chunked in
     let resp = Response.make ~status ~flush ~encoding ~headers () in
     return (resp, body)

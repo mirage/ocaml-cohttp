@@ -16,7 +16,7 @@ depends: [
   "ounit"
   "fieldslib" {>= "109.20.00"}
   "sexplib" {>= "109.53.00"}
-  "conduit"
+  "conduit" {>= "0.6.0"}
   "stringext"
 ]
 depopts: [

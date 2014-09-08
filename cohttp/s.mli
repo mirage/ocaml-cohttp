@@ -60,7 +60,7 @@ module type Request = sig
     mutable encoding: Transfer.encoding; (** transfer encoding of this HTTP request *)
   } with fields, sexp
 
-  val make : ?meth:Code.meth -> ?version:Code.version -> 
+  val make : ?meth:Code.meth -> ?version:Code.version ->
     ?encoding:Transfer.encoding -> ?headers:Header.t ->
     Uri.t -> t
   (** Return true whether the connection should be reused *)
@@ -69,7 +69,7 @@ module type Request = sig
   val make_for_client:
     ?headers:Header.t ->
     ?chunked:bool ->
-    ?body_length:int ->
+    ?body_length:int64 ->
     Code.meth -> Uri.t -> t
 end
 
@@ -83,11 +83,11 @@ module type Response = sig
   } with fields, sexp
 
   val make :
-    ?version:Code.version -> 
+    ?version:Code.version ->
     ?status:Code.status_code ->
     ?flush:bool ->
-    ?encoding:Transfer.encoding -> 
-    ?headers:Header.t -> 
+    ?encoding:Transfer.encoding ->
+    ?headers:Header.t ->
     unit -> t
 end
 
