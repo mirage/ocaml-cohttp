@@ -7,6 +7,7 @@ NAME=cohttp
 LWT ?= $(shell if ocamlfind query lwt >/dev/null 2>&1; then echo --enable-lwt; fi)
 LWT_UNIX ?= $(shell if ocamlfind query lwt.ssl >/dev/null 2>&1; then echo --enable-lwt-unix; fi)
 ASYNC ?= $(shell if ocamlfind query async >/dev/null 2>&1; then echo --enable-async; fi)
+JS ?= $(shell if ocamlfind query js_of_ocaml >/dev/null 2>&1; then echo --enable-js; fi)
 #NETTESTS ?= --enable-tests --enable-nettests
 
 setup.bin: setup.ml
@@ -14,7 +15,7 @@ setup.bin: setup.ml
 	rm -f setup.cmx setup.cmi setup.o setup.cmo
 
 setup.data: setup.bin
-	./setup.bin -configure $(LWT) $(ASYNC) $(LWT_UNIX) $(TESTS) $(NETTESTS) --prefix $(PREFIX)
+	./setup.bin -configure $(LWT) $(ASYNC) $(LWT_UNIX) $(JS) $(TESTS) $(NETTESTS) --prefix $(PREFIX)
 
 build: setup.data setup.bin
 	./setup.bin -build -classic-display
@@ -34,6 +35,9 @@ fulltest: setup.bin build
 reinstall: setup.bin
 	ocamlfind remove $(NAME) || true
 	./setup.bin -reinstall
+
+generate:
+	cd scripts && ocaml generate.ml
 
 clean:
 	ocamlbuild -clean

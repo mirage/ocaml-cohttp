@@ -1,5 +1,6 @@
 (*
- * Copyright (c) 2013 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2014 Andy Ray <andy.ray@ujamjar.com>
+ * Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,9 +16,14 @@
  *
  *)
 
-include Cohttp.S.IO
- with type 'a t = 'a Lwt.t
- and type ic = Lwt_io.input_channel
- and type oc = Lwt_io.output_channel
- and type conn = Conduit_lwt_unix.flow
+(** HTTP client for JavaScript using XMLHttpRequest. *)
+
+(** The [Request] module holds the information about a HTTP request *)
+module Request : Cohttp_lwt.Request with module IO = Cohttp.String_io.M
+
+(** The [Response] module holds the information about a HTTP response *)
+module Response : Cohttp_lwt.Response with module IO = Cohttp.String_io.M
+
+(** The [Client] module implements an HTTP client interface. *)
+module Client : Cohttp_lwt.Client with module IO = Cohttp.String_io.M
 

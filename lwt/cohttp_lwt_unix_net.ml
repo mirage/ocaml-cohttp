@@ -25,24 +25,26 @@ module IO = Cohttp_lwt_unix_io
 type 'a io = 'a Lwt.t
 type ic = Lwt_io.input_channel
 type oc = Lwt_io.output_channel
+type ctx = {
+  ctx: Conduit_lwt_unix.ctx;
+  resolver: Conduit_resolver_lwt.t;
+}
 
-let connect_uri uri =
-  (match Uri_services.tcp_port_of_uri uri with
-    |None -> Lwt.fail (Invalid_argument "unknown scheme")
-    |Some p -> Lwt.return (string_of_int p))
-  >>= fun service ->
-  let mode = 
-    match Uri.scheme uri with
-    | Some "https" -> `SSL
-    | _ -> `TCP
-  in
-  let host = match Uri.host uri with None -> "localhost" | Some x -> x in
-  Lwt_unix_conduit.connect ~mode ~host ~service ()
+let init ?(resolver=Conduit_resolver_lwt_unix.system)
+         ?(ctx=Conduit_lwt_unix.default_ctx) () =
+  { ctx; resolver }
 
-let connect ?(ssl=false) ~host ~service () =
-  match ssl with
-  | true -> Lwt_unix_conduit.connect ~mode:`SSL ~host ~service ()
-  | false -> Lwt_unix_conduit.connect ~mode:`TCP ~host ~service ()
+let default_ctx = {
+  resolver = Conduit_resolver_lwt_unix.system;
+  ctx = Conduit_lwt_unix.default_ctx;
+}
+
+let connect_uri ~ctx uri =
+  Conduit_resolver_lwt.resolve_uri ~uri ctx.resolver
+  >>= fun endp ->
+  Conduit_lwt_unix.endp_to_client ~ctx:ctx.ctx endp
+  >>= fun client ->
+  Conduit_lwt_unix.connect ~ctx:ctx.ctx client
 
 let close_in ic =
   ignore_result (try_lwt Lwt_io.close ic with _ -> return ())

@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2013 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2013-2014 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,8 +26,9 @@ open Cohttp
     and close the resulting channels to clean up. *)
 module type Net = sig
   module IO : S.IO
-  val connect_uri : Uri.t -> (IO.ic * IO.oc) Lwt.t
-  val connect : ?ssl:bool -> host:string -> service:string -> unit -> (IO.ic * IO.oc) Lwt.t
+  type ctx
+  val default_ctx: ctx
+  val connect_uri : ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
   val close_in : IO.ic -> unit
   val close_out : IO.oc -> unit
   val close : IO.ic -> IO.oc -> unit
@@ -66,7 +67,11 @@ module type Client = sig
   module Request : Request
   module Response : Response
 
+  type ctx
+  val default_ctx : ctx
+
   val call :
+    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
@@ -74,44 +79,50 @@ module type Client = sig
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val head :
+    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> Response.t Lwt.t
 
   val get :
+    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val delete :
+    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val post :
+    ?ctx:ctx ->
     ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val put :
+    ?ctx:ctx ->
     ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val patch :
+    ?ctx:ctx ->
     ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val post_form :
+    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     params:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val callv :
-    ?ssl:bool ->
-    string ->
-    int ->
+    ?ctx:ctx ->
+    Uri.t ->
     (Request.t * Cohttp_lwt_body.t) Lwt_stream.t ->
     (Response.t * Cohttp_lwt_body.t) Lwt_stream.t Lwt.t
 end
@@ -132,14 +143,18 @@ module type Server = sig
   module IO : S.IO
   module Request : Request
   module Response : Response
+
+  type ctx
+  val default_ctx : ctx
+
   type t = {
     callback :
-      Cohttp.Connection.t ->
+      (IO.conn * Cohttp.Connection.t) ->
       Cohttp.Request.t ->
       Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
     conn_closed:
-      Cohttp.Connection.t -> unit -> unit;
+      (IO.conn * Cohttp.Connection.t) -> unit -> unit;
   }
 
   (** Resolve a URI and a docroot into a concrete local filename. *)
@@ -171,7 +186,7 @@ module type Server = sig
   val respond_not_found :
     ?uri:Uri.t -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
-  val callback : t -> IO.ic -> IO.oc -> unit Lwt.t
+  val callback : t -> IO.conn -> IO.ic -> IO.oc -> unit Lwt.t
 
 end
 
@@ -187,3 +202,4 @@ module Make_server
     Server with module IO = IO
             and module Request = Request
             and module Response = Response
+            and type ctx = Net.ctx

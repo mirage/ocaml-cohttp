@@ -1,5 +1,6 @@
 (*
- * Copyright (c) 2013 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2014 Andy Ray
+ * Copyright (c) 2014 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,11 +14,16 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- *)
+*)
 
-include Cohttp.S.IO
- with type 'a t = 'a Lwt.t
- and type ic = Lwt_io.input_channel
- and type oc = Lwt_io.output_channel
- and type conn = Conduit_lwt_unix.flow
+type buf =
+  {
+    str : string;
+    mutable pos : int;
+    len : int;
+  }
 
+module M : S.IO
+ with type 'a t = 'a
+ and type ic = buf
+ and type oc = Buffer.t
