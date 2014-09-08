@@ -220,11 +220,17 @@ module Server = struct
 
   let handle_client handle_request sock rd wr =
     let requests_pipe =
+      let last_body_pipe_closed = ref Deferred.unit in
       Reader.read_all rd (fun rd ->
+        !last_body_pipe_closed >>= fun () ->
         Request.read rd >>| function
         | `Eof | `Invalid _ -> `Eof
         | `Ok req ->
           let body = read_body req rd wr in
+          last_body_pipe_closed :=
+            (match body with
+            | `Pipe p -> Pipe.closed p
+            | _       -> Deferred.unit);
           `Ok (req, body)
       ) in
     Pipe.iter requests_pipe ~f:(fun (req, body) ->
