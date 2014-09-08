@@ -18,19 +18,38 @@
 
 open Lwt
 
-module Make(Channel:V1_LWT.CHANNEL) = struct
+module Make(Conduit:Conduit_mirage.S) = struct
 
+  module Channel = Channel.Make(Conduit.Flow)
   module HTTP_IO = HTTP_IO.Make(Channel)
 
   module Net_IO = struct
 
     module IO = HTTP_IO
 
-    let connect_uri uri =
-      fail (Failure "not implemented")
+    type 'a io = 'a Lwt.t
+    type ic = Channel.t
+    type oc = Channel.t
+    type flow = Conduit.flow
+    
+    type ctx = {
+      resolver: Conduit_resolver_lwt.t;
+      ctx: Conduit.ctx;
+    }
 
-    let connect ?ssl ~host ~service () =
-      fail (Failure "not implemented")
+    let default_ctx = 
+      { resolver = Conduit_resolver_mirage.localhost;
+        ctx = Conduit.default_ctx }
+
+    let connect_uri ~ctx uri =
+      Conduit_resolver_lwt.resolve_uri ~uri ctx.resolver
+      >>= fun endp ->
+      Conduit.endp_to_client ~ctx:ctx.ctx endp
+      >>= fun client ->
+      Conduit.connect ~ctx:ctx.ctx client
+      >>= fun (flow,ic,oc) ->
+      let ch = Channel.create flow in
+      return (flow, ch, ch)
 
     let close_in ic = ()
     let close_out ic = ()
@@ -49,9 +68,8 @@ module Make(Channel:V1_LWT.CHANNEL) = struct
   module Server = struct
     include Server_core
 
-    let listen spec flow =
+    let listen spec flow ic oc =
       let ch = Channel.create flow in
-      Server_core.callback spec ch ch 
-
+      Server_core.callback spec flow ch ch
   end
 end
