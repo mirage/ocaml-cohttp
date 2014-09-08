@@ -8,6 +8,7 @@
 * Move all the module type signatures into `Cohttp.S`.
 * [lwt] Remove the `Cohttp_lwt.Server.server` type synonym to `t`.
 * [async] In the Async server, do not close the Reader too early.
+* [async] Close file descriptors more eagerly in the HTTP client (#167).
 * Improve `cohttp_server_lwt` and `cohttp_server_async` directory listings (#158)
 * Fix `Cohttp_async.resolve_local_file` directory traversal vulnerability (#158)
 * `cohttp_server_lwt` and `cohttp_server_async` now return better errors (#158)
