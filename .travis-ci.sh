@@ -20,7 +20,7 @@ git config --global user.email "you@example.com"
 git config --global user.name "Your Name"
 echo "yes" | sudo add-apt-repository ppa:$ppa
 sudo apt-get update -qq
-sudo apt-get install -qq ocaml ocaml-native-compilers camlp4-extra opam time libssl-dev
+sudo apt-get install -qq ocaml ocaml-native-compilers camlp4-extra opam time
 
 export OPAMYES=1
 export OPAMJOBS=2
@@ -33,6 +33,7 @@ opam --git-version
 opam init
 opam pin $pin conduit git://github.com/mirage/ocaml-conduit
 opam pin $pin mirage-http git://github.com/mirage/mirage-http
+sudo opam install -y -e ubuntu ${OPAM_DEPENDS}
 opam install ${OPAM_DEPENDS}
 
 eval `opam config env`
