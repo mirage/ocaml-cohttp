@@ -31,8 +31,7 @@ opam --version
 opam --git-version
 
 opam init
-opam pin $pin conduit git://github.com/mirage/ocaml-conduit
-opam pin $pin mirage-http git://github.com/mirage/mirage-http
+opam remote add mirage-dev git://github.com/mirage/mirage-dev
 sudo opam install -y -e ubuntu ${OPAM_DEPENDS}
 opam install ${OPAM_DEPENDS}
 
