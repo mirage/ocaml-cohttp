@@ -23,7 +23,6 @@ sudo apt-get update -qq
 sudo apt-get install -qq ocaml ocaml-native-compilers camlp4-extra opam time
 
 export OPAMYES=1
-export OPAMVERBOSE=1
 echo OCaml version
 ocaml -version
 echo OPAM versions
@@ -33,8 +32,9 @@ opam --git-version
 opam init
 opam remote add mirage-dev git://github.com/mirage/mirage-dev
 sudo apt-get install -qq `opam install -e ubuntu ${OPAM_DEPENDS}`
+opam install -j 2 core_kernel
+export OPAMVERBOSE=1
 opam install ${OPAM_DEPENDS}
-
 eval `opam config env`
 make NETTESTS=--enable-nettests
 make test
