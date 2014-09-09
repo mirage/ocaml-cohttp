@@ -18,12 +18,17 @@
 
 (** HTTP client for JavaScript using XMLHttpRequest. *)
 
+module String_io_lwt : S.IO
+  with type 'a t = 'a Lwt.t
+  and type ic = Cohttp.String_io.buf
+  and type oc = Buffer.t
+
 (** The [Request] module holds the information about a HTTP request *)
-module Request : Cohttp_lwt.Request with module IO = Cohttp.String_io.M
+module Request : Cohttp_lwt.Request with module IO = String_io_lwt
 
 (** The [Response] module holds the information about a HTTP response *)
-module Response : Cohttp_lwt.Response with module IO = Cohttp.String_io.M
+module Response : Cohttp_lwt.Response with module IO = String_io_lwt
 
 (** The [Client] module implements an HTTP client interface. *)
-module Client : Cohttp_lwt.Client with module IO = Cohttp.String_io.M
+module Client : Cohttp_lwt.Client with module IO = String_io_lwt
 

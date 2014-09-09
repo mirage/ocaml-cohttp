@@ -10,18 +10,20 @@
 
 <h1>Cohttp_lwt_xhr client test</h1>
 
+<div id="counter"></div>
+
 <p>Enter user name to query github</p>
 
-
 <div>
-  username: <input type="text" id="username">
+  username: <input type="text" id="input">
   <!-- <div>password: <input type="password" id="password"></div> -->
   <input type="button" id="list-repos" value="list repos">
+  <input type="button" id="download-blob" value="download blob">
 </div>
 
-<div style="background-color: #eeeeee"><pre id="output-response"></pre></div>
-<div><pre id="output-list-repos"></pre></div>
+<div style="background-color: #eeeeee"><pre id="output-response1"></pre></div>
+<div><pre id="output-response2"></pre></div>
+
 
 <script src="test_xhr.js"></script>
-
 </body>

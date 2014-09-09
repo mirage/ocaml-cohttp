@@ -20,34 +20,67 @@
 module C = Cohttp
 module CLB = Cohttp_lwt_body
 
-module Response = Cohttp_lwt.Make_response(Cohttp.String_io.M)
-module Request = Cohttp_lwt.Make_request(Cohttp.String_io.M)
+module String_io_lwt = struct
+  type 'a t = 'a Lwt.t
+  let return = Lwt.return
+  let (>>=) = Lwt.bind
+  
+  type ic = Cohttp.String_io.M.ic
+  type oc = Cohttp.String_io.M.oc
+  type conn = Cohttp.String_io.M.conn
+
+  let iter = Lwt_list.iter_s
+  let read_line ic = return (Cohttp.String_io.M.read_line ic)
+  let read ic n = return (Cohttp.String_io.M.read ic n)
+  let read_exactly ic n = return (Cohttp.String_io.M.read_exactly ic n)
+
+  let write oc str = return (Cohttp.String_io.M.write oc str)
+  let flush oc = return (Cohttp.String_io.M.flush oc)
+end
+
+module Response = Cohttp_lwt.Make_response(String_io_lwt)
+module Request = Cohttp_lwt.Make_request(String_io_lwt)
 
 module Client = struct
 
-    module IO = Cohttp.String_io.M
+    module IO = String_io_lwt
     module Response = Response
     module Request = Request
-    module Header_io = Cohttp.Header_io.Make(Cohttp.String_io.M)
+    module Header_io = Cohttp.Header_io.Make(String_io_lwt)
 
     let default_ctx = ()
     type ctx = unit
-  
-    (* XXX remove me *)
-    let log_active = ref true
-    let log fmt =
-      Printf.ksprintf (fun s ->
-        match !log_active with
-        | false -> ()
-        | true  -> prerr_endline (">>> GitHub: " ^ s)) fmt
 
+    (* perform the body transfer in chunks.
+     * not sure this is the correct interpretation of a 
+     * chucked transfer encoding! *)
+    let chunked_body chunk_size text = 
+      let body_len = text##length in
+      let pos = ref 0 in
+      let chunkerizer () =
+        if !pos = body_len then 
+          Lwt.return C.Transfer.Done
+        else
+          if !pos + chunk_size >= body_len then begin
+            let str = text##substring_toEnd(!pos) in
+            pos := body_len;
+            Lwt.return (C.Transfer.Final_chunk (Js.to_string str))
+          end else begin
+            let str = text##substring(!pos, !pos+chunk_size) in
+            pos := !pos + chunk_size;
+            Lwt.return (C.Transfer.Chunk (Js.to_string str))
+          end
+      in
+      if body_len=0 then CLB.empty
+      else CLB.of_stream (CLB.create_stream chunkerizer ()) 
+  
     let call ?ctx ?headers ?body ?chunked meth uri = 
+
       let xml = XmlHttpRequest.create () in
+      let (res : (Response.t Lwt.t * CLB.t) Lwt.t), wake = Lwt.task () in
       let () = xml##_open(Js.string (C.Code.string_of_method meth),
                           Js.string (Uri.to_string uri),
-                          Js._false) (* For simplicity, do a sync call.  We should
-                                        really make this async. See js_of_ocaml apis
-                                        for an example *)
+                          Js._true) (* asynchronous call *)
       in
       (* set request headers *)
       let () = 
@@ -55,14 +88,45 @@ module Client = struct
           | None -> ()
           | Some(headers) ->
             C.Header.iter 
-              (fun k v -> List.iter 
+              (fun k v -> 
                 (* some headers lead to errors in the javascript console, should
                    we filter then out here? *)
-                (fun v -> 
-                  log "[req header] %s: %s" k v;
-                  xml##setRequestHeader(Js.string k, Js.string v)) v) 
+                List.iter 
+                  (fun v -> xml##setRequestHeader(Js.string k, Js.string v)) v) 
               headers 
       in
+
+      xml##onreadystatechange <- Js.wrap_callback
+        (fun _ ->
+          match xml##readyState with
+          | XmlHttpRequest.DONE -> begin
+            (* construct body *)
+            let body_chunked = false in (* ??? *)
+            let body = 
+              if body_chunked then chunked_body 1024 xml##responseText
+              else CLB.of_string (Js.to_string xml##responseText) 
+            in
+            (* (re-)construct the response *)
+            let response = 
+              let resp_headers = Js.to_string (xml##getAllResponseHeaders()) in
+              let channel = C.String_io.open_in resp_headers in
+              Lwt.(Header_io.parse channel >>= fun resp_headers ->
+                Lwt.return (Response.make
+                              ~version:`HTTP_1_1
+                              ~status:(C.Code.status_of_code xml##status)
+                              ~flush:false (* ??? *)
+                              ~encoding:(CLB.transfer_encoding body)
+                              ~headers:resp_headers 
+                              ()))
+            in
+            (* Note; a type checker subversion seems to be possible here (4.01.0).
+             * Remove the type constraint on Lwt.task above and return any old
+             * guff here.  It'll compile and crash in the browser! *)
+            Lwt.wakeup wake (response, body)
+          end
+          | _ -> ()
+        );
+
       (* perform call *)
       lwt () = 
         match body with
@@ -71,42 +135,10 @@ module Client = struct
           lwt body = CLB.to_string body in
           Lwt.return (xml##send(Js.Opt.return (Js.string body)))
       in
+      Lwt.on_cancel res (fun () -> xml##abort ());
       
-      let () = log "[resp status] %s" (Js.to_string xml##statusText) in
-      
-      (* construct body *)
-      let body_str = Js.to_string xml##responseText in
-      let body = CLB.of_string body_str in
-      
-      (* (re-)construct the response *)
-      let resp_headers = 
-        let resp_headers = Js.to_string (xml##getAllResponseHeaders()) in
-        let resp_headers = Header_io.parse 
-          Cohttp.String_io.({ str=resp_headers; pos=0; len=String.length resp_headers }) in
-        C.Header.iter 
-          (fun k v -> List.iter (fun v -> log "[resp header] %s: %s" k v) v) 
-          resp_headers;
-        resp_headers
-      in
-      
-      let response = Response.make 
-        ~version:`HTTP_1_1
-        ~status:(Cohttp.Code.status_of_code xml##status)
-        ~flush:false
-        ~encoding:(Cohttp.Transfer.Fixed (Int64.of_int (String.length body_str)))
-        ~headers:resp_headers 
-        ()
-      in
-      
-      (* log the response *)
-      lwt () = 
-        let b = Buffer.create 100 in
-        let () = Response.write_header response b in
-        let () = log "response:\n%s" (Buffer.contents b) in
-        Lwt.return ()
-      in
-      
-      Lwt.return (response,body)
+      (* unwrap the response *)
+      Lwt.(res >>= fun (r, b) -> r >>= fun r -> Lwt.return (r,b))
         
     (* The HEAD should not have a response body *)
     let head ?ctx ?headers uri =
