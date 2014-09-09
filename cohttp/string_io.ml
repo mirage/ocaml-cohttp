@@ -24,6 +24,13 @@ type buf =
     len : int;
   }
 
+let open_in str = 
+  {
+    str = str;
+    pos = 0;
+    len = String.length str;
+  }
+
 module M = struct
   type 'a t = 'a
   let return a = a
