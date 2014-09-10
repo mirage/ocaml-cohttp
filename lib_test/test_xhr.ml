@@ -50,6 +50,13 @@ http://localhost:8081/lib_test/index.html
 
 module Client = Cohttp_lwt_xhr.Client
 
+(* test config
+module Client = Cohttp_lwt_xhr.Make_client_async(struct
+  let chunked_response = false
+  let chunk_size = 0
+  let convert_body_string = Js.to_string
+end) *)
+
 (* grab elements from the webpage *)
 let get_element e = 
     let d = Dom_html.document in
@@ -123,12 +130,26 @@ let main _ =
       lwt resp, body = Client.get 
         Uri.(of_string ("http://localhost:8081/" ^ value "input"))
       in
-      (* get body length + 1K of data *)
-      lwt body = Cohttp_lwt_body.to_string body in
-      let length = String.length body in
-      let body = try String.sub body 0 1024 with _ -> body in
+
+      let body = Cohttp_lwt_body.to_stream body in
+      (* get total length, and 1st bit of data *)
+      let rec read_stream length data = 
+        match_lwt Lwt_stream.get body with
+        | None -> Lwt.return (length, data)
+        | Some(s) -> 
+            let length  = length + String.length s in
+            let data =  (* get 1st 1K *)
+              match data with 
+              | None -> Some(try String.sub s 0 1024 with _ -> s) 
+              | Some(data) -> Some(data) 
+            in
+            lwt () = Lwt_js.yield() in 
+            read_stream length data
+      in
+      lwt length, data = read_stream 0 None in
+      let data = match data with None -> "" | Some(data) -> data in
       output_response1##innerHTML <- Js.string (Printf.sprintf "blob size = %i\n" length);
-      output_response2##innerHTML <- Js.string body;
+      output_response2##innerHTML <- Js.bytestring data;
       Lwt.return ());
     Js._false
   in
@@ -142,7 +163,7 @@ let main _ =
     (fun () -> 
       incr r; counter##innerHTML <- Js.string (string_of_int !r))
   in
-  let rec f() = set_counter (); Lwt.( Lwt_js.sleep 0.2 >>= f ) in
+  let rec f() = set_counter (); Lwt.( Lwt_js.sleep 0.1 >>= f ) in
   let _ = f() in
   Js._false
   
