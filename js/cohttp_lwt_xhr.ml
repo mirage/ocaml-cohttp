@@ -17,9 +17,6 @@
  *)
 
 
-module C = Cohttp
-module CLB = Cohttp_lwt_body
-
 module String_io_lwt = struct
   type 'a t = 'a Lwt.t
   let return = Lwt.return
@@ -38,14 +35,14 @@ module String_io_lwt = struct
   let flush oc = return (Cohttp.String_io.M.flush oc)
 end
 
-module Response = Cohttp_lwt.Make_response(String_io_lwt)
-module Request = Cohttp_lwt.Make_request(String_io_lwt)
+module Client_async = struct
 
-module Client = struct
+    module C = Cohttp
+    module CLB = Cohttp_lwt_body
 
     module IO = String_io_lwt
-    module Response = Response
-    module Request = Request
+    module Response = Cohttp_lwt.Make_response(String_io_lwt)
+    module Request = Cohttp_lwt.Make_request(String_io_lwt)
     module Header_io = Cohttp.Header_io.Make(String_io_lwt)
 
     let default_ctx = ()
@@ -159,8 +156,95 @@ module Client = struct
       post ?ctx ~chunked:false ~headers ~body uri
 
     (* No implementation (can it be done?).  What should the failure exception be? *)
-    exception Cohttp_lwt_xhr_not_implemented
-    let callv ?ctx uri reqs = Lwt.fail Cohttp_lwt_xhr_not_implemented (* ??? *)
+    exception Cohttp_lwt_xhr_callv_not_implemented
+    let callv ?ctx uri reqs = Lwt.fail Cohttp_lwt_xhr_callv_not_implemented (* ??? *)
+        
+end
+
+module Client_sync = struct
+
+    module C = Cohttp
+    module CLB = Cohttp_lwt_body
+
+    module IO = C.String_io.M
+    module Response = Cohttp_lwt.Make_response(C.String_io.M)
+    module Request = Cohttp_lwt.Make_request(C.String_io.M)
+    module Header_io = Cohttp.Header_io.Make(C.String_io.M)
+
+    let default_ctx = ()
+    type ctx = unit
+
+    let call ?ctx ?headers ?body ?chunked meth uri = 
+      let xml = XmlHttpRequest.create () in
+      let () = xml##_open(Js.string (C.Code.string_of_method meth),
+                          Js.string (Uri.to_string uri),
+                          Js._false)  (* synchronous call *)
+      in
+      (* set request headers *)
+      let () = 
+          match headers with
+          | None -> ()
+          | Some(headers) ->
+            C.Header.iter 
+              (fun k v -> List.iter 
+                (* some headers lead to errors in the javascript console, should
+                   we filter then out here? *)
+                (fun v -> 
+                  xml##setRequestHeader(Js.string k, Js.string v)) v) 
+              headers 
+      in
+      (* perform call *)
+      lwt () = 
+        match body with
+        | None -> Lwt.return (xml##send(Js.null))
+        | Some(body) -> 
+          lwt body = CLB.to_string body in
+          Lwt.return (xml##send(Js.Opt.return (Js.string body)))
+      in
+      
+      (* construct body *)
+      let body_str = Js.to_string xml##responseText in
+      let body = CLB.of_string body_str in
+      
+      (* (re-)construct the response *)
+      let resp_headers = 
+        let resp_headers = Js.to_string (xml##getAllResponseHeaders()) in
+        let resp_headers = Header_io.parse (C.String_io.open_in resp_headers) in
+        resp_headers
+      in
+      
+      let response = Response.make 
+        ~version:`HTTP_1_1
+        ~status:(Cohttp.Code.status_of_code xml##status)
+        ~flush:false
+        ~encoding:(Cohttp.Transfer.Fixed (Int64.of_int (String.length body_str)))
+        ~headers:resp_headers 
+        ()
+      in
+      
+      Lwt.return (response,body)
+
+    (* The HEAD should not have a response body *)
+    let head ?ctx ?headers uri =
+      let open Lwt in
+      call ?ctx ?headers ~chunked:false `HEAD uri
+      >|= fst
+
+    let get ?ctx ?headers uri = call ?ctx ?headers ~chunked:false `GET uri
+    let delete ?ctx ?headers uri = call ?ctx ?headers ~chunked:false `DELETE uri
+    let post ?ctx ?body ?chunked ?headers uri = call ?ctx ?headers ?body ?chunked `POST uri
+    let put ?ctx ?body ?chunked ?headers uri = call ?ctx ?headers ?body ?chunked `PUT uri
+    let patch ?ctx ?body ?chunked ?headers uri = call ?ctx ?headers ?body ?chunked `PATCH uri
+
+    let post_form ?ctx ?headers ~params uri =
+      let headers = C.Header.add_opt headers "content-type" "application/x-www-form-urlencoded" in
+      let q = List.map (fun (k,v) -> k, [v]) (C.Header.to_list params) in
+      let body = Cohttp_lwt_body.of_string (Uri.encoded_of_query q) in
+      post ?ctx ~chunked:false ~headers ~body uri
+
+    (* No implementation (can it be done?).  What should the failure exception be? *)
+    exception Cohttp_lwt_xhr_callv_not_implemented
+    let callv ?ctx uri reqs = Lwt.fail Cohttp_lwt_xhr_callv_not_implemented (* ??? *)
         
 end
 

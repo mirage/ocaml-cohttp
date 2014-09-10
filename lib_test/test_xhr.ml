@@ -48,6 +48,8 @@ http://localhost:8081/lib_test/index.html
 
 *)
 
+module Client = Cohttp_lwt_xhr.Client_async 
+
 (* grab elements from the webpage *)
 let get_element e = 
     let d = Dom_html.document in
@@ -79,7 +81,7 @@ let main _ =
   (* cohttp query to the JSON github API *)
   let run_query _ = 
     Lwt.ignore_result (
-      lwt resp, body = Cohttp_lwt_xhr.Client.get 
+      lwt resp, body = Client.get 
         Uri.(of_string ("https://api.github.com/users/" ^ value "input" ^ "/repos"))
       in
       (* show the response data *)
@@ -118,7 +120,7 @@ let main _ =
    * dont touch the body this also doesn't happen. *)
   let run_download _ = 
     Lwt.ignore_result (
-      lwt resp, body = Cohttp_lwt_xhr.Client.get 
+      lwt resp, body = Client.get 
         Uri.(of_string ("http://localhost:8081/" ^ value "input"))
       in
       (* get body length + 1K of data *)
