@@ -25,7 +25,7 @@ module String_io_lwt : S.IO
 
 (** The [Client_async] module implements an HTTP client interface 
     using asynchronous XmlHttpRequests. *)
-module Client_async : Cohttp_lwt.Client with module IO = String_io_lwt
+module Client : Cohttp_lwt.Client with module IO = String_io_lwt
 
 (** The [Client_sync] module implements an HTTP client interface
     using synchronous XmlHttpRequests. *)

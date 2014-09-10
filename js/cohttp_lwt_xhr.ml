@@ -35,7 +35,7 @@ module String_io_lwt = struct
   let flush oc = return (Cohttp.String_io.M.flush oc)
 end
 
-module Client_async = struct
+module Client = struct
 
     module C = Cohttp
     module CLB = Cohttp_lwt_body

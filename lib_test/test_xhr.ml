@@ -48,7 +48,7 @@ http://localhost:8081/lib_test/index.html
 
 *)
 
-module Client = Cohttp_lwt_xhr.Client_async 
+module Client = Cohttp_lwt_xhr.Client
 
 (* grab elements from the webpage *)
 let get_element e = 
