@@ -83,6 +83,15 @@ Document cohttp
   XOCamlbuildPath:      cohttp
   XOCamlbuildLibraries: cohttp
 
+Document cohttp_lwt
+  Title:                Cohttp Lwt docs
+  Type:                 ocamlbuild (0.3)
+  BuildTools+:          ocamldoc
+  Build$:               flag(lwt)
+  Install:              true
+  XOCamlbuildPath:      lwt
+  XOCamlbuildLibraries: cohttp.lwt-core
+
 Document cohttp_lwt_unix
   Title:                Cohttp Lwt UNIX docs
   Type:                 ocamlbuild (0.3)
