@@ -70,6 +70,17 @@ module type Client = sig
   type ctx
   val default_ctx : ctx
 
+  (** [call ?ctx ?headers ?body ?chunked meth uri] will resolve the
+    [uri] to a concrete network endpoint using the resolver initialized
+    in [ctx].  It will then issue an HTTP request with method [meth],
+    adding request headers from [headers] if present.  If a [body]
+    is specified then that will be included with the request, using
+    chunked encoding if [chunked] is true.  The default is to disable
+    chunked encoding for HTTP request bodies for compatibility reasons.
+    
+    In most cases you should use the more specific helper calls in the
+    interface rather than invoke this function directly.  See {!head},
+    {!get} and {!post} for some examples. *)
   val call :
     ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
