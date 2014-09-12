@@ -23,6 +23,8 @@ type buf =
     len : int;
   }
 
+val open_in : string -> buf
+
 module M : S.IO
  with type 'a t = 'a
  and type ic = buf

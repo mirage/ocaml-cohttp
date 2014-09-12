@@ -1,27 +1,61 @@
 (*
+ * Copyright (c) 2014 Andy Ray <andy.ray@ujamjar.com>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *)
+
+(*
 
 Description: 
 
-Enter a username and click the button to query github and get a JSON
+(1) Enter a username and click the button to query github and get a JSON
 description of the users public repositories.
+
+(2) Download the given file and show it's size and the first 1K of date.
 
 Build instructions:
 
 $ ocamlfind c -syntax camlp4o -package lwt.syntax -package js_of_ocaml.syntax \
-    -package cohttp.js -package yojson -linkpkg -o test_xhr.byte test_xhr.ml
+    -package cohttp.js -linkpkg -o test_xhr.byte test_xhr.ml
 
 This is done through oasis with --enable-tests
 
 The next step is to convert to javscript.  I'm not sure how to automate this step
 with oasis.
 
-$ js_of_ocaml +weak test_xhr.byte -o lib_test/test_xhr.js
+$ js_of_ocaml +weak.js test_xhr.byte -o lib_test/test_xhr.js
 
-and load it in the browser.
+to load it in the browser run 
 
-$ chromium-browser lib_test/index.html
+$ ./test_net_lwt_server.native
+
+and navigate to 
+
+http://localhost:8081/lib_test/index.html
+
+(this is required for the download to be allowed under the same origin security policy)
 
 *)
+
+module Client = Cohttp_lwt_xhr.Client
+
+(* test config
+module Client = Cohttp_lwt_xhr.Make_client_async(struct
+  let chunked_response = false
+  let chunk_size = 0
+  let convert_body_string = Js.to_string
+end) *)
 
 (* grab elements from the webpage *)
 let get_element e = 
@@ -45,15 +79,17 @@ let json : json Js.t = Js.Unsafe.variable "JSON"
 let pretty str = json##stringify(json##parse(Js.string str), Js.null, 2)
 
 let main _ = 
-  let output_response = get_element "output-response" in
-  let output_list_repos = get_element "output-list-repos" in
+  let counter = get_element "counter" in
+  let output_response1 = get_element "output-response1" in
+  let output_response2 = get_element "output-response2" in
   let list_repos = get_element "list-repos" in
+  let download_blob = get_element "download-blob" in
   
-  (* run the cohttp query to github *)
+  (* cohttp query to the JSON github API *)
   let run_query _ = 
     Lwt.ignore_result (
-      lwt resp, body = Cohttp_lwt_xhr.Client.get 
-        Uri.(of_string ("https://api.github.com/users/" ^ value "username" ^ "/repos"))
+      lwt resp, body = Client.get 
+        Uri.(of_string ("https://api.github.com/users/" ^ value "input" ^ "/repos"))
       in
       (* show the response data *)
       let b = Buffer.create 1024 in
@@ -62,15 +98,73 @@ let main _ =
       add Cohttp.(Code.(string_of_status resp.Response.status));
       Cohttp.Header.iter (fun k v -> List.iter (fun v -> add (k ^ ": " ^ v)) v) 
         resp.Cohttp.Response.headers;
-      output_response##innerHTML <- Js.string (Buffer.contents b);
+      output_response1##innerHTML <- Js.string (Buffer.contents b);
 
       (* show the body as pretty printed json *)
       lwt body = Cohttp_lwt_body.to_string body in
-      output_list_repos##innerHTML <- pretty body;
+      output_response2##innerHTML <- pretty body;
       Lwt.return ());
     Js._false
   in
   list_repos##onclick <- Dom_html.handler run_query;
+
+  (* Download a file from test_net_lwt_server.native 
+   * There is an issue here with _build/lib_test/test_xhr.byte
+   * where the file is ~8MB but we get ~13MB.
+   *
+   * This is happening I think in the js_string -> ocaml string
+   * conversion (some utf issue?).  Not sure on the cohttp semantics
+   * for the received data here - should we effecively treat all
+   * data as binary and convert the string ourselves?  Or based on
+   * some header perhaps?
+   *
+   * There is also quite a big pause which i *think* is due to the 
+   * string conversion.  I've stalled the transfer for a few 
+   * seconds in the server and that part remains responsive - it seems
+   * to happen after the data is available. 
+   *
+   * If you use the chunked encoding type (see body_chunked) and
+   * dont touch the body this also doesn't happen. *)
+  let run_download _ = 
+    Lwt.ignore_result (
+      lwt resp, body = Client.get 
+        Uri.(of_string ("http://localhost:8081/" ^ value "input"))
+      in
+
+      let body = Cohttp_lwt_body.to_stream body in
+      (* get total length, and 1st bit of data *)
+      let rec read_stream length data = 
+        match_lwt Lwt_stream.get body with
+        | None -> Lwt.return (length, data)
+        | Some(s) -> 
+            let length  = length + String.length s in
+            let data =  (* get 1st 1K *)
+              match data with 
+              | None -> Some(try String.sub s 0 1024 with _ -> s) 
+              | Some(data) -> Some(data) 
+            in
+            lwt () = Lwt_js.yield() in 
+            read_stream length data
+      in
+      lwt length, data = read_stream 0 None in
+      let data = match data with None -> "" | Some(data) -> data in
+      output_response1##innerHTML <- Js.string (Printf.sprintf "blob size = %i\n" length);
+      output_response2##innerHTML <- Js.bytestring data;
+      Lwt.return ());
+    Js._false
+  in
+
+  download_blob##onclick <- Dom_html.handler run_download;
+
+  (* run a quickly updating counter - 
+   * we want to avoid long pauses and this helps up see them *)
+  let set_counter = 
+    let r = ref 0 in
+    (fun () -> 
+      incr r; counter##innerHTML <- Js.string (string_of_int !r))
+  in
+  let rec f() = set_counter (); Lwt.( Lwt_js.sleep 0.1 >>= f ) in
+  let _ = f() in
   Js._false
   
 

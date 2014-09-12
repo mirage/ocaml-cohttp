@@ -18,12 +18,37 @@
 
 (** HTTP client for JavaScript using XMLHttpRequest. *)
 
-(** The [Request] module holds the information about a HTTP request *)
-module Request : Cohttp_lwt.Request with module IO = Cohttp.String_io.M
+module String_io_lwt : S.IO
+  with type 'a t = 'a Lwt.t
+  and type ic = Cohttp.String_io.buf
+  and type oc = Buffer.t
 
-(** The [Response] module holds the information about a HTTP response *)
-module Response : Cohttp_lwt.Response with module IO = Cohttp.String_io.M
+(** configuration parameters for the XmlHttpRequest engines *)
+module type Params = sig
+  (** should the response body data be chunked *)
+  val chunked_response : bool
+  (** size of chunks *)
+  val chunk_size : int
+  (** javascript string to ocaml conversion.  [Js.to_bytestring] or 
+      [Js.to_string] *)
+  val convert_body_string : Js.js_string Js.t -> string
+end
 
-(** The [Client] module implements an HTTP client interface. *)
-module Client : Cohttp_lwt.Client with module IO = Cohttp.String_io.M
+(** Build an asynchronous engine with chunked/unchucked response data 
+    treated as raw bytes or UTF *)
+module Make_client_async(P : Params) : Cohttp_lwt.Client with module IO = String_io_lwt
+
+(** Build a synchronous engine with chunked/unchucked response data 
+    treated as raw bytes or UTF *)
+module Make_client_sync(P : Params) : Cohttp_lwt.Client with module IO = String_io_lwt
+
+(** The [Client] module implements an HTTP client interface 
+    using asynchronous XmlHttpRequests. The response body is returned
+    in chucked form with 128Kb / chunk.  Body data is treated as raw bytes *)
+module Client : Cohttp_lwt.Client with module IO = String_io_lwt
+
+(** The [Client_sync] module implements an HTTP client interface
+    using synchronous XmlHttpRequests.  The response is not chunked
+  and treated as raw bytes. *)
+module Client_sync : Cohttp_lwt.Client with module IO = String_io_lwt
 
