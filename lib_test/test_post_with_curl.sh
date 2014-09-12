@@ -36,3 +36,11 @@ if [ "$RES" != "$BODYND$BODYND$BODYND$BODYND$BODYND" ]; then
 else
   echo OK
 fi
+echo Testing large post no drained:
+RES=`head -c 100000 /dev/urandom | curl -sX POST -H Expect: --data-binary @- $URLND $URLND $URLND $URLND $URLND`
+if [ "$RES" != "$BODYND$BODYND$BODYND$BODYND$BODYND" ]; then
+  echo "$RES not $BODYND$BODYND$BODYND$BODYND$BODYND"
+  exit 1
+else
+  echo OK
+fi

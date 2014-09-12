@@ -218,23 +218,25 @@ module Server = struct
       let read_chunk = Request.read_body_chunk req in
       `Pipe (pipe_of_body read_chunk rd wr)
 
+  let drain_body = function
+    | `Empty | `String _ -> return ()
+    | `Pipe p -> Pipe.drain p
+
   let handle_client handle_request sock rd wr =
+    let last_body_pipe_drained = ref (Ivar.create ()) in
+    Ivar.fill !last_body_pipe_drained ();
     let requests_pipe =
-      let last_body_pipe_closed = ref Deferred.unit in
       Reader.read_all rd (fun rd ->
-        !last_body_pipe_closed >>= fun () ->
+        Ivar.read !last_body_pipe_drained >>= fun () ->
         Request.read rd >>| function
         | `Eof | `Invalid _ -> `Eof
         | `Ok req ->
           let body = read_body req rd wr in
-          last_body_pipe_closed :=
-            (match body with
-            | `Pipe p -> Pipe.closed p
-            | _       -> Deferred.unit);
+          last_body_pipe_drained := Ivar.create ();
           `Ok (req, body)
       ) in
     Pipe.iter requests_pipe ~f:(fun (req, body) ->
-        handle_request ~body sock req >>= fun (res, body) ->
+        handle_request ~body sock req >>= fun (res, res_body) ->
         let keep_alive = Request.is_keep_alive req in
         let res =
           let headers = Cohttp.Header.add
@@ -243,8 +245,9 @@ module Server = struct
               (if keep_alive then "keep-alive" else "close") in
           { res with Response.headers } in
         Response.write_header res wr >>= fun () ->
-        Body.write body res wr >>= fun () ->
-        Response.write_footer res wr
+        Body.write res_body res wr >>= fun () ->
+        Response.write_footer res wr >>= fun () ->
+        drain_body body >>| Ivar.fill !last_body_pipe_drained
       )
     >>= fun () -> Writer.close wr
     >>= fun () -> Reader.close rd

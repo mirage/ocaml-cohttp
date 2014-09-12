@@ -41,6 +41,11 @@ let handler ~body sock req =
       <li><i>Files</i></li>
       %s</ul></body></html>" 
     |> Server.respond_with_string
+  | "/post" ->
+    Body.to_string body >>= fun body ->
+    Server.respond_with_string body
+  | "/postnodrain" ->
+    Server.respond_with_string "nodrain"
   | "/hello" ->
     Server.respond_with_string "hello world"
   | "/hellopipe" ->
@@ -62,7 +67,7 @@ let make_net_server ?mode port =
   Server.create ?mode ~on_handler_error:`Raise (Tcp.on_port port) handler
 
 let _ = 
-  let _server = make_net_server 8080 in
+  let _server = make_net_server 8081 in
   let mode = `OpenSSL (`Crt_file_path "server.crt", `Key_file_path "server.key") in
   let _ssl_server = make_net_server ~mode 8443 in
   let () = every (sec 3.0) (fun () ->
