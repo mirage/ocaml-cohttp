@@ -20,6 +20,8 @@ PKG fieldslib
 PKG fieldslib.syntax
 PKG sexplib
 PKG sexplib.syntax
+PKG ipaddr
+PKG ipaddr.unix
 PKG conduit
 PKG conduit.async
 PKG conduit.lwt
