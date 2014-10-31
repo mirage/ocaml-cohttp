@@ -254,12 +254,7 @@ module Server = struct
 
   let respond ?(flush=false) ?(headers=Cohttp.Header.init ())
       ?(body=`Empty) status : response Deferred.t =
-    let encoding =
-      let open Cohttp.Transfer in
-      match body with
-      | `Empty -> Fixed 0L
-      | `String s -> Fixed (Int64.of_int (String.length s))
-      | `Pipe p -> Chunked in
+    let encoding = Body.transfer_encoding body in
     let resp = Response.make ~status ~flush ~encoding ~headers () in
     return (resp, body)
 
