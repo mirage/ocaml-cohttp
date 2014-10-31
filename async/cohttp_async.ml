@@ -247,6 +247,7 @@ module Server = struct
         Response.write_header res wr >>= fun () ->
         Body.write res_body res wr >>= fun () ->
         Response.write_footer res wr >>= fun () ->
+        Writer.flushed wr >>= fun () ->
         drain_body body >>| Ivar.fill !last_body_pipe_drained
       )
     >>= fun () -> Writer.close wr
