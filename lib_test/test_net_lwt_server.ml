@@ -21,11 +21,25 @@ open Lwt
 
 open Cohttp
 open Cohttp_lwt_unix
+module CLU = Conduit_lwt_unix
 
 let make_server () =
   let callback (ch,conn_id) req body =
     let uri = Request.uri req in
-    Printf.printf "%s\n%!" (Uri.to_string uri);
+    (* For debugging and demonstration of how to get the original 
+       Lwt_unix.file_descr, see below *)
+    let src_info =
+      match ch with
+      | CLU.TCP {CLU.fd; ip; port} -> begin
+          match Lwt_unix.getpeername fd with
+          | Lwt_unix.ADDR_INET (ia,port) ->
+              sprintf "%s:%d" (Ipaddr.to_string (Ipaddr_unix.of_inet_addr ia)) port
+          | Lwt_unix.ADDR_UNIX path -> sprintf "sock:%s" path
+      end
+     |_ -> "Non-TCP source" in
+    Printf.printf "%s : %s from %s\n%!" (Uri.to_string uri)
+      (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)) src_info;
+    (* Onto URL parsing *)
     match Uri.path uri with
     |""|"/" -> Server.respond_string ~status:`OK ~body:"helloworld" ()
     |"/post" -> begin

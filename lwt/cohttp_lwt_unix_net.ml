@@ -39,6 +39,9 @@ let default_ctx = {
   ctx = Conduit_lwt_unix.default_ctx;
 }
 
+let custom_ctx ?(ctx=Conduit_lwt_unix.default_ctx) ?(resolver=Resolver_lwt_unix.system) () =
+  { ctx; resolver }
+
 let connect_uri ~ctx uri =
   Resolver_lwt.resolve_uri ~uri ctx.resolver
   >>= fun endp ->

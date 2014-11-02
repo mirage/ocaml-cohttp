@@ -180,7 +180,7 @@ let post_chunked_parse () =
   let ic = ic_of_buffer (Lwt_bytes.of_string post_chunked_req) in
   Request.read ic >>= function
   | `Ok req ->
-    assert_equal (Transfer.encoding_to_string (Request.encoding req)) "chunked";
+    assert_equal (Transfer.string_of_encoding (Request.encoding req)) "chunked";
     Request.read_body_chunk req ic >>= fun chunk ->
     assert_equal chunk (Transfer.Chunk "abcdefghijklmnopqrstuvwxyz");
     Request.read_body_chunk req ic >>= fun chunk ->

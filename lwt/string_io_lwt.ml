@@ -1,5 +1,6 @@
 (*
- * Copyright (c) 2012-2014 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2014 Andy Ray
+ * Copyright (c) 2014 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,19 +16,19 @@
  *
  *)
 
-(** HTTP/1.1 request handling *)
+type 'a t = 'a Lwt.t
+let return = Lwt.return
+let (>>=) = Lwt.bind
 
-(** This contains the metadata for a HTTP/1.1 request header, including
-    the {!headers}, {!version}, {!meth} and {!uri}.  The body is handled by
-    the separate {!S} module type, as it is dependent on the IO 
-    implementation.
+type ic = Cohttp.String_io.M.ic
+type oc = Cohttp.String_io.M.oc
+type conn = Cohttp.String_io.M.conn
 
-    The interface exposes a [fieldslib] interface which provides individual
-    accessor functions for each of the records below.  It also provides [sexp]
-    serializers to convert to-and-from an {!Core.Std.Sexp.t}. *)
-include S.Request
+let iter = Lwt_list.iter_s
+let read_line ic = return (Cohttp.String_io.M.read_line ic)
+let read ic n = return (Cohttp.String_io.M.read ic n)
+let read_exactly ic n = return (Cohttp.String_io.M.read_exactly ic n)
 
-(** Functor to construct the IO-specific HTTP request handling functions *)
-module Make(IO : S.IO) : S.Http_io
-  with type t = t
-   and module IO = IO
+let write oc str = return (Cohttp.String_io.M.write oc str)
+let flush oc = return (Cohttp.String_io.M.flush oc)
+

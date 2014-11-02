@@ -16,6 +16,8 @@
   PERFORMANCE OF THIS SOFTWARE.
 *)
 
+(** Type definitions for the {!Accept} module *)
+
 open Sexplib.Std
 
 type pv = T of string | S of string with sexp

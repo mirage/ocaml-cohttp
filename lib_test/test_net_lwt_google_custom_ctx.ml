@@ -1,5 +1,4 @@
 (*
- * Copyright (c) 2014 Andy Ray
  * Copyright (c) 2014 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -14,25 +13,31 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
-*)
+ *)
+open Lwt
 
-(** IO implementation that uses strings to marshal and unmarshal HTTP *)
+let google_static_ip = Ipaddr.of_string_exn "213.104.143.99"
 
-(** The buffer structured used to keep track of where in the string
-    the library is currently reading from *)
-type buf = {
-  str : string;
-  mutable pos : int;
-  len : int;
-}
+let () =
+  let point_to_static_ip to_ip svc uri =
+     let port =
+       match Uri.port uri with
+       | None -> svc.Resolver.port 
+       | Some port -> port in
+     return (`TCP (to_ip,port))
+  in
+ 
+  let service = Resolver_lwt_unix.static_service in
+  let rewrites = [ "", (point_to_static_ip google_static_ip) ] in
+  let resolver = Resolver_lwt.init ~service ~rewrites () in
+  let ctx = Cohttp_lwt_unix.Client.custom_ctx ~resolver () in
 
-(** [open_in s] will make the string [s] available as a [buf]
-   that can be parsed via Cohttp *)
-val open_in : string -> buf
+  let fetch uri =
+    Lwt_unix.run (
+      Cohttp_lwt_unix.Client.get ~ctx (Uri.of_string uri)
+      >>= fun (r,b) ->
+      Cohttp_lwt_body.to_string b
+    ) in
 
-(** IO interface that uses {!buf} for input data and queues output
-   data into a {!Buffer.t} *)
-module M : S.IO
- with type 'a t = 'a
- and type ic = buf
- and type oc = Buffer.t
+  prerr_endline (fetch "https://google.com");
+  prerr_endline (fetch "http://google.com")

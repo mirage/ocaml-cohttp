@@ -44,7 +44,7 @@ Library cohttp_lwt
   FindlibParent: cohttp
   BuildDepends:  lwt, uri, cohttp, lwt.syntax
   XMETARequires: lwt, uri, cohttp
-  Modules:       Cohttp_lwt_body, Cohttp_lwt
+  Modules:       Cohttp_lwt_body, Cohttp_lwt, String_io_lwt
 
 Library cohttp_lwt_unix
   Build$:        flag(lwt_unix)
@@ -149,6 +149,15 @@ Executable test_net_lwt
 Executable test_net_lwt_google
   Path:               lib_test
   MainIs:             test_net_lwt_google.ml
+  Build$:             flag(tests) && flag(lwt_unix)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp.lwt
+
+Executable test_net_lwt_google_custom_ctx
+  Path:               lib_test
+  MainIs:             test_net_lwt_google_custom_ctx.ml
   Build$:             flag(tests) && flag(lwt_unix)
   Custom:             true
   CompiledObject:     best

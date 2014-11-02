@@ -16,14 +16,24 @@
   PERFORMANCE OF THIS SOFTWARE.
 *)
 
-type pv = Accept_types.pv = T of string | S of string with sexp
+(** Accept-Encoding HTTP header parsing and generation *)
+
+type pv = Accept_types.pv =
+    T of string
+  | S of string with sexp
+
 type p = string * pv with sexp
+
 type media_range =
   Accept_types.media_range =
     MediaType of string * string
   | AnyMediaSubtype of string
   | AnyMedia with sexp
-type charset = Accept_types.charset = Charset of string | AnyCharset with sexp
+
+type charset = Accept_types.charset =
+    Charset of string
+  | AnyCharset with sexp
+
 type encoding =
   Accept_types.encoding =
     Encoding of string
@@ -32,14 +42,22 @@ type encoding =
   | Deflate
   | Identity
   | AnyEncoding with sexp
-type language = Accept_types.language = Language of string list | AnyLanguage with sexp
+
+type language = Accept_types.language =
+    Language of string list
+  | AnyLanguage with sexp
+
 type q = int with sexp
+
 type 'a qlist = (q * 'a) list with sexp
 
 val media_ranges :
   string option -> (media_range * p list) qlist
+
 val charsets : string option -> charset qlist
+
 val encodings : string option -> encoding qlist
+
 val languages : string option -> language qlist
 
 val string_of_media_range : media_range * (string * pv) list -> q -> string

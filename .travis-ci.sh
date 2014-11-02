@@ -45,8 +45,8 @@ opam pin $pin cohttp .
 opam install -j 2 github cowabloga
 git clone git://github.com/mirage/mirage-www
 cd mirage-www && make configure && make depend && make build 
-case "$OCAML_VERSION" in
-4.01.0)
-  opam install irmin ;;
-*) echo Skipping irmin ;;
-esac
+#case "$OCAML_VERSION" in
+#4.01.0)
+#  opam install irmin ;;
+#*) echo Skipping irmin ;;
+#esac

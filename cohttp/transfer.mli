@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012-2014 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,12 +15,12 @@
  *
  *)
 
-(** Module to read and write the HTTP/1.1 transfer-encoding formats.
-  * Currently supported are [chunked] and [content-length].
+(** Read and write the HTTP/1.1 transfer-encoding formats.
+    Currently supported are [chunked] and [content-length].
   *)
 
 (** The encoding format detected from the [transfer-encoding] and
-  * [content-length] headers *)
+    [content-length] headers *)
 type encoding =
  | Chunked             (** dynamic chunked encoding *)
  | Fixed of int64      (** fixed size content *)
@@ -35,6 +35,10 @@ type chunk =
 with sexp
 
 (** Convert the encoding format to a human-readable string *)
-val encoding_to_string : encoding -> string
+val string_of_encoding : encoding -> string
 
+(** [has_body encoding] returns the appropriate variant that indicates
+    whether the HTTP request or response has an associated body.
+    It does not guess: instead [Unknown] is returned if there is no
+    explicit association. *)
 val has_body : encoding -> [ `No | `Unknown | `Yes ]

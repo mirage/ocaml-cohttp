@@ -10,12 +10,17 @@ libraries:
   by the the [Mirage](http://www.openmirage.org) interface
   to generate standalone microkernels (see the [mirage-http](https://github.com/mirage/mirage-http)
   repository).
+* `Cohttp_lwt_xhr` compiles to a JavaScript module that maps the Cohttp
+   calls to XMLHTTPRequests.  This is used to compile OCaml libraries like
+   the GitHub bindings to JavaScript and still run efficiently.
 
 You can implement other targets using the parser very easily.  Look at the
 `lib/IO.mli` signature and implement that in the desired backend.
 
 You can activate some runtime debugging by setting `COHTTP_DEBUG` to any
-value, and all requests and responses will be written to stderr.
+value, and all requests and responses will be written to stderr.  Further
+debugging of the connection layer can be obtained by setting `CONDUIT_DEBUG`
+to any value.
 
 For build requirements, please see the `_oasis` file, or use OPAM to install
 it from <http://github.com/ocaml/opam>.

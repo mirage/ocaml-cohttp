@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012-2014 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,15 +15,34 @@
  *
  *)
 
+(** HTTP Authentication header parsing and generation *)
+
+(** HTTP authentication request types *)
 type req = [
- | `Basic of string (* realm *)
+ | `Basic of string (* Basic authorization with a realm *)
 ] with sexp
 
-type t =
-  | Basic of string * string (* username, password *)
-with sexp
+(** HTTP authentication response types *)
+type resp = [
+  | `Basic of string * string (** Basic authorization with a username and password *)
+  | `Other of string (* An unknown response header that will be passed straight through to the HTTP layer *)
+] with sexp
 
-val to_string : t -> string
-val of_string : string -> t option
+(** [string_of_resp] converts the {!resp} to a string compatible
+    with the HTTP/1.1 wire format for responses *)
+val string_of_resp : resp -> string
 
-val req_to_string : req -> string
+(** [resp_of_string resp] converts a HTTP response to an authorization
+    request into a {!resp}.  If the response is not recognized, [None]
+    is returned. *)
+val resp_of_string : string -> resp
+
+(** [string_of_req req] converts the {!req} to a string compatible with
+    the HTTP/1.1 wire format for authorization requests.
+
+    For example, a {!Basic} request with realm ["foo"] will be 
+    marshalled to ["Basic realm=foo"], which can then be combined
+    with a [www-authenticate] HTTP header and sent back to the
+    client.  There is a helper function {!Header.add_authorization_req}
+    that does just this. *)
+val string_of_req : req -> string

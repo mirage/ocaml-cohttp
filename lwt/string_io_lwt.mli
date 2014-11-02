@@ -1,5 +1,6 @@
 (*
- * Copyright (c) 2012-2014 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2014 Andy Ray
+ * Copyright (c) 2014 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -15,19 +16,13 @@
  *
  *)
 
-(** HTTP/1.1 request handling *)
+(** Lwt IO implementation that uses strings to marshal and unmarshal HTTP *)
 
-(** This contains the metadata for a HTTP/1.1 request header, including
-    the {!headers}, {!version}, {!meth} and {!uri}.  The body is handled by
-    the separate {!S} module type, as it is dependent on the IO 
-    implementation.
-
-    The interface exposes a [fieldslib] interface which provides individual
-    accessor functions for each of the records below.  It also provides [sexp]
-    serializers to convert to-and-from an {!Core.Std.Sexp.t}. *)
-include S.Request
-
-(** Functor to construct the IO-specific HTTP request handling functions *)
-module Make(IO : S.IO) : S.Http_io
-  with type t = t
-   and module IO = IO
+(** IO interface that uses {!buf} for input data and queues output
+   data into a {!Buffer.t}.  Never actually blocks despite the Lwt
+   use, although a future revision may yield when parsing large
+   strings. *)
+include S.IO
+  with type 'a t = 'a Lwt.t
+  and type ic = Cohttp.String_io.buf
+  and type oc = Buffer.t
