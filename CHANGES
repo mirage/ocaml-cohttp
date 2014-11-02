@@ -1,27 +1,32 @@
-0.12.0 (trunk):
+0.12.0 (2014-11-04):
+
+Compatibility breaking interface changes:
 * Rename `Cohttp.Auth.t` to `Cohttp.Auth.resp` to make it match the
   existing `Cohttp.Auth.req` type.  Also expose an `Other` variant
   to make it more extensible for unknown authentication types.
-* Add a JavaScript backend.
-* Support HTTP methods and versions other than the standard ones. (#142).
-* Remove link-time dependency on camlp4 via META fixes (#127).
 * The `has_body` function in the Request and Response modules now
   explicitly signals when the body size is unknown.
-* Add `Body.map` and `Body.as_pipe` to work with HTTP bodies more easily.
 * Move all the module type signatures into `Cohttp.S`.
-* [lwt] Remove the `Cohttp_lwt.Server.server` type synonym to `t`.
-* [async] In the Async server, do not close the Reader too early.
-* [async] Close file descriptors more eagerly in the HTTP client (#167).
-* Improve `cohttp_server_lwt` and `cohttp_server_async` directory listings (#158)
-* Fix `Cohttp_async.resolve_local_file` directory traversal vulnerability (#158)
+* If users have percent-encoded file names, their resolution is changed:
+ `resolve_local_file` in `Cohttp_async` and `Cohttp_lwt` now always
+  percent-decode paths (#157)
+* Remove the `Cohttp_lwt.Server.server` type synonym to `t`.
+* Port module interfaces to the latest Conduit (0.6.0+) API.
+
+New features and bugfixes:
+* Add a `Cohttp_lwt_xhr` JavaScript backend that enables Cohttp logic to be
+  mapped to `XMLHTTPRequest` in browsers via `js_of_ocaml` (via Andy Ray).
 * `cohttp_server_lwt` and `cohttp_server_async` now return better errors (#158)
 * `cohttp_server_lwt` and `cohttp_server_async` now serve indexes directly (#162)
-* Breaking: if users have percent-encoded file names, their resolution is
-  changed: `resolve_local_file` in `Cohttp_async` and `Cohttp_lwt` now always
-  percent-decode paths (#157)
-* Port to the latest Conduit (0.6.0+) API.
 * [lwt] Add `stop` thread to terminate a running server if it finishes (#147).
 * Add `Cohttp.Connection.compare` to make ordering of connections possible.
+* Add `Body.map` and `Body.as_pipe` to work with HTTP bodies more easily.
+* Remove link-time dependency on camlp4 via META fixes (#127).
+* Support HTTP methods and versions other than the standard ones. (#142).
+* Improve `cohttp_server_lwt` and `cohttp_server_async` directory listings (#158)
+* Fix `Cohttp_async.resolve_local_file` directory traversal vulnerability (#158)
+* [async] In the Async server, do not close the Reader too early.
+* [async] Close file descriptors more eagerly in the HTTP client (#167).
 
 0.11.2 (2014-04-21)
 * Fix build by add a missing build-deps in _oasis.
