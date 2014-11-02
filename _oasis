@@ -1,6 +1,6 @@
 OASISFormat: 0.3
 Name:        mirage-http
-Version:     1.2.0
+Version:     2.0.0
 Synopsis:    Mirage HTTP clent and server for Unix
 Authors:     Anil Madhavapeddy, Thomas Gazagnaire
 License:     ISC
