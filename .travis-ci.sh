@@ -33,7 +33,7 @@ opam init
 opam remote add mirage-dev git://github.com/mirage/mirage-dev
 opam update
 sudo apt-get install -qq `opam install -e ubuntu ${OPAM_DEPENDS}`
-opam install -v -j 2 core_kernel
+opam install -v core_kernel
 opam install ${OPAM_DEPENDS}
 eval `opam config env`
 make NETTESTS=--enable-nettests
@@ -42,7 +42,7 @@ make clean
 export OPAMJOBS=2
 # Test out some upstream users of Cohttp
 opam pin $pin cohttp .
-opam install -j 2 github cowabloga
+opam install github cowabloga mirage
 git clone git://github.com/mirage/mirage-www
 cd mirage-www && make configure && make depend && make build 
 #case "$OCAML_VERSION" in
