@@ -28,7 +28,11 @@ module Request : Cohttp_lwt.Request with module IO = Cohttp_lwt_unix_io
 module Response : Cohttp_lwt.Response with module IO = Cohttp_lwt_unix_io
 
 (** The [Client] module implements an HTTP client interface. *)
-module Client : Cohttp_lwt.Client with module IO = Cohttp_lwt_unix_io
+module Client : Cohttp_lwt.Client
+  with module IO = Cohttp_lwt_unix_io
+   and module Request = Request
+   and module Response = Response
+   and type ctx = Cohttp_lwt_unix_net.ctx
 
 (** This module type defines the additional UNIX-specific functions that are
   exposed in addition to the {! Cohttp_lwt.Server} interface.  These are
@@ -38,6 +42,7 @@ module type S = sig
   include Cohttp_lwt.Server with module IO = Cohttp_lwt_unix_io
                              and module Request = Request
                              and module Response = Response
+                             and   type ctx = Cohttp_lwt_unix_net.ctx
 
   val resolve_file : docroot:string -> uri:Uri.t -> string
 
