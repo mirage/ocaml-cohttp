@@ -263,6 +263,15 @@ Executable "test_xhr"
   Install:            false
   BuildDepends:       cohttp, cohttp.js, lwt.syntax, js_of_ocaml.syntax
 
+Executable "async-receive-post"
+  Path:               examples/async
+  MainIs:             receive_post.ml
+  Build$:             flag(async)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.async
+
 Test test_accept
   Run$:               flag(tests)
   Command:            $test_accept

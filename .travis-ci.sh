@@ -42,8 +42,9 @@ make clean
 export OPAMJOBS=2
 # Test out some upstream users of Cohttp
 opam pin $pin cohttp .
-opam install -j 2 github cowabloga mirage-www
-
+opam install -j 2 github cowabloga
+git clone git://github.com/mirage/mirage-www
+cd mirage-www && make configure && make depend && make build 
 case "$OCAML_VERSION" in
 4.01.0)
   opam install irmin ;;
