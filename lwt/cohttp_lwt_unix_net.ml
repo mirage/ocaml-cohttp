@@ -27,20 +27,20 @@ type ic = Lwt_io.input_channel
 type oc = Lwt_io.output_channel
 type ctx = {
   ctx: Conduit_lwt_unix.ctx;
-  resolver: Conduit_resolver_lwt.t;
+  resolver: Resolver_lwt.t;
 }
 
-let init ?(resolver=Conduit_resolver_lwt_unix.system)
+let init ?(resolver=Resolver_lwt_unix.system)
          ?(ctx=Conduit_lwt_unix.default_ctx) () =
   { ctx; resolver }
 
 let default_ctx = {
-  resolver = Conduit_resolver_lwt_unix.system;
+  resolver = Resolver_lwt_unix.system;
   ctx = Conduit_lwt_unix.default_ctx;
 }
 
 let connect_uri ~ctx uri =
-  Conduit_resolver_lwt.resolve_uri ~uri ctx.resolver
+  Resolver_lwt.resolve_uri ~uri ctx.resolver
   >>= fun endp ->
   Conduit_lwt_unix.endp_to_client ~ctx:ctx.ctx endp
   >>= fun client ->
