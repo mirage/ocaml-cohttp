@@ -146,8 +146,11 @@ module Make_client
     (IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
     (Request:Request with module IO = IO)
     (Response:Response with module IO = IO)
-    (Net:Net with module IO = IO) :
-    Client with module IO=IO and module Request=Request and module Response=Response
+    (Net:Net with module IO = IO) : Client
+    with module IO=IO
+     and module Request=Request
+     and module Response=Response
+     and type ctx = Net.ctx
 
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)
 module type Server = sig
