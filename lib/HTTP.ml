@@ -33,16 +33,16 @@ module Make(Conduit:Conduit_mirage.S) = struct
     type flow = Conduit.flow
     
     type ctx = {
-      resolver: Conduit_resolver_lwt.t;
+      resolver: Resolver_lwt.t;
       ctx: Conduit.ctx;
     }
 
     let default_ctx = 
-      { resolver = Conduit_resolver_mirage.localhost;
+      { resolver = Resolver_mirage.localhost;
         ctx = Conduit.default_ctx }
 
     let connect_uri ~ctx uri =
-      Conduit_resolver_lwt.resolve_uri ~uri ctx.resolver
+      Resolver_lwt.resolve_uri ~uri ctx.resolver
       >>= fun endp ->
       Conduit.endp_to_client ~ctx:ctx.ctx endp
       >>= fun client ->
