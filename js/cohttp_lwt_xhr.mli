@@ -18,11 +18,6 @@
 
 (** HTTP client for JavaScript using XMLHttpRequest. *)
 
-module String_io_lwt : S.IO
-  with type 'a t = 'a Lwt.t
-  and type ic = Cohttp.String_io.buf
-  and type oc = Buffer.t
-
 (** Configuration parameters for the XmlHttpRequest engines *)
 module type Params = sig
   (** Should the response body data be chunked? *)

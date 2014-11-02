@@ -44,7 +44,7 @@ Library cohttp_lwt
   FindlibParent: cohttp
   BuildDepends:  lwt, uri, cohttp, lwt.syntax
   XMETARequires: lwt, uri, cohttp
-  Modules:       Cohttp_lwt_body, Cohttp_lwt
+  Modules:       Cohttp_lwt_body, Cohttp_lwt, String_io_lwt
 
 Library cohttp_lwt_unix
   Build$:        flag(lwt_unix)

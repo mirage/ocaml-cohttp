@@ -1,6 +1,7 @@
 0.12.0 (2014-11-04):
 
 Compatibility breaking interface changes:
+
 * Rename `Cohttp.Auth.t` to `Cohttp.Auth.resp` to make it match the
   existing `Cohttp.Auth.req` type.  Also expose an `Other` variant
   to make it more extensible for unknown authentication types.
@@ -16,10 +17,12 @@ Compatibility breaking interface changes:
 * Port module interfaces to the latest Conduit (0.6.0+) API.
 
 New features and bugfixes:
+
 * Add a `Cohttp_lwt_xhr` JavaScript backend that enables Cohttp logic to be
   mapped to `XMLHTTPRequest` in browsers via `js_of_ocaml` (via Andy Ray).
-* Add a `Cohttp.String_io` module that uses OCaml `string` or `Buffer.t`
-  to read and write HTTP requests and responses instead of network connections.
+* Add a `Cohttp.String_io` and `String_io_lwt` module that uses OCaml
+  `string` or `Buffer.t` to read and write HTTP requests and responses
+  instead of network connections.
 * `cohttp_server_lwt` and `cohttp_server_async` now return better errors (#158)
 * `cohttp_server_lwt` and `cohttp_server_async` now serve indexes directly (#162)
 * [lwt] Add `stop` thread to terminate a running server if it finishes (#147).

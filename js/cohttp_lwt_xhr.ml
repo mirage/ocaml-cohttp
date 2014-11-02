@@ -19,24 +19,6 @@
 module C = Cohttp
 module CLB = Cohttp_lwt_body
 
-module String_io_lwt = struct
-  type 'a t = 'a Lwt.t
-  let return = Lwt.return
-  let (>>=) = Lwt.bind
-  
-  type ic = Cohttp.String_io.M.ic
-  type oc = Cohttp.String_io.M.oc
-  type conn = Cohttp.String_io.M.conn
-
-  let iter = Lwt_list.iter_s
-  let read_line ic = return (Cohttp.String_io.M.read_line ic)
-  let read ic n = return (Cohttp.String_io.M.read ic n)
-  let read_exactly ic n = return (Cohttp.String_io.M.read_exactly ic n)
-
-  let write oc str = return (Cohttp.String_io.M.write oc str)
-  let flush oc = return (Cohttp.String_io.M.flush oc)
-end
-
 module type Params = sig
   val chunked_response : bool
   val chunk_size : int
