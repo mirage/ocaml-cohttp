@@ -181,12 +181,12 @@ let add_authorization_req headers req =
   add headers "www-authenticate" (Auth.req_to_string req)
 
 let add_authorization headers auth =
-  add headers "authorization" (Auth.to_string auth)
+  add headers "authorization" (Auth.resp_to_string auth)
 
 let get_authorization headers =
   match get headers "authorization" with
   |None -> None
-  |Some v -> Auth.of_string v
+  |Some v -> Some (Auth.resp_of_string v)
 
 let is_form headers =
   get_media_type headers = (Some "application/x-www-form-urlencoded")

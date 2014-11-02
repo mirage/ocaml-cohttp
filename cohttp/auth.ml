@@ -22,22 +22,24 @@ type req = [
  | `Basic of string (* realm *)
 ] with sexp
 
-type t =
-  | Basic of string * string (* username, password *)
-  with sexp
+type resp = [
+ | `Basic of string * string (* username, password *)
+ | `Other of string
+]  with sexp
 
-let to_string =
-  function
-  |Basic (user, pass) ->
+let resp_to_string (resp:resp) =
+  match resp with
+  | `Basic (user, pass) ->
     "Basic " ^ (Base64.encode (sprintf "%s:%s" user pass))
+  | `Other buf -> buf
 
-let of_string v =
+let resp_of_string (buf:string) : resp =
   try
-    let b64 = Scanf.sscanf v "Basic %s" (fun b -> b) in
+    let b64 = Scanf.sscanf buf "Basic %s" (fun b -> b) in
     match Stringext.split ~on:':' (Base64.decode b64) ~max:2 with
-    |[user;pass] -> Some (Basic (user,pass))
-    |_ -> None
-  with _ -> None
+    |[user;pass] -> `Basic (user,pass)
+    |_ -> `Other buf
+  with _ -> `Other buf
 
 let req_to_string (ty:req) =
   match ty with

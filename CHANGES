@@ -1,4 +1,7 @@
 0.12.0 (trunk):
+* Rename `Cohttp.Auth.t` to `Cohttp.Auth.resp` to make it match the
+  existing `Cohttp.Auth.req` type.  Also expose an `Other` variant
+  to make it more extensible for unknown authentication types.
 * Add a JavaScript backend.
 * Support HTTP methods and versions other than the standard ones. (#142).
 * Remove link-time dependency on camlp4 via META fixes (#127).
