@@ -26,3 +26,5 @@ let count = ref 0
 let create () =
   incr count;
   !count
+
+let compare (a:t) (b:t) = Pervasives.compare a b

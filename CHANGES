@@ -21,6 +21,7 @@
   percent-decode paths (#157)
 * Port to the latest Conduit (0.6.0+) API.
 * [lwt] Add `stop` thread to terminate a running server if it finishes (#147).
+* Add `Cohttp.Connection.compare` to make ordering of connections possible.
 
 0.11.2 (2014-04-21)
 * Fix build by add a missing build-deps in _oasis.
