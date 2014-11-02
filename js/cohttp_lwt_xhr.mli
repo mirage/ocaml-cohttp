@@ -23,13 +23,15 @@ module String_io_lwt : S.IO
   and type ic = Cohttp.String_io.buf
   and type oc = Buffer.t
 
-(** configuration parameters for the XmlHttpRequest engines *)
+(** Configuration parameters for the XmlHttpRequest engines *)
 module type Params = sig
-  (** should the response body data be chunked *)
+  (** Should the response body data be chunked? *)
   val chunked_response : bool
-  (** size of chunks *)
+
+  (** Size of chunks *)
   val chunk_size : int
-  (** javascript string to ocaml conversion.  [Js.to_bytestring] or 
+
+  (** JavaScript string to OCaml conversion.  [Js.to_bytestring] or 
       [Js.to_string] *)
   val convert_body_string : Js.js_string Js.t -> string
 end

@@ -18,6 +18,8 @@ Compatibility breaking interface changes:
 New features and bugfixes:
 * Add a `Cohttp_lwt_xhr` JavaScript backend that enables Cohttp logic to be
   mapped to `XMLHTTPRequest` in browsers via `js_of_ocaml` (via Andy Ray).
+* Add a `Cohttp.String_io` module that uses OCaml `string` or `Buffer.t`
+  to read and write HTTP requests and responses instead of network connections.
 * `cohttp_server_lwt` and `cohttp_server_async` now return better errors (#158)
 * `cohttp_server_lwt` and `cohttp_server_async` now serve indexes directly (#162)
 * [lwt] Add `stop` thread to terminate a running server if it finishes (#147).

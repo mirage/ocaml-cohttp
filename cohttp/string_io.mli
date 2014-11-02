@@ -16,15 +16,22 @@
  *
 *)
 
-type buf =
-  {
-    str : string;
-    mutable pos : int;
-    len : int;
-  }
+(** IO implementation that uses strings to marshal and unmarshal HTTP *)
 
+(** The buffer structured used to keep track of where in the string
+    the library is currently reading from *)
+type buf = {
+  str : string;
+  mutable pos : int;
+  len : int;
+}
+
+(** [open_in s] will make the string [s] available as a [buf]
+   that can be parsed via Cohttp *)
 val open_in : string -> buf
 
+(** IO interface that uses {!buf} for input data and queues output
+   data into a {!Buffer.t} *)
 module M : S.IO
  with type 'a t = 'a
  and type ic = buf
