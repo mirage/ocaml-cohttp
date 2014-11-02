@@ -1,4 +1,5 @@
 OASISFormat: 0.3
+OCamlVersion:     >= 4.01.0
 Name:        cohttp
 Version:     0.12.0
 Synopsis:    HTTP library for Lwt, Async, JavaScript and Mirage
