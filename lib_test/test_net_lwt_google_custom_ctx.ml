@@ -1,8 +1,8 @@
 open Lwt
 
-let () =
-  let ctx = Conduit_lwt_unix.default_ctx in
+let google_static_ip = Ipaddr.of_string_exn "213.104.143.99"
 
+let () =
   let point_to_static_ip to_ip svc uri =
      let port =
        match Uri.port uri with
@@ -12,10 +12,9 @@ let () =
   in
  
   let service = Resolver_lwt_unix.static_service in
-  let google_static_ip = Ipaddr.of_string_exn "213.104.143.99" in
   let rewrites = [ "", (point_to_static_ip google_static_ip) ] in
   let resolver = Resolver_lwt.init ~service ~rewrites () in
-  let ctx = { Cohttp_lwt_unix_net.ctx; resolver } in
+  let ctx = Cohttp_lwt_unix.Client.custom_ctx ~resolver () in
 
   let fetch uri =
     Lwt_unix.run (
@@ -26,4 +25,3 @@ let () =
 
   prerr_endline (fetch "https://google.com");
   prerr_endline (fetch "http://google.com")
-   

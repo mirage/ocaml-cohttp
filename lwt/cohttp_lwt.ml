@@ -21,7 +21,7 @@ open Lwt
 module type Net = sig
   module IO : S.IO
   type ctx
-  val default_ctx: ctx
+  val default_ctx : ctx
   val connect_uri : ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
   val close_in : IO.ic -> unit
   val close_out : IO.oc -> unit
