@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 9e8a8deec171e9ed543c29fc39dc451c)
+# DO NOT EDIT (digest: 294ca31cc4d40df5bf03fb3ddeb52d25)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -175,6 +175,25 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_google.{native,byte}>: use_cohttp_lwt
 <lib_test/test_net_lwt_google.{native,byte}>: use_cohttp_lwt_unix
 <lib_test/test_net_lwt_google.{native,byte}>: custom
+# Executable test_net_lwt_google_custom_ctx
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_conduit.lwt-unix
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_fieldslib.syntax
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_lwt
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_lwt.ssl
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_lwt.syntax
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_lwt.unix
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_re.emacs
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_sexplib
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_stringext
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_unix
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_uri
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_uri.services
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: use_cohttp
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: use_cohttp_lwt
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: use_cohttp_lwt_unix
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: custom
 # Executable test_net_lwt_lastminute
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_conduit.lwt-unix
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_fieldslib

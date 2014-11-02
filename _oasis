@@ -155,6 +155,15 @@ Executable test_net_lwt_google
   Install:            false
   BuildDepends:       cohttp.lwt
 
+Executable test_net_lwt_google_custom_ctx
+  Path:               lib_test
+  MainIs:             test_net_lwt_google_custom_ctx.ml
+  Build$:             flag(tests) && flag(lwt_unix)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp.lwt
+
 Executable test_net_lwt_lastminute
   Path:               lib_test
   MainIs:             test_net_lwt_lastminute.ml
