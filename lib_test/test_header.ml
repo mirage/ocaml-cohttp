@@ -21,7 +21,7 @@ open Printf
 module H = Cohttp.Header
 
 let valid_auth () =
-  let auth = Cohttp.Auth.Basic ("Aladdin", "open sesame") in
+  let auth = `Basic ("Aladdin", "open sesame") in
   let h = H.add_authorization (H.init ()) auth in
   let digest = H.get h "authorization" in
   assert_equal digest (Some "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==");
