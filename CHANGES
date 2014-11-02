@@ -15,6 +15,7 @@ Compatibility breaking interface changes:
   percent-decode paths (#157)
 * Remove the `Cohttp_lwt.Server.server` type synonym to `t`.
 * Port module interfaces to the latest Conduit (0.6.0+) API.
+* Cohttp requires OCaml 4.01.0 or higher now.
 
 New features and bugfixes:
 
