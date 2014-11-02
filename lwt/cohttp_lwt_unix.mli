@@ -17,6 +17,8 @@
 
 (** HTTP client and server using the [Lwt_unix] interfaces. *)
 
+(** {2 Request and Response modules} *)
+
 (** The [Request] module holds the information about a HTTP request, and
     also includes the {! Cohttp_lwt_unix_io} functions to handle large
     message bodies. *)
@@ -27,7 +29,10 @@ module Request : Cohttp_lwt.Request with module IO = Cohttp_lwt_unix_io
     message bodies. *)
 module Response : Cohttp_lwt.Response with module IO = Cohttp_lwt_unix_io
 
-(** The [Client] module implements an HTTP client interface. *)
+(** {2 Module types for Client and Server} *)
+
+(** The [Client] module type defines the additional UNIX-specific functions
+  that are exposed in addition to the {!Cohttp_lwt.Client} interface. *)
 module type C = sig
 
   include Cohttp_lwt.Client
@@ -36,12 +41,18 @@ module type C = sig
      and module Response = Response
      and type ctx = Cohttp_lwt_unix_net.ctx
 
+  (** [custom_ctx ?ctx ?resolver ()] will return a context that is the
+     same as the {!default_ctx}, but with either the connection handling
+     or resolution module overridden with [ctx] or [resolver] respectively.
+
+     This is useful to supply a {!Conduit_lwt_unix.ctx} with a custom
+     source network interface, or a {!Resolver_lwt.t} with a different
+     name resolution strategy (for instance to override a hostname to
+     point it to a Unix domain socket). *)
   val custom_ctx:
     ?ctx:Conduit_lwt_unix.ctx ->
     ?resolver:Resolver_lwt.t -> unit -> ctx
 end
-
-module Client : C
 
 (** This module type defines the additional UNIX-specific functions that are
   exposed in addition to the {! Cohttp_lwt.Server} interface.  These are
@@ -67,6 +78,12 @@ module type S = sig
     ?mode:Conduit_lwt_unix.server -> t -> unit Lwt.t
 end
 
-(** The [Server] module implement the full UNIX HTTP server interface,
-  including the UNIX-specific functions defined in {! S }. *)
+(** {2 Lwt-Unix Client and Server implementations} *)
+
+(** The [Client] module implements the full UNIX HTTP client interface,
+  including the UNIX-specific functions defined in {!C }. *)
+module Client : C
+
+(** The [Server] module implements the full UNIX HTTP server interface,
+  including the UNIX-specific functions defined in {!S}. *)
 module Server : S
