@@ -36,7 +36,7 @@ let make_net_reqv () =
       Request.make ~meth:`GET (Uri.of_string "/foo2"), `Empty;
       Request.make ~meth:`GET ~headers:last_header (Uri.of_string "/foo3"), `Empty;
     ] in
-  let uri = Uri.of_string "http://89.16.177.154" in
+  let uri = Uri.of_string "http://5.153.225.51" in
   lwt resp = Client.callv uri (Lwt_stream.of_list reqs) in
   (* Consume the bodies, and we should get 3 responses *)
   let num = ref 0 in
