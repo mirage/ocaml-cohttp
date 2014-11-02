@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012-2014 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,4 +26,8 @@
     accessor functions for each of the records below.  It also provides [sexp]
     serializers to convert to-and-from an {!Core.Std.Sexp.t}. *)
 include S.Request
-module Make(IO : S.IO) : S.Http_io with type t = t and module IO = IO
+
+(** Functor to construct the IO-specific HTTP request handling functions *)
+module Make(IO : S.IO) : S.Http_io
+  with type t = t
+   and module IO = IO

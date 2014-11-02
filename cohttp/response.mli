@@ -28,4 +28,8 @@
     accessor functions for each of the records below.  It also provides [sexp]
     serializers to convert to-and-from an {!Core.Std.Sexp.t}. *)
 include S.Response
-module Make(IO : S.IO) : S.Http_io with type t = t and module IO = IO
+
+(** Functor to construct the IO-specific response handling function *)
+module Make(IO : S.IO) : S.Http_io
+  with type t = t
+   and module IO = IO

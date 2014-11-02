@@ -135,5 +135,3 @@ module Make(IO : S.IO) = struct
   let is_form req = Header.is_form req.headers
   let read_form req ic = Header_IO.parse_form req.headers ic
 end
-
-
