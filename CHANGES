@@ -4,6 +4,8 @@ Compatibility breaking interface changes:
 * Rename `Cohttp.Auth.t` to `Cohttp.Auth.resp` to make it match the
   existing `Cohttp.Auth.req` type.  Also expose an `Other` variant
   to make it more extensible for unknown authentication types.
+* Rename `Cohttp.Transfer.encoding_to_string` to `string_of_encoding`
+  for consistency with the rest of Cohttp's APIs.
 * The `has_body` function in the Request and Response modules now
   explicitly signals when the body size is unknown.
 * Move all the module type signatures into `Cohttp.S`.

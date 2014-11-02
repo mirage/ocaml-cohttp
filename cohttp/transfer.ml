@@ -27,7 +27,7 @@ type chunk =
 | Final_chunk of string
 | Done with sexp
 
-let encoding_to_string =
+let string_of_encoding =
   function
   | Chunked -> "chunked"
   | Fixed i -> Printf.sprintf "fixed[%Ld]" i
