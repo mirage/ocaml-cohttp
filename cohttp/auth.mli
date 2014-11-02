@@ -28,16 +28,16 @@ type resp = [
   | `Other of string (* An unknown response header that will be passed straight through to the HTTP layer *)
 ] with sexp
 
-(** [resp_to_string resp] converts the {!resp} to a string compatible
+(** [string_of_resp] converts the {!resp} to a string compatible
     with the HTTP/1.1 wire format for responses *)
-val resp_to_string : resp -> string
+val string_of_resp : resp -> string
 
 (** [resp_of_string resp] converts a HTTP response to an authorization
     request into a {!resp}.  If the response is not recognized, [None]
     is returned. *)
 val resp_of_string : string -> resp
 
-(** [req_to_string req] converts the {!req} to a string compatible with
+(** [string_of_req req] converts the {!req} to a string compatible with
     the HTTP/1.1 wire format for authorization requests.
 
     For example, a {!Basic} request with realm ["foo"] will be 
@@ -45,4 +45,4 @@ val resp_of_string : string -> resp
     with a [www-authenticate] HTTP header and sent back to the
     client.  There is a helper function {!Header.add_authorization_req}
     that does just this. *)
-val req_to_string : req -> string
+val string_of_req : req -> string

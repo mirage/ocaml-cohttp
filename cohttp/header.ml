@@ -178,10 +178,10 @@ let add_transfer_encoding headers enc =
   |Unknown, Unknown -> headers
 
 let add_authorization_req headers req =
-  add headers "www-authenticate" (Auth.req_to_string req)
+  add headers "www-authenticate" (Auth.string_of_req req)
 
 let add_authorization headers auth =
-  add headers "authorization" (Auth.resp_to_string auth)
+  add headers "authorization" (Auth.string_of_resp auth)
 
 let get_authorization headers =
   match get headers "authorization" with

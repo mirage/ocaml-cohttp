@@ -27,7 +27,7 @@ type resp = [
  | `Other of string
 ]  with sexp
 
-let resp_to_string (resp:resp) =
+let string_of_resp (resp:resp) =
   match resp with
   | `Basic (user, pass) ->
     "Basic " ^ (Base64.encode (sprintf "%s:%s" user pass))
@@ -41,6 +41,6 @@ let resp_of_string (buf:string) : resp =
     |_ -> `Other buf
   with _ -> `Other buf
 
-let req_to_string (ty:req) =
+let string_of_req (ty:req) =
   match ty with
   |`Basic realm -> sprintf "Basic realm=\"%s\"" realm
