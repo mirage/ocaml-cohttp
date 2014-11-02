@@ -49,69 +49,45 @@ end
 
 module Client : sig
 
+  (** Full response consisting of headers, status code, and body *)
+  type response_with_body = (Response.t * Body.t) Deferred.t
+
+  (** Basic http request that returns [response] *)
+  type 'response request =
+    ?interrupt:unit Deferred.t
+    -> ?headers:Cohttp.Header.t
+    -> Uri.t
+    -> 'response
+
+  (** Request with [body] optionally provided.
+      [chunked] encoding is off by default as not many servers support it *)
+  type 'response with_body = ?chunked:bool -> ?body:Body.t -> 'response
+
   (** Send an HTTP GET request *)
-  val get :
-    ?interrupt:unit Deferred.t ->
-    ?headers:Cohttp.Header.t ->
-    Uri.t ->
-    (Response.t * Body.t) Deferred.t
+  val get : response_with_body request
 
   (** Send an HTTP HEAD request *)
-  val head :
-    ?interrupt:unit Deferred.t ->
-    ?headers:Cohttp.Header.t ->
-    Uri.t ->
-    Response.t Deferred.t
+  val head : Response.t Deferred.t request
 
   (** Send an HTTP DELETE request *)
-  val delete :
-    ?interrupt:unit Deferred.t ->
-    ?headers:Cohttp.Header.t ->
-    Uri.t ->
-    (Response.t * Body.t) Deferred.t
+  val delete : response_with_body request
 
-  (** Send an HTTP POST request.
-      [chunked] encoding is off by default as not many servers support it
-  *)
-  val post :
-    ?interrupt:unit Deferred.t ->
-    ?headers:Cohttp.Header.t ->
-    ?chunked:bool ->
-    ?body:Body.t ->
-    Uri.t ->
-    (Response.t * Body.t) Deferred.t
+  (** Send an HTTP POST request.  *)
+  val post : response_with_body request with_body
 
-  (** Send an HTTP PUT request.
-      [chunked] encoding is off by default as not many servers support it
-  *)
-  val put :
-    ?interrupt:unit Deferred.t ->
-    ?headers:Cohttp.Header.t ->
-    ?chunked:bool ->
-    ?body:Body.t ->
-    Uri.t ->
-    (Response.t * Body.t) Deferred.t
+  (** Send an HTTP PUT request.  *)
+  val put : response_with_body request with_body
 
-  (** Send an HTTP PATCH request.
-      [chunked] encoding is off by default as not many servers support it
-  *)
-  val patch :
-    ?interrupt:unit Deferred.t ->
-    ?headers:Cohttp.Header.t ->
-    ?chunked:bool ->
-    ?body:Body.t ->
-    Uri.t ->
-    (Response.t * Body.t) Deferred.t
+  (** Send an HTTP PATCH request.  *)
+  val patch : response_with_body request with_body
 
   (** Send an HTTP request with arbitrary method and a body *)
-  val call :
-    ?interrupt:unit Deferred.t ->
-    ?headers:Cohttp.Header.t ->
-    ?chunked:bool ->
-    ?body:Body.t ->
-    Cohttp.Code.meth ->
-    Uri.t ->
-    (Response.t * Body.t) Deferred.t
+  val call : (?interrupt:unit Deferred.t
+              -> ?headers:Cohttp.Header.t
+              -> Cohttp.Code.meth
+              -> Uri.t
+              -> response_with_body) with_body
+
 end
 
 module Server : sig
