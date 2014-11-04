@@ -63,7 +63,7 @@ module Make(IO : S.IO) = struct
        return (`Ok { encoding; headers; version; status; flush })
 
   let has_body {encoding} = Transfer.has_body encoding
-  let read_body_chunk {encoding} ic = Transfer_IO.read encoding ic
+  let read_body_chunk {encoding} = Transfer_IO.read encoding
 
   let write_header res oc =
     write oc (Printf.sprintf "%s %s\r\n" (Code.string_of_version res.version) 
