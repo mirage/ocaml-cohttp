@@ -166,10 +166,11 @@ let post_data_parse () =
   Request.read ic >>= function
   | `Ok req ->
     let printer = p_sexp Transfer.sexp_of_chunk in
-    Request.read_body_chunk req ic >>= fun body ->
+    let reader = Request.make_body_reader req ic in
+    Request.read_body_chunk reader >>= fun body ->
     assert_equal ~printer (Transfer.Final_chunk "home=Cosby&favorite+flavor=flies") body;
     (* A subsequent request for the body will have consumed it, therefore None *)
-    Request.read_body_chunk req ic >>= fun body ->
+    Request.read_body_chunk reader >>= fun body ->
     assert_equal ~printer Transfer.Done body;
     return ()
   | _ -> assert false
@@ -181,9 +182,10 @@ let post_chunked_parse () =
   Request.read ic >>= function
   | `Ok req ->
     assert_equal (Transfer.string_of_encoding (Request.encoding req)) "chunked";
-    Request.read_body_chunk req ic >>= fun chunk ->
+    let reader = Request.make_body_reader req ic in
+    Request.read_body_chunk reader >>= fun chunk ->
     assert_equal chunk (Transfer.Chunk "abcdefghijklmnopqrstuvwxyz");
-    Request.read_body_chunk req ic >>= fun chunk ->
+    Request.read_body_chunk reader >>= fun chunk ->
     assert_equal chunk (Transfer.Chunk "1234567890abcdef");
     return ()
   | _ -> assert false
@@ -196,7 +198,8 @@ let res_content_parse () =
   | `Ok res ->
      assert_equal `HTTP_1_1 (Response.version res);
      assert_equal `OK (Response.status res);
-     Response.read_body_chunk res ic >>= fun body ->
+     let reader = Response.make_body_reader res ic in
+     Response.read_body_chunk reader >>= fun body ->
      assert_equal (Transfer.Final_chunk "home=Cosby&favorite+flavor=flies") body;
      return ()
   | _ -> assert false
@@ -209,9 +212,10 @@ let res_chunked_parse () =
   | `Ok res ->
      assert_equal `HTTP_1_1 (Response.version res);
      assert_equal `OK (Response.status res);
-     Response.read_body_chunk res ic >>= fun chunk ->
+     let reader = Response.make_body_reader res ic in
+     Response.read_body_chunk reader >>= fun chunk ->
      assert_equal chunk (Transfer.Chunk "abcdefghijklmnopqrstuvwxyz");
-     Response.read_body_chunk res ic >>= fun chunk ->
+     Response.read_body_chunk reader >>= fun chunk ->
      assert_equal chunk (Transfer.Chunk "1234567890abcdef");
      return ()
   | _ -> assert false
@@ -230,15 +234,15 @@ let write_req expected req =
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
   let body = Cohttp_lwt_body.of_string "foobar" in
-  Request.write (fun req oc ->
-    Cohttp_lwt_body.write_body (Request.write_body req oc) body
+  Request.write (fun writer ->
+    Cohttp_lwt_body.write_body (Request.write_body writer) body
   ) req oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
   (* Use the high-level write API. This also tests that req is immutable
    * by re-using it *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
-  Request.write (fun req oc -> Request.write_body req oc "foobar") req oc
+  Request.write (fun writer -> Request.write_body writer "foobar") req oc
   >|= fun () ->
   assert_equal expected (get_substring oc buf)
 
@@ -266,15 +270,15 @@ let make_simple_res () =
   let oc = oc_of_buffer buf in
   let res = Response.make ~headers:(Header.of_list [("foo","bar")]) () in
   let body = Cohttp_lwt_body.of_string "foobar" in
-  Response.write (fun res oc ->
-    Cohttp_lwt_body.write_body (Response.write_body res oc) body
+  Response.write (fun writer ->
+    Cohttp_lwt_body.write_body (Response.write_body writer) body
   ) res oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
   (* Use the high-level write API. This also tests that req is immutable
    * by re-using it *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
-  Response.write (fun req oc -> Response.write_body req oc "foobar") res oc >>= fun () ->
+  Response.write (fun writer -> Response.write_body writer "foobar") res oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
   return ()
 

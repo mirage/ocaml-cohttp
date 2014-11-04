@@ -19,9 +19,11 @@ open Transfer
 
 module Make(IO : S.IO) = struct
   open IO
+  type reader = unit -> Transfer.chunk IO.t
+  type writer = string -> unit IO.t
 
   module Chunked = struct
-    let read ic =
+    let read ic () =
       (* Read chunk size *)
       read_line ic >>= function
       |Some chunk_size_hex -> begin
@@ -53,7 +55,7 @@ module Make(IO : S.IO) = struct
   end
 
   module Fixed = struct
-    let read ~remaining ic =
+    let read ~remaining ic () =
       (* TODO functorise string to a bigbuffer *)
       match !remaining with
       |0L -> return Done
@@ -74,29 +76,32 @@ module Make(IO : S.IO) = struct
   module Unknown = struct
     (* If we have no idea, then read one chunk and return it.
      * TODO should this be a read with an explicit timeout? *)
-    let read ic =
+    let read ic () =
       read ic 16384 >>= fun buf -> return (Final_chunk buf)
 
     let write oc buf =
       write oc buf
   end
 
-  let read =
+  let make_reader =
     function
     | Chunked -> Chunked.read
     | Fixed len -> Fixed.read ~remaining:(ref len)
     | Unknown -> Unknown.read
 
-  let write =
+  let make_writer =
     function
     | Chunked -> Chunked.write
     | Fixed len -> Fixed.write
     | Unknown -> Unknown.write
 
-  let to_string encoding ic =
+  let read reader = reader ()
+  let write writer buf = writer buf
+
+  let to_string reader =
     let buf = Buffer.create 256 in
     let rec loop () =
-      read encoding ic >>= function
+      read reader >>= function
       |Chunk c ->
         Buffer.add_string buf c;
         loop ()

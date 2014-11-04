@@ -35,6 +35,8 @@ module Make(IO : S.IO) = struct
   module IO = IO
   module Header_IO = Header_io.Make(IO)
   module Transfer_IO = Transfer_io.Make(IO)
+  type reader = Transfer_IO.reader
+  type writer = Transfer_IO.writer
 
   open IO
 
@@ -63,7 +65,8 @@ module Make(IO : S.IO) = struct
        return (`Ok { encoding; headers; version; status; flush })
 
   let has_body {encoding} = Transfer.has_body encoding
-  let read_body_chunk {encoding} ic = Transfer_IO.read encoding ic
+  let make_body_reader {encoding} ic = Transfer_IO.make_reader encoding ic
+  let read_body_chunk = Transfer_IO.read
 
   let write_header res oc =
     write oc (Printf.sprintf "%s %s\r\n" (Code.string_of_version res.version) 
@@ -72,8 +75,8 @@ module Make(IO : S.IO) = struct
     iter (IO.write oc) (Header.to_lines headers) >>= fun () ->
     IO.write oc "\r\n"
 
-  let write_body {encoding} oc buf =
-    Transfer_IO.write encoding oc buf
+  let make_body_writer {encoding} oc = Transfer_IO.make_writer encoding oc
+  let write_body = Transfer_IO.write
 
   let write_footer {encoding} oc =
     match encoding with
@@ -84,7 +87,8 @@ module Make(IO : S.IO) = struct
 
   let write fn req oc =
     write_header req oc >>= fun () ->
-    fn req oc >>= fun () ->
+    let writer = make_body_writer req oc in
+    fn writer >>= fun () ->
     write_footer req oc
 
   let is_form req = Header.is_form req.headers
