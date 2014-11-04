@@ -2,9 +2,10 @@
 
 Compatibility breaking interface changes:
 
-* Rename `Cohttp.Auth.t` to `Cohttp.Auth.resp` to make it match the
-  existing `Cohttp.Auth.req` type.  Also expose an `Other` variant
-  to make it more extensible for unknown authentication types.
+* Rename `Cohttp.Auth.t` to `Cohttp.Auth.credential` and `Cohttp.Auth.req`
+  to `Cohttp.Auth.challenge`.  Also expose an `Other` variant
+  to make it more extensible for unknown authentication types. The
+  `Cohttp.Auth` functions using these types have also been renamed accordingly.
 * Rename `Cohttp.Transfer.encoding_to_string` to `string_of_encoding`
   for consistency with the rest of Cohttp's APIs.
 * The `has_body` function in the Request and Response modules now

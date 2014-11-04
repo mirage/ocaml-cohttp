@@ -68,9 +68,9 @@ val get_acceptable_encodings : t -> Accept.encoding Accept.qlist
 val get_acceptable_languages : t -> Accept.language Accept.qlist
 val get_transfer_encoding : t -> Transfer.encoding
 val add_transfer_encoding : t -> Transfer.encoding -> t
-val add_authorization : t -> Auth.resp -> t
-val get_authorization : t -> Auth.resp option
-val add_authorization_req : t -> Auth.req -> t
+val add_authorization : t -> Auth.credential -> t
+val get_authorization : t -> Auth.credential option
+val add_authorization_req : t -> Auth.challenge -> t
 val is_form : t -> bool
 
 val user_agent : string

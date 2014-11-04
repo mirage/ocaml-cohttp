@@ -195,7 +195,7 @@ module type Server = sig
 
   val respond_need_auth :
     ?headers:Cohttp.Header.t ->
-    auth:Cohttp.Auth.req -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
+    auth:Cohttp.Auth.challenge -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val respond_not_found :
     ?uri:Uri.t -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
