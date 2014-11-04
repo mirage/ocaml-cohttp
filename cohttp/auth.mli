@@ -15,34 +15,37 @@
  *
  *)
 
-(** HTTP Authentication header parsing and generation *)
+(** HTTP Authentication and Authorization header parsing and generation *)
 
-(** HTTP authentication request types *)
-type req = [
- | `Basic of string (* Basic authorization with a realm *)
+(** HTTP authentication challenge types *)
+type challenge = [
+ | `Basic of string (** Basic authentication within a realm *)
 ] with sexp
 
-(** HTTP authentication response types *)
-type resp = [
-  | `Basic of string * string (** Basic authorization with a username and password *)
-  | `Other of string (* An unknown response header that will be passed straight through to the HTTP layer *)
+(** HTTP authorization credential types *)
+type credential = [
+  | `Basic of string * string
+  (** Basic authorization with a username and password *)
+  | `Other of string
+  (** An unknown credential type that will be passed straight through
+      to the application layer *)
 ] with sexp
 
-(** [string_of_resp] converts the {!resp} to a string compatible
-    with the HTTP/1.1 wire format for responses *)
-val string_of_resp : resp -> string
+(** [string_of_credential] converts the {!credential} to a string compatible
+    with the HTTP/1.1 wire format for authorization credentials ("responses") *)
+val string_of_credential : credential -> string
 
-(** [resp_of_string resp] converts a HTTP response to an authorization
-    request into a {!resp}.  If the response is not recognized, [None]
-    is returned. *)
-val resp_of_string : string -> resp
+(** [credential_of_string cred_s] converts an HTTP response to an
+    authentication challenge into a {!credential}.  If the credential is not
+    recognized, [`Other cred_s] is returned. *)
+val credential_of_string : string -> credential
 
-(** [string_of_req req] converts the {!req} to a string compatible with
-    the HTTP/1.1 wire format for authorization requests.
+(** [string_of_challenge challenge] converts the {!challenge} to a string
+    compatible with the HTTP/1.1 wire format for authentication challenges.
 
-    For example, a {!Basic} request with realm ["foo"] will be 
+    For example, a [`Basic] challenge with realm ["foo"] will be
     marshalled to ["Basic realm=foo"], which can then be combined
     with a [www-authenticate] HTTP header and sent back to the
     client.  There is a helper function {!Header.add_authorization_req}
     that does just this. *)
-val string_of_req : req -> string
+val string_of_challenge : challenge -> string
