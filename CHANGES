@@ -2,9 +2,9 @@
 
 Compatibility breaking interface changes:
 
-* Rename `Cohttp.Auth.t` to `Cohttp.Auth.resp` to make it match the
-  existing `Cohttp.Auth.req` type.  Also expose an `Other` variant
-  to make it more extensible for unknown authentication types.
+* Rename `Cohttp.Auth.t` to `Cohttp.Auth.credential` and `Cohttp.auth.req`
+  to `Cohttp.Auth.challenge`.  Also expose an `Other` variant to make it
+  more extensible for unknown authentication types.
 * Rename `Cohttp.Transfer.encoding_to_string` to `string_of_encoding`
   for consistency with the rest of Cohttp's APIs.
 * The `has_body` function in the Request and Response modules now
@@ -14,6 +14,10 @@ Compatibility breaking interface changes:
  `resolve_local_file` in `Cohttp_async` and `Cohttp_lwt` now always
   percent-decode paths (#157)
 * Remove the `Cohttp_lwt.Server.server` type synonym to `t`.
+* When reading data from a HTTP body stream using the `Fixed` encoding,
+  we need to maintain state (bytes remaining) so we know when to finish.
+  The `Cohttp.Request` and `Cohttp.Response` interfaces now expose a
+  `reader` and `writer` types to track this safely.
 * Port module interfaces to the latest Conduit (0.6.0+) API.
 * Cohttp requires OCaml 4.01.0 or higher now.
 
