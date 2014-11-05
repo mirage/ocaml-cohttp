@@ -17,8 +17,13 @@
 
 open Transfer
 module Make(IO : S.IO) : sig
-  val read : encoding -> IO.ic -> chunk IO.t
-  val write : encoding -> IO.oc -> string -> unit IO.t 
-  val to_string : encoding -> IO.ic -> string IO.t
-end
+  type reader
+  type writer
 
+  val make_reader : encoding -> IO.ic -> reader
+  val make_writer : encoding -> IO.oc -> writer
+
+  val read : reader -> chunk IO.t
+  val write : writer -> string -> unit IO.t 
+  val to_string : reader -> string IO.t
+end

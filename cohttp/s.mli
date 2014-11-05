@@ -36,19 +36,23 @@ end
 
 module type Http_io = sig
   type t
+  type reader
+  type writer
   module IO : IO
 
   val read : IO.ic -> [ `Eof | `Invalid of string | `Ok of t ] IO.t
   val has_body : t -> [ `No | `Unknown | `Yes ]
-  val read_body_chunk : t -> IO.ic -> Transfer.chunk IO.t
+  val make_body_reader : t -> IO.ic -> reader
+  val read_body_chunk : reader -> Transfer.chunk IO.t
 
   val is_form: t -> bool
   val read_form : t -> IO.ic -> (string * string list) list IO.t
 
   val write_header : t -> IO.oc -> unit IO.t
-  val write_body : t -> IO.oc -> string -> unit IO.t
+  val make_body_writer : t -> IO.oc -> writer
+  val write_body : writer -> string -> unit IO.t
   val write_footer : t -> IO.oc -> unit IO.t
-  val write : (t -> IO.oc -> unit IO.t) -> t -> IO.oc -> unit IO.t
+  val write : (writer -> unit IO.t) -> t -> IO.oc -> unit IO.t
 end
 
 module type Request = sig

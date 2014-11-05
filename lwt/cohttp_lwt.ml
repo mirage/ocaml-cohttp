@@ -135,7 +135,8 @@ module Make_client
     | `Ok res -> begin
         match Response.has_body res with
         | `Yes | `Unknown ->
-          let stream = Cohttp_lwt_body.create_stream (Response.read_body_chunk res) ic in
+          let reader = Response.make_body_reader res ic in
+          let stream = Cohttp_lwt_body.create_stream Response.read_body_chunk reader in
           (match closefn with
            |Some fn ->
              Lwt_stream.on_terminate stream fn;
@@ -157,16 +158,16 @@ module Make_client
     match chunked with
     | true ->
       let req = Request.make_for_client ~headers ~chunked meth uri in
-      Request.write (fun req oc ->
-          Cohttp_lwt_body.write_body (Request.write_body req oc) body) req oc
+      Request.write (fun writer ->
+          Cohttp_lwt_body.write_body (Request.write_body writer) body) req oc
       >>= fun () ->
       read_response ~closefn ic oc
     | false ->
       (* If chunked is not allowed, then obtain the body length and insert header *)
       lwt (body_length, buf) = Cohttp_lwt_body.length body in
       let req = Request.make_for_client ~headers ~chunked ~body_length meth uri in
-      Request.write (fun req oc ->
-          Cohttp_lwt_body.write_body (Request.write_body req oc) buf) req oc
+      Request.write (fun writer ->
+          Cohttp_lwt_body.write_body (Request.write_body writer) buf) req oc
       >>= fun () ->
       read_response ~closefn ic oc
 
@@ -191,8 +192,8 @@ module Make_client
     lwt (conn, ic, oc) = Net.connect_uri ~ctx uri in
     (* Serialise the requests out to the wire *)
     let _ = Lwt_stream.iter_s (fun (req,body) ->
-        Request.write (fun req oc ->
-            Cohttp_lwt_body.write_body (Request.write_body req oc) body) req oc)
+        Request.write (fun writer ->
+            Cohttp_lwt_body.write_body (Request.write_body writer) body) req oc)
         reqs in
     (* Read the responses. For each response, ensure that the previous response
      * has consumed the body before continuing to the next response, since HTTP/1.1
@@ -251,7 +252,8 @@ module type Server = sig
 
   val respond_need_auth :
     ?headers:Cohttp.Header.t ->
-    auth:Cohttp.Auth.req -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+    auth:Cohttp.Auth.challenge ->
+    unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val respond_not_found :
     ?uri:Uri.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
@@ -345,7 +347,8 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
                 (* Ensure the input body has been fully read before reading again *)
                 match Request.has_body req with
                 | `Yes ->
-                  let body_stream = Cohttp_lwt_body.create_stream (Request.read_body_chunk req) ic in
+                  let reader = Request.make_body_reader req ic in
+                  let body_stream = Cohttp_lwt_body.create_stream Request.read_body_chunk reader in
                   Lwt_stream.on_terminate body_stream (fun () -> Lwt_mutex.unlock read_m);
                   let body = Cohttp_lwt_body.of_stream body_stream in
                   (* The read_m remains locked until the caller reads the body *)
@@ -378,8 +381,8 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
           else
             fun () -> return_unit
         in
-        Response.write (fun res oc ->
-          Cohttp_lwt_body.write_body ~flush (Response.write_body res oc) body
+        Response.write (fun writer ->
+          Cohttp_lwt_body.write_body ~flush (Response.write_body writer) body
         ) res oc
       done
     in daemon_callback

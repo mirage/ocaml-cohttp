@@ -113,14 +113,20 @@ module Body = struct
   let write body response wr =
     match body with
     | `Empty -> return ()
-    | `String s -> Response.write_body response wr s
+    | `String s ->
+      Response.write (fun writer ->
+        Response.write_body writer s
+      ) response wr
     | `Pipe p ->
       Pipe.iter p ~f:(fun buf ->
-          Response.write_body response wr buf
+        Response.write (fun writer ->
+          Response.write_body writer buf
           >>= fun () ->
           match Response.flush response with
           | true -> Writer.flushed wr
-          | false -> return ())
+          | false -> return ()
+        ) response wr
+      )
 
   let map t ~f =
     match t with
@@ -156,7 +162,10 @@ module Client = struct
     (* Write request down the wire *)
     Request.write_header req oc
     >>= fun () ->
-    Deferred.List.iter ~f:(fun b -> Request.write_body req oc b) body_bufs
+    Request.write (fun writer ->
+      Deferred.List.iter ~f:(fun b ->
+        Request.write_body writer b) body_bufs
+    ) req oc
     >>= fun () ->
     Request.write_footer req oc
     >>= fun () ->
@@ -165,13 +174,14 @@ module Client = struct
     | `Eof -> raise (Failure "Connection closed by remote host")
     | `Invalid reason -> raise (Failure reason)
     | `Ok res ->
-      (* Build a response pipe for the body *)
-      let rd = pipe_of_body (Response.read_body_chunk res) ic oc in
-      don't_wait_for (
-        Pipe.closed rd >>= fun () ->
-        Deferred.all_ignore [Reader.close ic; Writer.close oc]
-      );
-      return (res, `Pipe rd)
+        (* Build a response pipe for the body *)
+        let reader = Response.make_body_reader res ic in
+        let rd = pipe_of_body (fun ic -> Response.read_body_chunk reader) ic oc in
+        don't_wait_for (
+          Pipe.closed rd >>= fun () ->
+          Deferred.all_ignore [Reader.close ic; Writer.close oc]
+        );
+        return (res, `Pipe rd)
 
   let get ?interrupt ?headers uri =
     call ?interrupt ?headers ~chunked:false `GET uri
@@ -215,8 +225,9 @@ module Server = struct
     (* TODO maybe attempt to read body *)
     | `No | `Unknown -> `Empty
     | `Yes -> (* Create a Pipe for the body *)
-      let read_chunk = Request.read_body_chunk req in
-      `Pipe (pipe_of_body read_chunk rd wr)
+      let reader = Request.make_body_reader req rd in
+      `Pipe (pipe_of_body (fun ic ->
+        Request.read_body_chunk reader) rd wr)
 
   let drain_body = function
     | `Empty | `String _ -> return ()

@@ -44,6 +44,7 @@ module Make(IO : S.IO) = struct
   let parse_form headers ic =
     (* If the form is query-encoded, then extract those parameters also *)
     let encoding = Header.get_transfer_encoding headers in
-    Transfer_IO.to_string encoding ic >>= fun body ->
+    let reader = Transfer_IO.make_reader encoding ic in
+    Transfer_IO.to_string reader >>= fun body ->
     return (Uri.query_of_encoded body)
 end
