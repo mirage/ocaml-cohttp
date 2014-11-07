@@ -1,5 +1,6 @@
 2.0.0 (07-11-2014):
 * Use the Conduit 0.6+ resolver API.
+* Add a local `opam` file for the OPAM 1.2.0 workflow.
 
 1.2.0 (03-05-2014):
 * Use the Cohttp.0.12.0 interface.
