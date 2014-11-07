@@ -60,8 +60,8 @@ let not_none_s n t fn =
 let lwt_test_s t ~name ~assert_ =
   Lwt.catch (fun () ->
     t >>= assert_ >|= fun () -> prerr_endline ("OK " ^ name)
-  ) (fun _ ->
-    print_endline ("ERR " ^ name);
+  ) (fun exn ->
+    print_endline ("ERR " ^ name ^ " " ^ (Printexc.to_string exn));
     exit 1)
 
 let lwt_test t ~name ~assert_ =
@@ -75,13 +75,13 @@ let client () =
     lwt_test_s ~name:"post 1" (Client.post ~body:(Cohttp_lwt_body.of_string "foobar") url)
      ~assert_:(fun (r,b) ->
        lwt b = Cohttp_lwt_body.to_string b in
-    lwt_test ~name:"get 1" (Client.get url) ~assert_:(fun (_,b) -> assert(b = `Empty))
-    >>= fun () ->
-    lwt_test_s ~name:"post 1" (Client.post ~body:(Cohttp_lwt_body.of_string "foobar") url)
-     ~assert_:(fun (r,b) ->
-       lwt b = Cohttp_lwt_body.to_string b in
-       assert (b = "foobar");
-       return ()
+       lwt_test ~name:"get 1" (Client.get url) ~assert_:(fun (_,b) -> assert(b = `Empty))
+       >>= fun () ->
+       lwt_test_s ~name:"post 1" (Client.post ~body:(Cohttp_lwt_body.of_string "barfoo") url)
+       ~assert_:(fun (r,b) ->
+         lwt b = Cohttp_lwt_body.to_string b in
+         assert (b = "barfoo");
+         return ()
      ))
   done >>= fun () ->
   (* Repeat but do not consume body *)
