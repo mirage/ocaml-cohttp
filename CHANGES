@@ -19,6 +19,9 @@ Compatibility breaking interface changes:
   we need to maintain state (bytes remaining) so we know when to finish.
   The `Cohttp.Request` and `Cohttp.Response` interfaces now expose a
   `reader` and `writer` types to track this safely.
+* Add `is_empty` function to the `Cohttp.S.Body` module type.
+* Add `Strings` representation to `Cohttp.Body` to efficiency hold a
+  list of body chunks.
 * Port module interfaces to the latest Conduit (0.6.0+) API.
 * Cohttp requires OCaml 4.01.0 or higher now.
 

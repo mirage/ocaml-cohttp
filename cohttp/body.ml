@@ -20,29 +20,46 @@ open Sexplib.Std
 type t = [
   | `Empty
   | `String of string
+  | `Strings of string list
 ] with sexp
 
 let empty = `Empty
 
+let is_empty = function
+  | `Empty -> true
+  | `String "" -> true
+  | `String _ -> false
+  | `Strings [] -> true
+  | `Strings _ -> false
+
 let to_string = function
   | `Empty -> ""
   | `String s -> s
+  | `Strings sl -> String.concat "" sl
+
+let to_string_list = function
+  | `Empty -> []
+  | `String s -> [s]
+  | `Strings sl -> sl
 
 let of_string s = `String s
-let of_string_list s = `String (String.concat "" s)
+let of_string_list s = `Strings s
 
 let transfer_encoding (t:t) =
   match t with
   | `Empty -> Transfer.Fixed 0L
   | `String s -> Transfer.Fixed (Int64.of_int (String.length s))
+  | `Strings s -> Transfer.Chunked
 
 let length = function
   | `Empty -> 0L
   | `String s -> Int64.of_int (String.length s)
+  | `Strings sl -> List.fold_left (fun a b -> Int64.add a (Int64.of_int (String.length b))) 0L sl
 
 let map t ~f =
   match t with
   | `Empty -> `Empty
   | `String s -> `String (f s)
+  | `Strings sl -> `Strings (List.map f sl)
 
 (* TODO: maybe add a functor here that uses IO.S *)

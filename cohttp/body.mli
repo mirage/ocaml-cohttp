@@ -22,6 +22,7 @@
 type t = [
   | `Empty
   | `String of string
+  | `Strings of string list
 ] with sexp
 
 (** Signature for the core of HTTP body handling.  Implementations
