@@ -20,8 +20,10 @@ Compatibility breaking interface changes:
   The `Cohttp.Request` and `Cohttp.Response` interfaces now expose a
   `reader` and `writer` types to track this safely.
 * Add `is_empty` function to the `Cohttp.S.Body` module type.
-* Add `Strings` representation to `Cohttp.Body` to efficiency hold a
+* Add `Strings` representation to `Cohttp.Body` to efficiently hold a
   list of body chunks.
+* Move flushing logic for HTTP bodies into the portable `Request` and
+  `Response` modules instead of individual Lwt and Async backends.
 * Port module interfaces to the latest Conduit (0.6.0+) API.
 * Cohttp requires OCaml 4.01.0 or higher now.
 

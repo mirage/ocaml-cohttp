@@ -44,6 +44,11 @@ let create_stream fn arg =
       end
   )
 
+let is_empty (body:t) =
+  match body with
+  | #Body.t as body -> return (Body.is_empty body)
+  | `Stream s -> Lwt_stream.is_empty s
+
 let to_string (body:t) =
   match body with
   | #Body.t as body -> return (Body.to_string body)
@@ -52,6 +57,11 @@ let to_string (body:t) =
     Lwt_stream.iter (Buffer.add_string b) s >>= fun () ->
     return (Buffer.contents b)
 
+let to_string_list (body:t) =
+  match body with
+  | #Body.t as body -> return (Body.to_string_list body)
+  |`Stream s -> Lwt_stream.to_list s
+
 let of_string s = ((Body.of_string s) :> t)
 
 let to_stream (body:t) =
@@ -59,15 +69,17 @@ let to_stream (body:t) =
   |`Empty -> Lwt_stream.of_list []
   |`Stream s -> s
   |`String s -> Lwt_stream.of_list [s]
+  |`Strings sl -> Lwt_stream.of_list sl
 
 let drain_body (body:t) =
   match body with
   |`Empty
   |`String _ -> return ()
+  |`Strings _ -> return ()
   |`Stream s -> Lwt_stream.junk_while (fun _ -> true) s
 
 let of_string_list l : t =
-  `Stream (Lwt_stream.of_list l)
+  `Strings l
 
 let of_stream s : t =
   `Stream s
@@ -87,11 +99,12 @@ let length (body:t) : (int64 * t) Lwt.t =
     let len = Int64.of_int (String.length buf) in
     return (len, `String buf)
 
-let write_body ?(flush=(fun () -> return_unit)) fn (body:t) =
+let write_body fn (body:t) =
   match body with
   |`Empty -> return ()
-  |`Stream st -> Lwt_stream.iter_s (fun b -> fn b >>= flush) st
+  |`Stream st -> Lwt_stream.iter_s fn st
   |`String s -> fn s
+  |`Strings sl -> Lwt_list.iter_s fn sl
 
 let map t ~f =
   match t with
