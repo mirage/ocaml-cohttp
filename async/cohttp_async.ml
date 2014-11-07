@@ -75,10 +75,7 @@ let pipe_of_body read_chunk ic oc =
            >>| fun _ -> `Finished ()
          | Done -> return (`Finished ())
       ) in
-  don't_wait_for (
-    finished >>= fun () ->
-    return (Pipe.close wr)
-  );
+  don't_wait_for (finished >>| fun () -> Pipe.close wr);
   rd
 
 module Body = struct
@@ -183,7 +180,7 @@ module Client = struct
     Request.write (fun writer -> Body.write Request.write_body body writer) req oc
     >>= fun () ->
     Response.read ic
-    >>= function
+    >>| function
     | `Eof -> raise (Failure "Connection closed by remote host")
     | `Invalid reason -> raise (Failure reason)
     | `Ok res ->
@@ -194,19 +191,18 @@ module Client = struct
           Pipe.closed rd >>= fun () ->
           Deferred.all_ignore [Reader.close ic; Writer.close oc]
         );
-        return (res, `Pipe rd)
+        res, `Pipe rd
 
   let get ?interrupt ?headers uri =
     call ?interrupt ?headers ~chunked:false `GET uri
 
   let head ?interrupt ?headers uri =
     call ?interrupt ?headers ~chunked:false `HEAD uri
-    >>= begin fun (res, body) ->
+    >>| fun (res, body) ->
       (match body with
        | `Pipe p -> Pipe.close_read p;
        | _ -> ());
-      return res
-    end
+      res
 
   let post ?interrupt ?headers ?(chunked=false) ?body uri =
     call ?interrupt ?headers ~chunked ?body `POST uri
