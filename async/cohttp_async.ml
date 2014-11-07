@@ -75,10 +75,7 @@ let pipe_of_body read_chunk ic oc =
            >>| fun _ -> `Finished ()
          | Done -> return (`Finished ())
       ) in
-  don't_wait_for (
-    finished >>= fun () ->
-    return (Pipe.close wr)
-  );
+  don't_wait_for (finished >>| fun () -> Pipe.close wr);
   rd
 
 module Body = struct
@@ -96,12 +93,44 @@ module Body = struct
   let to_string (body:t) =
     match body with
     | #B.t as body -> return (B.to_string body)
-    | `Pipe s -> s |> Pipe.to_list >>| String.concat
+    | `Pipe s -> Pipe.to_list s >>| String.concat
+
+  let to_string_list (body:t) =
+    match body with
+    | #B.t as body -> return (B.to_string_list body)
+    | `Pipe s -> Pipe.to_list s
+
+  let drain (body:t) =
+    match body with
+    | #B.t -> return ()
+    | `Pipe p -> Pipe.drain p
+
+  let is_empty (body:t) =
+    match body with
+    | #B.t as body -> return (B.is_empty body)
+    | `Pipe s ->
+        Pipe.values_available s
+        >>| function
+        |`Eof -> false
+        |`Ok ->
+           match Pipe.peek s with
+           | Some "" -> true
+           | Some _ | None -> false
 
   let to_pipe = function
     | `Empty -> Pipe.of_list []
     | `String s -> Pipe.of_list [s]
+    | `Strings sl -> Pipe.of_list sl
     | `Pipe p -> p
+
+  let disable_chunked_encoding (t:t) =
+    match t with
+    | #B.t as body -> return (body, B.length body)
+    | `Pipe s ->
+         Pipe.to_list s >>| fun l ->
+         let body = `Strings l in
+         let len = B.length body in
+         body, len
 
   let transfer_encoding (t:t) =
     match t with
@@ -110,23 +139,12 @@ module Body = struct
 
   let of_string_list strings = `Pipe (Pipe.of_list strings)
 
-  let write body response wr =
+  let write write_body body writer =
     match body with
     | `Empty -> return ()
-    | `String s ->
-      Response.write (fun writer ->
-        Response.write_body writer s
-      ) response wr
-    | `Pipe p ->
-      Pipe.iter p ~f:(fun buf ->
-        Response.write (fun writer ->
-          Response.write_body writer buf
-          >>= fun () ->
-          match Response.flush response with
-          | true -> Writer.flushed wr
-          | false -> return ()
-        ) response wr
-      )
+    | `String s -> write_body writer s
+    | `Strings sl -> Deferred.List.iter sl ~f:(write_body writer)
+    | `Pipe p -> Pipe.iter p ~f:(write_body writer)
 
   let map t ~f =
     match t with
@@ -139,38 +157,30 @@ end
 module Client = struct
 
   let call ?interrupt ?headers ?(chunked=false) ?(body=`Empty) meth uri =
-    (* Convert the body Pipe to a list of chunks. *)
-    (match body with
-     | `Empty -> return []
-     | `String s -> return [s]
-     | `Pipe body -> Pipe.to_list body
-    ) >>= fun body_bufs ->
     (* Figure out an appropriate transfer encoding *)
     let req =
-      match body_bufs,chunked with
-      | [],true     (* Dont used chunked encoding with an empty body *)
-      | _,false ->  (* If we dont want chunked, calculate a content length *)
-        let body_length = List.fold ~init:0L ~f:(
-          fun a b -> Int64.((of_int (String.length b)) + a)) body_bufs in
-        Request.make_for_client ?headers ~chunked:false ~body_length meth uri
-      | _,true ->   (* Use chunked encoding if there is a body *)
-        Request.make_for_client ?headers ~chunked meth uri
+      match chunked with
+      | false ->
+          Body.disable_chunked_encoding body
+          >>| fun (body, body_length) ->
+          Request.make_for_client ?headers ~chunked ~body_length meth uri
+      | true -> begin
+          Body.is_empty body
+          >>| function
+          | true -> (* Dont used chunked encoding with an empty body *)
+            Request.make_for_client ?headers ~chunked:false ~body_length:0L meth uri
+          | false -> (* Use chunked encoding if there is a body *)
+            Request.make_for_client ?headers ~chunked:true meth uri
+      end
     in
+    req >>= fun req ->
     (* Connect to the remote side *)
     Net.connect_uri ?interrupt uri
     >>= fun (ic,oc) ->
-    (* Write request down the wire *)
-    Request.write_header req oc
-    >>= fun () ->
-    Request.write (fun writer ->
-      Deferred.List.iter ~f:(fun b ->
-        Request.write_body writer b) body_bufs
-    ) req oc
-    >>= fun () ->
-    Request.write_footer req oc
+    Request.write (fun writer -> Body.write Request.write_body body writer) req oc
     >>= fun () ->
     Response.read ic
-    >>= function
+    >>| function
     | `Eof -> raise (Failure "Connection closed by remote host")
     | `Invalid reason -> raise (Failure reason)
     | `Ok res ->
@@ -181,19 +191,18 @@ module Client = struct
           Pipe.closed rd >>= fun () ->
           Deferred.all_ignore [Reader.close ic; Writer.close oc]
         );
-        return (res, `Pipe rd)
+        res, `Pipe rd
 
   let get ?interrupt ?headers uri =
     call ?interrupt ?headers ~chunked:false `GET uri
 
   let head ?interrupt ?headers uri =
     call ?interrupt ?headers ~chunked:false `HEAD uri
-    >>= begin fun (res, body) ->
+    >>| fun (res, body) ->
       (match body with
        | `Pipe p -> Pipe.close_read p;
        | _ -> ());
-      return res
-    end
+      res
 
   let post ?interrupt ?headers ?(chunked=false) ?body uri =
     call ?interrupt ?headers ~chunked ?body `POST uri
@@ -229,10 +238,6 @@ module Server = struct
       `Pipe (pipe_of_body (fun ic ->
         Request.read_body_chunk reader) rd wr)
 
-  let drain_body = function
-    | `Empty | `String _ -> return ()
-    | `Pipe p -> Pipe.drain p
-
   let handle_client handle_request sock rd wr =
     let last_body_pipe_drained = ref (Ivar.create ()) in
     Ivar.fill !last_body_pipe_drained ();
@@ -247,22 +252,22 @@ module Server = struct
           `Ok (req, body)
       ) in
     Pipe.iter requests_pipe ~f:(fun (req, body) ->
-        handle_request ~body sock req >>= fun (res, res_body) ->
+        handle_request ~body sock req
+        >>= fun (res, res_body) ->
         let keep_alive = Request.is_keep_alive req in
+        let flush = Response.flush res in
         let res =
           let headers = Cohttp.Header.add
               (Cohttp.Response.headers res)
               "connection"
               (if keep_alive then "keep-alive" else "close") in
           { res with Response.headers } in
-        Response.write_header res wr >>= fun () ->
-        Body.write res_body res wr >>= fun () ->
-        Response.write_footer res wr >>= fun () ->
+        Response.write ~flush (Body.write Response.write_body res_body) res wr >>= fun () ->
         Writer.flushed wr >>= fun () ->
-        drain_body body >>| Ivar.fill !last_body_pipe_drained
-      )
-    >>= fun () -> Writer.close wr
-    >>= fun () -> Reader.close rd
+        Body.drain body >>| Ivar.fill !last_body_pipe_drained
+      ) >>= fun () ->
+    Writer.close wr >>= fun () ->
+    Reader.close rd
 
   let respond ?(flush=false) ?(headers=Cohttp.Header.init ())
       ?(body=`Empty) status : response Deferred.t =

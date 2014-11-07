@@ -245,6 +245,15 @@ Executable "cohttp-server-async"
   Install:            true
   BuildDepends:       cohttp, cohttp.async
 
+Executable "cohttp-curl-async"
+  Path:               bin
+  MainIs:             cohttp_curl_async.ml
+  Build$:             flag(async)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.async
+
 Executable "cohttp-server-lwt"
   Path:               bin
   MainIs:             cohttp_server_lwt.ml

@@ -335,13 +335,13 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
       let req_stream = Lwt_stream.from (
         fun () ->
           if !early_close
-          then return None
+          then return_none
           else
             Lwt_mutex.lock read_m >>= fun () ->
             Request.read ic >>= function
             | `Eof | `Invalid _ -> (* TODO: request logger for invalid req *)
               Lwt_mutex.unlock read_m;
-              return None
+              return_none
             | `Ok req -> begin
                 early_close := not (Request.is_keep_alive req);
                 (* Ensure the input body has been fully read before reading again *)
@@ -375,14 +375,9 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
       Lwt_stream.on_terminate res_stream (spec.conn_closed (io_id,conn_id));
       (* Transmit the responses *)
       for_lwt (res,body) in res_stream do
-        let flush =
-          if Response.flush res then
-            fun () -> IO.flush oc
-          else
-            fun () -> return_unit
-        in
-        Response.write (fun writer ->
-          Cohttp_lwt_body.write_body ~flush (Response.write_body writer) body
+        let flush = Response.flush res in
+        Response.write ~flush (fun writer ->
+          Cohttp_lwt_body.write_body (Response.write_body writer) body
         ) res oc
       done
     in daemon_callback

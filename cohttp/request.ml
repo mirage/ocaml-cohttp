@@ -121,7 +121,9 @@ module Make(IO : S.IO) = struct
     iter (IO.write oc) (Header.to_lines headers) >>= fun _ ->
     IO.write oc "\r\n"
 
-  let make_body_writer req oc = Transfer_IO.make_writer req.encoding oc
+  let make_body_writer ?flush req oc =
+    Transfer_IO.make_writer ?flush req.encoding oc
+
   let write_body = Transfer_IO.write
 
   let write_footer req oc =
@@ -131,9 +133,9 @@ module Make(IO : S.IO) = struct
        IO.write oc "0\r\n\r\n"
     |Transfer.Fixed _ | Transfer.Unknown -> return ()
 
-  let write write_body req oc =
+  let write ?flush write_body req oc =
     write_header req oc >>= fun () ->
-    let writer = make_body_writer req oc in
+    let writer = make_body_writer ?flush req oc in
     write_body writer >>= fun () ->
     write_footer req oc
 

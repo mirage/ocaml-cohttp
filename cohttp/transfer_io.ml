@@ -83,17 +83,30 @@ module Make(IO : S.IO) = struct
       write oc buf
   end
 
+  let write_and_flush fn oc buf =
+    fn oc buf >>= fun () ->
+    IO.flush oc
+
   let make_reader =
     function
     | Chunked -> Chunked.read
     | Fixed len -> Fixed.read ~remaining:(ref len)
     | Unknown -> Unknown.read
 
-  let make_writer =
-    function
-    | Chunked -> Chunked.write
-    | Fixed len -> Fixed.write
-    | Unknown -> Unknown.write
+  let make_writer ?(flush=false) mode =
+    match flush with
+    | false -> begin
+        match mode with
+       | Chunked -> Chunked.write
+       | Fixed len -> Fixed.write
+       | Unknown -> Unknown.write
+    end
+    | true -> begin
+        match mode with
+       | Chunked -> write_and_flush Chunked.write
+       | Fixed len -> write_and_flush Fixed.write
+       | Unknown -> write_and_flush Unknown.write
+    end
 
   let read reader = reader ()
   let write writer buf = writer buf

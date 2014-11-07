@@ -49,10 +49,10 @@ module type Http_io = sig
   val read_form : t -> IO.ic -> (string * string list) list IO.t
 
   val write_header : t -> IO.oc -> unit IO.t
-  val make_body_writer : t -> IO.oc -> writer
+  val make_body_writer : ?flush:bool -> t -> IO.oc -> writer
   val write_body : writer -> string -> unit IO.t
   val write_footer : t -> IO.oc -> unit IO.t
-  val write : (writer -> unit IO.t) -> t -> IO.oc -> unit IO.t
+  val write : ?flush:bool -> (writer -> unit IO.t) -> t -> IO.oc -> unit IO.t
 end
 
 module type Request = sig
@@ -98,7 +98,9 @@ end
 module type Body = sig
   type t
   val to_string : t -> string
+  val to_string_list : t -> string list
   val empty : t
+  val is_empty : t -> bool
   val of_string : string -> t
   val of_string_list : string list -> t
   val map : t -> f:(string -> string) -> t

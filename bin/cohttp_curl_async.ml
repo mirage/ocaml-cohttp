@@ -1,5 +1,4 @@
 (*
- * Copyright (c) 2014 Rudi Grinberg
  * Copyright (c) 2014 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -14,20 +13,29 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
-*)
+ *)
 
-(** HTTP request and response body handling *)
+open Core.Std
+open Async.Std
+open Cohttp_async
 
-(** Every HTTP body can at least be an empty value or a [string] *)
-type t = [
-  | `Empty
-  | `String of string
-  | `Strings of string list
-] with sexp
+let show_headers h =
+  Cohttp.Header.iter (fun k v -> List.iter v ~f:(Printf.eprintf "%s: %s\n%!" k)) h
 
-(** Signature for the core of HTTP body handling.  Implementations
-    will extend this signature to add more functions for streaming
-    responses via backend-specific functionality.  *)
-include S.Body with type t := t
+let make_net_req uri () =
+  let uri = Uri.of_string uri in
+  let headers = Cohttp.Header.of_list [ "connection", "close" ] in
+  Client.get ~headers uri
+  >>= fun (res, body) ->
+   show_headers (Cohttp.Response.headers res);
+   body
+   |> Body.to_pipe
+   |> Pipe.iter ~f:(fun b -> prerr_endline ("XX " ^ b); return ())
 
-val length : t -> int64
+let _ =
+  let open Command.Spec in
+  Command.async_basic ~summary:"Fetch URL and print it"
+    (empty+> anon ("url" %: string))
+    make_net_req
+  |> Command.run
+

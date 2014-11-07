@@ -1,4 +1,4 @@
-0.12.0 (2014-11-04):
+0.12.0 (2014-11-07):
 
 Compatibility breaking interface changes:
 
@@ -19,6 +19,11 @@ Compatibility breaking interface changes:
   we need to maintain state (bytes remaining) so we know when to finish.
   The `Cohttp.Request` and `Cohttp.Response` interfaces now expose a
   `reader` and `writer` types to track this safely.
+* Add `is_empty` function to the `Cohttp.S.Body` module type.
+* Add `Strings` representation to `Cohttp.Body` to efficiently hold a
+  list of body chunks.
+* Move flushing logic for HTTP bodies into the portable `Request` and
+  `Response` modules instead of individual Lwt and Async backends.
 * Port module interfaces to the latest Conduit (0.6.0+) API.
 * Cohttp requires OCaml 4.01.0 or higher now.
 
@@ -40,6 +45,8 @@ New features and bugfixes:
 * Fix `Cohttp_async.resolve_local_file` directory traversal vulnerability (#158)
 * [async] In the Async server, do not close the Reader too early.
 * [async] Close file descriptors more eagerly in the HTTP client (#167).
+* Reduce thread allocation by replacing `return <const>` with `return_none`,
+  `return_unit` or `return_nil`.
 
 0.11.2 (2014-04-21)
 * Fix build by add a missing build-deps in _oasis.

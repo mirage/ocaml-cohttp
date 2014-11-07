@@ -50,14 +50,14 @@ let connect_uri ~ctx uri =
   Conduit_lwt_unix.connect ~ctx:ctx.ctx client
 
 let close_in ic =
-  ignore_result (try_lwt Lwt_io.close ic with _ -> return ())
+  ignore_result (try_lwt Lwt_io.close ic with _ -> return_unit)
 
 let close_out oc =
-  ignore_result (try_lwt Lwt_io.close oc with _ -> return ())
+  ignore_result (try_lwt Lwt_io.close oc with _ -> return_unit)
 
 let close' ic oc =
-  try_lwt Lwt_io.close oc with _ -> return () >>= fun () ->
-  try_lwt Lwt_io.close ic with _ -> return ()
+  try_lwt Lwt_io.close oc with _ -> return_unit >>= fun () ->
+  try_lwt Lwt_io.close ic with _ -> return_unit
 
 let close ic oc =
   ignore_result (close' ic oc)
