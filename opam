@@ -1,0 +1,15 @@
+opam-version: "1"
+maintainer: "anil@recoil.org"
+build: [
+  [make]
+  [make "install"]
+]
+remove: [[make "uninstall"]]
+depends: [
+  "ocamlfind"
+  "mirage-types-lwt" {>= "2.0.0"}
+  "mirage-conduit"
+  "lwt" {>= "2.4.3"}
+  "cohttp" {>= "0.12.0"}
+]
+ocaml-version: [>= "4.00.0"]
