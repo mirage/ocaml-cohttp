@@ -21,7 +21,7 @@ module Make(IO : S.IO) : sig
   type writer
 
   val make_reader : encoding -> IO.ic -> reader
-  val make_writer : encoding -> IO.oc -> writer
+  val make_writer : ?flush:bool -> encoding -> IO.oc -> writer
 
   val read : reader -> chunk IO.t
   val write : writer -> string -> unit IO.t 

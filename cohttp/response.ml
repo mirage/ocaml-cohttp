@@ -75,7 +75,9 @@ module Make(IO : S.IO) = struct
     iter (IO.write oc) (Header.to_lines headers) >>= fun () ->
     IO.write oc "\r\n"
 
-  let make_body_writer {encoding} oc = Transfer_IO.make_writer encoding oc
+  let make_body_writer ?flush {encoding} oc =
+    Transfer_IO.make_writer ?flush encoding oc
+
   let write_body = Transfer_IO.write
 
   let write_footer {encoding} oc =
