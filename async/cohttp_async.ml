@@ -105,7 +105,7 @@ module Body = struct
 
   let drain (body:t) =
     match body with
-    | `Empty | `String _ | `Strings _ -> return ()
+    | #B.t -> return ()
     | `Pipe p -> Pipe.drain p
 
   let is_empty (body:t) =
@@ -113,12 +113,12 @@ module Body = struct
     | #B.t as body -> return (B.is_empty body)
     | `Pipe s ->
         Pipe.values_available s
-        >>= function
-        |`Eof -> return false
+        >>| function
+        |`Eof -> false
         |`Ok ->
            match Pipe.peek s with
-           | Some "" -> return true
-           | Some _ | None -> return false
+           | Some "" -> true
+           | Some _ | None -> false
 
   let to_pipe = function
     | `Empty -> Pipe.of_list []
@@ -130,10 +130,10 @@ module Body = struct
     match t with
     | #B.t as body -> return (body, B.length body)
     | `Pipe s ->
-         Pipe.to_list s >>= fun l ->
+         Pipe.to_list s >>| fun l ->
          let body = `Strings l in
-         let len = B.length (body :> B.t) in
-         return (body, len)
+         let len = B.length body in
+         body, len
 
   let transfer_encoding (t:t) =
     match t with
@@ -142,17 +142,12 @@ module Body = struct
 
   let of_string_list strings = `Pipe (Pipe.of_list strings)
 
-  let write body writer =
+  let write write_body body writer =
     match body with
     | `Empty -> return ()
-    | `String s ->
-      Response.write_body writer s
-    | `Strings sl ->
-      Deferred.List.iter sl ~f:(Response.write_body writer)
-    | `Pipe p ->
-      Pipe.iter p ~f:(fun buf ->
-        Response.write_body writer buf
-      )
+    | `String s -> write_body writer s
+    | `Strings sl -> Deferred.List.iter sl ~f:(write_body writer)
+    | `Pipe p -> Pipe.iter p ~f:(write_body writer)
 
   let map t ~f =
     match t with
@@ -170,28 +165,22 @@ module Client = struct
       match chunked with
       | false ->
           Body.disable_chunked_encoding body
-          >>= fun (body, body_length) ->
-          return (Request.make_for_client ?headers ~chunked ~body_length meth uri)
+          >>| fun (body, body_length) ->
+          Request.make_for_client ?headers ~chunked ~body_length meth uri
       | true -> begin
           Body.is_empty body
-          >>= function
+          >>| function
           | true -> (* Dont used chunked encoding with an empty body *)
-            return (Request.make_for_client ?headers ~chunked:false ~body_length:0L meth uri)
+            Request.make_for_client ?headers ~chunked:false ~body_length:0L meth uri
           | false -> (* Use chunked encoding if there is a body *)
-            return (Request.make_for_client ?headers ~chunked:true meth uri)
+            Request.make_for_client ?headers ~chunked:true meth uri
       end
     in
     req >>= fun req ->
     (* Connect to the remote side *)
     Net.connect_uri ?interrupt uri
     >>= fun (ic,oc) ->
-    Request.write (fun writer ->
-      match body with
-      | `Empty -> return ()
-      | `String s -> Request.write_body writer s
-      | `Strings sl -> Deferred.List.iter sl ~f:(Request.write_body writer)
-      | `Pipe p -> Pipe.iter p ~f:(fun buf -> Request.write_body writer buf)
-    ) req oc
+    Request.write (fun writer -> Body.write Request.write_body body writer) req oc
     >>= fun () ->
     Response.read ic
     >>= function
@@ -277,7 +266,7 @@ module Server = struct
               "connection"
               (if keep_alive then "keep-alive" else "close") in
           { res with Response.headers } in
-        Response.write ~flush (Body.write res_body) res wr >>= fun () ->
+        Response.write ~flush (Body.write Response.write_body res_body) res wr >>= fun () ->
         Writer.flushed wr >>= fun () ->
         Body.drain body >>| Ivar.fill !last_body_pipe_drained
       ) >>= fun () ->
