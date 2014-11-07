@@ -52,7 +52,7 @@ module type Http_io = sig
   val make_body_writer : ?flush:bool -> t -> IO.oc -> writer
   val write_body : writer -> string -> unit IO.t
   val write_footer : t -> IO.oc -> unit IO.t
-  val write : (writer -> unit IO.t) -> t -> IO.oc -> unit IO.t
+  val write : ?flush:bool -> (writer -> unit IO.t) -> t -> IO.oc -> unit IO.t
 end
 
 module type Request = sig
