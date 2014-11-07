@@ -30,7 +30,10 @@ let make_net_req () =
    show_headers (Cohttp.Response.headers res);
    body
    |> Body.to_pipe
-   |> Pipe.iter ~f:(fun b -> prerr_endline ("XX " ^ b); return ())
+   |> Pipe.iter ~f:(fun b -> return ())
+  >>= fun _ ->
+  print_endline "make_net_req done";
+  return ()
 
 let make_net_ssl_req () =
   let headers = Cohttp.Header.of_list ["connection","close"] in
@@ -40,10 +43,13 @@ let make_net_ssl_req () =
    show_headers (Cohttp.Response.headers res);
    body
    |> Body.to_pipe
-   |> Pipe.iter ~f:(fun b -> prerr_endline ("XX " ^ b); return ())
+   |> Pipe.iter ~f:(fun b -> return ())
+  >>= fun _ ->
+  print_endline "make_net_ssl_req done";
+  return ()
 
 (* Create your own code from requestb.in *)
-let requestbin_code = "1f6i9op1"
+let requestbin_code = "1e6jxdg1"
 
 let make_net_post_req () =
   let headers = Cohttp.Header.of_list ["connection","close"] in
@@ -59,24 +65,20 @@ let make_net_post_req () =
     show_headers (Cohttp.Response.headers res);
     body
     |> Body.to_pipe
-    |> Pipe.iter ~f:(fun b -> prerr_endline ("XY " ^ b); return ())
-
+    |> Pipe.iter ~f:(fun _b -> return ())
+  >>= fun _ ->
+  print_endline "make_net_post_req done";
+  return ()
+ 
+let run () =
+  Monitor.try_with (fun () ->
+    make_net_req () 
+    >>= make_net_ssl_req
+    >>= make_net_post_req
+  )
+ 
 let test_cases =
-  (* TODO: can multiple async tests run with separate Schedulers? Is there
-   * an Async-aware oUnit instead? *)
-  let _ =  Scheduler.within' (
-    fun () ->
-      Monitor.try_with (fun () ->
-          make_net_req () 
-          >>= make_net_post_req
-          >>= make_net_ssl_req
-      ) >>=
-      function
-      |Error exn ->
-        Printf.fprintf stderr "err %s.\n%!" (Exn.to_string exn);
-        return ()
-      |Ok _ ->
-	Shutdown.exit 0
-  ) in
-  Scheduler.go ()
-
+  let open Command.Spec in
+  Command.async_basic ~summary:"Run HTTP Async client tests"
+    empty make_net_req
+  |> Command.run
