@@ -45,6 +45,8 @@ New features and bugfixes:
 * Fix `Cohttp_async.resolve_local_file` directory traversal vulnerability (#158)
 * [async] In the Async server, do not close the Reader too early.
 * [async] Close file descriptors more eagerly in the HTTP client (#167).
+* Reduce thread allocation by replacing `return <const>` with `return_none`,
+  `return_unit` or `return_nil`.
 
 0.11.2 (2014-04-21)
 * Fix build by add a missing build-deps in _oasis.

@@ -70,7 +70,7 @@ module Server = struct
         with
          exn ->
            prerr_endline ("exn: " ^ (Printexc.to_string exn));
-           return None
+           return_none
       ) in
       Lwt_stream.on_terminate stream (fun () ->
         ignore_result (Lwt_io.close ic));

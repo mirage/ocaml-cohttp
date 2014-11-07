@@ -31,11 +31,11 @@ let create_stream fn arg =
   let fin = ref false in
   Lwt_stream.from (fun () ->
     match !fin with
-    |true -> return None
+    |true -> return_none
     |false -> begin
         match_lwt fn arg with
         |Transfer.Done ->
-          return None
+          return_none
         |Transfer.Final_chunk c ->
           fin := true;
           return (Some c);
@@ -74,8 +74,8 @@ let to_stream (body:t) =
 let drain_body (body:t) =
   match body with
   |`Empty
-  |`String _ -> return ()
-  |`Strings _ -> return ()
+  |`String _ -> return_unit
+  |`Strings _ -> return_unit
   |`Stream s -> Lwt_stream.junk_while (fun _ -> true) s
 
 let of_string_list l : t =
@@ -101,7 +101,7 @@ let length (body:t) : (int64 * t) Lwt.t =
 
 let write_body fn (body:t) =
   match body with
-  |`Empty -> return ()
+  |`Empty -> return_unit
   |`Stream st -> Lwt_stream.iter_s fn st
   |`String s -> fn s
   |`Strings sl -> Lwt_list.iter_s fn sl

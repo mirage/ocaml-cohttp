@@ -335,13 +335,13 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
       let req_stream = Lwt_stream.from (
         fun () ->
           if !early_close
-          then return None
+          then return_none
           else
             Lwt_mutex.lock read_m >>= fun () ->
             Request.read ic >>= function
             | `Eof | `Invalid _ -> (* TODO: request logger for invalid req *)
               Lwt_mutex.unlock read_m;
-              return None
+              return_none
             | `Ok req -> begin
                 early_close := not (Request.is_keep_alive req);
                 (* Ensure the input body has been fully read before reading again *)
