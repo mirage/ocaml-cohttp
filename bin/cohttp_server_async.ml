@@ -121,14 +121,14 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
   | Error exn ->
     printf "\n%!"; (* Close the request logging line. *)
     begin match Monitor.extract_exn exn with
-    | Unix.Unix_error (Unix.ENOENT, "stat", p) as e ->
+    | Unix.Unix_error (Unix.ENOENT, "stat", p) ->
       if p = ("((filename "^file_name^"))") (* Really? *)
       then Server.respond_with_string ~code:`Not_found
         (sprintf "<html><body><h2>Not Found</h2>
          <p><b>%s</b> was not found on this server</p>
          <hr />%s</body></html>" path info)
       else raise exn
-    | _e -> raise exn
+    | _ -> raise exn
     end
   )
 

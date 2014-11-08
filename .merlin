@@ -1,4 +1,4 @@
-PRJ cohttp
+EXT lwt
 
 S async
 S cohttp
