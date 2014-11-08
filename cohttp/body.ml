@@ -26,10 +26,10 @@ type t = [
 let empty = `Empty
 
 let is_empty = function
-  | `Empty -> true
-  | `String "" -> true
-  | `String _ -> false
+  | `Empty
+  | `String ""
   | `Strings [] -> true
+  | `String _
   | `Strings _ -> false
 
 let to_string = function
@@ -45,8 +45,7 @@ let to_string_list = function
 let of_string s = `String s
 let of_string_list s = `Strings s
 
-let transfer_encoding (t:t) =
-  match t with
+let transfer_encoding = function
   | `Empty -> Transfer.Fixed 0L
   | `String s -> Transfer.Fixed (Int64.of_int (String.length s))
   | `Strings s -> Transfer.Chunked
@@ -54,7 +53,7 @@ let transfer_encoding (t:t) =
 let length = function
   | `Empty -> 0L
   | `String s -> Int64.of_int (String.length s)
-  | `Strings sl -> List.fold_left (fun a b -> Int64.add a (Int64.of_int (String.length b))) 0L sl
+  | `Strings sl -> sl |> List.fold_left (fun a b -> b |> String.length |> Int64.of_int |> Int64.add a) 0L
 
 let map t ~f =
   match t with

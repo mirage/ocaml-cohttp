@@ -74,18 +74,15 @@ let to_stream (body:t) =
 let drain_body (body:t) =
   match body with
   |`Empty
-  |`String _ -> return_unit
+  |`String _
   |`Strings _ -> return_unit
   |`Stream s -> Lwt_stream.junk_while (fun _ -> true) s
 
-let of_string_list l : t =
-  `Strings l
+let of_string_list l = `Strings l
 
-let of_stream s : t =
-  `Stream s
+let of_stream s = `Stream s
 
-let transfer_encoding (t:t) =
-  match t with
+let transfer_encoding = function
   |#Body.t as t -> Body.transfer_encoding t
   |`Stream _ -> Transfer.Chunked
 
@@ -99,8 +96,7 @@ let length (body:t) : (int64 * t) Lwt.t =
     let len = Int64.of_int (String.length buf) in
     return (len, `String buf)
 
-let write_body fn (body:t) =
-  match body with
+let write_body fn = function
   |`Empty -> return_unit
   |`Stream st -> Lwt_stream.iter_s fn st
   |`String s -> fn s

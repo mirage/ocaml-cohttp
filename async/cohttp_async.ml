@@ -90,18 +90,15 @@ module Body = struct
   let of_string s = ((B.of_string s) :> t)
   let of_pipe p = `Pipe p
 
-  let to_string (body:t) =
-    match body with
+  let to_string = function
     | #B.t as body -> return (B.to_string body)
     | `Pipe s -> Pipe.to_list s >>| String.concat
 
-  let to_string_list (body:t) =
-    match body with
+  let to_string_list = function
     | #B.t as body -> return (B.to_string_list body)
     | `Pipe s -> Pipe.to_list s
 
-  let drain (body:t) =
-    match body with
+  let drain = function
     | #B.t -> return ()
     | `Pipe p -> Pipe.drain p
 
@@ -123,17 +120,15 @@ module Body = struct
     | `Strings sl -> Pipe.of_list sl
     | `Pipe p -> p
 
-  let disable_chunked_encoding (t:t) =
-    match t with
+  let disable_chunked_encoding = function
     | #B.t as body -> return (body, B.length body)
     | `Pipe s ->
-         Pipe.to_list s >>| fun l ->
-         let body = `Strings l in
-         let len = B.length body in
-         body, len
+      Pipe.to_list s >>| fun l ->
+      let body = `Strings l in
+      let len = B.length body in
+      body, len
 
-  let transfer_encoding (t:t) =
-    match t with
+  let transfer_encoding = function
     | #B.t as t -> B.transfer_encoding t
     | `Pipe _ -> Cohttp.Transfer.Chunked
 
