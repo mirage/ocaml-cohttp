@@ -3,14 +3,14 @@
 open Core.Std
 open Async.Std
 open Cohttp_async
- 
-(* given filename: hello_world.ml compile with: 
+
+(* given filename: hello_world.ml compile with:
    $ corebuild hello_world.native -pkg cohttp.async
 *)
- 
+
 let handler ~body:_ _sock req =
   let uri = Cohttp.Request.uri req in
-  match Uri.path uri with 
+  match Uri.path uri with
   | "/test" ->
        Uri.get_query_param uri "hello"
     |> Option.map ~f:(fun v -> "hello: " ^ v)
@@ -18,7 +18,7 @@ let handler ~body:_ _sock req =
     |> Server.respond_with_string
   | _ ->
     Server.respond_with_string ~code:`Not_found "Route not found"
- 
+
 let start_server port () =
   eprintf "Listening for HTTP on port %d\n" port;
   eprintf "Try 'curl http://localhost:%d/test?hello=xyz'\n%!" port;
@@ -33,5 +33,5 @@ let () =
       flag "-p" (optional_with_default 8080 int)
         ~doc:"int Source port to listen on"
     ) start_server
-    
+
   |> Command.run

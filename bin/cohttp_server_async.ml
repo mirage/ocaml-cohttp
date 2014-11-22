@@ -139,17 +139,17 @@ let start_server docroot port host index verbose () =
   Unix.Inet_addr.of_string_or_getbyname host
   >>= fun host ->
   let listen_on = Tcp.Where_to_listen.create
-      ~socket_type:Socket.Type.tcp 
+      ~socket_type:Socket.Type.tcp
       ~address:(`Inet (host,port))
       ~listening_on:(fun _ -> port)
   in
   Server.create
     ~on_handler_error:`Ignore
-    listen_on 
+    listen_on
     (handler ~info ~docroot ~index ~verbose)
   >>= fun _ -> never ()
 
-let _ = 
+let _ =
   Command.async_basic
     ~summary:"Serve the local directory contents via HTTP"
     Command.Spec.(
@@ -159,5 +159,5 @@ let _ =
       +> flag "-s" (optional_with_default "0.0.0.0" string) ~doc:"address IP address to listen on"
       +> flag "-i" (optional_with_default "index.html" string) ~doc:"file Name of index file in directory"
       +> flag "-v" (optional_with_default false bool) ~doc:" Verbose logging output to console"
-    ) start_server 
-  |> Command.run 
+    ) start_server
+  |> Command.run

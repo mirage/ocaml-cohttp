@@ -106,7 +106,7 @@ module type S = sig
 
   val create :
     ?timeout:int ->
-    ?stop:unit Lwt.t -> 
+    ?stop:unit Lwt.t ->
     ?ctx:Cohttp_lwt_unix_net.ctx ->
     ?mode:Conduit_lwt_unix.server -> t -> unit Lwt.t
 

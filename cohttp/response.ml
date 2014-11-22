@@ -53,7 +53,7 @@ module Make(IO : S.IO) = struct
       | _ -> return (`Invalid ("Malformed response first line: " ^ response_line))
     end
     | None -> return `Eof
- 
+
   let read ic =
     parse_response_fst_line ic >>= function
     | `Eof -> return `Eof
@@ -69,7 +69,7 @@ module Make(IO : S.IO) = struct
   let read_body_chunk = Transfer_IO.read
 
   let write_header res oc =
-    write oc (Printf.sprintf "%s %s\r\n" (Code.string_of_version res.version) 
+    write oc (Printf.sprintf "%s %s\r\n" (Code.string_of_version res.version)
       (Code.string_of_status res.status)) >>= fun () ->
     let headers = Header.add_transfer_encoding res.headers res.encoding in
     iter (IO.write oc) (Header.to_lines headers) >>= fun () ->

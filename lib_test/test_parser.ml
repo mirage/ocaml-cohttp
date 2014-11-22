@@ -246,14 +246,14 @@ let write_req expected req =
   >|= fun () ->
   assert_equal expected (get_substring oc buf)
 
-let make_simple_req () = 
+let make_simple_req () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
   let expected = "GET /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
   let req = Request.make ~encoding:Transfer.Chunked ~headers:(Header.init_with "Foo" "bar") (Uri.of_string "/foo/bar") in
   write_req expected req
 
-let mutate_simple_req () = 
+let mutate_simple_req () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
   let expected = "POST /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
@@ -292,8 +292,8 @@ let test_cases =
     "basic_res_parse 1", (basic_res_parse basic_res);
     "basic_res_parse 2", (basic_res_parse basic_res_plus_crlf);
     "res_content_parse", res_content_parse;
-    "make_simple_req", make_simple_req; 
-    "mutate_simple_req", mutate_simple_req; 
+    "make_simple_req", make_simple_req;
+    "mutate_simple_req", mutate_simple_req;
     "make_simple_res", make_simple_res;
   ] in
   List.map (fun (n,x) -> n >:: (fun () -> Lwt_unix.run (x ()))) tests

@@ -24,7 +24,7 @@ type buf =
     len : int;
   }
 
-let open_in str = 
+let open_in str =
   {
     str = str;
     pos = 0;

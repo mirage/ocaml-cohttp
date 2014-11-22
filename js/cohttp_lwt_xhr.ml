@@ -28,11 +28,11 @@ end
 module Body_builder(P : Params) = struct
 
   (* perform the body transfer in chunks. *)
-  let chunked_body text = 
+  let chunked_body text =
     let body_len = text##length in
     let pos = ref 0 in
     let chunkerizer () =
-      if !pos = body_len then 
+      if !pos = body_len then
         Lwt.return C.Transfer.Done
       else
         if !pos + P.chunk_size >= body_len then begin
@@ -49,7 +49,7 @@ module Body_builder(P : Params) = struct
     else CLB.of_stream (CLB.create_stream chunkerizer ())
 
   (* choose between chunked and direct transfer *)
-  let get text = 
+  let get text =
     if P.chunked_response then chunked_body text
     else CLB.of_string (P.convert_body_string text)
 
@@ -110,7 +110,7 @@ module Make_client_async(P : Params) = Make_api(struct
   module Header_io = Cohttp.Header_io.Make(IO)
   module Bb = Body_builder(P)
 
-  let call ?headers ?body meth uri = 
+  let call ?headers ?body meth uri =
     let xml = XmlHttpRequest.create () in
     let (res : (Response.t Lwt.t * CLB.t) Lwt.t), wake = Lwt.task () in
     let () = xml##_open(Js.string (C.Code.string_of_method meth),
@@ -118,17 +118,17 @@ module Make_client_async(P : Params) = Make_api(struct
                         Js._true) (* asynchronous call *)
     in
     (* set request headers *)
-    let () = 
+    let () =
         match headers with
         | None -> ()
         | Some(headers) ->
-          C.Header.iter 
-            (fun k v -> 
+          C.Header.iter
+            (fun k v ->
               (* some headers lead to errors in the javascript console, should
                   we filter then out here? *)
-              List.iter 
-                (fun v -> xml##setRequestHeader(Js.string k, Js.string v)) v) 
-            headers 
+              List.iter
+                (fun v -> xml##setRequestHeader(Js.string k, Js.string v)) v)
+            headers
     in
 
     xml##onreadystatechange <- Js.wrap_callback
@@ -138,7 +138,7 @@ module Make_client_async(P : Params) = Make_api(struct
           (* construct body *)
           let body = Bb.get xml##responseText in
           (* (re-)construct the response *)
-          let response = 
+          let response =
             let resp_headers = Js.to_string (xml##getAllResponseHeaders()) in
             let channel = C.String_io.open_in resp_headers in
             Lwt.(Header_io.parse channel >>= fun resp_headers ->
@@ -147,7 +147,7 @@ module Make_client_async(P : Params) = Make_api(struct
                             ~status:(C.Code.status_of_code xml##status)
                             ~flush:false (* ??? *)
                             ~encoding:(CLB.transfer_encoding body)
-                            ~headers:resp_headers 
+                            ~headers:resp_headers
                             ()))
           in
           (* Note; a type checker subversion seems to be possible here (4.01.0).
@@ -159,15 +159,15 @@ module Make_client_async(P : Params) = Make_api(struct
       );
 
     (* perform call *)
-    lwt () = 
+    lwt () =
       match body with
       | None -> Lwt.return (xml##send(Js.null))
-      | Some(body) -> 
+      | Some(body) ->
         lwt body = CLB.to_string body in
         Lwt.return (xml##send(Js.Opt.return (Js.string body)))
     in
     Lwt.on_cancel res (fun () -> xml##abort ());
-    
+
     (* unwrap the response *)
     Lwt.(res >>= fun (r, b) -> r >>= fun r -> Lwt.return (r,b))
 
@@ -188,46 +188,46 @@ module Make_client_sync(P : Params) = Make_api(struct
                         Js._false)  (* synchronous call *)
     in
     (* set request headers *)
-    let () = 
+    let () =
         match headers with
         | None -> ()
         | Some(headers) ->
-          C.Header.iter 
-            (fun k v -> List.iter 
+          C.Header.iter
+            (fun k v -> List.iter
               (* some headers lead to errors in the javascript console, should
                   we filter then out here? *)
-              (fun v -> 
-                xml##setRequestHeader(Js.string k, Js.string v)) v) 
-            headers 
+              (fun v ->
+                xml##setRequestHeader(Js.string k, Js.string v)) v)
+            headers
     in
     (* perform call *)
-    lwt () = 
+    lwt () =
       match body with
       | None -> Lwt.return (xml##send(Js.null))
-      | Some(body) -> 
+      | Some(body) ->
         lwt body = CLB.to_string body in
         Lwt.return (xml##send(Js.Opt.return (Js.string body)))
     in
-    
+
     (* construct body *)
     let body = Bb.get xml##responseText in
-    
+
     (* (re-)construct the response *)
-    lwt resp_headers = 
+    lwt resp_headers =
       let resp_headers = Js.to_string (xml##getAllResponseHeaders()) in
       let resp_headers = Header_io.parse (C.String_io.open_in resp_headers) in
       resp_headers
     in
-    
-    let response = Response.make 
+
+    let response = Response.make
       ~version:`HTTP_1_1
       ~status:(Cohttp.Code.status_of_code xml##status)
       ~flush:false
       ~encoding:(CLB.transfer_encoding body)
-      ~headers:resp_headers 
+      ~headers:resp_headers
       ()
     in
-    
+
     Lwt.return (response,body)
 
 end)

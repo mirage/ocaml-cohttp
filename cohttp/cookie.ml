@@ -18,8 +18,8 @@
 
 open Sexplib.Std
 
-type expiration = [ 
-  | `Session 
+type expiration = [
+  | `Session
   | `Max_age of int64
 ] with sexp
 
@@ -37,7 +37,7 @@ module Set_cookie_hdr = struct
   (* Does not check the contents of name or value for ';', ',', '\s', or name[0]='$' *)
   let make ?(expiration=`Session) ?path ?domain ?(secure=false) ?(http_only=false) cookie =
     { cookie ; expiration ; domain ; path ; secure ; http_only }
-    
+
   (* TODO: deprecated by RFC 6265 and almost certainly buggy without
      reference to cookie field *)
   let serialize_1_1 c =
@@ -46,13 +46,13 @@ module Set_cookie_hdr = struct
     let attrs = match c.path with None -> attrs
       | Some p -> ("Path=" ^ p) :: attrs in
     let attrs = match c.expiration with
-      | `Session -> "Discard" :: attrs 
+      | `Session -> "Discard" :: attrs
       | `Max_age age -> ("Max-Age=" ^ (Int64.to_string age)) :: attrs
    in
     let attrs = match c.domain with None -> attrs
       | Some d -> ("Domain=" ^ d) :: attrs in
       ("Set-Cookie2", String.concat "; " attrs)
-  
+
   let serialize_1_0 c =
     let attrs = if c.http_only then ["httponly"] else [] in
     let attrs = if c.secure then "secure"::attrs else attrs in

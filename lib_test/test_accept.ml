@@ -59,7 +59,7 @@ let valid_charsets = [
   "ISO-8859-1; q = 0.8, *; q=0.7", [
     800,A.Charset "iso-8859-1";
     700,A.AnyCharset;
-  ];  
+  ];
 ]
 
 let valid_charsets_suite =

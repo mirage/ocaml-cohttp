@@ -97,7 +97,7 @@ let client () =
       lwt_test ~name:"get 1" (Client.get url) ~assert_:(fun (r,b) -> assert(b = `Empty))
       >>= fun () ->
       lwt_test_s ~name:"post 1" (Client.post ~body:(Cohttp_lwt_body.of_string "foobar") url)
-        ~assert_:(fun (r,b) -> return ()) 
+        ~assert_:(fun (r,b) -> return ())
   done >>= fun () ->
   (* Do a callv *)
   let body () = Cohttp_lwt_body.of_string "foobar" in
@@ -110,14 +110,14 @@ let client () =
   ] in
   lwt resp = Client.callv url reqs in
   Lwt_stream.iter_s (fun (res, body) ->
-    lwt body = Cohttp_lwt_body.to_string body in 
+    lwt body = Cohttp_lwt_body.to_string body in
     assert(body="foobar");
     return ()
-  ) resp >>= fun () -> 
+  ) resp >>= fun () ->
   lwt _ =  Client.get url_shutdown in
-  return (exit 1) 
-  
-let _ = 
+  return (exit 1)
+
+let _ =
   (* Fork into a client and server *)
   match Lwt_unix.fork () with
   |0 -> (* child / client *)
@@ -126,4 +126,4 @@ let _ =
     Lwt_unix.run (client ())
   |pid -> (* parent / server *)
     Printf.eprintf "server is %d\n%!" (Unix.getpid ());
-    Lwt_unix.run (make_server ()) 
+    Lwt_unix.run (make_server ())

@@ -26,7 +26,7 @@ module CLU = Conduit_lwt_unix
 let make_server () =
   let callback (ch,conn_id) req body =
     let uri = Request.uri req in
-    (* For debugging and demonstration of how to get the original 
+    (* For debugging and demonstration of how to get the original
        Lwt_unix.file_descr, see below *)
     let src_info =
       match ch with

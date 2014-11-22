@@ -21,7 +21,7 @@
 
 (* <http://tools.ietf.org/html/rfc2616#section-2.2> *)
 let token = [^'('')''<''>''@'','';'':''\\''"''/''['']''?''=''{''}'' ''\t']
-  
+
 rule header_value = parse
   | '*' { STAR }
   | '/' { SLASH }

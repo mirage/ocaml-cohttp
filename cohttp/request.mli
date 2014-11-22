@@ -19,7 +19,7 @@
 
 (** This contains the metadata for a HTTP/1.1 request header, including
     the {!headers}, {!version}, {!meth} and {!uri}.  The body is handled by
-    the separate {!S} module type, as it is dependent on the IO 
+    the separate {!S} module type, as it is dependent on the IO
     implementation.
 
     The interface exposes a [fieldslib] interface which provides individual

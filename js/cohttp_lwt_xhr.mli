@@ -26,20 +26,20 @@ module type Params = sig
   (** Size of chunks *)
   val chunk_size : int
 
-  (** JavaScript string to OCaml conversion.  [Js.to_bytestring] or 
+  (** JavaScript string to OCaml conversion.  [Js.to_bytestring] or
       [Js.to_string] *)
   val convert_body_string : Js.js_string Js.t -> string
 end
 
-(** Build an asynchronous engine with chunked/unchucked response data 
+(** Build an asynchronous engine with chunked/unchucked response data
     treated as raw bytes or UTF *)
 module Make_client_async(P : Params) : Cohttp_lwt.Client with module IO = String_io_lwt
 
-(** Build a synchronous engine with chunked/unchucked response data 
+(** Build a synchronous engine with chunked/unchucked response data
     treated as raw bytes or UTF *)
 module Make_client_sync(P : Params) : Cohttp_lwt.Client with module IO = String_io_lwt
 
-(** The [Client] module implements an HTTP client interface 
+(** The [Client] module implements an HTTP client interface
     using asynchronous XmlHttpRequests. The response body is returned
     in chucked form with 128Kb / chunk.  Body data is treated as raw bytes *)
 module Client : Cohttp_lwt.Client with module IO = String_io_lwt

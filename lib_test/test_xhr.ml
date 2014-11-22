@@ -17,7 +17,7 @@
 
 (*
 
-Description: 
+Description:
 
 (1) Enter a username and click the button to query github and get a JSON
 description of the users public repositories.
@@ -36,11 +36,11 @@ with oasis.
 
 $ js_of_ocaml +weak.js test_xhr.byte -o lib_test/test_xhr.js
 
-to load it in the browser run 
+to load it in the browser run
 
 $ ./test_net_lwt_server.native
 
-and navigate to 
+and navigate to
 
 http://localhost:8081/lib_test/index.html
 
@@ -58,9 +58,9 @@ module Client = Cohttp_lwt_xhr.Make_client_async(struct
 end) *)
 
 (* grab elements from the webpage *)
-let get_element e = 
+let get_element e =
     let d = Dom_html.document in
-    Js.Opt.get 
+    Js.Opt.get
         (d##getElementById (Js.string e))
         (fun () -> assert false)
 let get_input n =
@@ -78,25 +78,25 @@ end
 let json : json Js.t = Js.Unsafe.variable "JSON"
 let pretty str = json##stringify(json##parse(Js.string str), Js.null, 2)
 
-let main _ = 
+let main _ =
   let counter = get_element "counter" in
   let output_response1 = get_element "output-response1" in
   let output_response2 = get_element "output-response2" in
   let list_repos = get_element "list-repos" in
   let download_blob = get_element "download-blob" in
-  
+
   (* cohttp query to the JSON github API *)
-  let run_query _ = 
+  let run_query _ =
     Lwt.ignore_result (
-      lwt resp, body = Client.get 
+      lwt resp, body = Client.get
         Uri.(of_string ("https://api.github.com/users/" ^ value "input" ^ "/repos"))
       in
       (* show the response data *)
       let b = Buffer.create 1024 in
       let add s = Buffer.add_string b s; Buffer.add_string b "\n" in
-      add Cohttp.(Code.(string_of_version resp.Response.version)); 
+      add Cohttp.(Code.(string_of_version resp.Response.version));
       add Cohttp.(Code.(string_of_status resp.Response.status));
-      Cohttp.Header.iter (fun k v -> List.iter (fun v -> add (k ^ ": " ^ v)) v) 
+      Cohttp.Header.iter (fun k v -> List.iter (fun v -> add (k ^ ": " ^ v)) v)
         resp.Cohttp.Response.headers;
       output_response1##innerHTML <- Js.string (Buffer.contents b);
 
@@ -108,7 +108,7 @@ let main _ =
   in
   list_repos##onclick <- Dom_html.handler run_query;
 
-  (* Download a file from test_net_lwt_server.native 
+  (* Download a file from test_net_lwt_server.native
    * There is an issue here with _build/lib_test/test_xhr.byte
    * where the file is ~8MB but we get ~13MB.
    *
@@ -118,32 +118,32 @@ let main _ =
    * data as binary and convert the string ourselves?  Or based on
    * some header perhaps?
    *
-   * There is also quite a big pause which i *think* is due to the 
-   * string conversion.  I've stalled the transfer for a few 
+   * There is also quite a big pause which i *think* is due to the
+   * string conversion.  I've stalled the transfer for a few
    * seconds in the server and that part remains responsive - it seems
-   * to happen after the data is available. 
+   * to happen after the data is available.
    *
    * If you use the chunked encoding type (see body_chunked) and
    * dont touch the body this also doesn't happen. *)
-  let run_download _ = 
+  let run_download _ =
     Lwt.ignore_result (
-      lwt resp, body = Client.get 
+      lwt resp, body = Client.get
         Uri.(of_string ("http://localhost:8081/" ^ value "input"))
       in
 
       let body = Cohttp_lwt_body.to_stream body in
       (* get total length, and 1st bit of data *)
-      let rec read_stream length data = 
+      let rec read_stream length data =
         match_lwt Lwt_stream.get body with
         | None -> Lwt.return (length, data)
-        | Some(s) -> 
+        | Some(s) ->
             let length  = length + String.length s in
             let data =  (* get 1st 1K *)
-              match data with 
-              | None -> Some(try String.sub s 0 1024 with _ -> s) 
-              | Some(data) -> Some(data) 
+              match data with
+              | None -> Some(try String.sub s 0 1024 with _ -> s)
+              | Some(data) -> Some(data)
             in
-            lwt () = Lwt_js.yield() in 
+            lwt () = Lwt_js.yield() in
             read_stream length data
       in
       lwt length, data = read_stream 0 None in
@@ -156,17 +156,17 @@ let main _ =
 
   download_blob##onclick <- Dom_html.handler run_download;
 
-  (* run a quickly updating counter - 
+  (* run a quickly updating counter -
    * we want to avoid long pauses and this helps up see them *)
-  let set_counter = 
+  let set_counter =
     let r = ref 0 in
-    (fun () -> 
+    (fun () ->
       incr r; counter##innerHTML <- Js.string (string_of_int !r))
   in
   let rec f() = set_counter (); Lwt.( Lwt_js.sleep 0.1 >>= f ) in
   let _ = f() in
   Js._false
-  
+
 
 let _ = Dom_html.window##onload <- Dom_html.handler main
 

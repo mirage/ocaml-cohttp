@@ -28,12 +28,12 @@ module Net = struct
     | None -> raise (Failure "Net.connect") (* TODO proper exception *)
     | Some port ->
       let open Unix in
-      Addr_info.get ~host [Addr_info.AI_FAMILY PF_INET; Addr_info.AI_SOCKTYPE SOCK_STREAM] 
+      Addr_info.get ~host [Addr_info.AI_FAMILY PF_INET; Addr_info.AI_SOCKTYPE SOCK_STREAM]
       >>= function
       | {Addr_info.ai_addr=ADDR_INET(addr,_)}::_ ->
         return (host, Ipaddr_unix.of_inet_addr addr, port)
       | _ -> raise (Failure "resolution failed")
- 
+
   let connect_uri ?interrupt uri =
      lookup uri >>= fun (host, addr, port) ->
      let mode =

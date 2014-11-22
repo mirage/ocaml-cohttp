@@ -48,7 +48,7 @@ let read =
      try_lwt Lwt_io.read ~count ic
      with End_of_file -> return "")
    (fun ic count ->
-     lwt buf = 
+     lwt buf =
        try_lwt Lwt_io.read ~count ic
        with End_of_file -> return "" in
      Printf.eprintf "%4d <<<[%d] %s%!" (Unix.getpid ()) count buf;

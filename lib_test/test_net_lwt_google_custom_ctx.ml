@@ -22,11 +22,11 @@ let () =
   let point_to_static_ip to_ip svc uri =
      let port =
        match Uri.port uri with
-       | None -> svc.Resolver.port 
+       | None -> svc.Resolver.port
        | Some port -> port in
      return (`TCP (to_ip,port))
   in
- 
+
   let service = Resolver_lwt_unix.static_service in
   let rewrites = [ "", (point_to_static_ip google_static_ip) ] in
   let resolver = Resolver_lwt.init ~service ~rewrites () in

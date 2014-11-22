@@ -77,7 +77,7 @@ module type Client = sig
     is specified then that will be included with the request, using
     chunked encoding if [chunked] is true.  The default is to disable
     chunked encoding for HTTP request bodies for compatibility reasons.
-    
+
     In most cases you should use the more specific helper calls in the
     interface rather than invoke this function directly.  See {!head},
     {!get} and {!post} for some examples. *)

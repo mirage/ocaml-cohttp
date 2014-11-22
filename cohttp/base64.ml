@@ -23,9 +23,9 @@ let of_char x = if x = padding then 0 else String.index code x
 
 let to_char x = code.[x]
 
-let decode x = 
+let decode x =
   let words = String.length x / 4 in
-  let padding = 
+  let padding =
     if String.length x = 0 then 0 else (
     if x.[String.length x - 2] = padding
     then 2 else (if x.[String.length x - 1] = padding then 1 else 0)) in
@@ -45,7 +45,7 @@ let decode x =
   done;
   output
 
-let encode x = 
+let encode x =
   let length = String.length x in
   let words = (length + 2) / 3 in (* rounded up *)
   let padding = if length mod 3 = 0 then 0 else 3 - (length mod 3) in
@@ -55,7 +55,7 @@ let encode x =
     let x = get (3 * i + 0)
     and y = get (3 * i + 1)
     and z = get (3 * i + 2) in
-    let n = (x lsl 16) lor (y lsl 8) lor z in 
+    let n = (x lsl 16) lor (y lsl 8) lor z in
     let a = (n lsr 18) land 63
     and b = (n lsr 12) land 63
     and c = (n lsr 6) land 63
