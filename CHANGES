@@ -1,3 +1,7 @@
+0.12.1 (trunk):
+* Remove build dependency check on `lwt.ssl` for `cohttp.lwt`.
+  This has been moved to conduit, so only `lwt.unix` is needed here now.
+
 0.12.0 (2014-11-07):
 
 Compatibility breaking interface changes:
