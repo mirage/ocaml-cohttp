@@ -20,7 +20,7 @@ open Lwt
 
 module type Net = sig
   module IO : S.IO
-  type ctx
+  type ctx with sexp_of
   val default_ctx : ctx
   val connect_uri : ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
   val close_in : IO.ic -> unit
@@ -29,7 +29,7 @@ module type Net = sig
 end
 
 module type Request = sig
-  type t = Cohttp.Request.t
+  type t = Cohttp.Request.t with sexp
   include Cohttp.S.Request with type t := Cohttp.Request.t
   include Cohttp.S.Http_io with type t := Cohttp.Request.t
 end
@@ -40,7 +40,7 @@ module Make_request(IO:S.IO) = struct
 end
 
 module type Response = sig
-  type t = Cohttp.Response.t
+  type t = Cohttp.Response.t with sexp
   include Cohttp.S.Response with type t := Cohttp.Response.t
   include Cohttp.S.Http_io with type t := Cohttp.Response.t
 end
@@ -55,7 +55,7 @@ module type Client = sig
   module Request : Request
   module Response : Response
 
-  type ctx
+  type ctx with sexp_of
   val default_ctx : ctx
 
   val call :
@@ -125,7 +125,7 @@ module Make_client
   module Request = Request
   module Response = Response
 
-  type ctx = Net.ctx
+  type ctx = Net.ctx with sexp_of
   let default_ctx = Net.default_ctx
 
   let read_response ?closefn ic oc =
@@ -216,7 +216,7 @@ module type Server = sig
   module Request : Request
   module Response : Response
 
-  type ctx
+  type ctx with sexp_of
   val default_ctx : ctx
 
   type t = {
@@ -270,7 +270,7 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
   module Request = Request
   module Response = Response
 
-  type ctx = Net.ctx
+  type ctx = Net.ctx with sexp_of
   let default_ctx = Net.default_ctx
 
   type t = {

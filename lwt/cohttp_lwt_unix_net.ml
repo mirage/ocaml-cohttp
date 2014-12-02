@@ -28,7 +28,7 @@ type oc = Lwt_io.output_channel
 type ctx = {
   ctx: Conduit_lwt_unix.ctx;
   resolver: Resolver_lwt.t;
-}
+} with sexp_of
 
 let init ?(resolver=Resolver_lwt_unix.system)
          ?(ctx=Conduit_lwt_unix.default_ctx) () =

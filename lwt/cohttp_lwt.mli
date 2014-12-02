@@ -26,7 +26,7 @@ open Cohttp
     and close the resulting channels to clean up. *)
 module type Net = sig
   module IO : S.IO
-  type ctx
+  type ctx with sexp_of
   val default_ctx: ctx
   val connect_uri : ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
   val close_in : IO.ic -> unit
@@ -37,7 +37,7 @@ end
 (** The [Request] module combines the {! Cohttp.Request } module with
     the IO functions, to have them conveniently in one place. *)
 module type Request = sig
-  type t = Cohttp.Request.t
+  type t = Cohttp.Request.t with sexp
   include Cohttp.S.Request with type t := Cohttp.Request.t
   include Cohttp.S.Http_io with type t := Cohttp.Request.t
 end
@@ -48,7 +48,7 @@ module Make_request(IO:S.IO) : Request with module IO = IO
 (** The [Response] module combines the {! Cohttp.Request } module with
     the IO functions, to have them conveniently in one place. *)
 module type Response = sig
-  type t = Cohttp.Response.t
+  type t = Cohttp.Response.t with sexp
   include Cohttp.S.Response with type t := Cohttp.Response.t
   include Cohttp.S.Http_io with type t := Cohttp.Response.t
 end
@@ -67,7 +67,7 @@ module type Client = sig
   module Request : Request
   module Response : Response
 
-  type ctx
+  type ctx with sexp_of
   val default_ctx : ctx
 
   (** [call ?ctx ?headers ?body ?chunked meth uri] will resolve the
@@ -158,7 +158,7 @@ module type Server = sig
   module Request : Request
   module Response : Response
 
-  type ctx
+  type ctx with sexp_of
   val default_ctx : ctx
 
   type t = {
