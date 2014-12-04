@@ -133,7 +133,7 @@ let string_of_sockaddr = function
   | Unix.ADDR_INET (inet_addr, port) ->
     (Unix.string_of_inet_addr inet_addr) ^ ":" ^ (string_of_int port)
 
-let start_server docroot port host index verbose () =
+let start_server docroot port host index verbose cert key () =
   printf "Listening for HTTP request on: %s %d\n" host port;
   let info = sprintf "Served by Cohttp/Lwt listening on %s:%d" host port in
   let conn_closed (ch,conn) () =
@@ -141,12 +141,18 @@ let start_server docroot port host index verbose () =
       (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)) in
   let callback = handler ~info ~docroot ~verbose ~index in
   let config = { Server.callback; conn_closed } in
-  Server.create ~mode:(`TCP (`Port port)) config
+  let mode = match cert, key with
+    | Some c, Some k -> `TLS (`Crt_file_path c, `Key_file_path k, `No_password, `Port port)
+    | _ -> `TCP (`Port port)
+  in
+  Server.create ~mode config
 
 let host = ref "0.0.0.0"
 let port = ref 8080
 let index = ref "index.html"
 let verbose = ref false
+let ssl_cert = ref None
+let ssl_key = ref None
 let rest = ref []
 
 let usage = "usage " ^ Sys.argv.(0) ^ " [DOCROOT]"
@@ -156,13 +162,15 @@ let arglist = [
   ("-s", Arg.String (fun s -> host := s), ": IP address to listen on");
   ("-i", Arg.String (fun s -> index := s), ": Name of index file in directory");
   ("-v", Arg.Bool (fun b -> verbose := b), ": logging output to console");
+  ("-c", Arg.String (fun s -> ssl_cert := Some s), ": certificate file");
+  ("-k", Arg.String (fun s -> ssl_key := Some s), ": key file");
 ]
 
 let _ =
   try Arg.parse arglist (fun x -> rest := x :: !rest) usage;
     begin match !rest with
-    | [] -> Lwt_unix.run (start_server "." !port !host !index !verbose ())
-    | dir::_ -> Lwt_unix.run (start_server dir !port !host !index !verbose ())
+    | [] -> Lwt_unix.run (start_server "." !port !host !index !verbose !ssl_cert !ssl_key ())
+    | dir::_ -> Lwt_unix.run (start_server dir !port !host !index !verbose !ssl_cert !ssl_key ())
     end
   with
   | Failure s -> print_endline s
