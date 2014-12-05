@@ -61,7 +61,7 @@ let uri =
     parse, fun ppf p -> Format.fprintf ppf "%s" (Uri.to_string p)
   in
   Arg.(required & pos 0 (some loc) None & info [] ~docv:"URI"
-   ~doc:"URI to retrieve (e.g. https://google.com)")
+   ~doc:"string of the remote address (e.g. https://google.com)")
 
 let verb =
   let doc = "Display additional debugging to standard error." in
@@ -80,7 +80,7 @@ let cmd =
         verbose debugging out obtained via the $(b,-v) option.";
     `S "BUGS";
     `P "Report them to via e-mail to <mirageos-devel@lists.xenproject.org>, or
-        on the GitHub issue tracker at <https://github.com/mirage/ocaml-cohttp/issues>";
+        on the issue tracker at <https://github.com/mirage/ocaml-cohttp/issues>";
     `S "SEE ALSO";
     `P "$(b,curl)(1), $(b,wget)(1)" ]
   in
