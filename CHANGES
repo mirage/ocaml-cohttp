@@ -1,3 +1,7 @@
+2.1.0 (05-12-2014):
+* Use the Conduit 0.7+ resolver API (provide `of_sexp` for context).
+* Do not link against `camlp4` in the `META` file and only use it during build.
+
 2.0.0 (07-11-2014):
 * Use the Conduit 0.6+ resolver API.
 * Add a local `opam` file for the OPAM 1.2.0 workflow.

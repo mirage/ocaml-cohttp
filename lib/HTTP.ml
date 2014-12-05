@@ -17,6 +17,7 @@
  *)
 
 open Lwt
+open Sexplib.Conv
 
 module Make(Conduit:Conduit_mirage.S) = struct
 
@@ -35,7 +36,7 @@ module Make(Conduit:Conduit_mirage.S) = struct
     type ctx = {
       resolver: Resolver_lwt.t;
       ctx: Conduit.ctx;
-    }
+    } with sexp_of
 
     let default_ctx = 
       { resolver = Resolver_mirage.localhost;

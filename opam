@@ -11,5 +11,7 @@ depends: [
   "mirage-conduit"
   "lwt" {>= "2.4.3"}
   "cohttp" {>= "0.12.0"}
+  "camlp4"
+  "sexplib"
 ]
 ocaml-version: [>= "4.00.0"]
