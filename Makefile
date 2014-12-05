@@ -8,7 +8,7 @@ LWT ?= $(shell if ocamlfind query lwt >/dev/null 2>&1; then echo --enable-lwt; f
 LWT_UNIX ?= $(shell if ocamlfind query lwt.unix >/dev/null 2>&1; then echo --enable-lwt-unix; fi)
 ASYNC ?= $(shell if ocamlfind query async >/dev/null 2>&1; then echo --enable-async; fi)
 JS ?= $(shell if ocamlfind query js_of_ocaml >/dev/null 2>&1; then echo --enable-js; fi)
-NETTESTS ?= --enable-tests --enable-nettests
+#NETTESTS ?= --enable-tests --enable-nettests
 
 setup.bin: setup.ml
 	ocamlopt.opt -o $@ $< 2>/dev/null || ocamlopt -o $@ $< 2>/dev/null || ocamlc -o $@ $<
