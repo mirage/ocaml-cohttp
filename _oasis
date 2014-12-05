@@ -263,9 +263,9 @@ Executable "cohttp-server-lwt"
   Install:            true
   BuildDepends:       cohttp, cohttp.lwt
 
-Executable "cohttp-client-lwt"
+Executable "cohttp-curl-lwt"
   Path:               bin
-  MainIs:             cohttp_client_lwt.ml
+  MainIs:             cohttp_curl_lwt.ml
   Build$:             flag(lwt) && flag(lwt_unix)
   Custom:             true
   CompiledObject:     best
