@@ -23,4 +23,4 @@ val debug_active : bool ref
 
 (** [debug_print fmt] will print the given [fmt] format string and
     arguments to the standard error, prepended by the process id. *)
-val debug_print : ('a, unit, bytes, unit) format4 -> 'a
+val debug_print : ('a, unit, string, unit) format4 -> 'a
