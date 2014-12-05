@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2014 Hannes Menhert
+ * Copyright (c) 2014 Hannes Mehnert
  * Copyright (c) 2014 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
