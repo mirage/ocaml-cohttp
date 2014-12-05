@@ -18,6 +18,7 @@ depends: [
   "sexplib" {>= "109.53.00"}
   "conduit" {>= "0.7.0"}
   "stringext"
+  "cmdliner" {>="0.9.4"}
 ]
 depopts: [
   "async"
