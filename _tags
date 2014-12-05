@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 662332737abbcc7cf1f7306c732b785d)
+# DO NOT EDIT (digest: 7a2963bd553d2dbc02ead2d8f1835f9b)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -396,6 +396,27 @@ true: annot, bin_annot
 <bin/cohttp_server_lwt.{native,byte}>: use_cohttp
 <bin/cohttp_server_lwt.{native,byte}>: use_cohttp_lwt
 <bin/cohttp_server_lwt.{native,byte}>: use_cohttp_lwt_unix
+<bin/cohttp_server_lwt.{native,byte}>: custom
+# Executable cohttp-curl-lwt
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_cmdliner
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_conduit.lwt-unix
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_fieldslib
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_fieldslib.syntax
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_lwt
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_lwt.ssl
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_lwt.syntax
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_lwt.unix
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_re.emacs
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_sexplib
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_sexplib.syntax
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_stringext
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_unix
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_uri
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_uri.services
+<bin/cohttp_curl_lwt.{native,byte}>: use_cohttp
+<bin/cohttp_curl_lwt.{native,byte}>: use_cohttp_lwt
+<bin/cohttp_curl_lwt.{native,byte}>: use_cohttp_lwt_unix
+<bin/*.ml{,i,y}>: pkg_cmdliner
 <bin/*.ml{,i,y}>: pkg_conduit.lwt-unix
 <bin/*.ml{,i,y}>: pkg_fieldslib
 <bin/*.ml{,i,y}>: pkg_fieldslib.syntax
@@ -413,7 +434,7 @@ true: annot, bin_annot
 <bin/*.ml{,i,y}>: use_cohttp
 <bin/*.ml{,i,y}>: use_cohttp_lwt
 <bin/*.ml{,i,y}>: use_cohttp_lwt_unix
-<bin/cohttp_server_lwt.{native,byte}>: custom
+<bin/cohttp_curl_lwt.{native,byte}>: custom
 # Executable async-hello-world
 <examples/async/hello_world.{native,byte}>: pkg_async
 <examples/async/hello_world.{native,byte}>: pkg_conduit.async
@@ -490,4 +511,4 @@ true: annot, bin_annot
 <examples/async/*.ml{,i,y}>: use_cohttp_async
 <examples/async/receive_post.{native,byte}>: custom
 # OASIS_STOP
-true: annot, bin_annot, principal, strict_sequence, debug, short_paths
+true: principal, strict_sequence, debug, short_paths

@@ -98,7 +98,7 @@ let make_server () =
   let ctx = Cohttp_lwt_unix_net.init () in
   let port = 8081 in
   let tcp_mode = `TCP (`Port port) in
-  let ssl_mode = `OpenSSL (`Crt_file_path "server.crt", `Key_file_path "server.key", `No_password, `Port (port+1)) in
+  let ssl_mode = `TLS (`Crt_file_path "server.crt", `Key_file_path "server.key", `No_password, `Port (port+1)) in
   let t1 = Server.create ~ctx ~mode:tcp_mode config in
   let t2 = Server.create ~ctx ~mode:ssl_mode config in
   t1 <&> t2

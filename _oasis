@@ -1,6 +1,6 @@
 OASISFormat: 0.3
 Name:        cohttp
-Version:     0.12.0
+Version:     0.13.0
 Synopsis:    HTTP library for Lwt, Async, JavaScript and Mirage
 Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire, David Scott, Rudi Grinberg, Andy Ray
 License:     ISC
@@ -54,7 +54,7 @@ Library cohttp_lwt_unix
   FindlibParent: cohttp
   BuildDepends:  cohttp.lwt-core, unix, lwt.unix, lwt.ssl, conduit.lwt-unix
   XMETARequires: cohttp.lwt-core, unix, lwt.unix, lwt.ssl, conduit.lwt-unix
-  Modules:       Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt_unix_net
+  Modules:       Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt_unix_net, Cohttp_lwt_unix_debug
 
 Library cohttp_lwt_xhr
   Build$:        flag(lwt) && flag(js)
@@ -262,6 +262,15 @@ Executable "cohttp-server-lwt"
   CompiledObject:     best
   Install:            true
   BuildDepends:       cohttp, cohttp.lwt
+
+Executable "cohttp-curl-lwt"
+  Path:               bin
+  MainIs:             cohttp_curl_lwt.ml
+  Build$:             flag(lwt) && flag(lwt_unix)
+  Custom:             true
+  CompiledObject:     best
+  Install:            true
+  BuildDepends:       cohttp, cohttp.lwt, cmdliner
 
 Executable "async-hello-world"
   Path:               examples/async

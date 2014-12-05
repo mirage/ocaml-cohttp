@@ -75,6 +75,7 @@ end) = struct
 
   let default_ctx = ()
   type ctx = unit
+  let sexp_of_ctx _ = Sexplib.Sexp.List []
 
   let call ?ctx ?headers ?body ?chunked meth uri = X.call ?headers ?body meth uri
 
