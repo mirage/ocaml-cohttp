@@ -54,7 +54,7 @@ Library cohttp_lwt_unix
   FindlibParent: cohttp
   BuildDepends:  cohttp.lwt-core, unix, lwt.unix, lwt.ssl, conduit.lwt-unix
   XMETARequires: cohttp.lwt-core, unix, lwt.unix, lwt.ssl, conduit.lwt-unix
-  Modules:       Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt_unix_net
+  Modules:       Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt_unix_net, Cohttp_lwt_unix_debug
 
 Library cohttp_lwt_xhr
   Build$:        flag(lwt) && flag(js)
@@ -270,7 +270,7 @@ Executable "cohttp-client-lwt"
   Custom:             true
   CompiledObject:     best
   Install:            true
-  BuildDepends:       cohttp, cohttp.lwt
+  BuildDepends:       cohttp, cohttp.lwt, cmdliner
 
 Executable "async-hello-world"
   Path:               examples/async

@@ -1,4 +1,7 @@
 0.12.1 (trunk):
+* Add `Cohttp_lwt_unix_debug` which lets libraries control the debugging
+  output from Cohttp.  Previously the only way to do this was to set the
+  `COHTTP_DEBUG` environment variable at the program start.
 * Remove build dependency check on `lwt.ssl` for `cohttp.lwt`.
   This has been moved to conduit, so only `lwt.unix` is needed here now.
 * Add sexp converters for Conduit contexts and `Lwt` client and server modules.
