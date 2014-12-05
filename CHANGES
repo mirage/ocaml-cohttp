@@ -2,6 +2,8 @@
 * Add `Cohttp_lwt_unix_debug` which lets libraries control the debugging
   output from Cohttp.  Previously the only way to do this was to set the
   `COHTTP_DEBUG` environment variable at the program start.
+* Add `cohttp-curl-lwt` as a lightweight URI fetcher from the command-line.
+  It uses the `cmdliner` as a new dependency.
 * Remove build dependency check on `lwt.ssl` for `cohttp.lwt`.
   This has been moved to conduit, so only `lwt.unix` is needed here now.
 * Add sexp converters for Conduit contexts and `Lwt` client and server modules.
