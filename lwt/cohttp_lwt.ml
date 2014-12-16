@@ -221,14 +221,7 @@ module type Server = sig
 
   type conn = IO.conn * Cohttp.Connection.t
 
-  type t = {
-    callback :
-      conn ->
-      Cohttp.Request.t ->
-      Cohttp_lwt_body.t ->
-      (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
-    conn_closed: conn -> unit -> unit;
-  }
+  type t
 
   val make : ?conn_closed:(conn -> unit -> unit)
     -> callback:(conn -> Cohttp.Request.t -> Cohttp_lwt_body.t
