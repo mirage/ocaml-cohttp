@@ -172,6 +172,11 @@ module type Server = sig
     conn_closed: conn -> unit -> unit;
   }
 
+  val create : ?conn_closed:(conn -> unit -> unit)
+    -> callback:(conn -> Cohttp.Request.t -> Cohttp_lwt_body.t
+                 -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t)
+    -> t
+
   (** Resolve a URI and a docroot into a concrete local filename. *)
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
 
