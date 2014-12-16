@@ -165,7 +165,7 @@ module type Server = sig
 
   type t
 
-  val make : ?conn_closed:(conn -> unit -> unit)
+  val make : ?conn_closed:(conn -> unit)
     -> callback:(conn -> Cohttp.Request.t -> Cohttp_lwt_body.t
                  -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t)
     -> t

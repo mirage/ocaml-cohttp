@@ -223,7 +223,7 @@ module type Server = sig
 
   type t
 
-  val make : ?conn_closed:(conn -> unit -> unit)
+  val make : ?conn_closed:(conn -> unit)
     -> callback:(conn -> Cohttp.Request.t -> Cohttp_lwt_body.t
                  -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t)
     -> t
@@ -280,10 +280,10 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
       Cohttp.Request.t ->
       Cohttp_lwt_body.t ->
       (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
-    conn_closed: conn -> unit -> unit;
+    conn_closed: conn -> unit;
   }
 
-  let make ?(conn_closed=(fun _ -> ignore)) ~callback =
+  let make ?(conn_closed=ignore) ~callback =
     { conn_closed ; callback }
 
   module Transfer_IO = Transfer_io.Make(IO)
@@ -330,6 +330,7 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
   let callback spec =
     let daemon_callback io_id ic oc =
       let conn_id = Connection.create () in
+      let conn_closed () = spec.conn_closed (io_id,conn_id) in
       let read_m = Lwt_mutex.create () in
       (* If the request is HTTP version 1.0 then the request stream should be
          considered closed after the first request/response. *)
@@ -375,7 +376,7 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
         ) req_stream in
       (* Clean up resources when the response stream terminates and call
        * the user callback *)
-      Lwt_stream.on_terminate res_stream (spec.conn_closed (io_id,conn_id));
+      Lwt_stream.on_terminate res_stream conn_closed;
       (* Transmit the responses *)
       for_lwt (res,body) in res_stream do
         let flush = Response.flush res in
