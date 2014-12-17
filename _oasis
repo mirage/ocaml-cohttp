@@ -14,7 +14,7 @@ Library cohttp
   Modules:       S, Code, Header, Cookie, Request, Response, Transfer, Accept, Accept_parser,
                  Accept_lexer, Accept_types, Auth, Header_io, Transfer_io, Connection, Body, String_io
   BuildDepends:  re.emacs, stringext, uri (>= 1.3.13), uri.services, fieldslib, fieldslib.syntax, sexplib, sexplib.syntax, bytes, base64
-  XMETARequires: re.emacs, stringext, uri, uri.services, fieldslib, sexplib
+  XMETARequires: re.emacs, stringext, uri, uri.services, fieldslib, sexplib, bytes, base64
 
 Flag lwt
   Description: build the Lwt library
