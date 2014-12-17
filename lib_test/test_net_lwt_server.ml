@@ -91,10 +91,10 @@ let make_server () =
        let fname = Server.resolve_file ~docroot:"." ~uri:(Request.uri req) in
        Server.respond_file ~fname ()
   in
-  let conn_closed (ch,conn_id) () =
+  let conn_closed (ch,conn_id) =
     Printf.eprintf "conn %s closed\n%!" (Connection.to_string conn_id)
   in
-  let config = { Server.callback; conn_closed } in
+  let config = Server.make ~callback ~conn_closed in
   let ctx = Cohttp_lwt_unix_net.init () in
   let port = 8081 in
   let tcp_mode = `TCP (`Port port) in

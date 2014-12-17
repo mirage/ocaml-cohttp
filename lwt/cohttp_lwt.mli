@@ -161,15 +161,14 @@ module type Server = sig
   type ctx with sexp_of
   val default_ctx : ctx
 
-  type t = {
-    callback :
-      (IO.conn * Cohttp.Connection.t) ->
-      Cohttp.Request.t ->
-      Cohttp_lwt_body.t ->
-      (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
-    conn_closed:
-      (IO.conn * Cohttp.Connection.t) -> unit -> unit;
-  }
+  type conn = IO.conn * Cohttp.Connection.t
+
+  type t
+
+  val make : ?conn_closed:(conn -> unit)
+    -> callback:(conn -> Cohttp.Request.t -> Cohttp_lwt_body.t
+                 -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t)
+    -> t
 
   (** Resolve a URI and a docroot into a concrete local filename. *)
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
