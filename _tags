@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 47f12e8458ed22c54dfb2f2cb0d6c63e)
+# DO NOT EDIT (digest: a9af00fcbc9d74da0da434eefc03de15)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -15,34 +15,34 @@ true: annot, bin_annot
 "_darcs": -traverse
 "_darcs": not_hygienic
 # Library cohttp
-"cohttp/cohttp.cmxs": use_cohttp
-"cohttp/s.cmx": for-pack(Cohttp)
-"cohttp/code.cmx": for-pack(Cohttp)
-"cohttp/header.cmx": for-pack(Cohttp)
-"cohttp/cookie.cmx": for-pack(Cohttp)
-"cohttp/request.cmx": for-pack(Cohttp)
-"cohttp/response.cmx": for-pack(Cohttp)
-"cohttp/transfer.cmx": for-pack(Cohttp)
-"cohttp/accept.cmx": for-pack(Cohttp)
-"cohttp/accept_parser.cmx": for-pack(Cohttp)
-"cohttp/accept_lexer.cmx": for-pack(Cohttp)
-"cohttp/accept_types.cmx": for-pack(Cohttp)
-"cohttp/auth.cmx": for-pack(Cohttp)
-"cohttp/header_io.cmx": for-pack(Cohttp)
-"cohttp/transfer_io.cmx": for-pack(Cohttp)
-"cohttp/connection.cmx": for-pack(Cohttp)
-"cohttp/body.cmx": for-pack(Cohttp)
-"cohttp/string_io.cmx": for-pack(Cohttp)
-<cohttp/*.ml{,i,y}>: pkg_base64
-<cohttp/*.ml{,i,y}>: pkg_bytes
-<cohttp/*.ml{,i,y}>: pkg_fieldslib
-<cohttp/*.ml{,i,y}>: pkg_fieldslib.syntax
-<cohttp/*.ml{,i,y}>: pkg_re.emacs
-<cohttp/*.ml{,i,y}>: pkg_sexplib
-<cohttp/*.ml{,i,y}>: pkg_sexplib.syntax
-<cohttp/*.ml{,i,y}>: pkg_stringext
-<cohttp/*.ml{,i,y}>: pkg_uri
-<cohttp/*.ml{,i,y}>: pkg_uri.services
+"lib/cohttp.cmxs": use_cohttp
+"lib/s.cmx": for-pack(Cohttp)
+"lib/code.cmx": for-pack(Cohttp)
+"lib/header.cmx": for-pack(Cohttp)
+"lib/cookie.cmx": for-pack(Cohttp)
+"lib/request.cmx": for-pack(Cohttp)
+"lib/response.cmx": for-pack(Cohttp)
+"lib/transfer.cmx": for-pack(Cohttp)
+"lib/accept.cmx": for-pack(Cohttp)
+"lib/accept_parser.cmx": for-pack(Cohttp)
+"lib/accept_lexer.cmx": for-pack(Cohttp)
+"lib/accept_types.cmx": for-pack(Cohttp)
+"lib/auth.cmx": for-pack(Cohttp)
+"lib/header_io.cmx": for-pack(Cohttp)
+"lib/transfer_io.cmx": for-pack(Cohttp)
+"lib/connection.cmx": for-pack(Cohttp)
+"lib/body.cmx": for-pack(Cohttp)
+"lib/string_io.cmx": for-pack(Cohttp)
+<lib/*.ml{,i,y}>: pkg_base64
+<lib/*.ml{,i,y}>: pkg_bytes
+<lib/*.ml{,i,y}>: pkg_fieldslib
+<lib/*.ml{,i,y}>: pkg_fieldslib.syntax
+<lib/*.ml{,i,y}>: pkg_re.emacs
+<lib/*.ml{,i,y}>: pkg_sexplib
+<lib/*.ml{,i,y}>: pkg_sexplib.syntax
+<lib/*.ml{,i,y}>: pkg_stringext
+<lib/*.ml{,i,y}>: pkg_uri
+<lib/*.ml{,i,y}>: pkg_uri.services
 # Library cohttp_lwt
 "lwt/cohttp_lwt.cmxs": use_cohttp_lwt
 # Library cohttp_lwt_unix

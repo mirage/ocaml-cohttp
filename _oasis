@@ -8,7 +8,7 @@ Plugins:     META (0.3)
 BuildTools:  ocamlbuild
 
 Library cohttp
-  Path:          cohttp
+  Path:          lib
   Findlibname:   cohttp
   Pack:          true
   Modules:       S, Code, Header, Cookie, Request, Response, Transfer, Accept, Accept_parser,
@@ -80,7 +80,7 @@ Document cohttp
   Type:                 ocamlbuild (0.3)
   BuildTools+:          ocamldoc
   Install:              true
-  XOCamlbuildPath:      cohttp
+  XOCamlbuildPath:      lib
   XOCamlbuildLibraries: cohttp
 
 Document cohttp_lwt

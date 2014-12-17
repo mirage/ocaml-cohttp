@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 76b20f3dd0f6961644ed520f42d08c72) *)
+(* DO NOT EDIT (digest: 1a9f1d8325db1ee7f348c66753e08073) *)
 module OASISGettext = struct
 (* # 22 "src/oasis/OASISGettext.ml" *)
 
@@ -609,7 +609,7 @@ let package_default =
   {
      MyOCamlbuildBase.lib_ocaml =
        [
-          ("cohttp", ["cohttp"], []);
+          ("cohttp", ["lib"], []);
           ("cohttp_lwt", ["lwt"], []);
           ("cohttp_lwt_unix", ["lwt"], []);
           ("cohttp_lwt_xhr", ["js"], []);
@@ -619,12 +619,12 @@ let package_default =
      flags = [];
      includes =
        [
-          ("lwt", ["cohttp"]);
-          ("lib_test", ["async"; "cohttp"; "js"; "lwt"]);
+          ("lwt", ["lib"]);
+          ("lib_test", ["async"; "js"; "lib"; "lwt"]);
           ("js", ["lwt"]);
-          ("examples/async", ["async"; "cohttp"]);
-          ("bin", ["async"; "cohttp"; "lwt"]);
-          ("async", ["cohttp"])
+          ("examples/async", ["async"; "lib"]);
+          ("bin", ["async"; "lib"; "lwt"]);
+          ("async", ["lib"])
        ]
   }
   ;;
