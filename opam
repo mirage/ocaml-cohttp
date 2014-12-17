@@ -1,32 +1,54 @@
-opam-version: "1"
+opam-version: "1.2"
+
+name: "cohttp"
 maintainer: "anil@recoil.org"
+license: "ISC"
+
+homepage: "https://github.com/mirage/ocaml-cohttp"
+dev-repo: "https://github.com/mirage/ocaml-cohttp.git"
+bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
+
 tags: [
   "org:mirage"
   "org:xapi-project"
 ]
+
 build: [
   [make "PREFIX=%{prefix}%"]
-  [make "PREFIX=%{prefix}%" "install"]
 ]
+
+install: [make "PREFIX=%{prefix}%" "install"]
+
 remove: [["ocamlfind" "remove" "cohttp"]]
+
 depends: [
-  "ocamlfind"
+  "ocamlfind" {build}
+  "cmdliner" {build & >= "0.9.4"}
   "re"
   "uri" {>= "1.5.0"}
-  "ounit"
   "fieldslib" {>= "109.20.00"}
   "sexplib" {>= "109.53.00"}
   "conduit" {>= "0.7.0"}
   "stringext"
-  "cmdliner" {>="0.9.4"}
+  "ounit" {test}
 ]
+build-doc: ["ocaml" "setup.ml" "-doc"]
+
+build-test: [
+  ["ocaml" "setup.ml" "-configure" "--enable-tests"]
+  ["ocaml" "setup.ml" "-build"]
+  ["ocaml" "setup.ml" "-test"]
+]
+
 depopts: [
   "async"
   "lwt"
   "js_of_ocaml"
 ]
+
 conflicts: [
   "async" {<"109.15.00"}
   "lwt" {<"2.4.3"}
 ]
-ocaml-version: [>="4.01.0"]
+
+available: [ocaml-version >= "4.01.0"]
