@@ -2,7 +2,8 @@
 
 Compatibility breaking interface changes:
 * Simplify the Lwt server signature, so that manual construction of
-  a `callback` is no longer required.  Code that previous looked like:
+  a `callback` is no longer required (#210).
+  Code that previous looked like:
 
 ```
    let conn_closed (_,conn_id) () = <...>
@@ -21,8 +22,8 @@ should now be:
 
 New features and bug fixes:
 * Lwt `respond_error` now defaults to an internal server error if no
-  status code is specified.
-* Modernise the `opam` file using the OPAM 1.2 workflow (#21).
+  status code is specified (#212).
+* Modernise the `opam` file using the OPAM 1.2 workflow (#211).
 
 0.13.0 (2014-12-05):
 
