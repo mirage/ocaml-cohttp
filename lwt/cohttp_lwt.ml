@@ -243,7 +243,8 @@ module type Server = sig
     body:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val respond_error :
-    status:Cohttp.Code.status_code ->
+    ?headers:Header.t ->
+    ?status:Cohttp.Code.status_code ->
     body:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val respond_redirect :
@@ -302,8 +303,8 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
     let body = Cohttp_lwt_body.of_string body in
     return (res,body)
 
-  let respond_error ~status ~body () =
-    respond_string ~status ~body:("Error: "^body) ()
+  let respond_error ?headers ?(status=`Internal_server_error) ~body () =
+    respond_string ?headers ~status ~body:("Error: "^body) ()
 
   let respond_redirect ?headers ~uri () =
     let headers =
@@ -367,7 +368,7 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
           try_lwt
             spec.callback (io_id,conn_id) req body
           with exn ->
-            respond_error ~status:`Internal_server_error ~body:(Printexc.to_string exn) ()
+            respond_error ~body:(Printexc.to_string exn) ()
           finally Cohttp_lwt_body.drain_body body
         ) req_stream in
       (* Clean up resources when the response stream terminates and call

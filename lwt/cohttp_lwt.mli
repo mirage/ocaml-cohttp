@@ -186,7 +186,8 @@ module type Server = sig
     body:string -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val respond_error :
-    status:Cohttp.Code.status_code ->
+    ?headers:Header.t ->
+    ?status:Cohttp.Code.status_code ->
     body:string -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val respond_redirect :
