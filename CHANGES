@@ -1,3 +1,14 @@
+0.14.0 (trunk):
+
+Compatibility breaking interface changes:
+* Simplify the Lwt server signature, so that manual construction of
+  a `callback` is no longer required.
+
+New features and bug fixes:
+* Lwt `respond_error` now defaults to an internal server error if no
+  status code is specified.
+* Modernise the `opam` file using the OPAM 1.2 workflow (#21).
+
 0.13.0 (2014-12-05):
 
 Compatibility breaking interface changes:
@@ -5,7 +16,7 @@ Compatibility breaking interface changes:
 * Add sexp converters for Conduit contexts and `Lwt` client and server
   modules and module types.
 
-New Features and bug fixes:
+New features and bug fixes:
 * Can use the Conduit 0.7+ `CONDUIT_TLS=native` environment variable to
   make HTTPS requests using the pure OCaml TLS stack instead of depending
   on OpenSSL bindings.  All of the installed binaries (client and server)
