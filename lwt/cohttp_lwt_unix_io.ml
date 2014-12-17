@@ -61,7 +61,7 @@ let read_exactly ic buf off len =
       with End_of_file -> return false)
 
 let read_exactly ic len =
-  let buf = String.create len in
+  let buf = Bytes.create len in
   read_exactly ic buf 0 len >>= function
     | true -> return (Some buf)
     | false -> Lwt.return_none

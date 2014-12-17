@@ -30,6 +30,7 @@ depends: [
   "sexplib" {>= "109.53.00"}
   "conduit" {>= "0.7.0"}
   "stringext"
+  "base64"
   "ounit" {test}
 ]
 build-doc: ["ocaml" "setup.ml" "-doc"]

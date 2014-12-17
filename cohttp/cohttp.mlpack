@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 1424e802490b3f5b20a7ef08f730c720)
+# DO NOT EDIT (digest: 67e2359b5db1a02e2b140598730d1456)
 S
 Code
 Header
@@ -11,7 +11,6 @@ Accept
 Accept_parser
 Accept_lexer
 Accept_types
-Base64
 Auth
 Header_io
 Transfer_io

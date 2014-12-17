@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 757a094ba9e20de071a54037d7344693)
+# DO NOT EDIT (digest: 47f12e8458ed22c54dfb2f2cb0d6c63e)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -27,13 +27,13 @@ true: annot, bin_annot
 "cohttp/accept_parser.cmx": for-pack(Cohttp)
 "cohttp/accept_lexer.cmx": for-pack(Cohttp)
 "cohttp/accept_types.cmx": for-pack(Cohttp)
-"cohttp/base64.cmx": for-pack(Cohttp)
 "cohttp/auth.cmx": for-pack(Cohttp)
 "cohttp/header_io.cmx": for-pack(Cohttp)
 "cohttp/transfer_io.cmx": for-pack(Cohttp)
 "cohttp/connection.cmx": for-pack(Cohttp)
 "cohttp/body.cmx": for-pack(Cohttp)
 "cohttp/string_io.cmx": for-pack(Cohttp)
+<cohttp/*.ml{,i,y}>: pkg_base64
 <cohttp/*.ml{,i,y}>: pkg_bytes
 <cohttp/*.ml{,i,y}>: pkg_fieldslib
 <cohttp/*.ml{,i,y}>: pkg_fieldslib.syntax
@@ -47,6 +47,7 @@ true: annot, bin_annot
 "lwt/cohttp_lwt.cmxs": use_cohttp_lwt
 # Library cohttp_lwt_unix
 "lwt/cohttp_lwt_unix.cmxs": use_cohttp_lwt_unix
+<lwt/*.ml{,i,y}>: pkg_base64
 <lwt/*.ml{,i,y}>: pkg_bytes
 <lwt/*.ml{,i,y}>: pkg_conduit.lwt-unix
 <lwt/*.ml{,i,y}>: pkg_fieldslib
@@ -65,6 +66,7 @@ true: annot, bin_annot
 <lwt/*.ml{,i,y}>: use_cohttp_lwt
 # Library cohttp_lwt_xhr
 "js/cohttp_lwt_xhr.cmxs": use_cohttp_lwt_xhr
+<js/*.ml{,i,y}>: pkg_base64
 <js/*.ml{,i,y}>: pkg_bytes
 <js/*.ml{,i,y}>: pkg_fieldslib
 <js/*.ml{,i,y}>: pkg_fieldslib.syntax
@@ -83,6 +85,7 @@ true: annot, bin_annot
 # Library cohttp_async
 "async/cohttp_async.cmxs": use_cohttp_async
 <async/*.ml{,i,y}>: pkg_async
+<async/*.ml{,i,y}>: pkg_base64
 <async/*.ml{,i,y}>: pkg_bytes
 <async/*.ml{,i,y}>: pkg_conduit.async
 <async/*.ml{,i,y}>: pkg_fieldslib
@@ -96,6 +99,7 @@ true: annot, bin_annot
 <async/*.ml{,i,y}>: pkg_uri.services
 <async/*.ml{,i,y}>: use_cohttp
 # Executable test_parser
+<lib_test/test_parser.{native,byte}>: pkg_base64
 <lib_test/test_parser.{native,byte}>: pkg_bytes
 <lib_test/test_parser.{native,byte}>: pkg_conduit.lwt-unix
 <lib_test/test_parser.{native,byte}>: pkg_fieldslib
@@ -116,6 +120,7 @@ true: annot, bin_annot
 <lib_test/test_parser.{native,byte}>: use_cohttp_lwt_unix
 <lib_test/test_parser.{native,byte}>: custom
 # Executable test_accept
+<lib_test/test_accept.{native,byte}>: pkg_base64
 <lib_test/test_accept.{native,byte}>: pkg_bytes
 <lib_test/test_accept.{native,byte}>: pkg_fieldslib
 <lib_test/test_accept.{native,byte}>: pkg_fieldslib.syntax
@@ -129,6 +134,7 @@ true: annot, bin_annot
 <lib_test/test_accept.{native,byte}>: use_cohttp
 <lib_test/test_accept.{native,byte}>: custom
 # Executable test_header
+<lib_test/test_header.{native,byte}>: pkg_base64
 <lib_test/test_header.{native,byte}>: pkg_bytes
 <lib_test/test_header.{native,byte}>: pkg_fieldslib
 <lib_test/test_header.{native,byte}>: pkg_fieldslib.syntax
@@ -142,6 +148,7 @@ true: annot, bin_annot
 <lib_test/test_header.{native,byte}>: use_cohttp
 <lib_test/test_header.{native,byte}>: custom
 # Executable test_net_lwt
+<lib_test/test_net_lwt.{native,byte}>: pkg_base64
 <lib_test/test_net_lwt.{native,byte}>: pkg_bytes
 <lib_test/test_net_lwt.{native,byte}>: pkg_conduit.lwt-unix
 <lib_test/test_net_lwt.{native,byte}>: pkg_fieldslib
@@ -162,6 +169,7 @@ true: annot, bin_annot
 <lib_test/test_net_lwt.{native,byte}>: use_cohttp_lwt_unix
 <lib_test/test_net_lwt.{native,byte}>: custom
 # Executable test_net_lwt_google
+<lib_test/test_net_lwt_google.{native,byte}>: pkg_base64
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_bytes
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_conduit.lwt-unix
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_fieldslib
@@ -181,6 +189,7 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_google.{native,byte}>: use_cohttp_lwt_unix
 <lib_test/test_net_lwt_google.{native,byte}>: custom
 # Executable test_net_lwt_google_custom_ctx
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_base64
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_bytes
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_conduit.lwt-unix
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_fieldslib
@@ -200,6 +209,7 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: use_cohttp_lwt_unix
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: custom
 # Executable test_net_lwt_lastminute
+<lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_base64
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_bytes
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_conduit.lwt-unix
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_fieldslib
@@ -219,6 +229,7 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_lastminute.{native,byte}>: use_cohttp_lwt_unix
 <lib_test/test_net_lwt_lastminute.{native,byte}>: custom
 # Executable test_net_lwt_server
+<lib_test/test_net_lwt_server.{native,byte}>: pkg_base64
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_bytes
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_conduit.lwt-unix
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_fieldslib
@@ -238,6 +249,7 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_server.{native,byte}>: use_cohttp_lwt_unix
 <lib_test/test_net_lwt_server.{native,byte}>: custom
 # Executable test_net_lwt_multi_get
+<lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_base64
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_bytes
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_conduit.lwt-unix
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_fieldslib
@@ -257,6 +269,7 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_multi_get.{native,byte}>: use_cohttp_lwt_unix
 <lib_test/test_net_lwt_multi_get.{native,byte}>: custom
 # Executable test_net_lwt_client_and_server
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_base64
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_bytes
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_conduit.lwt-unix
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_fieldslib
@@ -281,6 +294,7 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: custom
 # Executable test_net_async
 <lib_test/test_net_async.{native,byte}>: pkg_async
+<lib_test/test_net_async.{native,byte}>: pkg_base64
 <lib_test/test_net_async.{native,byte}>: pkg_bytes
 <lib_test/test_net_async.{native,byte}>: pkg_conduit.async
 <lib_test/test_net_async.{native,byte}>: pkg_fieldslib
@@ -298,6 +312,7 @@ true: annot, bin_annot
 <lib_test/test_net_async.{native,byte}>: custom
 # Executable test_net_async_http10
 <lib_test/test_net_async_http10.{native,byte}>: pkg_async
+<lib_test/test_net_async_http10.{native,byte}>: pkg_base64
 <lib_test/test_net_async_http10.{native,byte}>: pkg_bytes
 <lib_test/test_net_async_http10.{native,byte}>: pkg_conduit.async
 <lib_test/test_net_async_http10.{native,byte}>: pkg_fieldslib
@@ -315,6 +330,7 @@ true: annot, bin_annot
 <lib_test/test_net_async_http10.{native,byte}>: custom
 # Executable test_net_async_multi_get
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_async
+<lib_test/test_net_async_multi_get.{native,byte}>: pkg_base64
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_bytes
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_conduit.async
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_fieldslib
@@ -332,6 +348,7 @@ true: annot, bin_annot
 <lib_test/test_net_async_multi_get.{native,byte}>: custom
 # Executable test_net_async_server
 <lib_test/test_net_async_server.{native,byte}>: pkg_async
+<lib_test/test_net_async_server.{native,byte}>: pkg_base64
 <lib_test/test_net_async_server.{native,byte}>: pkg_bytes
 <lib_test/test_net_async_server.{native,byte}>: pkg_conduit.async
 <lib_test/test_net_async_server.{native,byte}>: pkg_fieldslib
@@ -354,6 +371,7 @@ true: annot, bin_annot
 <lib_test/test_net_async_server.{native,byte}>: custom
 # Executable cohttp-server-async
 <bin/cohttp_server_async.{native,byte}>: pkg_async
+<bin/cohttp_server_async.{native,byte}>: pkg_base64
 <bin/cohttp_server_async.{native,byte}>: pkg_bytes
 <bin/cohttp_server_async.{native,byte}>: pkg_conduit.async
 <bin/cohttp_server_async.{native,byte}>: pkg_fieldslib
@@ -370,6 +388,7 @@ true: annot, bin_annot
 <bin/cohttp_server_async.{native,byte}>: custom
 # Executable cohttp-curl-async
 <bin/cohttp_curl_async.{native,byte}>: pkg_async
+<bin/cohttp_curl_async.{native,byte}>: pkg_base64
 <bin/cohttp_curl_async.{native,byte}>: pkg_bytes
 <bin/cohttp_curl_async.{native,byte}>: pkg_conduit.async
 <bin/cohttp_curl_async.{native,byte}>: pkg_fieldslib
@@ -389,6 +408,7 @@ true: annot, bin_annot
 <bin/*.ml{,i,y}>: use_cohttp_async
 <bin/cohttp_curl_async.{native,byte}>: custom
 # Executable cohttp-server-lwt
+<bin/cohttp_server_lwt.{native,byte}>: pkg_base64
 <bin/cohttp_server_lwt.{native,byte}>: pkg_bytes
 <bin/cohttp_server_lwt.{native,byte}>: pkg_conduit.lwt-unix
 <bin/cohttp_server_lwt.{native,byte}>: pkg_fieldslib
@@ -408,6 +428,7 @@ true: annot, bin_annot
 <bin/cohttp_server_lwt.{native,byte}>: use_cohttp_lwt_unix
 <bin/cohttp_server_lwt.{native,byte}>: custom
 # Executable cohttp-curl-lwt
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_base64
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_bytes
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_cmdliner
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_conduit.lwt-unix
@@ -426,6 +447,7 @@ true: annot, bin_annot
 <bin/cohttp_curl_lwt.{native,byte}>: use_cohttp
 <bin/cohttp_curl_lwt.{native,byte}>: use_cohttp_lwt
 <bin/cohttp_curl_lwt.{native,byte}>: use_cohttp_lwt_unix
+<bin/*.ml{,i,y}>: pkg_base64
 <bin/*.ml{,i,y}>: pkg_bytes
 <bin/*.ml{,i,y}>: pkg_cmdliner
 <bin/*.ml{,i,y}>: pkg_conduit.lwt-unix
@@ -447,6 +469,7 @@ true: annot, bin_annot
 <bin/cohttp_curl_lwt.{native,byte}>: custom
 # Executable async-hello-world
 <examples/async/hello_world.{native,byte}>: pkg_async
+<examples/async/hello_world.{native,byte}>: pkg_base64
 <examples/async/hello_world.{native,byte}>: pkg_bytes
 <examples/async/hello_world.{native,byte}>: pkg_conduit.async
 <examples/async/hello_world.{native,byte}>: pkg_fieldslib
@@ -462,6 +485,7 @@ true: annot, bin_annot
 <examples/async/hello_world.{native,byte}>: use_cohttp_async
 <examples/async/hello_world.{native,byte}>: custom
 # Executable test_xhr
+"lib_test/test_xhr.byte": pkg_base64
 "lib_test/test_xhr.byte": pkg_bytes
 "lib_test/test_xhr.byte": pkg_fieldslib
 "lib_test/test_xhr.byte": pkg_fieldslib.syntax
@@ -478,6 +502,7 @@ true: annot, bin_annot
 "lib_test/test_xhr.byte": use_cohttp
 "lib_test/test_xhr.byte": use_cohttp_lwt
 "lib_test/test_xhr.byte": use_cohttp_lwt_xhr
+<lib_test/*.ml{,i,y}>: pkg_base64
 <lib_test/*.ml{,i,y}>: pkg_bytes
 <lib_test/*.ml{,i,y}>: pkg_fieldslib
 <lib_test/*.ml{,i,y}>: pkg_fieldslib.syntax
@@ -497,6 +522,7 @@ true: annot, bin_annot
 "lib_test/test_xhr.byte": custom
 # Executable async-receive-post
 <examples/async/receive_post.{native,byte}>: pkg_async
+<examples/async/receive_post.{native,byte}>: pkg_base64
 <examples/async/receive_post.{native,byte}>: pkg_bytes
 <examples/async/receive_post.{native,byte}>: pkg_conduit.async
 <examples/async/receive_post.{native,byte}>: pkg_fieldslib
@@ -511,6 +537,7 @@ true: annot, bin_annot
 <examples/async/receive_post.{native,byte}>: use_cohttp
 <examples/async/receive_post.{native,byte}>: use_cohttp_async
 <examples/async/*.ml{,i,y}>: pkg_async
+<examples/async/*.ml{,i,y}>: pkg_base64
 <examples/async/*.ml{,i,y}>: pkg_bytes
 <examples/async/*.ml{,i,y}>: pkg_conduit.async
 <examples/async/*.ml{,i,y}>: pkg_fieldslib
