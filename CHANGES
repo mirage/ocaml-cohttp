@@ -24,6 +24,9 @@ New features and bug fixes:
 * Lwt `respond_error` now defaults to an internal server error if no
   status code is specified (#212).
 * Modernise the `opam` file using the OPAM 1.2 workflow (#211).
+* Flush the response body to the network by default, rather than
+  buffering by default.  The `?flush` optional parameter can still
+  be explicitly set to false if flushing is not desired (#205).
 
 0.13.0 (2014-12-05):
 

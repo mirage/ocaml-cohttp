@@ -294,7 +294,7 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
     let rel_path = String.sub path 1 (String.length path - 1) in
     Filename.concat docroot rel_path
 
-  let respond ?headers ?(flush=false) ~status ~body () =
+  let respond ?headers ?(flush=true) ~status ~body () =
     let encoding = Cohttp_lwt_body.transfer_encoding body in
     let res = Response.make ~status ~flush ~encoding ?headers () in
     return (res, body)

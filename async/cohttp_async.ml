@@ -264,7 +264,7 @@ module Server = struct
     Writer.close wr >>= fun () ->
     Reader.close rd
 
-  let respond ?(flush=false) ?(headers=Cohttp.Header.init ())
+  let respond ?(flush=true) ?(headers=Cohttp.Header.init ())
       ?(body=`Empty) status : response Deferred.t =
     let encoding = Body.transfer_encoding body in
     let resp = Response.make ~status ~flush ~encoding ~headers () in

@@ -173,6 +173,10 @@ module type Server = sig
   (** Resolve a URI and a docroot into a concrete local filename. *)
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
 
+  (** [respond ?headers ?flush ~status ~body] will respond to an HTTP
+    request with the given [status] code and response [body].  If 
+    [flush] is true, then every response chunk will be flushed to
+    the network rather than being buffered. [flush] is true by default. *)
   val respond :
     ?headers:Cohttp.Header.t ->
     ?flush:bool ->
