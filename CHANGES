@@ -1,4 +1,4 @@
-0.14.0 (trunk):
+0.14.0 (2014-12-18):
 
 Compatibility breaking interface changes:
 * Simplify the Lwt server signature, so that manual construction of
