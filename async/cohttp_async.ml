@@ -143,7 +143,7 @@ module Body = struct
 
   let map t ~f =
     match t with
-    | #Body.t as t -> (B.map t ~f :> t)
+    | #Body.t as t -> (B.map f t :> t)
     | `Pipe p -> `Pipe (Pipe.map p ~f)
 
   let as_pipe t ~f = `Pipe (t |> to_pipe |> f)
