@@ -226,7 +226,7 @@ module type Server = sig
   val make : ?conn_closed:(conn -> unit)
     -> callback:(conn -> Cohttp.Request.t -> Cohttp_lwt_body.t
                  -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t)
-    -> t
+    -> unit -> t
 
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
 
@@ -284,7 +284,7 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
     conn_closed: conn -> unit;
   }
 
-  let make ?(conn_closed=ignore) ~callback =
+  let make ?(conn_closed=ignore) ~callback () =
     { conn_closed ; callback }
 
   module Transfer_IO = Transfer_io.Make(IO)
