@@ -14,7 +14,7 @@ should now be:
 
 ```
    let conn_closed (_,conn_id) = <...>
-   let config = Server.make ~callback ~conn_closed in
+   let config = Server.make ~callback ~conn_closed () in
 ```
 
 * Remove the `Cohttp.Base64` module in favour of the external `base64`

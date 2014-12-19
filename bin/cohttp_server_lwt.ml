@@ -140,7 +140,7 @@ let start_server docroot port host index verbose cert key () =
     printf "connection %s closed\n%!"
       (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)) in
   let callback = handler ~info ~docroot ~verbose ~index in
-  let config = Server.make ~callback ~conn_closed in
+  let config = Server.make ~callback ~conn_closed () in
   let mode = match cert, key with
     | Some c, Some k -> `TLS (`Crt_file_path c, `Key_file_path k, `No_password, `Port port)
     | _ -> `TCP (`Port port)
