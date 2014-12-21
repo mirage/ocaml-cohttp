@@ -102,7 +102,7 @@ let write_body fn = function
   |`String s -> fn s
   |`Strings sl -> Lwt_list.iter_s fn sl
 
-let map t ~f =
+let map f t =
   match t with
-  | #Body.t as t -> (Body.map t ~f :> t)
+  | #Body.t as t -> (Body.map f t :> t)
   | `Stream s -> `Stream (Lwt_stream.map f s)

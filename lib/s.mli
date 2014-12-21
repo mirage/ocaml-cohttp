@@ -103,6 +103,6 @@ module type Body = sig
   val is_empty : t -> bool
   val of_string : string -> t
   val of_string_list : string list -> t
-  val map : t -> f:(string -> string) -> t
+  val map : (string -> string) -> t -> t
   val transfer_encoding : t -> Transfer.encoding
 end
