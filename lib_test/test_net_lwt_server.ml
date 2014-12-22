@@ -103,4 +103,4 @@ let make_server () =
   let t2 = Server.create ~ctx ~mode:ssl_mode config in
   t1 <&> t2
 
-let _ = Lwt_unix.run (make_server ())
+let _ = Lwt_main.run (make_server ())

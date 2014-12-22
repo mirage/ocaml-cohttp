@@ -68,7 +68,7 @@ let test_cases =
     make_net_req "https://github.com/";
     make_net_reqv;
   ] in
-  List.map (fun x -> "test" >:: (fun () -> Lwt_unix.run (x ()))) tests
+  List.map (fun x -> "test" >:: (fun () -> Lwt_main.run (x ()))) tests
 
 (* Returns true if the result list contains successes only.
    Copied from oUnit source as it isnt exposed by the mli *)
