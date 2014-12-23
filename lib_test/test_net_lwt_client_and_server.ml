@@ -122,7 +122,7 @@ let _ =
   |0 -> (* child / client *)
     Unix.sleep 2;
     Printf.eprintf "client is %d\n%!" (Unix.getpid ());
-    Lwt_unix.run (client ())
+    Lwt_main.run (client ())
   |pid -> (* parent / server *)
     Printf.eprintf "server is %d\n%!" (Unix.getpid ());
-    Lwt_unix.run (make_server ())
+    Lwt_main.run (make_server ())

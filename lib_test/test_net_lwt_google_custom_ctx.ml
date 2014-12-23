@@ -33,7 +33,7 @@ let () =
   let ctx = Cohttp_lwt_unix.Client.custom_ctx ~resolver () in
 
   let fetch uri =
-    Lwt_unix.run (
+    Lwt_main.run (
       Cohttp_lwt_unix.Client.get ~ctx (Uri.of_string uri)
       >>= fun (r,b) ->
       Cohttp_lwt_body.to_string b
