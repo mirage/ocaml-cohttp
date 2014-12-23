@@ -168,10 +168,12 @@ let arglist = [
 
 let _ =
   try Arg.parse arglist (fun x -> rest := x :: !rest) usage;
-    begin match !rest with
-    | [] -> Lwt_unix.run (start_server "." !port !host !index !verbose !ssl_cert !ssl_key ())
-    | dir::_ -> Lwt_unix.run (start_server dir !port !host !index !verbose !ssl_cert !ssl_key ())
-    end
+    let dir =
+      match !rest with
+      | [] -> "."
+      | dir::_ -> dir in
+    Lwt_main.run (
+      start_server dir !port !host !index !verbose !ssl_cert !ssl_key ())
   with
   | Failure s -> print_endline s
   | Sys_error s -> print_endline s

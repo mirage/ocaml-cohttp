@@ -1,7 +1,7 @@
 EXT lwt
 
 S async
-S cohttp
+S lib
 S lib_test
 S examples/async
 S lwt
@@ -25,11 +25,12 @@ PKG ipaddr.unix
 PKG conduit
 PKG conduit.async
 PKG conduit.lwt
+PKG cmdliner
 
 B _build/
 B _build/lwt
 B _build/lib_test
 B _build/async
-B _build/cohttp
+B _build/lib
 B _build/examples/async
 B _build/bin
