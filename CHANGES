@@ -1,3 +1,10 @@
+0.15.0 (2014-12-24):
+* Change `Cohttp_lwt_body.map` to use a non-labelled type to fit the Lwt
+  style better (#200).
+* Remove use of deprecated `Lwt_unix.run` and replace it with `Lwt_main.run`.
+  Should be no observable external change (#217).
+* Improve ocamldoc of `Cohttp.S` signature.
+
 0.14.0 (2014-12-18):
 
 Compatibility breaking interface changes:
