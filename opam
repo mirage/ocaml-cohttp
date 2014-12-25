@@ -2,8 +2,15 @@ opam-version: "1.2"
 
 name: "cohttp"
 maintainer: "anil@recoil.org"
-license: "ISC"
+authors: [ "Anil Madhavapeddy"
+           "Stefano Zacchiroli"
+           "David Sheets"
+           "Thomas Gazagnaire"
+           "David Scott"
+           "Rudi Grinberg"
+           "Andy Ray" ]
 
+license: "ISC"
 homepage: "https://github.com/mirage/ocaml-cohttp"
 dev-repo: "https://github.com/mirage/ocaml-cohttp.git"
 bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
