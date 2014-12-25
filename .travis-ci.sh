@@ -1,19 +1,9 @@
 OPAM_DEPENDS="lwt stringext ssl uri re conduit sexplib fieldslib ipaddr cstruct js_of_ocaml cmdliner base64"
 
 case "$OCAML_VERSION,$OPAM_VERSION" in
-4.00.1,1.0.0) ppa=avsm/ocaml40+opam10 ;;
-4.00.1,1.1.0) ppa=avsm/ocaml40+opam11 ;;
-4.01.0,1.0.0) ppa=avsm/ocaml41+opam10 ;;
-4.01.0,1.1.0) ppa=avsm/ocaml41+opam11 ;;
 4.01.0,1.2.0) ppa=avsm/ocaml41+opam12; pin="add" ;;
-4.02.0,1.1.0) ppa=avsm/ocaml42+opam11 ;;
 4.02.0,1.2.0) ppa=avsm/ocaml42+opam12; pin="add" ;;
 *) echo Unknown $OCAML_VERSION,$OPAM_VERSION; exit 1 ;;
-esac
-
-case "$OCAML_VERSION" in
-4.00.*) ;;
-*) OPAM_DEPENDS="$OPAM_DEPENDS async async_ssl" ;;
 esac
 
 git config --global user.email "you@example.com"
@@ -31,8 +21,8 @@ opam --git-version
 
 opam init
 opam remote add mirage-dev git://github.com/mirage/mirage-dev
-opam update
 sudo apt-get install -qq `opam install -e ubuntu ${OPAM_DEPENDS}`
+opam pin add cohttp .
 opam install -v core_kernel
 opam install ${OPAM_DEPENDS}
 eval `opam config env`
@@ -41,12 +31,6 @@ make test
 make clean
 export OPAMJOBS=2
 # Test out some upstream users of Cohttp
-opam pin $pin cohttp .
 opam install github cowabloga mirage
 git clone git://github.com/mirage/mirage-www
 cd mirage-www && make configure && make depend && make build 
-#case "$OCAML_VERSION" in
-#4.01.0)
-#  opam install irmin ;;
-#*) echo Skipping irmin ;;
-#esac
