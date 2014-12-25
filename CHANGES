@@ -1,9 +1,14 @@
 0.15.0 (2014-12-24):
+
+Compatibility breaking interface changes:
 * Change `Cohttp_lwt_body.map` to use a non-labelled type to fit the Lwt
   style better (#200).
+* Depend on Base64 version 2, which uses `B64` as the toplevel module name (#220).
+
+New features and bug fixes:
 * Remove use of deprecated `Lwt_unix.run` and replace it with `Lwt_main.run`.
   Should be no observable external change (#217).
-* Improve ocamldoc of `Cohttp.S` signature.
+* Improve ocamldoc of `Cohttp.S` signature (#221).
 
 0.14.0 (2014-12-18):
 
