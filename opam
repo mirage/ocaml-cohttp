@@ -3,6 +3,7 @@ opam-version: "1.2"
 name: "cohttp"
 maintainer: "anil@recoil.org"
 license: "ISC"
+version: "0.15.0"
 
 homepage: "https://github.com/mirage/ocaml-cohttp"
 dev-repo: "https://github.com/mirage/ocaml-cohttp.git"
@@ -30,7 +31,7 @@ depends: [
   "sexplib" {>= "109.53.00"}
   "conduit" {>= "0.7.0"}
   "stringext"
-  "base64"
+  "base64" {>="2.0.0"}
   "ounit" {test}
 ]
 build-doc: ["ocaml" "setup.ml" "-doc"]
