@@ -153,31 +153,31 @@ let lwt_start_server docroot port host index verbose cert key =
 open Cmdliner
 
 let host = 
-  let doc = "IP address to listen on" in
+  let doc = "IP address to listen on." in
   Arg.(value & opt string "0.0.0.0" & info ["s"] ~docv:"HOST" ~doc)
 
 let port =
-  let doc = "TCP port to listen on" in
+  let doc = "TCP port to listen on." in
   Arg.(value & opt int 8080 & info ["p"] ~docv:"PORT" ~doc)
 
 let index =
-  let doc = "Name of index file in directory" in
+  let doc = "Name of index file in directory." in
   Arg.(value & opt string "index.html" & info ["i"] ~docv:"INDEX" ~doc)
 
 let verb =
-  let doc = "logging output to console" in
+  let doc = "Logging output to console." in
   Arg.(value & flag & info ["v"; "verbose"] ~doc)
 
 let ssl_cert =
-  let doc = "SSL certificate file" in
+  let doc = "SSL certificate file." in
   Arg.(value & opt (some string) None & info ["c"] ~docv:"SSL_CERT" ~doc)
 
 let ssl_key =
-  let doc = "SSL key file" in
+  let doc = "SSL key file." in
   Arg.(value & opt (some string) None & info ["k"] ~docv:"SSL_KEY" ~doc)
 
 let doc_root = 
-  let doc = "serving directory" in
+  let doc = "Serving directory." in
   Arg.(value & pos 0 dir "." & info [] ~docv:"DOCROOT" ~doc)
 
 let cmd =
