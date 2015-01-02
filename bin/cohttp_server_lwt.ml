@@ -72,7 +72,7 @@ let handler ~info ~docroot ~verbose ~index (ch,conn) req body =
     | Unix.S_DIR -> begin
       let path_len = String.length path in
       if path_len <> 0 && path.[path_len - 1] <> '/'
-      then Server.respond_redirect (Uri.with_path uri (path^"/")) ()
+      then Server.respond_redirect ~uri:(Uri.with_path uri (path^"/")) ()
       else match Sys.file_exists (file_name / index) with
       | true -> let uri = Uri.with_path uri (path / index) in
                 serve_file ~docroot ~uri
@@ -147,33 +147,52 @@ let start_server docroot port host index verbose cert key () =
   in
   Server.create ~mode config
 
-let host = ref "0.0.0.0"
-let port = ref 8080
-let index = ref "index.html"
-let verbose = ref false
-let ssl_cert = ref None
-let ssl_key = ref None
-let rest = ref []
+let lwt_start_server docroot port host index verbose cert key =
+  Lwt_main.run (start_server docroot port host index verbose cert key ())
 
-let usage = "usage " ^ Sys.argv.(0) ^ " [DOCROOT]"
+open Cmdliner
 
-let arglist = [
-  ("-p", Arg.Int (fun i -> port := i), ": TCP port to listen on");
-  ("-s", Arg.String (fun s -> host := s), ": IP address to listen on");
-  ("-i", Arg.String (fun s -> index := s), ": Name of index file in directory");
-  ("-v", Arg.Bool (fun b -> verbose := b), ": logging output to console");
-  ("-c", Arg.String (fun s -> ssl_cert := Some s), ": certificate file");
-  ("-k", Arg.String (fun s -> ssl_key := Some s), ": key file");
-]
+let host = 
+  let doc = "IP address to listen on" in
+  Arg.(value & opt string "0.0.0.0" & info ["s"] ~docv:"HOST" ~doc)
 
-let _ =
-  try Arg.parse arglist (fun x -> rest := x :: !rest) usage;
-    let dir =
-      match !rest with
-      | [] -> "."
-      | dir::_ -> dir in
-    Lwt_main.run (
-      start_server dir !port !host !index !verbose !ssl_cert !ssl_key ())
-  with
-  | Failure s -> print_endline s
-  | Sys_error s -> print_endline s
+let port =
+  let doc = "TCP port to listen on" in
+  Arg.(value & opt int 8080 & info ["p"] ~docv:"PORT" ~doc)
+
+let index =
+  let doc = "Name of index file in directory" in
+  Arg.(value & opt string "index.html" & info ["i"] ~docv:"INDEX" ~doc)
+
+let verb =
+  let doc = "logging output to console" in
+  Arg.(value & flag & info ["v"; "verbose"] ~doc)
+
+let ssl_cert =
+  let doc = "SSL certificate file" in
+  Arg.(value & opt (some string) None & info ["c"] ~docv:"SSL_CERT" ~doc)
+
+let ssl_key =
+  let doc = "SSL key file" in
+  Arg.(value & opt (some string) None & info ["k"] ~docv:"SSL_KEY" ~doc)
+
+let doc_root = 
+  let doc = "serving directory" in
+  Arg.(value & pos 0 dir "." & info [] ~docv:"DOCROOT" ~doc)
+
+let cmd =
+  let doc = "a simple http server" in
+  let man = [
+    `S "DESCRIPTION";
+    `P "$(tname) sets up a simple http server with lwt as backend";
+    `S "BUGS";
+    `P "Report them to via e-mail to <mirageos-devel@lists.xenproject.org>, or
+        on the issue tracker at <https://github.com/mirage/ocaml-cohttp/issues>";
+  ] in
+  Term.(pure lwt_start_server $ doc_root $ port $ host $ index $ verb $ ssl_cert $ ssl_key),
+  Term.info "cohttp-server" ~version:"1.0.0" ~doc ~man
+
+let () =
+  match Term.eval cmd with
+  | `Error _ -> exit 1
+  | _ -> exit 0
