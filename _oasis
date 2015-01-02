@@ -18,7 +18,6 @@ Homepage:    https://github.com/mirage/ocaml-cohttp
 License:     ISC
 Plugins:     META (0.3)
 BuildTools:  ocamlbuild
-OCamlVersion: >= 4.01.0
 
 Library cohttp
   Path:          lib
