@@ -16,6 +16,8 @@ setup.bin: setup.ml
 
 setup.data: setup.bin
 	./setup.bin -configure $(LWT) $(ASYNC) $(LWT_UNIX) $(JS) $(TESTS) $(NETTESTS) --prefix $(PREFIX)
+	echo $(LWT) $(ASYNC) $(LWT_UNIX) $(JS) $(TESTS) $(NETTESTS) prefix $(PREFIX)
+	exit 2
 
 build: setup.data setup.bin
 	./setup.bin -build -classic-display
