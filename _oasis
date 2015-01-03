@@ -278,7 +278,7 @@ Executable "cohttp-server-lwt"
   Custom:             true
   CompiledObject:     best
   Install:            true
-  BuildDepends:       cohttp, cohttp.lwt
+  BuildDepends:       cohttp, cohttp.lwt, cmdliner (>= 0.9.4)
 
 Executable "cohttp-curl-lwt"
   Path:               bin
