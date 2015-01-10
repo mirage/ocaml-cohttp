@@ -1,5 +1,6 @@
 language: c
-script: bash -ex .travis-ci.sh
+install: wget https://raw.githubusercontent.com/ocaml/ocaml-travisci-skeleton/master/.travis-opam.sh
+script: bash -ex .travis-opam.sh
 env:
-  - OCAML_VERSION=4.02.0 OPAM_VERSION=1.2.0
-  - OCAML_VERSION=4.01.0 OPAM_VERSION=1.2.0
+  - OCAML_VERSION=4.01.0 DEPOPTS="async lwt js_of_ocaml" POST_INSTALL_HOOK="opam install -y github cowabloga" 
+  - OCAML_VERSION=latest DEPOPTS="async lwt js_of_ocaml" POST_INSTALL_HOOK="opam install -y github cowabloga"
