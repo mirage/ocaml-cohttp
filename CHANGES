@@ -1,3 +1,12 @@
+0.15.1 (2015-01-10):
+* Lwt 2.4.7 renamed `blit_bytes_string` to `blit_to_bytes`, so depend
+  on the newer API now. (#230)
+* Use `cmdliner` in all of the Lwt client and server binaries.  This gives
+  `cohttp-lwt-server` a nice Unix-like command-line interface now that
+  can be viewed with the `--help` option. (#218 via Runhang Li)
+* Improve `oasis` constraints and regenerate `opam` file (#229 via
+  Christophe Troestler).
+
 0.15.0 (2014-12-24):
 
 Compatibility breaking interface changes:
