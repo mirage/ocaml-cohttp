@@ -224,7 +224,7 @@ let res_chunked_parse () =
 let get_substring oc buf =
   let len = Int64.to_int (Lwt_io.position oc) in
   let b = String.create len in
-  Lwt_bytes.blit_bytes_string buf 0 b 0 len;
+  Lwt_bytes.blit_to_bytes buf 0 b 0 len;
   b
 
 let write_req expected req =
