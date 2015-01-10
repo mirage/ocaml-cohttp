@@ -4,7 +4,15 @@ name: "cohttp"
 maintainer: "anil@recoil.org"
 license: "ISC"
 version: "0.15.0"
+authors: [ "Anil Madhavapeddy"
+           "Stefano Zacchiroli"
+           "David Sheets"
+           "Thomas Gazagnaire"
+           "David Scott"
+           "Rudi Grinberg"
+           "Andy Ray" ]
 
+license: "ISC"
 homepage: "https://github.com/mirage/ocaml-cohttp"
 dev-repo: "https://github.com/mirage/ocaml-cohttp.git"
 bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
@@ -50,7 +58,7 @@ depopts: [
 
 conflicts: [
   "async" {<"109.15.00"}
-  "lwt" {<"2.4.3"}
+  "lwt" {<"2.4.7"}
 ]
 
 available: [ocaml-version >= "4.01.0"]

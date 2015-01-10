@@ -1,8 +1,20 @@
 OASISFormat: 0.3
 Name:        cohttp
-Version:     0.15.0
+Version:     0.15.1
 Synopsis:    HTTP library for Lwt, Async, JavaScript and Mirage
-Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets, Thomas Gazagnaire, David Scott, Rudi Grinberg, Andy Ray
+Description: CoHTTP is an OCaml library for creating HTTP clients and
+  daemons.  It has a portable HTTP parser.  Optional dependencies
+  activate functionality:
+
+   * Lwt: `opam install lwt cohttp`
+   * Lwt and SSL: `opam install lwt ssl cohttp`
+   * Async: `opam install async cohttp`
+   * Async and SSL: `opam install async_ssl cohttp`
+
+Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets,
+             Thomas Gazagnaire, David Scott, Rudi Grinberg, Andy Ray
+Maintainers: Anil Madhavapeddy <anil@recoil.org>
+Homepage:    https://github.com/mirage/ocaml-cohttp
 License:     ISC
 Plugins:     META (0.3)
 BuildTools:  ocamlbuild
@@ -11,10 +23,15 @@ Library cohttp
   Path:          lib
   Findlibname:   cohttp
   Pack:          true
-  Modules:       S, Code, Header, Cookie, Request, Response, Transfer, Accept, Accept_parser,
-                 Accept_lexer, Accept_types, Auth, Header_io, Transfer_io, Connection, Body, String_io
-  BuildDepends:  re.emacs, stringext, uri (>= 1.3.13), uri.services, fieldslib, fieldslib.syntax, sexplib, sexplib.syntax, bytes, base64 (>= 2.0.0)
-  XMETARequires: re.emacs, stringext, uri, uri.services, fieldslib, sexplib, bytes, base64
+  Modules:       S, Code, Header, Cookie, Request, Response, Transfer,
+                 Accept, Accept_parser, Accept_lexer, Accept_types,
+                 Auth, Header_io, Transfer_io, Connection, Body, String_io
+  BuildDepends:  re.emacs, stringext, uri (>= 1.5.0), uri.services,
+                 fieldslib (>= 109.20.00), fieldslib.syntax,
+                 sexplib (>= 109.53.00), sexplib.syntax,
+                 bytes, base64 (>= 2.0.0)
+  XMETARequires: re.emacs, stringext, uri, uri.services, fieldslib,
+                 sexplib, bytes, base64
 
 Flag lwt
   Description: build the Lwt library
@@ -52,7 +69,7 @@ Library cohttp_lwt_unix
   Path:          lwt
   Findlibname:   lwt
   FindlibParent: cohttp
-  BuildDepends:  cohttp.lwt-core, unix, lwt.unix, conduit.lwt-unix
+  BuildDepends:  cohttp.lwt-core, unix, lwt.unix, conduit.lwt-unix (>= 0.7.0)
   XMETARequires: cohttp.lwt-core, unix, lwt.unix, conduit.lwt-unix
   Modules:       Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt_unix_net, Cohttp_lwt_unix_debug
 
@@ -72,7 +89,7 @@ Library cohttp_async
   Path:          async
   Findlibname:   async
   FindlibParent: cohttp
-  BuildDepends:  uri, cohttp, threads, async, conduit.async
+  BuildDepends:  uri, cohttp, threads, async, conduit.async (>= 0.7.0)
   Modules:       Cohttp_async_io, Cohttp_async
 
 Document cohttp
@@ -261,7 +278,7 @@ Executable "cohttp-server-lwt"
   Custom:             true
   CompiledObject:     best
   Install:            true
-  BuildDepends:       cohttp, cohttp.lwt
+  BuildDepends:       cohttp, cohttp.lwt, cmdliner (>= 0.9.4)
 
 Executable "cohttp-curl-lwt"
   Path:               bin
@@ -270,7 +287,7 @@ Executable "cohttp-curl-lwt"
   Custom:             true
   CompiledObject:     best
   Install:            true
-  BuildDepends:       cohttp, cohttp.lwt, cmdliner
+  BuildDepends:       cohttp, cohttp.lwt, cmdliner (>= 0.9.4)
 
 Executable "async-hello-world"
   Path:               examples/async
@@ -323,3 +340,9 @@ Test test_net_async
   Run$:               flag(nettests) && flag(async)
   Command:            $test_net_async
   WorkingDirectory:   lib_test
+
+
+SourceRepository master
+  Type:     git
+  Location: https://github.com/mirage/ocaml-cohttp.git
+  Browser:  https://github.com/mirage/ocaml-cohttp

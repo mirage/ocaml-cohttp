@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: a9af00fcbc9d74da0da434eefc03de15)
+# DO NOT EDIT (digest: 3a1126cc930825def71880e9cfd739d1)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -410,6 +410,7 @@ true: annot, bin_annot
 # Executable cohttp-server-lwt
 <bin/cohttp_server_lwt.{native,byte}>: pkg_base64
 <bin/cohttp_server_lwt.{native,byte}>: pkg_bytes
+<bin/cohttp_server_lwt.{native,byte}>: pkg_cmdliner
 <bin/cohttp_server_lwt.{native,byte}>: pkg_conduit.lwt-unix
 <bin/cohttp_server_lwt.{native,byte}>: pkg_fieldslib
 <bin/cohttp_server_lwt.{native,byte}>: pkg_fieldslib.syntax
