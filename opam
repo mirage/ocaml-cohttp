@@ -2,6 +2,7 @@ opam-version: "1.2"
 
 name: "cohttp"
 maintainer: "anil@recoil.org"
+version: "0.15.1"
 authors: [ "Anil Madhavapeddy"
            "Stefano Zacchiroli"
            "David Sheets"
@@ -37,7 +38,7 @@ depends: [
   "sexplib" {>= "109.53.00"}
   "conduit" {>= "0.7.0"}
   "stringext"
-  "base64" {>= "2.0.0"}
+  "base64" {>="2.0.0"}
   "ounit" {test}
 ]
 build-doc: ["ocaml" "setup.ml" "-doc"]
@@ -56,7 +57,7 @@ depopts: [
 
 conflicts: [
   "async" {<"109.15.00"}
-  "lwt" {<"2.4.3"}
+  "lwt" {<"2.4.7"}
 ]
 
 available: [ocaml-version >= "4.01.0"]
