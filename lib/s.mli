@@ -55,8 +55,9 @@ module type IO = sig
   (** [read ic len] will block until a maximum of [len] characters
       are read from the input channel [ic].  It returns an
       empty string if EOF or some other error condition occurs
-      on the input channel, and can also fewer than [len] if
-      input buffering is not sufficient to satisfy the request. *)
+      on the input channel, and can also return fewer than [len]
+      characters if input buffering is not sufficient to satisfy the
+      request. *)
   val read : ic -> int -> string t
 
   (** [read_exactly ic len] will block until exactly [len] characters
