@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: 9e9feb768a18f46865e56b0bd9281958)
-version = "0.15.1"
+# DO NOT EDIT (digest: 4ed0bf3afbcd2da0f5b91d3c954edfd4)
+version = "0.15.2"
 description = "HTTP library for Lwt, Async, JavaScript and Mirage"
 requires =
 "re.emacs stringext uri uri.services fieldslib sexplib bytes base64"
@@ -10,7 +10,7 @@ archive(native) = "cohttp.cmxa"
 archive(native, plugin) = "cohttp.cmxs"
 exists_if = "cohttp.cma"
 package "lwt-core" (
- version = "0.15.1"
+ version = "0.15.2"
  description = "HTTP library for Lwt, Async, JavaScript and Mirage"
  requires = "lwt uri cohttp"
  archive(byte) = "cohttp_lwt.cma"
@@ -21,7 +21,7 @@ package "lwt-core" (
 )
 
 package "lwt" (
- version = "0.15.1"
+ version = "0.15.2"
  description = "HTTP library for Lwt, Async, JavaScript and Mirage"
  requires = "cohttp.lwt-core unix lwt.unix conduit.lwt-unix"
  archive(byte) = "cohttp_lwt_unix.cma"
@@ -32,7 +32,7 @@ package "lwt" (
 )
 
 package "js" (
- version = "0.15.1"
+ version = "0.15.2"
  description = "HTTP library for Lwt, Async, JavaScript and Mirage"
  requires = "cohttp.lwt-core js_of_ocaml"
  archive(byte) = "cohttp_lwt_xhr.cma"
@@ -43,7 +43,7 @@ package "js" (
 )
 
 package "async" (
- version = "0.15.1"
+ version = "0.15.2"
  description = "HTTP library for Lwt, Async, JavaScript and Mirage"
  requires = "uri cohttp threads async conduit.async"
  archive(byte) = "cohttp_async.cma"
