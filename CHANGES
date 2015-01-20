@@ -1,3 +1,6 @@
+0.15.2 (trunk):
+* Add some missing documentation to `Cohttp.S.IO` signature (#233)
+
 0.15.1 (2015-01-10):
 * Lwt 2.4.7 renamed `blit_bytes_string` to `blit_to_bytes`, so depend
   on the newer API now. (#230)
