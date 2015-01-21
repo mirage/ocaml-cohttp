@@ -115,6 +115,14 @@ module Client : sig
     Cohttp.Code.meth ->
     Uri.t ->
     (Response.t * Body.t) Deferred.t
+
+  (** Send an HTTP POST request in form format *)
+  val post_form:
+    ?interrupt:unit Deferred.t ->
+    ?headers:Cohttp.Header.t ->
+    params:Cohttp.Header.t ->
+    Uri.t ->
+    (Response.t * Body.t) Deferred.t
 end
 
 module Server : sig
