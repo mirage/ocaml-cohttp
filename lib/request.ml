@@ -110,7 +110,7 @@ module Make(IO : S.IO) = struct
   let write_header req oc =
    let fst_line = Printf.sprintf "%s %s %s\r\n" (Code.string_of_method req.meth)
       (Uri.path_and_query req.uri) (Code.string_of_version req.version) in
-    let headers = Header.add req.headers "host"
+    let headers = Header.add_unless_exists req.headers "host"
         (Uri.host_with_default ~default:"localhost" req.uri ^
            match Uri.port req.uri with
            | Some p -> ":" ^ string_of_int p
