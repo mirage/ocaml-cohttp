@@ -78,6 +78,8 @@ let get =
         else Some (List.hd v)
     with Not_found | Failure _ -> None
 
+let mem h k = StringMap.mem (LString.of_string k) h
+
 let get_multi h k =
   let k = LString.of_string k in
   try StringMap.find k h with Not_found -> []
