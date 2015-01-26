@@ -29,8 +29,10 @@ type success_status =
 
 type redirection_status =
   [ `Multiple_choices (** multiple options for the resource delivered *)
-  | `Moved_permanently (** this and all future requests directed to the given URI *)
-  | `Found (** temporary response to request found via alternative URI *)
+  | `Moved_permanently (** this and all future requests directed to the
+                           URI provided as the "Location" header. *)
+  | `Found (** temporary response to request found via alternative URI
+               provided by the "Location" header. *)
   | `See_other (** permanent response to request found via alternative URI *)
   | `Not_modified (** resource has not been modified since last requested *)
   | `Use_proxy (** content located elsewhere, retrieve from there *)

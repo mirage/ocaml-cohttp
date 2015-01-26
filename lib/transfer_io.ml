@@ -74,10 +74,12 @@ module Make(IO : S.IO) = struct
   end
 
   module Unknown = struct
-    (* If we have no idea, then read one chunk and return it.
-     * TODO should this be a read with an explicit timeout? *)
+    (* If we have no idea, then read until EOF (connection shutdown by
+       the remote party). *)
     let read ic () =
-      read ic 16384 >>= fun buf -> return (Final_chunk buf)
+      read ic 4096 >>= fun buf ->
+      if buf = "" then return(Done)
+      else return (Chunk buf)
 
     let write oc buf =
       write oc buf
