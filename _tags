@@ -555,3 +555,4 @@ true: annot, bin_annot
 <examples/async/receive_post.{native,byte}>: custom
 # OASIS_STOP
 true: principal, strict_sequence, debug, short_paths
+true: annot
