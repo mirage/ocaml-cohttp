@@ -25,17 +25,21 @@ module Net = struct
   let lookup uri =
     let host = Option.value (Uri.host uri) ~default:"localhost" in
     match Uri_services.tcp_port_of_uri ~default:"http" uri with
-    | None -> failwith "Net.connect" (* TODO proper exception *)
+    | None -> Deferred.Or_error.error_string
+                "Net.lookup: failed to get TCP port form Uri"
     | Some port ->
       let open Unix in
-      Addr_info.get ~host [Addr_info.AI_FAMILY PF_INET; Addr_info.AI_SOCKTYPE SOCK_STREAM]
-      >>= function
-      | {Addr_info.ai_addr=ADDR_INET(addr,_)}::_ ->
-        return (host, Ipaddr_unix.of_inet_addr addr, port)
-      | _ -> failwith "resolution failed"
+      Addr_info.get ~host [ Addr_info.AI_FAMILY PF_INET
+                          ; Addr_info.AI_SOCKTYPE SOCK_STREAM]
+      >>| function
+      | { Addr_info.ai_addr=ADDR_INET (addr,_) }::_ ->
+        Or_error.return (host, Ipaddr_unix.of_inet_addr addr, port)
+      | _ -> Or_error.error_string "resolution failed"
 
   let connect_uri ?interrupt uri =
-     lookup uri >>= fun (host, addr, port) ->
+    lookup uri
+    |> Deferred.Or_error.ok_exn
+    >>= fun (host, addr, port) ->
      let mode =
        match Uri.scheme uri with
        | Some "https" -> `OpenSSL (host, addr, port)
