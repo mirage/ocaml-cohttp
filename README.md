@@ -22,8 +22,20 @@ value, and all requests and responses will be written to stderr.  Further
 debugging of the connection layer can be obtained by setting `CONDUIT_DEBUG`
 to any value.
 
-For build requirements, please see the `_oasis` file, or use OPAM to install
-it from <http://github.com/ocaml/opam>.
+## Installation
+
+Latest stable version should be obtained from opam. Make sure to install the
+specific backends you want as well. E.g.
+
+```
+$ opam install cohttp lwt js_of_ocaml
+```
+
+You can also obtain the development release:
+
+```
+$ opam pin add cohttp --dev-repo
+```
 
 ## Simple HTTP server
 
