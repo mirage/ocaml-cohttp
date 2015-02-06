@@ -193,6 +193,11 @@ let get_authorization headers =
 let is_form headers =
   get_media_type headers = (Some "application/x-www-form-urlencoded")
 
+let get_location headers =
+  match get headers "location" with
+  | None -> None
+  | Some u -> Some (Uri.of_string u)
+
 let prepend_user_agent headers user_agent =
   let k = "user-agent" in
   match get headers k with
