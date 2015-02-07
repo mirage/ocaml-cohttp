@@ -105,7 +105,7 @@ module type Client = sig
   val post_form :
     ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
-    params:Cohttp.Header.t ->
+    params:(string * string list) list ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val callv :
@@ -184,8 +184,7 @@ module Make_client
 
   let post_form ?ctx ?headers ~params uri =
     let headers = Header.add_opt headers "content-type" "application/x-www-form-urlencoded" in
-    let q = List.map (fun (k,v) -> k, [v]) (Header.to_list params) in
-    let body = Cohttp_lwt_body.of_string (Uri.encoded_of_query q) in
+    let body = Cohttp_lwt_body.of_string (Uri.encoded_of_query params) in
     post ?ctx ~chunked:false ~headers ~body uri
 
   let callv ?(ctx=default_ctx) uri reqs =

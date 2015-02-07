@@ -128,7 +128,7 @@ module type Client = sig
   val post_form :
     ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
-    params:Cohttp.Header.t ->
+    params:(string * string list) list ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val callv :
