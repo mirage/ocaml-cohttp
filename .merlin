@@ -1,4 +1,5 @@
 EXT lwt
+EXT js
 
 S async
 S lib
@@ -27,6 +28,7 @@ PKG conduit
 PKG conduit.async
 PKG conduit.lwt
 PKG cmdliner
+PKG js_of_ocaml
 
 B _build/
 B _build/lwt
