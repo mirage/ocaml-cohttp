@@ -210,6 +210,13 @@ module Client = struct
 
   let delete ?interrupt ?headers uri =
     call ?interrupt ?headers ~chunked:false `DELETE uri
+
+  let post_form ?interrupt ?headers ~params uri = 
+    let headers = Cohttp.Header.add_opt headers "content-type" "application/x-www-form-urlencoded" in
+    let q = List.map ~f:(fun (k,v) -> k, [v]) (Cohttp.Header.to_list params) in
+    let body = Body.of_string (Uri.encoded_of_query q) in
+    post ?interrupt ~headers ~chunked:false ~body uri
+
 end
 
 module Server = struct
