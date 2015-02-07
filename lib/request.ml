@@ -30,6 +30,19 @@ let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
     match headers with
     | None -> Header.init ()
     | Some h -> h in
+  let headers =
+    (* Add user:password auth to headers from uri
+     * if headers don't already have auth *)
+    match Header.get_authorization headers, Uri.userinfo uri with
+      | None, Some userinfo -> begin
+          match Stringext.split ~on:':' userinfo ~max:2 with
+            | [user; pass] ->
+                let auth = `Basic (Uri.pct_decode user, Uri.pct_decode pass) in
+                  Header.add_authorization headers auth
+            | _ -> headers
+        end
+      | _, _ -> headers
+  in
   let encoding =
     match encoding with
     | None -> begin
