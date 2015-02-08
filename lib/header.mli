@@ -77,6 +77,10 @@ val add_authorization_req : t -> Auth.challenge -> t
 val is_form : t -> bool
 
 val user_agent : string
+(** The User-Agent header used by this library, including the version
+    of cohttp. *)
 val prepend_user_agent : t -> string -> t
+(** Prepend [user_agent] to the product token already declared in the
+    "User-Agent" field (if any). *)
 
 val connection : t -> [`Keep_alive | `Close | `Unknown of string] option

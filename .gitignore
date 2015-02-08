@@ -7,3 +7,4 @@ setup.bin
 *.docdir
 *.native
 *.byte
+lib/conf.ml

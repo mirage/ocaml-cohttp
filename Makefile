@@ -10,6 +10,9 @@ ASYNC ?= $(shell if ocamlfind query async >/dev/null 2>&1; then echo --enable-as
 JS ?= $(shell if ocamlfind query js_of_ocaml >/dev/null 2>&1; then echo --enable-js; fi)
 #NETTESTS ?= --enable-tests --enable-nettests
 
+setup.ml: _oasis
+	oasis setup -setup-update none
+
 setup.bin: setup.ml
 	ocamlopt.opt -o $@ $< 2>/dev/null || ocamlopt -o $@ $< 2>/dev/null || ocamlc -o $@ $<
 	rm -f setup.cmx setup.cmi setup.o setup.cmo

@@ -32,7 +32,7 @@ end
 module StringMap = Map.Make(LString)
 type t = string list StringMap.t
 
-let user_agent = "ocaml-cohttp" (* TODO: include version from build system *)
+let user_agent = Conf.user_agent
 
 let headers_with_list_values = List.map LString.of_string [
   "accept";"accept-charset";"accept-encoding";"accept-language";
