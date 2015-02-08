@@ -202,6 +202,11 @@ module Client = struct
   let post ?interrupt ?headers ?(chunked=false) ?body uri =
     call ?interrupt ?headers ~chunked ?body `POST uri
 
+  let post_form ?interrupt ?headers ~params uri =
+    let headers = Cohttp.Header.add_opt headers "content" "application/x-www-form-urlencoded" in
+    let body = Body.of_string (Uri.encoded_of_query params) in
+    post ?interrupt ~headers ~chunked:false ~body uri
+
   let put ?interrupt ?headers ?(chunked=false) ?body uri =
     call ?interrupt ?headers ~chunked ?body `PUT uri
 
