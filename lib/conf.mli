@@ -15,5 +15,7 @@
  *
  *)
 
+(** Compile-time configuration variables *)
+
 val user_agent : string
 (** User-Agent, including the version of this library. *)
