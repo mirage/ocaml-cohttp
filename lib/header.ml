@@ -43,6 +43,7 @@ let headers_with_list_values = Array.map LString.of_string [|
 
 let is_header_with_list_value =
   let tbl = Hashtbl.create (Array.length headers_with_list_values) in
+  headers_with_list_values |> Array.iter (fun h -> Hashtbl.add tbl h ());
   fun h -> Hashtbl.mem tbl h
 
 let init () =
