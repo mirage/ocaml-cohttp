@@ -93,8 +93,7 @@ end) = struct
 
   let post_form ?ctx ?headers ~params uri =
     let headers = C.Header.add_opt headers "content-type" "application/x-www-form-urlencoded" in
-    let q = List.map (fun (k,v) -> k, [v]) (C.Header.to_list params) in
-    let body = Cohttp_lwt_body.of_string (Uri.encoded_of_query q) in
+    let body = Cohttp_lwt_body.of_string (Uri.encoded_of_query params) in
     post ?ctx ~chunked:false ~headers ~body uri
 
   (* No implementation (can it be done?).  What should the failure exception be? *)
