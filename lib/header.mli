@@ -34,6 +34,10 @@ val add : t -> string -> string -> t
     the header is [None] *)
 val add_opt : t option -> string -> string -> t
 
+(** Given a header, update it with the key and value unless the key is
+    already present in the header *)
+val add_unless_exists : t -> string -> string -> t
+
 (** Remove a key from the header map and return a fresh header set.  The
     original header parameter is not modified. *)
 val remove : t -> string -> t

@@ -313,7 +313,7 @@ module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
     let headers =
       match headers with
       |None -> Header.init_with "location" (Uri.to_string uri)
-      |Some h -> Header.add h "location" (Uri.to_string uri)
+      |Some h -> Header.add_unless_exists h "location" (Uri.to_string uri)
     in
     respond ~headers ~status:`Found ~body:`Empty ()
 

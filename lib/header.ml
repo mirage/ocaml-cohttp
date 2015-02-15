@@ -80,6 +80,11 @@ let get =
 
 let mem h k = StringMap.mem (LString.of_string k) h
 
+let add_unless_exists h k v =
+  if mem h k
+  then h
+  else add h k v
+
 let get_multi h k =
   let k = LString.of_string k in
   try StringMap.find k h with Not_found -> []
@@ -174,7 +179,7 @@ let add_transfer_encoding headers enc =
   (* Only add a header if one doesnt already exist, e.g. from the app *)
   match get_transfer_encoding headers, enc with
   |Fixed _,_  (* App has supplied a content length, so use that *)
-  |Chunked,_ -> headers (* TODO: this is a protocol violation *)
+  |Chunked, _ -> headers (* TODO: this is a protocol violation *)
   |Unknown, Chunked -> add headers "transfer-encoding" "chunked"
   |Unknown, Fixed len -> add headers "content-length" (Int64.to_string len)
   |Unknown, Unknown -> headers

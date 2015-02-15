@@ -252,7 +252,7 @@ module Server = struct
         let keep_alive = Request.is_keep_alive req in
         let flush = Response.flush res in
         let res =
-          let headers = Cohttp.Header.add
+          let headers = Cohttp.Header.add_unless_exists
               (Cohttp.Response.headers res)
               "connection"
               (if keep_alive then "keep-alive" else "close") in
