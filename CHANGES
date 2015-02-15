@@ -6,6 +6,7 @@ Compatibility breaking interface changes:
 New features and bug fixes:
 * Copy basic auth from `Uri.userinfo` into the Authorization header for HTTP requests. (#255)
 * Install binaries via an OPAM `.install` file to ensure that they are reliably uninstalled. (#252)
+* Use the `magic-mime` library to add a MIME type by probing filename during static serving in the Lwt/Async backends. (#260)
 
 0.15.2 (2015-02-15):
 * When transfer encoding is unknown, read until EOF when body size is unknown. (#241)

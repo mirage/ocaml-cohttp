@@ -2,7 +2,7 @@ opam-version: "1.2"
 
 name: "cohttp"
 maintainer: "anil@recoil.org"
-version: "0.15.2"
+version: "0.16.0"
 authors: [ "Anil Madhavapeddy"
            "Stefano Zacchiroli"
            "David Sheets"
@@ -39,6 +39,7 @@ depends: [
   "conduit" {>= "0.7.0"}
   "stringext"
   "base64" {>="2.0.0"}
+  "magic-mime"
   "ounit" {test}
 ]
 build-doc: ["ocaml" "setup.ml" "-doc"]

@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 2a142d4ea34f0b943dc2f4ea64492657)
+# DO NOT EDIT (digest: 7d436123a19157fe187e2bbe01577f2f)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -56,6 +56,7 @@ true: annot, bin_annot
 <lwt/*.ml{,i,y}>: pkg_lwt
 <lwt/*.ml{,i,y}>: pkg_lwt.syntax
 <lwt/*.ml{,i,y}>: pkg_lwt.unix
+<lwt/*.ml{,i,y}>: pkg_magic-mime
 <lwt/*.ml{,i,y}>: pkg_re.emacs
 <lwt/*.ml{,i,y}>: pkg_sexplib
 <lwt/*.ml{,i,y}>: pkg_sexplib.syntax
@@ -91,6 +92,7 @@ true: annot, bin_annot
 <async/*.ml{,i,y}>: pkg_conduit.async
 <async/*.ml{,i,y}>: pkg_fieldslib
 <async/*.ml{,i,y}>: pkg_fieldslib.syntax
+<async/*.ml{,i,y}>: pkg_magic-mime
 <async/*.ml{,i,y}>: pkg_re.emacs
 <async/*.ml{,i,y}>: pkg_sexplib
 <async/*.ml{,i,y}>: pkg_sexplib.syntax
@@ -108,6 +110,7 @@ true: annot, bin_annot
 <lib_test/test_parser.{native,byte}>: pkg_lwt
 <lib_test/test_parser.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_parser.{native,byte}>: pkg_lwt.unix
+<lib_test/test_parser.{native,byte}>: pkg_magic-mime
 <lib_test/test_parser.{native,byte}>: pkg_oUnit
 <lib_test/test_parser.{native,byte}>: pkg_re.emacs
 <lib_test/test_parser.{native,byte}>: pkg_sexplib
@@ -157,6 +160,7 @@ true: annot, bin_annot
 <lib_test/test_net_lwt.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt.{native,byte}>: pkg_lwt.unix
+<lib_test/test_net_lwt.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_lwt.{native,byte}>: pkg_oUnit
 <lib_test/test_net_lwt.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_lwt.{native,byte}>: pkg_sexplib
@@ -178,6 +182,7 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt.unix
+<lib_test/test_net_lwt_google.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_sexplib
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_sexplib.syntax
@@ -198,6 +203,7 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_lwt.unix
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_sexplib
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_sexplib.syntax
@@ -218,6 +224,7 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_lwt.unix
+<lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_sexplib
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_sexplib.syntax
@@ -238,6 +245,7 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt.unix
+<lib_test/test_net_lwt_server.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_sexplib
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_sexplib.syntax
@@ -258,6 +266,7 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_lwt.unix
+<lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_sexplib
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_sexplib.syntax
@@ -278,6 +287,7 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt.unix
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_sexplib
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_sexplib.syntax
@@ -300,6 +310,7 @@ true: annot, bin_annot
 <lib_test/test_net_async.{native,byte}>: pkg_conduit.async
 <lib_test/test_net_async.{native,byte}>: pkg_fieldslib
 <lib_test/test_net_async.{native,byte}>: pkg_fieldslib.syntax
+<lib_test/test_net_async.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_async.{native,byte}>: pkg_oUnit
 <lib_test/test_net_async.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_async.{native,byte}>: pkg_sexplib
@@ -318,6 +329,7 @@ true: annot, bin_annot
 <lib_test/test_net_async_http10.{native,byte}>: pkg_conduit.async
 <lib_test/test_net_async_http10.{native,byte}>: pkg_fieldslib
 <lib_test/test_net_async_http10.{native,byte}>: pkg_fieldslib.syntax
+<lib_test/test_net_async_http10.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_async_http10.{native,byte}>: pkg_oUnit
 <lib_test/test_net_async_http10.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_async_http10.{native,byte}>: pkg_sexplib
@@ -336,6 +348,7 @@ true: annot, bin_annot
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_conduit.async
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_fieldslib
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_fieldslib.syntax
+<lib_test/test_net_async_multi_get.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_oUnit
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_sexplib
@@ -354,6 +367,7 @@ true: annot, bin_annot
 <lib_test/test_net_async_server.{native,byte}>: pkg_conduit.async
 <lib_test/test_net_async_server.{native,byte}>: pkg_fieldslib
 <lib_test/test_net_async_server.{native,byte}>: pkg_fieldslib.syntax
+<lib_test/test_net_async_server.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_async_server.{native,byte}>: pkg_oUnit
 <lib_test/test_net_async_server.{native,byte}>: pkg_re.emacs
 <lib_test/test_net_async_server.{native,byte}>: pkg_sexplib
@@ -366,6 +380,7 @@ true: annot, bin_annot
 <lib_test/test_net_async_server.{native,byte}>: use_cohttp_async
 <lib_test/*.ml{,i,y}>: pkg_async
 <lib_test/*.ml{,i,y}>: pkg_conduit.async
+<lib_test/*.ml{,i,y}>: pkg_magic-mime
 <lib_test/*.ml{,i,y}>: pkg_oUnit
 <lib_test/*.ml{,i,y}>: pkg_threads
 <lib_test/*.ml{,i,y}>: use_cohttp_async
@@ -377,6 +392,7 @@ true: annot, bin_annot
 <bin/cohttp_server_async.{native,byte}>: pkg_conduit.async
 <bin/cohttp_server_async.{native,byte}>: pkg_fieldslib
 <bin/cohttp_server_async.{native,byte}>: pkg_fieldslib.syntax
+<bin/cohttp_server_async.{native,byte}>: pkg_magic-mime
 <bin/cohttp_server_async.{native,byte}>: pkg_re.emacs
 <bin/cohttp_server_async.{native,byte}>: pkg_sexplib
 <bin/cohttp_server_async.{native,byte}>: pkg_sexplib.syntax
@@ -394,6 +410,7 @@ true: annot, bin_annot
 <bin/cohttp_curl_async.{native,byte}>: pkg_conduit.async
 <bin/cohttp_curl_async.{native,byte}>: pkg_fieldslib
 <bin/cohttp_curl_async.{native,byte}>: pkg_fieldslib.syntax
+<bin/cohttp_curl_async.{native,byte}>: pkg_magic-mime
 <bin/cohttp_curl_async.{native,byte}>: pkg_re.emacs
 <bin/cohttp_curl_async.{native,byte}>: pkg_sexplib
 <bin/cohttp_curl_async.{native,byte}>: pkg_sexplib.syntax
@@ -418,6 +435,7 @@ true: annot, bin_annot
 <bin/cohttp_server_lwt.{native,byte}>: pkg_lwt
 <bin/cohttp_server_lwt.{native,byte}>: pkg_lwt.syntax
 <bin/cohttp_server_lwt.{native,byte}>: pkg_lwt.unix
+<bin/cohttp_server_lwt.{native,byte}>: pkg_magic-mime
 <bin/cohttp_server_lwt.{native,byte}>: pkg_re.emacs
 <bin/cohttp_server_lwt.{native,byte}>: pkg_sexplib
 <bin/cohttp_server_lwt.{native,byte}>: pkg_sexplib.syntax
@@ -439,6 +457,7 @@ true: annot, bin_annot
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_lwt
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_lwt.syntax
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_lwt.unix
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_magic-mime
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_re.emacs
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_sexplib
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_sexplib.syntax
@@ -458,6 +477,7 @@ true: annot, bin_annot
 <bin/*.ml{,i,y}>: pkg_lwt
 <bin/*.ml{,i,y}>: pkg_lwt.syntax
 <bin/*.ml{,i,y}>: pkg_lwt.unix
+<bin/*.ml{,i,y}>: pkg_magic-mime
 <bin/*.ml{,i,y}>: pkg_re.emacs
 <bin/*.ml{,i,y}>: pkg_sexplib
 <bin/*.ml{,i,y}>: pkg_sexplib.syntax
@@ -476,6 +496,7 @@ true: annot, bin_annot
 <examples/async/hello_world.{native,byte}>: pkg_conduit.async
 <examples/async/hello_world.{native,byte}>: pkg_fieldslib
 <examples/async/hello_world.{native,byte}>: pkg_fieldslib.syntax
+<examples/async/hello_world.{native,byte}>: pkg_magic-mime
 <examples/async/hello_world.{native,byte}>: pkg_re.emacs
 <examples/async/hello_world.{native,byte}>: pkg_sexplib
 <examples/async/hello_world.{native,byte}>: pkg_sexplib.syntax
@@ -529,6 +550,7 @@ true: annot, bin_annot
 <examples/async/receive_post.{native,byte}>: pkg_conduit.async
 <examples/async/receive_post.{native,byte}>: pkg_fieldslib
 <examples/async/receive_post.{native,byte}>: pkg_fieldslib.syntax
+<examples/async/receive_post.{native,byte}>: pkg_magic-mime
 <examples/async/receive_post.{native,byte}>: pkg_re.emacs
 <examples/async/receive_post.{native,byte}>: pkg_sexplib
 <examples/async/receive_post.{native,byte}>: pkg_sexplib.syntax
@@ -544,6 +566,7 @@ true: annot, bin_annot
 <examples/async/*.ml{,i,y}>: pkg_conduit.async
 <examples/async/*.ml{,i,y}>: pkg_fieldslib
 <examples/async/*.ml{,i,y}>: pkg_fieldslib.syntax
+<examples/async/*.ml{,i,y}>: pkg_magic-mime
 <examples/async/*.ml{,i,y}>: pkg_re.emacs
 <examples/async/*.ml{,i,y}>: pkg_sexplib
 <examples/async/*.ml{,i,y}>: pkg_sexplib.syntax

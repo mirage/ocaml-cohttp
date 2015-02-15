@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 659c74c973e9176c68dfb97c2758d474)
+# DO NOT EDIT (digest: 6e55bd0f0a0b347f909d7f2742adc4dd)
 version = "0.16.0"
 description = "HTTP library for Lwt, Async, JavaScript and Mirage"
 requires =
@@ -23,7 +23,7 @@ package "lwt-core" (
 package "lwt" (
  version = "0.16.0"
  description = "HTTP library for Lwt, Async, JavaScript and Mirage"
- requires = "cohttp.lwt-core unix lwt.unix conduit.lwt-unix"
+ requires = "cohttp.lwt-core unix lwt.unix conduit.lwt-unix magic-mime"
  archive(byte) = "cohttp_lwt_unix.cma"
  archive(byte, plugin) = "cohttp_lwt_unix.cma"
  archive(native) = "cohttp_lwt_unix.cmxa"
@@ -45,7 +45,7 @@ package "js" (
 package "async" (
  version = "0.16.0"
  description = "HTTP library for Lwt, Async, JavaScript and Mirage"
- requires = "uri cohttp threads async conduit.async"
+ requires = "uri cohttp threads async conduit.async magic-mime"
  archive(byte) = "cohttp_async.cma"
  archive(byte, plugin) = "cohttp_async.cma"
  archive(native) = "cohttp_async.cmxa"

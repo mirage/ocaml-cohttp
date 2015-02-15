@@ -71,8 +71,8 @@ Library cohttp_lwt_unix
   Path:          lwt
   Findlibname:   lwt
   FindlibParent: cohttp
-  BuildDepends:  cohttp.lwt-core, unix, lwt.unix, conduit.lwt-unix (>= 0.7.0)
-  XMETARequires: cohttp.lwt-core, unix, lwt.unix, conduit.lwt-unix
+  BuildDepends:  cohttp.lwt-core, unix, lwt.unix, conduit.lwt-unix (>= 0.7.0), magic-mime
+  XMETARequires: cohttp.lwt-core, unix, lwt.unix, conduit.lwt-unix, magic-mime
   Modules:       Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt_unix_net, Cohttp_lwt_unix_debug
 
 Library cohttp_lwt_xhr
@@ -91,7 +91,7 @@ Library cohttp_async
   Path:          async
   Findlibname:   async
   FindlibParent: cohttp
-  BuildDepends:  uri, cohttp, threads, async, conduit.async (>= 0.7.0)
+  BuildDepends:  uri, cohttp, threads, async, conduit.async (>= 0.7.0), magic-mime
   Modules:       Cohttp_async_io, Cohttp_async
 
 Document cohttp
