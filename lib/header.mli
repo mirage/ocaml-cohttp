@@ -79,6 +79,7 @@ val add_authorization : t -> Auth.credential -> t
 val get_authorization : t -> Auth.credential option
 val add_authorization_req : t -> Auth.challenge -> t
 val is_form : t -> bool
+val get_location : t -> Uri.t option
 
 val user_agent : string
 (** The User-Agent header used by this library, including the version
