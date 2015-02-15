@@ -86,6 +86,14 @@ let rec was_successful =
     | RTodo _::_ ->
         false
 
+module Content_range = struct
+  let h1 = H.of_list [("Content-Length", "123")]
+  let h2 = H.of_list [("Content-Range", "bytes 200-300/1000")]
+  let none () = assert_equal None (H.init () |> H.get_content_range)
+  let content_length () = assert_equal (Some 123L) (H.get_content_range h1)
+  let content_range () = assert_equal (Some 101L) (H.get_content_range h2)
+end
+
 let _ =
   let suites = [
     "Media Type" >:: get_media_type;
@@ -93,6 +101,9 @@ let _ =
     "Valid Set-Cookie" >:: valid_set_cookie;
     "Valid Cookie" >:: valid_cookie;
     "Cookie with =" >:: cookie_with_eq_val;
+    "Content Range - none" >:: Content_range.none;
+    "Content Range - content-length" >:: Content_range.content_length;
+    "Content Range - content-range" >:: Content_range.content_range;
   ] in
   let verbose = ref false in
   let set_verbose _ = verbose := true in
