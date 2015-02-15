@@ -1,4 +1,4 @@
-OASISFormat: 0.3
+OASISFormat: 0.4
 Name:        cohttp
 Version:     0.15.2
 Synopsis:    HTTP library for Lwt, Async, JavaScript and Mirage
@@ -17,7 +17,7 @@ Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets,
 Maintainers: Anil Madhavapeddy <anil@recoil.org>
 Homepage:    https://github.com/mirage/ocaml-cohttp
 License:     ISC
-Plugins:     META (0.3)
+Plugins:     META (0.4)
 BuildTools:  ocamlbuild
 FilesAB:     lib/conf.ml.ab
 

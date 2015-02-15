@@ -1,8 +1,10 @@
-0.15.2 (trunk):
+0.15.2 (2015-02-15):
 * When transfer encoding is unknown, read until EOF when body size is unknown. (#241)
 * Add some missing documentation to `Cohttp.S.IO` signature. (#233)
 * Add `Cohttp.Header.mem` to check if a header exists.
 * Add `Cohttp.Conf` module to expose the library version number. (#259)
+* Add `Cohttp.Header.add_unless_exists` to update a key if it doesn't already exist. (#244)
+* [async] Clean up the `Net.lookup` function to use `Or_error.t` instead of raising. (#247)
 
 0.15.1 (2015-01-10):
 * Lwt 2.4.7 renamed `blit_bytes_string` to `blit_to_bytes`, so depend
