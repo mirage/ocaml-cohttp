@@ -18,6 +18,7 @@ Homepage:    https://github.com/mirage/ocaml-cohttp
 License:     ISC
 Plugins:     META (0.3)
 BuildTools:  ocamlbuild
+FilesAB:     lib/conf.ml.ab
 
 Library cohttp
   Path:          lib
@@ -26,6 +27,7 @@ Library cohttp
   Modules:       S, Code, Header, Cookie, Request, Response, Transfer,
                  Accept, Accept_parser, Accept_lexer, Accept_types,
                  Auth, Header_io, Transfer_io, Connection, Body, String_io
+  InternalModules: Conf
   BuildDepends:  re.emacs, stringext, uri (>= 1.5.0), uri.services,
                  fieldslib (>= 109.20.00), fieldslib.syntax,
                  sexplib (>= 109.53.00), sexplib.syntax,
