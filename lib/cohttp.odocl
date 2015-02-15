@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 67e2359b5db1a02e2b140598730d1456)
+# DO NOT EDIT (digest: c155920e0546031ef19fb415d7852c55)
 S
 Code
 Header
@@ -17,4 +17,5 @@ Transfer_io
 Connection
 Body
 String_io
+Conf
 # OASIS_STOP

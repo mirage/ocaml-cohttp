@@ -12,7 +12,8 @@ Description: CoHTTP is an OCaml library for creating HTTP clients and
    * Async and SSL: `opam install async_ssl cohttp`
 
 Authors:     Anil Madhavapeddy, Stefano Zacchiroli, David Sheets,
-             Thomas Gazagnaire, David Scott, Rudi Grinberg, Andy Ray
+             Thomas Gazagnaire, David Scott, Rudi Grinberg, Andy Ray,
+             Christophe Troestler
 Maintainers: Anil Madhavapeddy <anil@recoil.org>
 Homepage:    https://github.com/mirage/ocaml-cohttp
 License:     ISC
@@ -26,8 +27,7 @@ Library cohttp
   Pack:          true
   Modules:       S, Code, Header, Cookie, Request, Response, Transfer,
                  Accept, Accept_parser, Accept_lexer, Accept_types,
-                 Auth, Header_io, Transfer_io, Connection, Body, String_io
-  InternalModules: Conf
+                 Auth, Header_io, Transfer_io, Connection, Body, String_io, Conf
   BuildDepends:  re.emacs, stringext, uri (>= 1.5.0), uri.services,
                  fieldslib (>= 109.20.00), fieldslib.syntax,
                  sexplib (>= 109.53.00), sexplib.syntax,
