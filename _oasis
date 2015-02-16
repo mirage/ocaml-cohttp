@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        cohttp
-Version:     0.15.2
+Version:     0.16.0
 Synopsis:    HTTP library for Lwt, Async, JavaScript and Mirage
 Description: CoHTTP is an OCaml library for creating HTTP clients and
   daemons.  It has a portable HTTP parser.  Optional dependencies
@@ -261,7 +261,7 @@ Executable "cohttp-server-async"
   Build$:             flag(async)
   Custom:             true
   CompiledObject:     best
-  Install:            true
+  Install:            false
   BuildDepends:       cohttp, cohttp.async
 
 Executable "cohttp-curl-async"
@@ -279,7 +279,7 @@ Executable "cohttp-server-lwt"
   Build$:             flag(lwt) && flag(lwt_unix)
   Custom:             true
   CompiledObject:     best
-  Install:            true
+  Install:            false
   BuildDepends:       cohttp, cohttp.lwt, cmdliner (>= 0.9.4)
 
 Executable "cohttp-curl-lwt"
@@ -288,7 +288,7 @@ Executable "cohttp-curl-lwt"
   Build$:             flag(lwt) && flag(lwt_unix)
   Custom:             true
   CompiledObject:     best
-  Install:            true
+  Install:            false
   BuildDepends:       cohttp, cohttp.lwt, cmdliner (>= 0.9.4)
 
 Executable "async-hello-world"

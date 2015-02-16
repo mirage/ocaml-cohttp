@@ -1,3 +1,12 @@
+0.16.0 (trunk):
+
+Compatibility breaking interface changes:
+* [lwt] Fix types in `post_form` to be a `string * string list` instead of a `Header.t` (#257)
+
+New features and bug fixes:
+* Copy basic auth from `Uri.userinfo` into the Authorization header for HTTP requests. (#255)
+* Install binaries via an OPAM `.install` file to ensure that they are reliably uninstalled. (#252)
+
 0.15.2 (2015-02-15):
 * When transfer encoding is unknown, read until EOF when body size is unknown. (#241)
 * Add some missing documentation to `Cohttp.S.IO` signature. (#233)

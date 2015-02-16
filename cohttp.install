@@ -1,0 +1,6 @@
+bin: [
+  "?cohttp-server-async"
+  "?cohttp-server-lwt"
+  "?cohttp-curl-async"
+  "?cohttp-curl-lwt"
+]

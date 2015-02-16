@@ -56,7 +56,7 @@ depopts: [
 ]
 
 conflicts: [
-  "async" {<"109.15.00"}
+  "async" {<"111.25.00"}
   "lwt" {<"2.4.7"}
 ]
 
