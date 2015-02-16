@@ -282,6 +282,15 @@ Executable "cohttp-server-lwt"
   Install:            false
   BuildDepends:       cohttp, cohttp.lwt, cmdliner (>= 0.9.4)
 
+Executable "cohttp-proxy-lwt"
+  Path:               bin
+  MainIs:             cohttp_proxy_lwt.ml
+  Build$:             flag(lwt) && flag(lwt_unix)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.lwt, cmdliner (>= 0.9.4)
+
 Executable "cohttp-curl-lwt"
   Path:               bin
   MainIs:             cohttp_curl_lwt.ml

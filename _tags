@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 7d436123a19157fe187e2bbe01577f2f)
+# DO NOT EDIT (digest: d4d8ccd02056705b676325f96196ac6e)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -447,6 +447,28 @@ true: annot, bin_annot
 <bin/cohttp_server_lwt.{native,byte}>: use_cohttp_lwt
 <bin/cohttp_server_lwt.{native,byte}>: use_cohttp_lwt_unix
 <bin/cohttp_server_lwt.{native,byte}>: custom
+# Executable cohttp-proxy-lwt
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_base64
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_bytes
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_cmdliner
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_conduit.lwt-unix
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_fieldslib
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_fieldslib.syntax
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_lwt
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_lwt.syntax
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_lwt.unix
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_magic-mime
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_re.emacs
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_sexplib
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_sexplib.syntax
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_stringext
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_unix
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_uri
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_uri.services
+<bin/cohttp_proxy_lwt.{native,byte}>: use_cohttp
+<bin/cohttp_proxy_lwt.{native,byte}>: use_cohttp_lwt
+<bin/cohttp_proxy_lwt.{native,byte}>: use_cohttp_lwt_unix
+<bin/cohttp_proxy_lwt.{native,byte}>: custom
 # Executable cohttp-curl-lwt
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_base64
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_bytes
