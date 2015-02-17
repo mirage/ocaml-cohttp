@@ -305,7 +305,7 @@ module Server = struct
          >>= fun rd ->
          let body = `Pipe (Reader.pipe rd) in
          let mime_type = Magic_mime.lookup filename in
-         let headers = Cohttp.Header.add_opt headers "content-type" mime_type in
+         let headers = Cohttp.Header.add_opt_unless_exists headers "content-type" mime_type in
          respond ?flush ~headers ~body `OK
       )
     >>= function
