@@ -85,6 +85,11 @@ let add_unless_exists h k v =
   then h
   else add h k v
 
+let add_opt_unless_exists h k v =
+  match h with
+  | None -> init_with k v
+  | Some h -> add_unless_exists h k v
+
 let get_multi h k =
   let k = LString.of_string k in
   try StringMap.find k h with Not_found -> []
