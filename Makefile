@@ -42,3 +42,11 @@ generate:
 clean:
 	ocamlbuild -clean
 	rm -f setup.data setup.log setup.bin
+
+revdep:
+	opam switch system || true
+	opam switch remove -y cohttp-revdeps || true
+	opam switch -A system cohttp-revdeps
+	opam pin -y add cohttp .
+	for i in `opam list -s --rec --depends-on=cohttp`; do opam install -y -j 4 $$i; done
+	opam switch system
