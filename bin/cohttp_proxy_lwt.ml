@@ -25,25 +25,40 @@ open Cohttp_lwt_unix
 
 let handler ~verbose (ch,conn) req body =
   let uri = Cohttp.Request.uri req in
-  let path = Uri.path uri in
   (* Log the request to the console *)
-  printf "%s %s %s\n%!"
+  if verbose then eprintf "--> %s %s %s\n%!"
     (Cohttp.(Code.string_of_method (Request.meth req)))
     (Uri.to_string uri)
-    (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch));
-  (* Fetch the URI *)
-  let headers = Request.headers req in
+    (Sexplib.Sexp.to_string_hum (Request.sexp_of_t req));
+  (* Strip out hop-by-hop connection headers *)
+  let headers =
+    Request.headers req |> fun h ->
+    Header.remove h "accept-encoding" |> fun h ->
+    Header.remove h "content-length" |> fun h ->
+    Header.remove h "transfer-encoding" |> fun h ->
+    Header.remove h "connection" |> fun h ->
+    Header.add h "accept-encoding" "identity"
+  in
+  (* Fetch the remote URI *)
   let meth = Request.meth req in
-  Client.call ~headers meth uri >>= fun (resp, body) ->
-  let headers = Response.headers resp in
+  Client.call ~headers ~body meth uri >>= fun (resp, body) ->
+  if verbose then
+    eprintf "<-- %s %s\n%!"
+      (Uri.to_string (Request.uri req))
+      (Sexplib.Sexp.to_string_hum (Response.sexp_of_t resp));
   let status = Response.status resp in
+  let headers =
+    Response.headers resp |> fun h ->
+    Header.remove h "transfer-encoding" |> fun h ->
+    Header.remove h "content-length" |> fun h ->
+    Header.remove h "connection"
+  in
   Server.respond ~headers ~status ~body ()
 
 let start_proxy port host verbose cert key () =
   printf "Listening for HTTP request on: %s %d\n%!" host port;
-  let info = sprintf "Served by Cohttp/Lwt listening on %s:%d" host port in
   let conn_closed (ch,conn) =
-    printf "connection %s closed\n%!"
+    printf "Connection %s closed\n%!"
       (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)) in
   let callback = handler ~verbose in
   let config = Server.make ~callback ~conn_closed () in
