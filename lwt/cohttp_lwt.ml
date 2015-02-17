@@ -183,7 +183,7 @@ module Make_client
   let patch ?ctx ?body ?chunked ?headers uri = call ?ctx ?headers ?body ?chunked `PATCH uri
 
   let post_form ?ctx ?headers ~params uri =
-    let headers = Header.add_opt headers "content-type" "application/x-www-form-urlencoded" in
+    let headers = Header.add_opt_unless_exists headers "content-type" "application/x-www-form-urlencoded" in
     let body = Cohttp_lwt_body.of_string (Uri.encoded_of_query params) in
     post ?ctx ~chunked:false ~headers ~body uri
 

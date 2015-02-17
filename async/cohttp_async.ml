@@ -207,7 +207,7 @@ module Client = struct
     call ?interrupt ?headers ~chunked ?body `POST uri
 
   let post_form ?interrupt ?headers ~params uri =
-    let headers = Cohttp.Header.add_opt headers "content" "application/x-www-form-urlencoded" in
+    let headers = Cohttp.Header.add_opt_unless_exists headers "content" "application/x-www-form-urlencoded" in
     let body = Body.of_string (Uri.encoded_of_query params) in
     post ?interrupt ~headers ~chunked:false ~body uri
 
@@ -286,8 +286,7 @@ module Server = struct
     respond ?flush ?headers ~body:(`String body) code
 
   let respond_with_redirect ?headers uri =
-    let headers = Cohttp.Header.add_opt headers
-        "location" (Uri.to_string uri) in
+    let headers = Cohttp.Header.add_opt_unless_exists headers "location" (Uri.to_string uri) in
     respond ~flush:false ~headers `Found
 
   let resolve_local_file ~docroot ~uri =
@@ -304,7 +303,9 @@ module Server = struct
          Reader.open_file filename
          >>= fun rd ->
          let body = `Pipe (Reader.pipe rd) in
-         respond ?flush ?headers ~body `OK
+         let mime_type = Magic_mime.lookup filename in
+         let headers = Cohttp.Header.add_opt_unless_exists headers "content-type" mime_type in
+         respond ?flush ~headers ~body `OK
       )
     >>= function
     |Ok res -> return res

@@ -38,6 +38,12 @@ val add_opt : t option -> string -> string -> t
     already present in the header *)
 val add_unless_exists : t -> string -> string -> t
 
+(** [add_unless_exists h k v] updates [h] with the key [k] and value [v]
+    unless the key is already present in the header.  If [h] is [None]
+    then a fresh header is allocated containing the key [k] and the
+    value [v]. *)
+val add_opt_unless_exists : t option -> string -> string -> t
+
 (** Remove a key from the header map and return a fresh header set.  The
     original header parameter is not modified. *)
 val remove : t -> string -> t

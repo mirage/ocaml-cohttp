@@ -1,11 +1,20 @@
 0.16.0 (trunk):
 
 Compatibility breaking interface changes:
-* [lwt] Fix types in `post_form` to be a `string * string list` instead of a `Header.t` (#257)
+* [lwt] Fix types in `post_form` to be a `string * string list` instead
+  of a `Header.t` (#257)
 
 New features and bug fixes:
-* Copy basic auth from `Uri.userinfo` into the Authorization header for HTTP requests. (#255)
-* Install binaries via an OPAM `.install` file to ensure that they are reliably uninstalled. (#252)
+* Copy basic auth from `Uri.userinfo` into the Authorization header
+  for HTTP requests. (#255)
+* Install binaries via an OPAM `.install` file to ensure that they are
+  reliably uninstalled. (#252)
+* Use the `magic-mime` library to add a MIME type by probing filename
+  during static serving in the Lwt/Async backends. (#260)
+* Add `Cohttp.Header.add_opt_unless_exists` to set a header only if
+  an override wasn't supplied, and to initialise a fresh Header value
+  if none is present.
+* Do not override user-supplied headers in `post_form` or `redirect`.
 
 0.15.2 (2015-02-15):
 * When transfer encoding is unknown, read until EOF when body size is unknown. (#241)

@@ -75,7 +75,9 @@ module Server = struct
       Lwt_stream.on_terminate stream (fun () ->
         ignore_result (Lwt_io.close ic));
       let body = Cohttp_lwt_body.of_stream stream in
-      let res = Cohttp.Response.make ~status:`OK ~encoding ?headers () in
+      let mime_type = Magic_mime.lookup fname in
+      let headers = Cohttp.Header.add_opt_unless_exists headers "content-type" mime_type in
+      let res = Cohttp.Response.make ~status:`OK ~encoding ~headers () in
       return (res, body)
     with
      | Unix.Unix_error(Unix.ENOENT,_,_) | Isnt_a_file ->
