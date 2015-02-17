@@ -19,6 +19,8 @@ New features and bug fixes:
   RFC7231 forbids from having one (`HEAD`, `GET` and `DELETE`).
 * `Request.make` does not inject a `transfer-encoding` header if there
   is no body present in the request (#246).
+* `Server.respond` no longer overrides user-supplied headers that
+  specify the `content-length` or `transfer-encoding` headers (#268).
 
 0.15.2 (2015-02-15):
 * When transfer encoding is unknown, read until EOF when body size is unknown. (#241)
