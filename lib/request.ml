@@ -111,9 +111,10 @@ module Make(IO : S.IO) = struct
         match Header.get headers "host" with
         | None -> Uri.of_string path
         | Some host ->
-           let host_uri = Uri.of_string host in
+           Uri.of_string ("//"^host) |> fun host_uri ->
            Uri.of_string path |> fun uri ->
-           Uri.with_host uri (Uri.host host_uri)
+           Uri.with_host uri (Uri.host host_uri) |> fun uri ->
+           Uri.with_port uri (Uri.port host_uri)
       in
       let encoding = Header.get_transfer_encoding headers in
       return (`Ok { headers; meth; uri; version; encoding })
