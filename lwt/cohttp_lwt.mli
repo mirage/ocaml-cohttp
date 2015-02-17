@@ -69,8 +69,8 @@ module Make_response(IO:IO) : Response with module IO = IO
     up, but this can take some additional time to happen. *)
 module type Client = sig
   module IO : IO
-  module Request : Request
-  module Response : Response
+  module Request : Request with module IO = IO
+  module Response : Response with module IO = IO
 
   type ctx with sexp_of
   val default_ctx : ctx
@@ -163,8 +163,8 @@ module Make_client
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)
 module type Server = sig
   module IO : IO
-  module Request : Request
-  module Response : Response
+  module Request : Request with module IO = IO
+  module Response : Response with module IO = IO
 
   type ctx with sexp_of
   val default_ctx : ctx

@@ -56,8 +56,8 @@ end
 
 module type Client = sig
   module IO : IO
-  module Request : Request
-  module Response : Response
+  module Request : Request with module IO = IO
+  module Response : Response with module IO = IO
 
   type ctx with sexp_of
   val default_ctx : ctx
@@ -222,8 +222,8 @@ end
 (** Configuration of servers. *)
 module type Server = sig
   module IO : IO
-  module Request : Request
-  module Response : Response
+  module Request : Request with module IO = IO
+  module Response : Response with module IO = IO
 
   type ctx with sexp_of
   val default_ctx : ctx
