@@ -22,10 +22,13 @@ open Cohttp
     functors must be instantiated by an implementation that provides
     a concrete IO monad. *)
 
+module type IO = S.IO with type 'a t = 'a Lwt.t
+(** The IO module is specialized for the [Lwt] monad. *)
+
 (** The [Net] module type defines how to connect to a remote node
     and close the resulting channels to clean up. *)
 module type Net = sig
-  module IO : S.IO
+  module IO : IO
   type ctx with sexp_of
   val default_ctx: ctx
   val connect_uri : ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
@@ -40,10 +43,11 @@ module type Request = sig
   type t = Cohttp.Request.t with sexp
   include Cohttp.S.Request with type t := Cohttp.Request.t
   include Cohttp.S.Http_io with type t := Cohttp.Request.t
+                            and type 'a IO.t = 'a Lwt.t
 end
 
 (** Functor to build a concrete {! Request } from an IO implementation *)
-module Make_request(IO:S.IO) : Request with module IO = IO
+module Make_request(IO:IO) : Request with module IO = IO
 
 (** The [Response] module combines the {! Cohttp.Request } module with
     the IO functions, to have them conveniently in one place. *)
@@ -51,10 +55,11 @@ module type Response = sig
   type t = Cohttp.Response.t with sexp
   include Cohttp.S.Response with type t := Cohttp.Response.t
   include Cohttp.S.Http_io with type t := Cohttp.Response.t
+                            and type 'a IO.t = 'a Lwt.t
 end
 
 (** Functor to build a concrete {! Response } from an IO implementation *)
-module Make_response(IO:S.IO) : Response with module IO = IO
+module Make_response(IO:IO) : Response with module IO = IO
 
 (** The [Client] module implements non-pipelined single HTTP client
     calls.  Each call will open a separate {! Net } connection.  For
@@ -63,7 +68,7 @@ module Make_response(IO:S.IO) : Response with module IO = IO
     fashion.  It will still be finalized by a GC hook if it is not used
     up, but this can take some additional time to happen. *)
 module type Client = sig
-  module IO : S.IO
+  module IO : IO
   module Request : Request
   module Response : Response
 
@@ -143,7 +148,7 @@ end
     a connection that is established by the  {! Net } module.
     The resulting module satisfies the {! Client } module type. *)
 module Make_client
-    (IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
+    (IO:IO)
     (Request:Request with module IO = IO)
     (Response:Response with module IO = IO)
     (Net:Net with module IO = IO) : Client
@@ -154,7 +159,7 @@ module Make_client
 
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)
 module type Server = sig
-  module IO : S.IO
+  module IO : IO
   module Request : Request
   module Response : Response
 
@@ -174,7 +179,7 @@ module type Server = sig
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
 
   (** [respond ?headers ?flush ~status ~body] will respond to an HTTP
-    request with the given [status] code and response [body].  If 
+    request with the given [status] code and response [body].  If
     [flush] is true, then every response chunk will be flushed to
     the network rather than being buffered. [flush] is true by default. *)
   val respond :
@@ -213,7 +218,7 @@ end
     a connection that is established by the  {! Net } module.
     The resulting module satisfies the {! Server } module type. *)
 module Make_server
-    (IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
+    (IO:IO)
     (Request:Request with module IO=IO)
     (Response:Response with module IO=IO)
     (Net:Net with module IO = IO) :

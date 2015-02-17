@@ -18,8 +18,10 @@
 open Cohttp
 open Lwt
 
+module type IO = S.IO with type 'a t = 'a Lwt.t
+
 module type Net = sig
-  module IO : S.IO
+  module IO : IO
   type ctx with sexp_of
   val default_ctx : ctx
   val connect_uri : ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
@@ -32,9 +34,10 @@ module type Request = sig
   type t = Cohttp.Request.t with sexp
   include Cohttp.S.Request with type t := Cohttp.Request.t
   include Cohttp.S.Http_io with type t := Cohttp.Request.t
+                            and type 'a IO.t = 'a Lwt.t
 end
 
-module Make_request(IO:S.IO) = struct
+module Make_request(IO:IO) = struct
   include Cohttp.Request
   include (Make(IO) : module type of Make(IO) with type t := t)
 end
@@ -43,15 +46,16 @@ module type Response = sig
   type t = Cohttp.Response.t with sexp
   include Cohttp.S.Response with type t := Cohttp.Response.t
   include Cohttp.S.Http_io with type t := Cohttp.Response.t
+                            and type 'a IO.t = 'a Lwt.t
 end
 
-module Make_response(IO:S.IO) = struct
+module Make_response(IO:IO) = struct
   include Cohttp.Response
   include (Make(IO) : module type of Make(IO) with type t := t)
 end
 
 module type Client = sig
-  module IO : S.IO
+  module IO : IO
   module Request : Request
   module Response : Response
 
@@ -116,7 +120,7 @@ module type Client = sig
 end
 
 module Make_client
-    (IO:S.IO with type 'a t = 'a Lwt.t)
+    (IO:IO)
     (Request:Request with module IO = IO)
     (Response:Response with module IO = IO)
     (Net:Net with module IO = IO) = struct
@@ -211,7 +215,7 @@ end
 
 (** Configuration of servers. *)
 module type Server = sig
-  module IO : S.IO
+  module IO : IO
   module Request : Request
   module Response : Response
 
@@ -261,7 +265,7 @@ module type Server = sig
 end
 
 
-module Make_server(IO:Cohttp.S.IO with type 'a t = 'a Lwt.t)
+module Make_server(IO:IO)
     (Request:Request with module IO=IO)
     (Response:Response with module IO=IO)
     (Net:Net with module IO=IO) = struct
