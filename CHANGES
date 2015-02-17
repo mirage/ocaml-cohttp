@@ -14,6 +14,7 @@ New features and bug fixes:
 * Add `Cohttp.Header.add_opt_unless_exists` to set a header only if
   an override wasn't supplied, and to initialise a fresh Header value
   if none is present.
+* Do not override user-supplied headers in `post_form` or `redirect`.
 
 0.15.2 (2015-02-15):
 * When transfer encoding is unknown, read until EOF when body size is unknown. (#241)
