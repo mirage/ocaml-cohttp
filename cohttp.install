@@ -3,4 +3,5 @@ bin: [
   "?cohttp-server-lwt"
   "?cohttp-curl-async"
   "?cohttp-curl-lwt"
+  "?cohttp-proxy-lwt"
 ]
