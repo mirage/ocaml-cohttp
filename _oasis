@@ -156,6 +156,15 @@ Executable test_header
   Install:            false
   BuildDepends:       cohttp, oUnit (>= 1.0.2)
 
+Executable test_request
+  Path:               lib_test
+  MainIs:             test_request.ml
+  Build$:             flag(tests)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, oUnit (>= 1.0.2)
+
 Executable test_net_lwt
   Path:               lib_test
   MainIs:             test_net_lwt.ml
@@ -335,6 +344,11 @@ Test test_accept
 Test test_header
   Run$:               flag(tests)
   Command:            $test_header
+  WorkingDirectory:   lib_test
+
+Test test_request
+  Run$:               flag(tests)
+  Command:            $test_request
   WorkingDirectory:   lib_test
 
 Test test_parser

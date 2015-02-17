@@ -13,7 +13,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- *)
+*)
 
 open Sexplib.Std
 
@@ -34,23 +34,23 @@ let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
     (* Add user:password auth to headers from uri
      * if headers don't already have auth *)
     match Header.get_authorization headers, Uri.userinfo uri with
-      | None, Some userinfo -> begin
-          match Stringext.split ~on:':' userinfo ~max:2 with
-            | [user; pass] ->
-                let auth = `Basic (Uri.pct_decode user, Uri.pct_decode pass) in
-                  Header.add_authorization headers auth
-            | _ -> headers
-        end
-      | _, _ -> headers
+    | None, Some userinfo -> begin
+        match Stringext.split ~on:':' userinfo ~max:2 with
+        | [user; pass] ->
+          let auth = `Basic (Uri.pct_decode user, Uri.pct_decode pass) in
+          Header.add_authorization headers auth
+        | _ -> headers
+      end
+    | _, _ -> headers
   in
   let encoding =
     match encoding with
     | None -> begin
-       (* Check for a content-length in the supplied headers first *)
-       match Header.get_content_range headers with
-       | Some clen -> Transfer.Fixed clen
-       | None -> Transfer.Fixed Int64.zero
-     end
+        (* Check for a content-length in the supplied headers first *)
+        match Header.get_content_range headers with
+        | Some clen -> Transfer.Fixed clen
+        | None -> Transfer.Fixed Int64.zero
+      end
     | Some e -> e
   in
   { meth; version; headers; uri; encoding }
@@ -58,13 +58,13 @@ let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
 let is_keep_alive { version; headers; _ } =
   not (version = `HTTP_1_0 ||
        (match Header.connection headers with
-       | Some `Close -> true
-       | _ -> false))
+        | Some `Close -> true
+        | _ -> false))
 
 (* Make a client request, which involves guessing encoding and
    adding content headers if appropriate.
    @param chunked Forces chunked encoding
- *)
+*)
 let make_for_client ?headers ?(chunked=true) ?(body_length=Int64.zero) meth uri =
   let encoding =
     match chunked with
@@ -90,15 +90,15 @@ module Make(IO : S.IO) = struct
     let open Code in
     read_line ic >>= function
     | Some request_line -> begin
-      match Stringext.split request_line ~on:' ' with
-      | [ meth_raw; path; http_ver_raw ] -> begin
-          let m = method_of_string meth_raw in
-          match version_of_string http_ver_raw with
-          | `HTTP_1_1 | `HTTP_1_0 as v -> return (`Ok (m, path, v))
-          | `Other _ -> return (`Invalid ("Malformed request HTTP version: " ^ http_ver_raw))
+        match Stringext.split request_line ~on:' ' with
+        | [ meth_raw; path; http_ver_raw ] -> begin
+            let m = method_of_string meth_raw in
+            match version_of_string http_ver_raw with
+            | `HTTP_1_1 | `HTTP_1_0 as v -> return (`Ok (m, path, v))
+            | `Other _ -> return (`Invalid ("Malformed request HTTP version: " ^ http_ver_raw))
+          end
+        | _ -> return (`Invalid ("Malformed request header: " ^ request_line))
       end
-      | _ -> return (`Invalid ("Malformed request header: " ^ request_line))
-    end
     | None -> return `Eof
 
   let read ic =
@@ -125,14 +125,17 @@ module Make(IO : S.IO) = struct
   let read_body_chunk = Transfer_IO.read
 
   let write_header req oc =
-   let fst_line = Printf.sprintf "%s %s %s\r\n" (Code.string_of_method req.meth)
-      (Uri.path_and_query req.uri) (Code.string_of_version req.version) in
+    let fst_line =
+      Printf.sprintf "%s %s %s\r\n"
+        (Code.string_of_method req.meth)
+        (Uri.path_and_query req.uri)
+        (Code.string_of_version req.version) in
     let headers = Header.add_unless_exists req.headers "host"
-        (Uri.host_with_default ~default:"localhost" req.uri ^
-           match Uri.port req.uri with
-           | Some p -> ":" ^ string_of_int p
-           | None -> ""
-        ) in
+                    (Uri.host_with_default ~default:"localhost" req.uri ^
+                     match Uri.port req.uri with
+                     | Some p -> ":" ^ string_of_int p
+                     | None -> ""
+                    ) in
     let headers = Header.add_transfer_encoding headers req.encoding in
     IO.write oc fst_line >>= fun _ ->
     iter (IO.write oc) (Header.to_lines headers) >>= fun _ ->
@@ -145,10 +148,10 @@ module Make(IO : S.IO) = struct
 
   let write_footer req oc =
     match req.encoding with
-    |Transfer.Chunked ->
-       (* TODO Trailer header support *)
-       IO.write oc "0\r\n\r\n"
-    |Transfer.Fixed _ | Transfer.Unknown -> return ()
+    | Transfer.Chunked ->
+      (* TODO Trailer header support *)
+      IO.write oc "0\r\n\r\n"
+    | Transfer.Fixed _ | Transfer.Unknown -> return ()
 
   let write ?flush write_body req oc =
     write_header req oc >>= fun () ->
