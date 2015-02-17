@@ -61,6 +61,9 @@ module type Client = sig
 
   type ctx with sexp_of
   val default_ctx : ctx
+  val close_in : IO.ic -> unit
+  val close_out : IO.oc -> unit
+  val close : IO.ic -> IO.oc -> unit
 
   val call :
     ?ctx:ctx ->
@@ -131,6 +134,9 @@ module Make_client
 
   type ctx = Net.ctx with sexp_of
   let default_ctx = Net.default_ctx
+  let close_in = Net.close_in
+  let close_out = Net.close_out
+  let close = Net.close
 
   let read_response ?closefn ic oc =
     Response.read ic >>= function
@@ -221,6 +227,9 @@ module type Server = sig
 
   type ctx with sexp_of
   val default_ctx : ctx
+  val close_in : IO.ic -> unit
+  val close_out : IO.oc -> unit
+  val close : IO.ic -> IO.oc -> unit
 
   type conn = IO.conn * Cohttp.Connection.t
 
@@ -275,6 +284,9 @@ module Make_server(IO:IO)
 
   type ctx = Net.ctx with sexp_of
   let default_ctx = Net.default_ctx
+  let close_in = Net.close_in
+  let close_out = Net.close_out
+  let close = Net.close
 
   type conn = IO.conn * Cohttp.Connection.t
 

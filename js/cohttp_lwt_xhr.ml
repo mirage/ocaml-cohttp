@@ -76,6 +76,9 @@ end) = struct
   let default_ctx = ()
   type ctx = unit
   let sexp_of_ctx _ = Sexplib.Sexp.List []
+  let close_in _ = ()
+  let close_out _ = ()
+  let close _ _ = ()
 
   let call ?ctx ?headers ?body ?chunked meth uri = X.call ?headers ?body meth uri
 
@@ -243,5 +246,3 @@ module Client_sync = Make_client_sync(struct
   let chunk_size = 0
   let convert_body_string = Js.to_bytestring
 end)
-
-

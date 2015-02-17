@@ -74,6 +74,9 @@ module type Client = sig
 
   type ctx with sexp_of
   val default_ctx : ctx
+  val close_in : IO.ic -> unit
+  val close_out : IO.oc -> unit
+  val close : IO.ic -> IO.oc -> unit
 
   (** [call ?ctx ?headers ?body ?chunked meth uri] will resolve the
     [uri] to a concrete network endpoint using the resolver initialized
@@ -165,6 +168,9 @@ module type Server = sig
 
   type ctx with sexp_of
   val default_ctx : ctx
+  val close_in : IO.ic -> unit
+  val close_out : IO.oc -> unit
+  val close : IO.ic -> IO.oc -> unit
 
   type conn = IO.conn * Cohttp.Connection.t
 
