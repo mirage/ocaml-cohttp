@@ -119,7 +119,11 @@ module Make(IO : S.IO) = struct
       let encoding = Header.get_transfer_encoding headers in
       return (`Ok { headers; meth; uri; version; encoding })
 
-  let has_body req = Transfer.has_body req.encoding
+  (* Defined for method types in RFC7231 *)
+  let has_body req =
+    match req.meth with
+    | `GET | `HEAD | `DELETE -> `No
+    | `POST | `PUT | `PATCH | `OPTIONS | `Other _ -> Transfer.has_body req.encoding
 
   let make_body_reader req ic = Transfer_IO.make_reader req.encoding ic
   let read_body_chunk = Transfer_IO.read
@@ -136,7 +140,10 @@ module Make(IO : S.IO) = struct
                      | Some p -> ":" ^ string_of_int p
                      | None -> ""
                     ) in
-    let headers = Header.add_transfer_encoding headers req.encoding in
+    let headers =
+      match has_body req with
+      | `Yes | `Unknown -> Header.add_transfer_encoding headers req.encoding
+      | `No -> headers in
     IO.write oc fst_line >>= fun _ ->
     iter (IO.write oc) (Header.to_lines headers) >>= fun _ ->
     IO.write oc "\r\n"
