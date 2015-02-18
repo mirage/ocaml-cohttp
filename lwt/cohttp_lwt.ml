@@ -298,7 +298,14 @@ module Make_server(IO:IO)
     Filename.concat docroot rel_path
 
   let respond ?headers ?(flush=true) ~status ~body () =
-    let encoding = Cohttp_lwt_body.transfer_encoding body in
+    let encoding = 
+      match headers with
+      | None -> Cohttp_lwt_body.transfer_encoding body
+      | Some headers ->
+         match Header.get_transfer_encoding headers with
+         | Transfer.Unknown -> Cohttp_lwt_body.transfer_encoding body
+         | t -> t
+    in
     let res = Response.make ~status ~flush ~encoding ?headers () in
     return (res, body)
 

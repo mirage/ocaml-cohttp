@@ -33,7 +33,7 @@ depends: [
   "ocamlfind" {build}
   "cmdliner" {build & >= "0.9.4"}
   "re"
-  "uri" {>= "1.5.0"}
+  "uri" {>= "1.8.0"}
   "fieldslib" {>= "109.20.00"}
   "sexplib" {>= "109.53.00"}
   "conduit" {>= "0.7.0"}

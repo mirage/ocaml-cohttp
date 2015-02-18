@@ -15,6 +15,12 @@ New features and bug fixes:
   an override wasn't supplied, and to initialise a fresh Header value
   if none is present.
 * Do not override user-supplied headers in `post_form` or `redirect`.
+* `Request.has_body` does not permit a body to be set for methods that
+  RFC7231 forbids from having one (`HEAD`, `GET` and `DELETE`).
+* `Request.make` does not inject a `transfer-encoding` header if there
+  is no body present in the request (#246).
+* `Server.respond` no longer overrides user-supplied headers that
+  specify the `content-length` or `transfer-encoding` headers (#268).
 
 0.15.2 (2015-02-15):
 * When transfer encoding is unknown, read until EOF when body size is unknown. (#241)
