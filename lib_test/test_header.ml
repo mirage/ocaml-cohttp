@@ -86,6 +86,15 @@ let rec was_successful =
     | RTodo _::_ ->
         false
 
+let list_valued_header () =
+  let h = H.init () in
+  let h = H.add h "accept" "foo" in
+  let h = H.add h "accept" "bar" in
+  assert_equal
+    ~printer:(function
+      | None -> "None"
+      | Some x -> x) (H.get h "accept") (Some "bar,foo")
+
 module Content_range = struct
   let h1 = H.of_list [("Content-Length", "123")]
   let h2 = H.of_list [("Content-Range", "bytes 200-300/1000")]
@@ -104,6 +113,7 @@ let _ =
     "Content Range - none" >:: Content_range.none;
     "Content Range - content-length" >:: Content_range.content_length;
     "Content Range - content-range" >:: Content_range.content_range;
+    "Header - get list valued" >:: list_valued_header;
   ] in
   let verbose = ref false in
   let set_verbose _ = verbose := true in

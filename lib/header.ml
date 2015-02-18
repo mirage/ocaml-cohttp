@@ -34,13 +34,17 @@ type t = string list StringMap.t
 
 let user_agent = Conf.user_agent
 
-let headers_with_list_values = List.map LString.of_string [
+let headers_with_list_values = Array.map LString.of_string [|
   "accept";"accept-charset";"accept-encoding";"accept-language";
   "accept-ranges";"allow";"cache-control";"connection";"content-encoding";
   "content-language";"expect";"if-match";"if-none-match";"pragma";
   "proxy-authenticate";"te";"trailer";"transfer-encoding";"upgrade";
-  "vary";"via";"warning";"www-authenticate";
-]
+  "vary";"via";"warning";"www-authenticate"; |]
+
+let is_header_with_list_value =
+  let tbl = Hashtbl.create (Array.length headers_with_list_values) in
+  headers_with_list_values |> Array.iter (fun h -> Hashtbl.add tbl h ());
+  fun h -> Hashtbl.mem tbl h
 
 let init () =
   StringMap.empty
@@ -66,17 +70,14 @@ let replace h k v =
   let k = LString.of_string k in
   StringMap.add k [v] h
 
-let get =
-  let lhm = List.fold_left
-    (fun m k -> StringMap.add k () m) StringMap.empty
-    headers_with_list_values
-  in fun h k ->
-    let k = LString.of_string k in
-    try let v = StringMap.find k h in
-        if StringMap.exists (fun k' () -> k=k') lhm
-        then Some (String.concat "," v)
-        else Some (List.hd v)
-    with Not_found | Failure _ -> None
+let get h k =
+  let k = LString.of_string k in
+  try
+    let v = StringMap.find k h in
+    if is_header_with_list_value k
+    then Some (String.concat "," v)
+    else Some (List.hd v)
+  with Not_found | Failure _ -> None
 
 let mem h k = StringMap.mem (LString.of_string k) h
 
