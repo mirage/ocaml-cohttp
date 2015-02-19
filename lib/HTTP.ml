@@ -22,7 +22,7 @@ open Sexplib.Conv
 module Make(Conduit:Conduit_mirage.S) = struct
 
   module Channel = Channel.Make(Conduit.Flow)
-  module HTTP_IO = HTTP_IO.Make(Channel)
+  module HTTP_IO = Cohttp_mirage_io.Make(Channel)
 
   module Net_IO = struct
 
@@ -32,13 +32,13 @@ module Make(Conduit:Conduit_mirage.S) = struct
     type ic = Channel.t
     type oc = Channel.t
     type flow = Conduit.flow
-    
+
     type ctx = {
       resolver: Resolver_lwt.t;
       ctx: Conduit.ctx;
     } with sexp_of
 
-    let default_ctx = 
+    let default_ctx =
       { resolver = Resolver_mirage.localhost;
         ctx = Conduit.default_ctx }
 
