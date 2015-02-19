@@ -29,25 +29,26 @@ module Make(Channel:V1_LWT.CHANNEL) = struct
   let iter fn x = Lwt_list.iter_s fn x
 
   let read_line ic =
-    match_lwt Channel.read_line ic with
+    Channel.read_line ic >>= function
     | [] -> return None
     | bufs -> return (Some (Cstruct.copyv bufs))
 
   let read ic len =
-    try_lwt
-      lwt iop = Channel.read_some ~len ic in
-      return (Cstruct.to_string iop)
-    with End_of_file -> return ""
+    Lwt.catch
+      (fun () ->
+         Channel.read_some ~len ic >>= fun iop ->
+         return (Cstruct.to_string iop))
+      (function End_of_file -> return "" | e -> Lwt.fail e)
 
   let read_exactly ic buf off len =
     let rec read acc left =
       match left with
       | 0   -> return (List.rev acc)
       | len ->
-        lwt iop = Channel.read_some ~len ic in
+        Channel.read_some ~len ic >>= fun iop ->
         read (iop::acc) (left - (Cstruct.len iop))
     in
-    lwt iov = read [] len in
+    read [] len >>= fun iov ->
     (* XXX TODO this is hyper slow! *)
     let srcbuf = Cstruct.copyv iov in
     String.blit srcbuf 0 buf off (String.length srcbuf);
