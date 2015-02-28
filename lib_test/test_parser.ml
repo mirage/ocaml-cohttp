@@ -111,7 +111,9 @@ let basic_req_parse () =
   | `Ok req ->
     assert_equal (Cohttp.Request.version req) `HTTP_1_1;
     assert_equal (CU.Request.meth req) `GET;
-    assert_equal (Uri.to_string (CU.Request.uri req)) "http://www.example.com/index.html";
+    assert_equal ~printer:(fun x -> x)
+      "http://www.example.com/index.html"
+      (Uri.to_string (CU.Request.uri req));
     return ()
   | _ -> assert false
 
