@@ -95,20 +95,25 @@ module Make(IO : S.IO) = struct
     | Fixed len -> Fixed.read ~remaining:(ref len)
     | Unknown -> Unknown.read
 
+  let write_ignore_blank writer io s =
+    if String.length s = 0
+    then return ()
+    else writer io s
+
   let make_writer ?(flush=false) mode =
     match flush with
     | false -> begin
         match mode with
-       | Chunked -> Chunked.write
-       | Fixed len -> Fixed.write
-       | Unknown -> Unknown.write
-    end
+        | Chunked -> Chunked.write
+        | Fixed len -> Fixed.write
+        | Unknown -> Unknown.write
+      end
     | true -> begin
         match mode with
-       | Chunked -> write_and_flush Chunked.write
-       | Fixed len -> write_and_flush Fixed.write
-       | Unknown -> write_and_flush Unknown.write
-    end
+        | Chunked -> write_and_flush Chunked.write
+        | Fixed len -> write_and_flush Fixed.write
+        | Unknown -> write_and_flush Unknown.write
+      end |> write_ignore_blank
 
   let read reader = reader ()
   let write writer buf = writer buf
