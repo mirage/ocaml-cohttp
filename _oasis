@@ -138,6 +138,15 @@ Executable test_parser
   Install:            false
   BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2)
 
+Executable test_parser_async
+  Path:               lib_test
+  MainIs:             test_parser_async.ml
+  Build$:             flag(tests) && flag(async)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.async, oUnit (>= 1.0.2)
+
 Executable test_accept
   Path:               lib_test
   MainIs:             test_accept.ml
@@ -354,6 +363,11 @@ Test test_request
 Test test_parser
   Run$:               flag(tests) && flag(lwt_unix)
   Command:            $test_parser
+  WorkingDirectory:   lib_test
+
+Test test_parser_async
+  Run$:               flag(tests) && flag(async)
+  Command:            $test_parser_async
   WorkingDirectory:   lib_test
 
 Test test_net_lwt
