@@ -25,13 +25,13 @@ module IO : (module type of Cohttp_async_io)
 module Request : sig
   type t = Cohttp.Request.t
   include Cohttp.S.Request with type t := Cohttp.Request.t
-  include Cohttp.S.Http_io with type t := Cohttp.Request.t and module IO=Cohttp_async_io
+  include Cohttp.S.Http_io with type t := Cohttp.Request.t and module IO=IO
 end
 
 module Response : sig
   type t = Cohttp.Response.t
   include Cohttp.S.Response with type t := Cohttp.Response.t
-  include Cohttp.S.Http_io with type t := Cohttp.Response.t and module IO=Cohttp_async_io
+  include Cohttp.S.Http_io with type t := Cohttp.Response.t and module IO=IO
 end
 
 module Body : sig

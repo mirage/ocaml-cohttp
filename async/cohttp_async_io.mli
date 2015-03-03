@@ -14,8 +14,10 @@
  * PERFORMANCE OF THIS SOFTWARE.
 *)
 
+open Async.Std
+
 include Cohttp.S.IO
-  with type 'a t = 'a Async.Std.Deferred.t
-   and type ic = Async.Std.Reader.t
-   and type oc = Async.Std.Writer.t
+  with type 'a t = 'a Deferred.t
+   and type ic = Reader.t
+   and type oc = Writer.t
    and type conn = unit
