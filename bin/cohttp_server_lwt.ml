@@ -23,28 +23,11 @@ open Lwt
 open Cohttp
 open Cohttp_lwt_unix
 
-let ( / ) = Filename.concat
+open Cohttp_server
 
 let serve_file ~docroot ~uri =
   let fname = Server.resolve_local_file ~docroot ~uri in
   Server.respond_file ~fname ()
-
-let compare_kind = function
-  | Some Unix.S_DIR, Some Unix.S_DIR -> 0
-  | Some Unix.S_DIR, _               -> -1
-  | _              , Some Unix.S_DIR -> 1
-  | Some Unix.S_REG, Some Unix.S_REG -> 0
-  | Some Unix.S_REG, _               -> 1
-  | _              , Some Unix.S_REG -> -1
-  | _              , _               -> 0
-
-let sort = List.sort (fun (ka,a) (kb,b) ->
-  let c = compare_kind (ka,kb) in
-  if c <> 0 then c
-  else String.compare (String.lowercase a) (String.lowercase b)
-)
-
-let li l = sprintf "<li><a href=\"%s\">%s</a></li>" (Uri.to_string l)
 
 let ls_dir dir =
   Lwt_stream.to_list
@@ -68,8 +51,8 @@ let handler ~info ~docroot ~verbose ~index (ch,conn) req body =
   catch (fun () ->
     Lwt_unix.stat file_name
     >>= fun stat ->
-    match stat.Unix.st_kind with
-    | Unix.S_DIR -> begin
+    match kind_of_unix_kind stat.Unix.st_kind with
+    | `Directory -> begin
       let path_len = String.length path in
       if path_len <> 0 && path.[path_len - 1] <> '/'
       then Server.respond_redirect ~uri:(Uri.with_path uri (path^"/")) ()
@@ -82,56 +65,26 @@ let handler ~info ~docroot ~verbose ~index (ch,conn) req body =
           let file_name = file_name / f in
           Lwt.try_bind
             (fun () -> Lwt_unix.stat file_name)
-            (fun stat -> return (Some stat.Unix.st_kind, f))
+            (fun stat -> return (Some (kind_of_unix_kind stat.Unix.st_kind), f))
             (fun exn -> return (None, f)))
         >>= fun listing ->
-        let html = List.map (fun (kind, f) ->
-          let encoded_f = Uri.pct_encode f in
-          match kind with
-          | Some Unix.S_DIR ->
-            let link = Uri.with_path uri (path / encoded_f / "") in
-            li link (sprintf "<i>%s/</i>" f)
-          | Some Unix.S_REG ->
-            let link = Uri.with_path uri (path / encoded_f) in
-            li link f
-          | Some _ -> sprintf "<li><s>%s</s></li>" f
-          | None -> sprintf "<li>Error with file: %s</li>" f
-        ) (sort listing) in
-        let contents = String.concat "\n" html in
-        let body = sprintf "
-              <html>
-                <body>
-                <h2>Directory Listing for <em>%s</em></h2>
-                <ul>%s</ul>
-                <hr />%s
-                </body>
-              </html>"
-          (Uri.pct_decode path) contents info in
+        let body = html_of_listing uri path (sort listing) info in
         Server.respond_string ~status:`OK ~body ()
     end
-    | Unix.S_REG -> serve_file ~docroot ~uri
+    | `File -> serve_file ~docroot ~uri
     | _ ->
       Server.respond_string ~status:`Forbidden
-        ~body:(sprintf "<html><body><h2>Forbidden</h2>
-        <p><b>%s</b> is not a normal file or directory</p>
-        <hr />%s</body></html>" path info)
+        ~body:(html_of_forbidden_unnormal path info)
         ()
   ) (function
   | Unix.Unix_error(Unix.ENOENT, "stat", p) as e ->
     if p = file_name
     then Server.respond_string ~status:`Not_found
-      ~body:(sprintf "<html><body><h2>Not Found</h2>
-      <p><b>%s</b> was not found on this server</p>
-      <hr />%s</body></html>" path info)
+      ~body:(html_of_not_found path info)
       ()
     else fail e
   | e -> fail e
   )
-
-let string_of_sockaddr = function
-  | Unix.ADDR_UNIX x -> x
-  | Unix.ADDR_INET (inet_addr, port) ->
-    (Unix.string_of_inet_addr inet_addr) ^ ":" ^ (string_of_int port)
 
 let start_server docroot port host index verbose cert key () =
   printf "Listening for HTTP request on: %s %d\n" host port;
