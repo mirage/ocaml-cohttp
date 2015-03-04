@@ -31,13 +31,18 @@ let compare_kind = function
   | _              , Some `File      -> -1
   | _              , _               -> 0
 
-let sort lst = List.sort (fun (ka,a) (kb,b) ->
+let sort lst = List.sort (fun (ka,_sa,a) (kb,_sb,b) ->
   let c = compare_kind (ka,kb) in
   if c <> 0 then c
   else String.compare (String.lowercase a) (String.lowercase b)
 ) lst
 
-let li l = sprintf "<li><a href=\"%s\">%s</a></li>" (Uri.to_string l)
+let li ?title l =
+  let title = match title with
+    | None -> ""
+    | Some s -> sprintf "title=\"%s\" " s
+  in
+  sprintf "<li><a %shref=\"%s\">%s</a></li>" title (Uri.to_string l)
 
 let kind_of_unix_kind = Unix.(function
   | S_DIR  -> `Directory
@@ -49,8 +54,20 @@ let kind_of_unix_kind = Unix.(function
   | S_LNK  -> `Link
 )
 
+let human_size_of_size size =
+  let size = Int64.to_float size in
+  let kibi = size /. 1024. in
+  if kibi < 1. then sprintf "%.0fB" size
+  else
+    let mibi = kibi /. 1024. in
+    if mibi < 1. then sprintf "%.1fKiB" kibi
+    else
+      let gibi = mibi /. 1024. in
+      if gibi < 1. then sprintf "%.1fMiB" mibi
+      else sprintf "%.1fGiB" gibi
+
 let html_of_listing uri path listing info =
-  let html = List.map (fun (kind, f) ->
+  let html = List.map (fun (kind, size, f) ->
     let encoded_f = Uri.pct_encode f in
     match kind with
     | Some `Directory ->
@@ -58,7 +75,7 @@ let html_of_listing uri path listing info =
       li link (sprintf "<i>%s/</i>" f)
     | Some `File ->
       let link = Uri.with_path uri (path / encoded_f) in
-      li link f
+      li ~title:(human_size_of_size size) link f
     | Some (`Socket|`Block|`Fifo|`Char|`Link) ->
       sprintf "<li><s>%s</s></li>" f
     | None -> sprintf "<li>Error with file: %s</li>" f

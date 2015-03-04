@@ -60,10 +60,10 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
           let file_name = file_name / f in
           try_with (fun () ->
             Unix.stat file_name
-            >>| fun stat -> (Some stat.Unix.Stats.kind, f)
-          ) >>| function Ok v -> v | Error _ -> (None, f))
+            >>| fun stat -> (Some stat.Unix.Stats.kind, stat.Unix.Stats.size, f)
+          ) >>| function Ok v -> v | Error _ -> (None, 0L, f))
         >>= fun listing ->
-        html_of_listing uri path (sort ((Some `Directory,"..")::listing)) info
+        html_of_listing uri path (sort ((Some `Directory,0L,"..")::listing)) info
       |> Server.respond_with_string
     end
     (* Serve the local file contents *)

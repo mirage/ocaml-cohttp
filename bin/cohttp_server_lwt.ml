@@ -64,9 +64,12 @@ let handler ~info ~docroot ~verbose ~index (ch,conn) req body =
         >>= Lwt_list.map_s (fun f ->
           let file_name = file_name / f in
           Lwt.try_bind
-            (fun () -> Lwt_unix.stat file_name)
-            (fun stat -> return (Some (kind_of_unix_kind stat.Unix.st_kind), f))
-            (fun exn -> return (None, f)))
+            (fun () -> Lwt_unix.LargeFile.stat file_name)
+            (fun stat ->
+              return (Some (kind_of_unix_kind stat.Unix.LargeFile.st_kind),
+                      stat.Unix.LargeFile.st_size,
+                      f))
+            (fun exn -> return (None, 0L, f)))
         >>= fun listing ->
         let body = html_of_listing uri path (sort listing) info in
         Server.respond_string ~status:`OK ~body ()
