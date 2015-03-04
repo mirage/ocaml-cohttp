@@ -51,11 +51,11 @@ module Make(Channel:V1_LWT.CHANNEL) = struct
     read [] len >>= fun iov ->
     (* XXX TODO this is hyper slow! *)
     let srcbuf = Cstruct.copyv iov in
-    String.blit srcbuf 0 buf off (String.length srcbuf);
+    Bytes.blit srcbuf 0 buf off (String.length srcbuf);
     return true
 
   let read_exactly ic len =
-    let buf = String.create len in
+    let buf = Bytes.create len in
     read_exactly ic buf 0 len >>= function
     | true -> return (Some buf)
     | false -> return None
