@@ -11,6 +11,6 @@ Library "mirage-http"
   CompiledObject:     best
   Path:               lib
   Findlibname:        mirage-http
-  Modules:            HTTP, Cohttp_mirage_io
+  Modules:            Cohttp_mirage, Cohttp_mirage_io
   BuildDepends:       cohttp.lwt-core, tcpip.channel, conduit.mirage, sexplib.syntax
   XMETARequires:      cohttp.lwt-core, tcpip.channel, lwt, conduit.mirage, sexplib
