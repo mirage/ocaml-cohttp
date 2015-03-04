@@ -37,8 +37,8 @@ module Client = struct
   let custom_ctx = Cohttp_lwt_unix_net.custom_ctx
 end
 
-module Server_core = Cohttp_lwt.Make_server
-  (Cohttp_lwt_unix_io)(Request)(Response)(Cohttp_lwt_unix_net)
+module Server_core =
+  Cohttp_lwt.Make_server (Cohttp_lwt_unix_io)(Request)(Response)
 
 module Server = struct
   include Server_core
@@ -86,7 +86,7 @@ module Server = struct
          let body = Printexc.to_string exn in
          respond_error ~status:`Internal_server_error ~body ()
 
-  let create ?timeout ?stop ?(ctx=default_ctx) ?(mode=`TCP (`Port 8080)) spec =
+  let create ?timeout ?stop ?(ctx=Cohttp_lwt_unix_net.default_ctx) ?(mode=`TCP (`Port 8080)) spec =
     Conduit_lwt_unix.serve ?timeout ?stop ~ctx:ctx.Cohttp_lwt_unix_net.ctx ~mode
       (fun conn ic oc -> (callback spec) conn ic oc)
 end
@@ -96,7 +96,6 @@ module type S = sig
   include Cohttp_lwt.Server with module IO = Cohttp_lwt_unix_io
                              and module Request = Request
                              and module Response = Response
-                             and   type ctx = Cohttp_lwt_unix_net.ctx
 
   val resolve_file :
     docroot:string -> uri:Uri.t -> string
