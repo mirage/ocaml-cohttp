@@ -20,4 +20,3 @@ include Cohttp.S.IO
   with type 'a t = 'a Deferred.t
    and type ic = Reader.t
    and type oc = Writer.t
-   and type conn = unit
