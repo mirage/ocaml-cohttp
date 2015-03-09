@@ -57,7 +57,7 @@ module Client (Conduit:Conduit_mirage.S) = struct
     let close ic oc = ignore_result (Channel.close ic)
 
   end
-
+  let ctx resolver ctx = { Net_IO.resolver; ctx }
   (* Build all the core modules from the [Cohttp_lwt] functors *)
   module XRequest = Cohttp_lwt.Make_request(HTTP_IO)
   module XResponse = Cohttp_lwt.Make_response(HTTP_IO)
