@@ -20,28 +20,11 @@ open Core.Std
 open Async.Std
 open Cohttp_async
 
-let ( / ) = Filename.concat
+open Cohttp_server
 
 let serve_file ~docroot ~uri =
   Server.resolve_local_file ~docroot ~uri
   |> Server.respond_with_file
-
-let compare_kind = function
-  | Some `Directory, Some `Directory -> 0
-  | Some `Directory, _               -> -1
-  | _              , Some `Directory -> 1
-  | Some `File     , Some `File      -> 0
-  | Some `File     , _               -> 1
-  | _              , Some `File      -> -1
-  | _              , _               -> 0
-
-let sort = List.sort ~cmp:(fun (ka,a) (kb,b) ->
-  let c = compare_kind (ka,kb) in
-  if c <> 0 then c
-  else String.compare (String.lowercase a) (String.lowercase b)
-)
-
-let li l = sprintf "<li><a href=\"%s\">%s</a></li>" (Uri.to_string l)
 
 (** HTTP handler *)
 let rec handler ~info ~docroot ~verbose ~index ~body sock req =
@@ -77,34 +60,10 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
           let file_name = file_name / f in
           try_with (fun () ->
             Unix.stat file_name
-            >>| fun stat -> (Some stat.Unix.Stats.kind, f)
-          ) >>| function Ok v -> v | Error _ -> (None, f))
+            >>| fun stat -> (Some stat.Unix.Stats.kind, stat.Unix.Stats.size, f)
+          ) >>| function Ok v -> v | Error _ -> (None, 0L, f))
         >>= fun listing ->
-        let html = List.map ~f:(fun (kind, f) ->
-          match kind with
-          | Some `Directory ->
-            let link = Uri.with_path uri (path / (Uri.pct_encode f) / "") in
-            li link (sprintf "<i>%s/</i>" f)
-          | Some `File ->
-            let link = Uri.with_path uri (path / (Uri.pct_encode f)) in
-            li link f
-          | Some (`Socket|`Block|`Fifo|`Char|`Link) ->
-            sprintf "<li><s>%s</s></li>" f
-          | None -> sprintf "<li>Error with file: %s</li>" f
-        ) (sort ((Some `Directory,"..")::listing))
-        in
-        (* Concatenate the HTML into a response *)
-        String.concat ~sep:"\n" html
-      |> fun contents ->
-        sprintf "
-         <html>
-           <body>
-           <h2>Directory Listing for <em>%s</em></h2>
-           <ul>%s</ul>
-           <hr>%s
-           </body>
-         </html>"
-          (Uri.pct_decode path) contents info
+        html_of_listing uri path (sort ((Some `Directory,0L,"..")::listing)) info
       |> Server.respond_with_string
     end
     (* Serve the local file contents *)
@@ -112,9 +71,7 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
     (* Any other file type is simply forbidden *)
     | `Socket | `Block | `Fifo | `Char | `Link ->
       Server.respond_with_string ~code:`Forbidden
-        (sprintf "<html><body><h2>Forbidden</h2>
-         <p><b>%s</b> is not a normal file or directory</p>
-         <hr />%s</body></html>" path info)
+        (html_of_forbidden_unnormal path info)
   )
   >>= (function
   | Ok res -> return res
@@ -124,9 +81,7 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
     | Unix.Unix_error (Unix.ENOENT, "stat", p) ->
       if p = ("((filename "^file_name^"))") (* Really? *)
       then Server.respond_with_string ~code:`Not_found
-        (sprintf "<html><body><h2>Not Found</h2>
-         <p><b>%s</b> was not found on this server</p>
-         <hr />%s</body></html>" path info)
+        (html_of_not_found path info)
       else raise exn
     | _ -> raise exn
     end
