@@ -57,6 +57,12 @@ let add h k v =
   try StringMap.add k (v::(StringMap.find k h)) h
   with Not_found -> StringMap.add k [v] h
 
+let add_list h l =
+  List.fold_left (fun h (k, v) -> add h k v) h l
+
+let add_multi h k l =
+  List.fold_left (fun h v -> add h k v) h l
+
 let add_opt h k v =
   match h with
   |None -> init_with k v
