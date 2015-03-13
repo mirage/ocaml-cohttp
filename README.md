@@ -24,6 +24,8 @@ to any value.
 
 ## Installation
 
+[![Join the chat at https://gitter.im/mirage/ocaml-cohttp](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/mirage/ocaml-cohttp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Latest stable version should be obtained from opam. Make sure to install the
 specific backends you want as well. E.g.
 
