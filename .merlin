@@ -29,6 +29,7 @@ PKG conduit.async
 PKG conduit.lwt
 PKG cmdliner
 PKG js_of_ocaml
+PKG magic-mime
 
 B _build/
 B _build/lwt
