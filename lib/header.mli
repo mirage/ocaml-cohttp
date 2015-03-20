@@ -29,6 +29,12 @@ val init_with  : string -> string -> t
 (** Add a key and value to an existing header map *)
 val add : t -> string -> string -> t
 
+(** Add multiple key and value pairs to an existing header map *)
+val add_list : t -> (string * string) list -> t
+
+(** Add multiple values to a key in an existing header map *)
+val add_multi : t -> string -> string list -> t
+
 (** Given an optional header, either update the existing one with
     a key and value, or construct a fresh header with those values if
     the header is [None] *)
