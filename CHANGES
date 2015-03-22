@@ -26,6 +26,9 @@ New features and bug fixes:
   specify the `content-length` or `transfer-encoding` headers (#268).
 * `cohttp_server_lwt` and `cohttp_server_async` now include sizes in
   directory listing titles
+* With the Lwt backend, `read` hangs if trying to fetch more than
+  `Sys.max_string_length` (which can be triggered on 32-bit platforms).
+  Read only a maximum that fits into a string (#282).
 
 0.15.2 (2015-02-15):
 * When transfer encoding is unknown, read until EOF when body size is unknown. (#241)
