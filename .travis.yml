@@ -4,3 +4,4 @@ script: bash -ex .travis-opam.sh
 env:
   - PACKAGE="cohttp" OCAML_VERSION=4.01   DEPOPTS="async lwt js_of_ocaml" POST_INSTALL_HOOK="opam install github cowabloga" 
   - PACKAGE="cohttp" OCAML_VERSION=latest DEPOPTS="async lwt js_of_ocaml" POST_INSTALL_HOOK="opam install github cowabloga"
+  - PACKAGE="cohttp" OCAML_VERSION=latest DEPOPTS="async_ssl" POST_INSTALL_HOOK="opam install github cowabloga"

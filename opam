@@ -30,6 +30,7 @@ install: [make "PREFIX=%{prefix}%" "install"]
 remove: [["ocamlfind" "remove" "cohttp"]]
 
 depends: [
+  "base-bytes"
   "ocamlfind" {build}
   "cmdliner" {build & >= "0.9.4"}
   "re"

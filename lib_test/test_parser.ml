@@ -101,6 +101,14 @@ let oc_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.output buf
 
 open Lwt
 
+let pp_diff fmt (a,b) =
+  Format.pp_print_string fmt "Expected:";
+  Format.pp_print_newline fmt ();
+  Format.pp_print_string fmt a;
+  Format.pp_print_string fmt "Result:";
+  Format.pp_print_newline fmt ();
+  Format.pp_print_string fmt b
+
 let p_sexp f x = x |> f |> Sexplib.Sexp.to_string
 
 let basic_req_parse () =
@@ -112,7 +120,7 @@ let basic_req_parse () =
     assert_equal (Cohttp.Request.version req) `HTTP_1_1;
     assert_equal (CU.Request.meth req) `GET;
     assert_equal ~printer:(fun x -> x)
-      "http://www.example.com/index.html"
+      "//www.example.com/index.html"
       (Uri.to_string (CU.Request.uri req));
     return ()
   | _ -> assert false
@@ -225,7 +233,7 @@ let res_chunked_parse () =
 (* Extract the substring of the byte buffer that has been written to *)
 let get_substring oc buf =
   let len = Int64.to_int (Lwt_io.position oc) in
-  let b = String.create len in
+  let b = Bytes.create len in
   Lwt_bytes.blit_to_bytes buf 0 b 0 len;
   b
 
@@ -239,7 +247,7 @@ let write_req expected req =
   Request.write (fun writer ->
     Cohttp_lwt_body.write_body (Request.write_body writer) body
   ) req oc >>= fun () ->
-  assert_equal expected (get_substring oc buf);
+  assert_equal ~pp_diff expected (get_substring oc buf);
   (* Use the high-level write API. This also tests that req is immutable
    * by re-using it *)
   let buf = Lwt_bytes.create 4096 in
@@ -251,8 +259,8 @@ let write_req expected req =
 let make_simple_req () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
-  let expected = "GET /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
-  let req = Request.make ~encoding:Transfer.Chunked ~headers:(Header.init_with "Foo" "bar") (Uri.of_string "/foo/bar") in
+  let expected = "POST /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
+  let req = Request.make ~encoding:Transfer.Chunked ~meth:`POST ~headers:(Header.init_with "Foo" "bar") (Uri.of_string "/foo/bar") in
   write_req expected req
 
 let mutate_simple_req () =

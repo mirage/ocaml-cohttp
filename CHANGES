@@ -1,10 +1,15 @@
-0.16.0 (trunk):
+0.16.0 (2015-03-23):
 
 Compatibility breaking interface changes:
 * [lwt] Fix types in `post_form` to be a `string * string list` instead
   of a `Header.t` (#257)
+* Simplify the `Net` signature which needs to be provided for Lwt servers
+  to not be required.  Only the Lwt client needs a `Net` functor argument
+  to make outgoing connections. (#274)
 
 New features and bug fixes:
+* Add a `cohttp-lwt-proxy` to act as an HTTP proxy. (#248)
+* Extend `cohttp-server-async` file server to work with HTTPS (#277).
 * Copy basic auth from `Uri.userinfo` into the Authorization header
   for HTTP requests. (#255)
 * Install binaries via an OPAM `.install` file to ensure that they are
@@ -23,6 +28,13 @@ New features and bug fixes:
   specify the `content-length` or `transfer-encoding` headers (#268).
 * `cohttp_server_lwt` and `cohttp_server_async` now include sizes in
   directory listing titles
+* Add `Header.add_multi` to initialise a header structure with multiple
+  fields more efficiently (#272).
+* Expose `IO.ic` and `IO.oc` types for `Cohttp_async` (#271).
+* Skip empty body chunks in `Transfer_io.write` (#270).
+* With the Lwt backend, `read` hangs if trying to fetch more than
+  `Sys.max_string_length` (which can be triggered on 32-bit platforms).
+  Read only a maximum that fits into a string (#282).
 
 0.15.2 (2015-02-15):
 * When transfer encoding is unknown, read until EOF when body size is unknown. (#241)
