@@ -87,9 +87,17 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
     end
   )
 
+let determine_mode cert_file_path key_file_path =
+  (* Determines if the server runs in http or https *)
+  match (cert_file_path, key_file_path) with
+  | (Some c, Some k) -> `OpenSSL (`Crt_file_path c, `Key_file_path k)
+  | (None, None) -> `TCP
+  | _ -> failwith "Error must specify both cert and key"
 
-let start_server docroot port host index verbose () =
-  printf "Listening for HTTP requests on: %s %d\n%!" host port;
+let start_server docroot port host index verbose cert_file key_file () =
+  let mode = determine_mode cert_file key_file in
+  let mode_str = (match mode with `OpenSSL _ -> "HTTPS" | `TCP -> "HTTP") in
+  printf "Listening for %s requests on: %s %d\n%!" mode_str host port;
   let info = sprintf "Served by Cohttp/Async listening on %s:%d" host port in
   Unix.Inet_addr.of_string_or_getbyname host
   >>= fun host ->
@@ -100,13 +108,14 @@ let start_server docroot port host index verbose () =
   in
   Server.create
     ~on_handler_error:`Ignore
+    ~mode:(determine_mode cert_file key_file)
     listen_on
     (handler ~info ~docroot ~index ~verbose)
   >>= fun _ -> never ()
 
 let _ =
   Command.async_basic
-    ~summary:"Serve the local directory contents via HTTP"
+    ~summary:"Serve the local directory contents via HTTP or HTTPS"
     Command.Spec.(
       empty
       +> anon (maybe_with_default "." ("docroot" %: string))
@@ -114,5 +123,7 @@ let _ =
       +> flag "-s" (optional_with_default "0.0.0.0" string) ~doc:"address IP address to listen on"
       +> flag "-i" (optional_with_default "index.html" string) ~doc:"file Name of index file in directory"
       +> flag "-v" (optional_with_default false bool) ~doc:" Verbose logging output to console"
+      +> flag "-cert-file" (optional file) ~doc:"File of cert for https"
+      +> flag "-key-file" (optional file) ~doc:"File of private key for https"
     ) start_server
   |> Command.run
