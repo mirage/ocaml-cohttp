@@ -37,6 +37,7 @@ let read_line ic =
     Lwt_io.read_line_opt ic
 
 let read ic count =
+ let count = min count Sys.max_string_length in
  if !CD.debug_active then
    (lwt buf =
        try_lwt Lwt_io.read ~count ic
