@@ -1,4 +1,4 @@
-0.16.0 (trunk):
+0.16.0 (2015-03-23):
 
 Compatibility breaking interface changes:
 * [lwt] Fix types in `post_form` to be a `string * string list` instead
