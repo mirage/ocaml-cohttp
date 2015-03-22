@@ -90,9 +90,9 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
 let determine_mode cert_file_path key_file_path =
   (* Determines if the server runs in http or https *)
   match (cert_file_path, key_file_path) with
-  | (Some c, Some k) -> `OpenSSL (`Crt_file_path c, `Key_file_path k)
-  | (None, None) -> `TCP
-  | _ -> failwith "Error must specify both cert and key"
+  | Some c, Some k -> `OpenSSL (`Crt_file_path c, `Key_file_path k)
+  | None, None -> `TCP
+  | _ -> failwith "Error: must specify both certificate and key for HTTPS"
 
 let start_server docroot port host index verbose cert_file key_file () =
   let mode = determine_mode cert_file key_file in
