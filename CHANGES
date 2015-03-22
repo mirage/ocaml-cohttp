@@ -8,6 +8,7 @@ Compatibility breaking interface changes:
   to make outgoing connections. (#274)
 
 New features and bug fixes:
+* Add a `cohttp-lwt-proxy` to act as an HTTP proxy. (#248)
 * Copy basic auth from `Uri.userinfo` into the Authorization header
   for HTTP requests. (#255)
 * Install binaries via an OPAM `.install` file to ensure that they are
@@ -26,6 +27,10 @@ New features and bug fixes:
   specify the `content-length` or `transfer-encoding` headers (#268).
 * `cohttp_server_lwt` and `cohttp_server_async` now include sizes in
   directory listing titles
+* Add `Header.add_multi` to initialise a header structure with multiple
+  fields more efficiently (#272).
+* Expose `IO.ic` and `IO.oc` types for `Cohttp_async` (#271).
+* Skip empty body chunks in `Transfer_io.write` (#270).
 * With the Lwt backend, `read` hangs if trying to fetch more than
   `Sys.max_string_length` (which can be triggered on 32-bit platforms).
   Read only a maximum that fits into a string (#282).
