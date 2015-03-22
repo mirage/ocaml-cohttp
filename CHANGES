@@ -3,6 +3,9 @@
 Compatibility breaking interface changes:
 * [lwt] Fix types in `post_form` to be a `string * string list` instead
   of a `Header.t` (#257)
+* Simplify the `Net` signature which needs to be provided for Lwt servers
+  to not be required.  Only the Lwt client needs a `Net` functor argument
+  to make outgoing connections. (#274)
 
 New features and bug fixes:
 * Copy basic auth from `Uri.userinfo` into the Authorization header
