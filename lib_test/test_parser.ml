@@ -233,7 +233,7 @@ let res_chunked_parse () =
 (* Extract the substring of the byte buffer that has been written to *)
 let get_substring oc buf =
   let len = Int64.to_int (Lwt_io.position oc) in
-  let b = String.create len in
+  let b = Bytes.create len in
   Lwt_bytes.blit_to_bytes buf 0 b 0 len;
   b
 
