@@ -9,6 +9,7 @@ Compatibility breaking interface changes:
 
 New features and bug fixes:
 * Add a `cohttp-lwt-proxy` to act as an HTTP proxy. (#248)
+* Extend `cohttp-server-async` file server to work with HTTPS (#277).
 * Copy basic auth from `Uri.userinfo` into the Authorization header
   for HTTP requests. (#255)
 * Install binaries via an OPAM `.install` file to ensure that they are
