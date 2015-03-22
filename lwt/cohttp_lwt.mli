@@ -163,9 +163,6 @@ module type Server = sig
   module Request : Request
   module Response : Response
 
-  type ctx with sexp_of
-  val default_ctx : ctx
-
   type conn = IO.conn * Cohttp.Connection.t
 
   type t
@@ -225,8 +222,6 @@ module Make_server
     (IO:IO)
     (Request:Request with module IO=IO)
     (Response:Response with module IO=IO)
-    (Net:Net with module IO = IO) :
-    Server with module IO = IO
+  : Server with module IO = IO
             and module Request = Request
             and module Response = Response
-            and type ctx = Net.ctx
