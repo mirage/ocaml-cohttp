@@ -52,6 +52,25 @@ end
 
 module Client : sig
 
+  (** Send an HTTP request with an arbitrary body
+      The request is sent as-is. *)
+  val request :
+    ?interrupt:unit Deferred.t ->
+    ?body:Body.t ->
+    Request.t ->
+    (Response.t * Body.t) Deferred.t
+
+  (** Send an HTTP request with arbitrary method and a body
+      Infers the transfer encoding *)
+  val call :
+    ?interrupt:unit Deferred.t ->
+    ?headers:Cohttp.Header.t ->
+    ?chunked:bool ->
+    ?body:Body.t ->
+    Cohttp.Code.meth ->
+    Uri.t ->
+    (Response.t * Body.t) Deferred.t
+
   (** Send an HTTP GET request *)
   val get :
     ?interrupt:unit Deferred.t ->
@@ -103,16 +122,6 @@ module Client : sig
     ?headers:Cohttp.Header.t ->
     ?chunked:bool ->
     ?body:Body.t ->
-    Uri.t ->
-    (Response.t * Body.t) Deferred.t
-
-  (** Send an HTTP request with arbitrary method and a body *)
-  val call :
-    ?interrupt:unit Deferred.t ->
-    ?headers:Cohttp.Header.t ->
-    ?chunked:bool ->
-    ?body:Body.t ->
-    Cohttp.Code.meth ->
     Uri.t ->
     (Response.t * Body.t) Deferred.t
 
