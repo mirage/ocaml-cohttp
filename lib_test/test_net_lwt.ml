@@ -43,7 +43,7 @@ let make_net_reqv () =
   Lwt_stream.iter_s (fun (res,body) ->
     (* Consume the body *)
     incr num;
-    lwt body = Cohttp_lwt_body.to_string body in
+    lwt _ = Cohttp_lwt_body.to_string body in
     assert_equal (Response.status res) `Not_found;
     return ()
   ) resp >>= fun () ->

@@ -7,6 +7,7 @@ S lib_test
 S examples/async
 S lwt
 S bin
+S js
 
 PKG base64
 PKG lwt
@@ -38,3 +39,4 @@ B _build/async
 B _build/lib
 B _build/examples/async
 B _build/bin
+B _build/js
