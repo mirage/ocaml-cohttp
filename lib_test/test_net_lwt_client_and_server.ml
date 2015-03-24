@@ -73,7 +73,7 @@ let client () =
     >>= fun () ->
     lwt_test_s ~name:"post 1" (Client.post ~body:(Cohttp_lwt_body.of_string "foobar") url)
      ~assert_:(fun (r,b) ->
-       lwt b = Cohttp_lwt_body.to_string b in
+       lwt _ = Cohttp_lwt_body.to_string b in
        lwt_test ~name:"get 1" (Client.get url) ~assert_:(fun (_,b) -> assert(b = `Empty))
        >>= fun () ->
        lwt_test_s ~name:"post 1" (Client.post ~body:(Cohttp_lwt_body.of_string "barfoo") url)
