@@ -116,6 +116,12 @@ module Client : sig
     Uri.t ->
     (Response.t * Body.t) Deferred.t
 
+  val call_request:
+    ?interrupt:unit Deferred.t ->
+    ?body:Body.t ->
+    Request.t ->
+    (Response.t * Body.t) Deferred.t
+
   (** Send an HTTP POST request in form format *)
   val post_form:
     ?interrupt:unit Deferred.t ->

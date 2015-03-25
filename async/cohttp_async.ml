@@ -192,6 +192,26 @@ module Client = struct
         );
         res, `Pipe rd
 
+  let call_request ?interrupt ?(body=`Empty) req =
+    (* Connect to the remote side *)
+    Net.connect_uri ?interrupt (Request.(req.uri))
+    >>= fun (ic,oc) ->
+    Request.write (fun writer -> Body.write Request.write_body body writer) req oc
+    >>= fun () ->
+    Response.read ic
+    >>| function
+    | `Eof -> failwith "Connection closed by remote host"
+    | `Invalid reason -> failwith reason
+    | `Ok res ->
+       (* Build a response pipe for the body *)
+       let reader = Response.make_body_reader res ic in
+       let rd = pipe_of_body (fun ic -> Response.read_body_chunk reader) ic oc in
+       don't_wait_for (
+           Pipe.closed rd >>= fun () ->
+           Deferred.all_ignore [Reader.close ic; Writer.close oc]
+         );
+       res, `Pipe rd
+
   let get ?interrupt ?headers uri =
     call ?interrupt ?headers ~chunked:false `GET uri
 
