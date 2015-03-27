@@ -23,10 +23,11 @@ module D = Cohttp_lwt_unix_debug
 
 let debug f = if !D.debug_active then f D.debug_print else ()
 
-let client uri ofile =
+let client uri ofile meth' =
   debug (fun d -> d "Client with URI %s\n" (Uri.to_string uri));
-  debug (fun d -> d "Client GET issued\n");
-  Client.get uri >>= fun (resp, body) ->
+  let meth = Cohttp.Code.method_of_string meth' in
+  debug (fun d -> d "Client %s issued\n" meth');
+  Client.call meth uri >>= fun (resp, body) ->
   let status = Response.status resp in
   debug (fun d -> d "Client GET returned: %s\n" (Code.string_of_status status));
   (* TODO follow redirects *)
@@ -44,12 +45,12 @@ let client uri ofile =
     | None -> output_body Lwt_io.stdout
     | Some fname -> Lwt_io.with_file ~mode:Lwt_io.output fname output_body
 
-let run_client verbose ofile uri =
+let run_client verbose ofile uri meth =
   if verbose then (
     Cohttp_lwt_unix_debug.debug_active := true;
     debug (fun d -> d ">>> Debug active");
   );
-  Lwt_main.run (client uri ofile)
+  Lwt_main.run (client uri ofile meth)
 
 open Cmdliner
 
@@ -62,6 +63,10 @@ let uri =
   in
   Arg.(required & pos 0 (some loc) None & info [] ~docv:"URI"
    ~doc:"string of the remote address (e.g. https://google.com)")
+
+let meth =
+  let doc = "Set http method" in
+  Arg.(value & opt string "GET" & info ["X"; "request"] ~doc)
 
 let verb =
   let doc = "Display additional debugging to standard error." in
@@ -84,7 +89,7 @@ let cmd =
     `S "SEE ALSO";
     `P "$(b,curl)(1), $(b,wget)(1)" ]
   in
-  Term.(pure run_client $ verb $ ofile $ uri),
+  Term.(pure run_client $ verb $ ofile $ uri $ meth),
   Term.info "cohttp-curl" ~version:"1.0.0" ~doc ~man
 
 let () =

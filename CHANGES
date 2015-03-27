@@ -35,6 +35,7 @@ New features and bug fixes:
 * With the Lwt backend, `read` hangs if trying to fetch more than
   `Sys.max_string_length` (which can be triggered on 32-bit platforms).
   Read only a maximum that fits into a string (#282).
+* `cohttp-curl-lwt` now takes http method as parameter (#288)
 
 0.15.2 (2015-02-15):
 * When transfer encoding is unknown, read until EOF when body size is unknown. (#241)
