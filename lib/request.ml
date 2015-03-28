@@ -44,14 +44,15 @@ let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
     | _, _ -> headers
   in
   let encoding =
-    match encoding with
+    (* Check for a content-length in the supplied headers first *)
+    match Header.get_content_range headers with
+    | Some clen -> Transfer.Fixed clen
     | None -> begin
-        (* Check for a content-length in the supplied headers first *)
-        match Header.get_content_range headers with
-        | Some clen -> Transfer.Fixed clen
-        | None -> Transfer.Fixed Int64.zero
-      end
-    | Some e -> e
+       (* Otherwise look for an API-level encoding specification *)
+       match encoding with
+       | None -> Transfer.Fixed Int64.zero
+       | Some e -> e
+    end
   in
   { meth; version; headers; uri; encoding }
 
