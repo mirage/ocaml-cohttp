@@ -8,7 +8,7 @@ Compatibility breaking interface changes:
   to make outgoing connections. (#274)
 
 New features and bug fixes:
-* Supplied a `content-range` or `content-range` header in any client
+* Supplying a `content-range` or `content-range` header in any client
   request will always override any other encoding preference (#281).
 * Add a `cohttp-lwt-proxy` to act as an HTTP proxy. (#248)
 * Extend `cohttp-server-async` file server to work with HTTPS (#277).
