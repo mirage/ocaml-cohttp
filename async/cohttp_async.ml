@@ -155,26 +155,9 @@ end
 
 module Client = struct
 
-  let call ?interrupt ?headers ?(chunked=false) ?(body=`Empty) meth uri =
-    (* Figure out an appropriate transfer encoding *)
-    let req =
-      match chunked with
-      | false ->
-          Body.disable_chunked_encoding body
-          >>| fun (body, body_length) ->
-          Request.make_for_client ?headers ~chunked ~body_length meth uri
-      | true -> begin
-          Body.is_empty body
-          >>| function
-          | true -> (* Dont used chunked encoding with an empty body *)
-            Request.make_for_client ?headers ~chunked:false ~body_length:0L meth uri
-          | false -> (* Use chunked encoding if there is a body *)
-            Request.make_for_client ?headers ~chunked:true meth uri
-      end
-    in
-    req >>= fun req ->
+  let request ?interrupt ?(body=`Empty) req =
     (* Connect to the remote side *)
-    Net.connect_uri ?interrupt uri
+    Net.connect_uri ?interrupt (Request.(req.uri))
     >>= fun (ic,oc) ->
     Request.write (fun writer -> Body.write Request.write_body body writer) req oc
     >>= fun () ->
@@ -191,6 +174,26 @@ module Client = struct
           Deferred.all_ignore [Reader.close ic; Writer.close oc]
         );
         res, `Pipe rd
+
+  let call ?interrupt ?headers ?(chunked=false) ?(body=`Empty) meth uri =
+    (* Create a request, then make the request.
+       Figure out an appropriate transfer encoding *)
+    let req =
+      match chunked with
+      | false ->
+          Body.disable_chunked_encoding body
+          >>| fun (body, body_length) ->
+          Request.make_for_client ?headers ~chunked ~body_length meth uri
+      | true -> begin
+          Body.is_empty body
+          >>| function
+          | true -> (* Dont used chunked encoding with an empty body *)
+            Request.make_for_client ?headers ~chunked:false ~body_length:0L meth uri
+          | false -> (* Use chunked encoding if there is a body *)
+            Request.make_for_client ?headers ~chunked:true meth uri
+      end
+    in
+    req >>= fun req -> request ?interrupt ~body req
 
   let get ?interrupt ?headers uri =
     call ?interrupt ?headers ~chunked:false `GET uri
