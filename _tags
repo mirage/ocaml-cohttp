@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: f313874952e9c72355fdfca71d918ae4)
+# DO NOT EDIT (digest: 43ac94cbae69d27aab17c420e739ded4)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -562,6 +562,28 @@ true: annot, bin_annot
 <examples/async/hello_world.{native,byte}>: use_cohttp
 <examples/async/hello_world.{native,byte}>: use_cohttp_async
 <examples/async/hello_world.{native,byte}>: custom
+# Executable async-s3-cp
+<examples/async/s3_cp.{native,byte}>: pkg_async
+<examples/async/s3_cp.{native,byte}>: pkg_base64
+<examples/async/s3_cp.{native,byte}>: pkg_bytes
+<examples/async/s3_cp.{native,byte}>: pkg_conduit.async
+<examples/async/s3_cp.{native,byte}>: pkg_cstruct
+<examples/async/s3_cp.{native,byte}>: pkg_fieldslib
+<examples/async/s3_cp.{native,byte}>: pkg_fieldslib.syntax
+<examples/async/s3_cp.{native,byte}>: pkg_magic-mime
+<examples/async/s3_cp.{native,byte}>: pkg_nocrypto
+<examples/async/s3_cp.{native,byte}>: pkg_re.emacs
+<examples/async/s3_cp.{native,byte}>: pkg_sexplib
+<examples/async/s3_cp.{native,byte}>: pkg_sexplib.syntax
+<examples/async/s3_cp.{native,byte}>: pkg_stringext
+<examples/async/s3_cp.{native,byte}>: pkg_threads
+<examples/async/s3_cp.{native,byte}>: pkg_uri
+<examples/async/s3_cp.{native,byte}>: pkg_uri.services
+<examples/async/s3_cp.{native,byte}>: use_cohttp
+<examples/async/s3_cp.{native,byte}>: use_cohttp_async
+<examples/async/*.ml{,i,y}>: pkg_cstruct
+<examples/async/*.ml{,i,y}>: pkg_nocrypto
+<examples/async/s3_cp.{native,byte}>: custom
 # Executable test_xhr
 "lib_test/test_xhr.byte": pkg_base64
 "lib_test/test_xhr.byte": pkg_bytes
