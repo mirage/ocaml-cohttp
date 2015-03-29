@@ -55,6 +55,10 @@ Flag nettests
   Description: run the internet-using tests
   Default:     false
 
+Flag async_s3_example
+  Description: build the async s3 example
+  Default:     false
+
 Library cohttp_lwt
   Build$:        flag(lwt)
   Install$:      flag(lwt)
@@ -326,6 +330,15 @@ Executable "async-hello-world"
   CompiledObject:     best
   Install:            false
   BuildDepends:       cohttp, cohttp.async
+
+Executable "async-s3-cp"
+  Path:               examples/async
+  MainIs:             s3_cp.ml
+  Build$:             flag(async) & flag(async_s3_example)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.async, nocrypto, cstruct
 
 Executable "test_xhr"
   Path:               lib_test
