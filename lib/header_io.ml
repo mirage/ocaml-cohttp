@@ -47,4 +47,8 @@ module Make(IO : S.IO) = struct
     let reader = Transfer_IO.make_reader encoding ic in
     Transfer_IO.to_string reader >>= fun body ->
     return (Uri.query_of_encoded body)
+
+  let write headers oc =
+    iter (IO.write oc) (Header.to_lines headers) >>= fun () ->
+    IO.write oc "\r\n"
 end

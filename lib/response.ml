@@ -72,8 +72,7 @@ module Make(IO : S.IO) = struct
     write oc (Printf.sprintf "%s %s\r\n" (Code.string_of_version res.version)
       (Code.string_of_status res.status)) >>= fun () ->
     let headers = Header.add_transfer_encoding res.headers res.encoding in
-    iter (IO.write oc) (Header.to_lines headers) >>= fun () ->
-    IO.write oc "\r\n"
+    Header_IO.write headers oc
 
   let make_body_writer ?flush {encoding} oc =
     Transfer_IO.make_writer ?flush encoding oc
