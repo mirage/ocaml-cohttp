@@ -32,28 +32,13 @@ let parse_pair s =
   | [k; v] -> (k, v)
   | _ -> invalid_arg "parse_pair"
 
-(* TODO implement @ and < arguments *)
-let part_of_argument arg =
-  match Stringext.split ~on:';' arg with
-  | [] -> invalid_arg "Invalid form argument"
-  | namev::opts ->
-    let (name, value) = parse_pair namev in
-    let body = Cohttp_lwt_body.of_string value in
-    let opts = opts |> List.map parse_pair in
-    let filename = opts |> assoc_opt "filename" in
-    let content_type = opts |> assoc_opt "type" in
-    let part = Multipart.create_part ~name ?filename ?content_type () in
-    (part, body)
-
 let client uri ofile meth' multiparts =
   debug (fun d -> d "Client with URI %s\n" (Uri.to_string uri));
   let meth = Cohttp.Code.method_of_string meth' in
   debug (fun d -> d "Client %s issued\n" meth');
   (match multiparts with
    | [] -> Client.call meth uri
-   | parts ->
-     let body = parts |> List.map part_of_argument in
-     Client.call_multipart ~body meth uri
+   | body -> Client.call_multipart ~body meth uri
   ) >>= fun (resp, body) ->
   let status = Response.status resp in
   debug (fun d -> d "Client GET returned: %s\n" (Code.string_of_status status));
@@ -81,6 +66,23 @@ let run_client verbose ofile uri meth multiparts =
 
 open Cmdliner
 
+let multipart_part : (Multipart.part * Cohttp_lwt_body.t) Arg.converter =
+  (* TODO implement @ and < arguments *)
+  let part_of_argument arg =
+    match Stringext.split ~on:';' arg with
+    | [] -> `Error "Invalid form argument"
+    | namev::opts ->
+      let (name, value) = parse_pair namev in
+      let body = Cohttp_lwt_body.of_string value in
+      let opts = opts |> List.map parse_pair in
+      let filename = opts |> assoc_opt "filename" in
+      let content_type = opts |> assoc_opt "type" in
+      let part = Multipart.create_part ~name ?filename ?content_type () in
+      `Ok (part, body) in
+  part_of_argument, (fun ppf (p, _) ->
+    let k = match p.Multipart.name with Some s -> s | None -> assert false in
+    Format.fprintf ppf "%s=%s" k "<body>")
+
 let uri =
   let loc : Uri.t Arg.converter =
     let parse s =
@@ -93,7 +95,7 @@ let uri =
 
 let multipart =
   let doc = "Provide http body as multipart" in
-  Arg.(value & opt_all string [] (info ["F"; "form"] ~doc))
+  Arg.(value & opt_all multipart_part [] (info ["F"; "form"] ~doc))
 
 let meth =
   let doc = "Set http method" in
