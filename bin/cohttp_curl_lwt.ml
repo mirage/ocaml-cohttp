@@ -23,11 +23,38 @@ module D = Cohttp_lwt_unix_debug
 
 let debug f = if !D.debug_active then f D.debug_print else ()
 
-let client uri ofile meth' =
+let assoc_opt k xs =
+  try Some (List.assoc k xs)
+  with Not_found -> None
+
+let parse_pair s =
+  match Stringext.split ~on:'=' ~max:2 s with
+  | [k; v] -> (k, v)
+  | _ -> invalid_arg "parse_pair"
+
+(* TODO implement @ and < arguments *)
+let part_of_argument arg =
+  match Stringext.split ~on:';' arg with
+  | [] -> invalid_arg "Invalid form argument"
+  | namev::opts ->
+    let (name, value) = parse_pair namev in
+    let body = Cohttp_lwt_body.of_string value in
+    let opts = opts |> List.map parse_pair in
+    let filename = opts |> assoc_opt "filename" in
+    let content_type = opts |> assoc_opt "type" in
+    let part = Multipart.create_part ~name ?filename ?content_type () in
+    (part, body)
+
+let client uri ofile meth' multiparts =
   debug (fun d -> d "Client with URI %s\n" (Uri.to_string uri));
   let meth = Cohttp.Code.method_of_string meth' in
   debug (fun d -> d "Client %s issued\n" meth');
-  Client.call meth uri >>= fun (resp, body) ->
+  (match multiparts with
+   | [] -> Client.call meth uri
+   | parts ->
+     let body = parts |> List.map part_of_argument in
+     Client.call_multipart ~body meth uri
+  ) >>= fun (resp, body) ->
   let status = Response.status resp in
   debug (fun d -> d "Client GET returned: %s\n" (Code.string_of_status status));
   (* TODO follow redirects *)
@@ -45,12 +72,12 @@ let client uri ofile meth' =
     | None -> output_body Lwt_io.stdout
     | Some fname -> Lwt_io.with_file ~mode:Lwt_io.output fname output_body
 
-let run_client verbose ofile uri meth =
+let run_client verbose ofile uri meth multiparts =
   if verbose then (
     Cohttp_lwt_unix_debug.debug_active := true;
     debug (fun d -> d ">>> Debug active");
   );
-  Lwt_main.run (client uri ofile meth)
+  Lwt_main.run (client uri ofile meth multiparts)
 
 open Cmdliner
 
@@ -64,13 +91,17 @@ let uri =
   Arg.(required & pos 0 (some loc) None & info [] ~docv:"URI"
    ~doc:"string of the remote address (e.g. https://google.com)")
 
+let multipart =
+  let doc = "Provide http body as multipart" in
+  Arg.(value & opt_all string [] (info ["F"; "form"] ~doc))
+
 let meth =
   let doc = "Set http method" in
   Arg.(value & opt string "GET" & info ["X"; "request"] ~doc)
 
 let verb =
   let doc = "Display additional debugging to standard error." in
-  Arg.(value & flag & info ["v"; "verbose"]  ~doc)
+  Arg.(value & flag & info ["v"; "verbose"] ~doc)
 
 let ofile =
   let doc = "Output filename to store the URI into." in
@@ -89,7 +120,7 @@ let cmd =
     `S "SEE ALSO";
     `P "$(b,curl)(1), $(b,wget)(1)" ]
   in
-  Term.(pure run_client $ verb $ ofile $ uri $ meth),
+  Term.(pure run_client $ verb $ ofile $ uri $ meth $ multipart),
   Term.info "cohttp-curl" ~version:"1.0.0" ~doc ~man
 
 let () =
