@@ -70,6 +70,14 @@ module type Client = sig
     Cohttp.Code.meth ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
+  val call_multipart :
+    ?ctx:ctx ->
+    ?headers:Cohttp.Header.t ->
+    ?chunked:bool ->
+    ?boundary:string ->
+    body:(Cohttp.Multipart.part * Cohttp_lwt_body.t) list ->
+    Cohttp.Code.meth -> Uri.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+
   val head :
     ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
@@ -174,6 +182,33 @@ module Make_client
           Cohttp_lwt_body.write_body (Request.write_body writer) buf) req oc
       >>= fun () ->
       read_response ~closefn ic oc
+
+  let call_multipart ?ctx ?headers ?chunked ?boundary ~body meth uri =
+    let boundary =
+      match boundary with
+      | Some x -> x
+      | None ->
+        Random.self_init ();
+        let start = Char.code 'a' in
+        let stop = Char.code 'z' in
+        let diff = stop - start in
+        Array.init 16 (fun _ -> start + (Random.int diff))
+        |> Array.to_list
+        |> List.map Char.chr
+        |> Stringext.of_list
+    in
+    let h = match headers with None -> Header.init () | Some h -> h in
+    let h = Multipart.add_header ~boundary h in
+    let body =
+      body
+      |> Multipart.parts ~boundary
+      |> List.map (function
+        | `String s -> Cohttp_lwt_body.of_string s
+        | `Header h -> ((Header.to_lines h) @ ["\r\n"])
+                       |> Cohttp_lwt_body.of_string_list
+        | `Part b -> b)
+      |> Cohttp_lwt_body.concat in
+    call ?ctx ~headers:h ?chunked ~body meth uri
 
   (* The HEAD should not have a response body *)
   let head ?ctx ?headers uri =

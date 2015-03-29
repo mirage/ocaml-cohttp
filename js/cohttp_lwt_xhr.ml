@@ -100,6 +100,7 @@ end) = struct
   exception Cohttp_lwt_xhr_callv_not_implemented
   let callv ?ctx uri reqs = Lwt.fail Cohttp_lwt_xhr_callv_not_implemented (* ??? *)
 
+  let call_multipart = failwith "Not implemented"
 end
 
 module Make_client_async(P : Params) = Make_api(struct

@@ -94,6 +94,14 @@ module type Client = sig
     Cohttp.Code.meth ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
+  val call_multipart :
+    ?ctx:ctx ->
+    ?headers:Cohttp.Header.t ->
+    ?chunked:bool ->
+    ?boundary:string ->
+    body:(Cohttp.Multipart.part * Cohttp_lwt_body.t) list ->
+    Cohttp.Code.meth -> Uri.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+
   val head :
     ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->

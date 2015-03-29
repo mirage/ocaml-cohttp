@@ -106,3 +106,7 @@ let map f t =
   match t with
   | #Body.t as t -> (Body.map f t :> t)
   | `Stream s -> `Stream (Lwt_stream.map f s)
+
+let concat ts =
+  `Stream (ts |> Lwt_stream.of_list |> Lwt_stream.map_s to_string)
+
