@@ -146,8 +146,7 @@ module Make(IO : S.IO) = struct
       | `Yes | `Unknown -> Header.add_transfer_encoding headers req.encoding
       | `No -> headers in
     IO.write oc fst_line >>= fun _ ->
-    iter (IO.write oc) (Header.to_lines headers) >>= fun _ ->
-    IO.write oc "\r\n"
+    Header_IO.write headers oc
 
   let make_body_writer ?flush req oc =
     Transfer_IO.make_writer ?flush req.encoding oc
