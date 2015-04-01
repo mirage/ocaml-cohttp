@@ -34,7 +34,7 @@ module Client = struct
     Cohttp_lwt.Make_client
       (Cohttp_lwt_unix_io)(Request)(Response)(Cohttp_lwt_unix_net)
 
-  let custom_ctx = Cohttp_lwt_unix_net.custom_ctx
+  let custom_ctx = Cohttp_lwt_unix_net.init
 end
 
 module Server_core =
