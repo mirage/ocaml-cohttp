@@ -101,7 +101,10 @@ let start_server docroot port host index verbose cert key () =
     | Some c, Some k -> `TLS (`Crt_file_path c, `Key_file_path k, `No_password, `Port port)
     | _ -> `TCP (`Port port)
   in
-  Server.create ~mode config
+  Conduit_lwt_unix.init ~src:host ()
+  >>= fun ctx ->
+  let ctx = Cohttp_lwt_unix_net.init ~ctx () in
+  Server.create ~ctx ~mode config
 
 let lwt_start_server docroot port host index verbose cert key =
   Lwt_main.run (start_server docroot port host index verbose cert key ())
