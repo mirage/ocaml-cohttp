@@ -17,7 +17,11 @@
 
 (** Basic satisfaction of {! Cohttp_lwt.Net } *)
 
-module IO = Cohttp_lwt_unix_io
+module IO : Cohttp.S.IO
+ with type 'a t = 'a Lwt.t
+ and type ic = Lwt_io.input_channel
+ and type oc = Lwt_io.output_channel
+ and type conn = Conduit_lwt_unix.flow
 
 type ctx = {
   ctx : Conduit_lwt_unix.ctx;
