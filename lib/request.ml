@@ -18,11 +18,11 @@
 open Sexplib.Std
 
 type t = {
-  mutable headers: Header.t;
-  mutable meth: Code.meth;
-  mutable uri: Uri.t;
-  mutable version: Code.version;
-  mutable encoding: Transfer.encoding;
+  headers: Header.t;
+  meth: Code.meth;
+  uri: Uri.t;
+  version: Code.version;
+  encoding: Transfer.encoding;
 } with fields, sexp
 
 let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =

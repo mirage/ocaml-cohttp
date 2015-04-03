@@ -18,11 +18,11 @@
 open Sexplib.Std
 
 type t = {
-  mutable encoding: Transfer.encoding;
-  mutable headers: Header.t;
-  mutable version: Code.version;
-  mutable status: Code.status_code;
-  mutable flush: bool;
+  encoding: Transfer.encoding;
+  headers: Header.t;
+  version: Code.version;
+  status: Code.status_code;
+  flush: bool;
 } with fields, sexp
 
 let make ?(version=`HTTP_1_1) ?(status=`OK) ?(flush=false) ?(encoding=Transfer.Chunked) ?headers () =
