@@ -6,6 +6,8 @@ Compatibility breaking interface changes:
 * Simplify the `Net` signature which needs to be provided for Lwt servers
   to not be required.  Only the Lwt client needs a `Net` functor argument
   to make outgoing connections. (#274)
+* The `Request` and `Response` records are no longer mutable, so use
+  functional updates instead via `Fieldslib.Field.fset Request.Fields.<field>`. (#296)
 
 New features and bug fixes:
 * Fix `cohttp-server-lwt` to correctly bind to a specific interface (#298).
@@ -40,6 +42,7 @@ New features and bug fixes:
   `Sys.max_string_length` (which can be triggered on 32-bit platforms).
   Read only a maximum that fits into a string (#282).
 * `cohttp-curl-lwt` now takes http method as parameter (#288)
+* Fix installation of server binaries in OPAM metadata. (#295)
 
 0.15.2 (2015-02-15):
 * When transfer encoding is unknown, read until EOF when body size is unknown. (#241)
