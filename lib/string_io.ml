@@ -55,7 +55,8 @@ module M = struct
         while x.str.[x.pos] != '\n' do
           x.pos <- x.pos + 1
         done;
-        let s = String.sub x.str start (x.pos-start) in
+        let l = if x.pos > 0 && x.str.[x.pos-1] = '\r' then x.pos-start-1 else x.pos-start in
+        let s = String.sub x.str start l in
         x.pos <- x.pos + 1;
         Some s
       with _ ->
