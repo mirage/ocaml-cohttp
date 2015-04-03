@@ -8,6 +8,7 @@ Compatibility breaking interface changes:
   to make outgoing connections. (#274)
 
 New features and bug fixes:
+* Fix `cohttp-server-lwt` to correctly bind to a specific interface (#298).
 * Add `Cohttp_async.request` to send raw, umodified requests.
 * Supplying a `content-range` or `content-range` header in any client
   request will always override any other encoding preference (#281).
