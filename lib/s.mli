@@ -98,11 +98,11 @@ end
 
 module type Request = sig
   type t = {
-    mutable headers: Header.t;    (** HTTP request headers *)
-    mutable meth: Code.meth;      (** HTTP request method *)
-    mutable uri: Uri.t;           (** Full HTTP request uri *)
-    mutable version: Code.version; (** HTTP version, usually 1.1 *)
-    mutable encoding: Transfer.encoding; (** transfer encoding of this HTTP request *)
+    headers: Header.t;    (** HTTP request headers *)
+    meth: Code.meth;      (** HTTP request method *)
+    uri: Uri.t;           (** Full HTTP request uri *)
+    version: Code.version; (** HTTP version, usually 1.1 *)
+    encoding: Transfer.encoding; (** transfer encoding of this HTTP request *)
   } with fields, sexp
 
   val make : ?meth:Code.meth -> ?version:Code.version ->
@@ -120,11 +120,11 @@ end
 
 module type Response = sig
   type t = {
-    mutable encoding: Transfer.encoding; (** Transfer encoding of this HTTP response *)
-    mutable headers: Header.t;    (** response HTTP headers *)
-    mutable version: Code.version; (** (** HTTP version, usually 1.1 *) *)
-    mutable status: Code.status_code; (** HTTP status code of the response *)
-    mutable flush: bool;
+    encoding: Transfer.encoding; (** Transfer encoding of this HTTP response *)
+    headers: Header.t;    (** response HTTP headers *)
+    version: Code.version; (** (** HTTP version, usually 1.1 *) *)
+    status: Code.status_code; (** HTTP status code of the response *)
+    flush: bool;
   } with fields, sexp
 
   val make :
