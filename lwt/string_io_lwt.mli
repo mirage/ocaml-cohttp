@@ -22,7 +22,7 @@
    data into a {!Buffer.t}.  Never actually blocks despite the Lwt
    use, although a future revision may yield when parsing large
    strings. *)
-include S.IO
+include Cohttp.S.IO
   with type 'a t = 'a Lwt.t
   and type ic = Cohttp.String_io.buf
   and type oc = Buffer.t
