@@ -370,16 +370,6 @@ Test test_parser_async
   Command:            $test_parser_async
   WorkingDirectory:   lib_test
 
-Test test_net_lwt
-  Run$:               flag(nettests) && flag(lwt_unix)
-  Command:            $test_net_lwt
-  WorkingDirectory:   lib_test
-
-Test test_net_async
-  Run$:               flag(nettests) && flag(async)
-  Command:            $test_net_async
-  WorkingDirectory:   lib_test
-
 
 SourceRepository master
   Type:     git
