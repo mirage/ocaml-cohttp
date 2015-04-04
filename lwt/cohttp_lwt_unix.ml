@@ -55,22 +55,22 @@ module Server = struct
   let respond_file ?headers ~fname () =
     try_lwt
       (* Check this isnt a directory first *)
-      lwt () = wrap (fun () ->
-       if Unix.((stat fname).st_kind <> S_REG) then raise Isnt_a_file) in
-      lwt ic = Lwt_io.open_file ~buffer_size:16384 ~mode:Lwt_io.input fname in
+      (fname |> Lwt_unix.stat >>= fun s ->
+       if Unix.(s.st_kind <> S_REG)
+       then fail Isnt_a_file
+       else return_unit) >>= fun () ->
+      let buffer_size = 16384 in
+      lwt ic = Lwt_io.open_file ~buffer_size ~mode:Lwt_io.input fname in
       lwt len = Lwt_io.length ic in
       let encoding = Cohttp.Transfer.Fixed len in
-      let count = 16384 in
       let stream = Lwt_stream.from (fun () ->
         try_lwt
-          Lwt_io.read ~count ic >|=
-             function
-             |"" -> None
-             |buf -> Some buf
-        with
-         exn ->
-           prerr_endline ("exn: " ^ (Printexc.to_string exn));
-           return_none
+          Lwt_io.read ~count:buffer_size ic >|= function
+          | "" -> None
+          | buf -> Some buf
+        with exn ->
+          Lwt_log.ign_debug ~exn ("Error resolving file " ^ fname);
+          return_none
       ) in
       Lwt_stream.on_terminate stream (fun () ->
         ignore_result (Lwt_io.close ic));
@@ -80,15 +80,15 @@ module Server = struct
       let res = Cohttp.Response.make ~status:`OK ~encoding ~headers () in
       return (res, body)
     with
-     | Unix.Unix_error(Unix.ENOENT,_,_) | Isnt_a_file ->
-         respond_not_found ()
-     | exn ->
-         let body = Printexc.to_string exn in
-         respond_error ~status:`Internal_server_error ~body ()
+    | Unix.Unix_error(Unix.ENOENT,_,_) | Isnt_a_file ->
+      respond_not_found ()
+    | exn ->
+      let body = Printexc.to_string exn in
+      respond_error ~status:`Internal_server_error ~body ()
 
   let create ?timeout ?stop ?(ctx=Cohttp_lwt_unix_net.default_ctx) ?(mode=`TCP (`Port 8080)) spec =
     Conduit_lwt_unix.serve ?timeout ?stop ~ctx:ctx.Cohttp_lwt_unix_net.ctx ~mode
-      (fun conn ic oc -> (callback spec) conn ic oc)
+      (callback spec)
 end
 
 module type S = sig
