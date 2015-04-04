@@ -334,7 +334,7 @@ Executable "async-hello-world"
 Executable "async-s3-cp"
   Path:               examples/async
   MainIs:             s3_cp.ml
-  Build$:             flag(async) & flag(async_s3_example)
+  Build$:             flag(async) && flag(async_s3_example)
   Custom:             true
   CompiledObject:     best
   Install:            false
