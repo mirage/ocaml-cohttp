@@ -98,6 +98,15 @@ Library cohttp_async
   BuildDepends:  uri, cohttp, threads, async, conduit.async (>= 0.7.0), magic-mime
   Modules:       Cohttp_async_io, Cohttp_async
 
+Library cohttp_lwt_unix_test
+  Build$:        flag(lwt_unix) && flag(tests)
+  Install:       false
+  Path:          lwt
+  Findlibname:   lwt-unix-test
+  FindlibParent: cohttp
+  BuildDepends:  cohttp.lwt, unix, lwt.unix, oUnit
+  Modules:       Cohttp_lwt_unix_test
+
 Document cohttp
   Title:                Cohttp docs
   Type:                 ocamlbuild (0.3)
@@ -358,6 +367,15 @@ Executable "async-receive-post"
   Install:            false
   BuildDepends:       cohttp, cohttp.async
 
+Executable "test_sanity"
+  Path:               lib_test
+  MainIs:             test_sanity.ml
+  Build$:             flag(lwt_unix)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.lwt-unix-test, lwt.unix
+
 Test test_accept
   Run$:               flag(tests)
   Command:            $test_accept
@@ -383,6 +401,10 @@ Test test_parser_async
   Command:            $test_parser_async
   WorkingDirectory:   lib_test
 
+Test test_sanity
+  Run$:             flag(tests) && flag(lwt_unix)
+  Command:          $test_sanity
+  WorkingDirectory: lib_test
 
 SourceRepository master
   Type:     git
