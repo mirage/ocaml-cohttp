@@ -7,6 +7,10 @@ type spec = Request.t -> Cohttp_lwt_body.t
 
 type async_test = unit -> unit Lwt.t
 
+(** A server that returns the list of responses in sequences and crashes
+    on further requests *)
+val response_sequence : (Response.t * Cohttp_lwt_body.t) Lwt.t list -> spec
+
 (** Create a temporary server according to spec that lives until the callback
     thread is determined. The uri provided in the callback should be the base
     uri for any requests made to the temp server *)

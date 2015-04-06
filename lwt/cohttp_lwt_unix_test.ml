@@ -15,6 +15,15 @@ let next_port () =
   incr port;
   current_port
 
+let response_sequence responses =
+  let xs = ref responses in
+  fun _ _ ->
+    match !xs with
+    | x::xs' ->
+      xs := xs';
+      x
+    | [] -> Lwt.fail_with "response_sequence: Server exhausted responses"
+
 let temp_server ?port spec callback =
   let port = match port with
     | None -> next_port ()
