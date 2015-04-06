@@ -16,8 +16,9 @@ val response_sequence : (Response.t * Cohttp_lwt_body.t) Lwt.t list -> spec
     uri for any requests made to the temp server *)
 val temp_server : ?port:int -> spec -> (Uri.t -> 'a Lwt.t) -> 'a Lwt.t
 
-(** Create a test suite against a server defined by spec. *)
-val test_server : ?port:int -> ?name:string -> spec
+(** Create a test suite against a server defined by spec. Tests
+    run sequentially. *)
+val test_server_s : ?port:int -> ?name:string -> spec
   -> (Uri.t -> (string * async_test) list) -> OUnit.test Lwt.t
 
 (** Run an async unit test and return and print the result *)

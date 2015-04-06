@@ -16,7 +16,7 @@ let server =
   ]
 
 let ts =
-  Cohttp_lwt_unix_test.test_server server begin fun uri ->
+  Cohttp_lwt_unix_test.test_server_s server begin fun uri ->
     let t () =
       Client.get uri >>= fun (_, body) ->
       body |> Body.to_string >|= fun body ->

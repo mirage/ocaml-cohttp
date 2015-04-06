@@ -41,7 +41,7 @@ let temp_server ?port spec callback =
   Lwt.cancel server;
   res
 
-let test_server ?port ?(name="Cohttp Server Test") spec f =
+let test_server_s ?port ?(name="Cohttp Server Test") spec f =
   temp_server ?port spec begin fun uri ->
     Lwt_log.ign_info_f "Test %s running on %s" name (Uri.to_string uri);
     let tests = f uri in
