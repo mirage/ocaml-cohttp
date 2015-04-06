@@ -19,12 +19,12 @@ let ts =
   Cohttp_lwt_unix_test.test_server server begin fun uri ->
     let t () =
       Client.get uri >>= fun (_, body) ->
-      body |> Body.to_string >>= fun body ->
-      return (assert_equal body message) in
+      body |> Body.to_string >|= fun body ->
+      assert_equal body message in
     let empty_chunk () =
       Client.get uri >>= fun (_, body) ->
-      body |> Body.to_string >>= fun body ->
-      return (assert_equal body (String.concat "" chunk_body)) in
+      body |> Body.to_string >|= fun body ->
+      assert_equal body (String.concat "" chunk_body) in
     [ "sanity test", t
     ; "empty chunk test", empty_chunk]
   end
