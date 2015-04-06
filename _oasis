@@ -370,7 +370,7 @@ Executable "async-receive-post"
 Executable "test_sanity"
   Path:               lib_test
   MainIs:             test_sanity.ml
-  Build$:             flag(lwt_unix)
+  Build$:             flag(lwt_unix) && flag(tests)
   Custom:             true
   CompiledObject:     best
   Install:            false
