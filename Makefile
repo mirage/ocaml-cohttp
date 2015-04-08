@@ -38,7 +38,7 @@ clean:
 
 VERSION = $(shell grep 'Version:' _oasis | sed 's/Version: *//')
 NAME    = $(shell grep 'Name:' _oasis    | sed 's/Name: *//')
-ARCHIVE = https://github.com/mirage/mirage-http)/archive/v$(VERSION).tar.gz
+ARCHIVE = https://github.com/mirage/mirage-http/archive/v$(VERSION).tar.gz
 
 release:
 	git tag -a v$(VERSION) -m "Version $(VERSION)."
