@@ -13,7 +13,7 @@ depends: [
   "mirage-types-lwt" {>= "2.0.0"}
   "mirage-conduit"
   "lwt" {>= "2.4.3"}
-  "cohttp" {>= "0.12.0"}
+  "cohttp" {>= "0.16.0"}
   "camlp4"
   "sexplib"
 ]
