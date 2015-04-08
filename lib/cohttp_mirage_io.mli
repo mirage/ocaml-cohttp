@@ -1,5 +1,6 @@
 (*
- * Copyright (c) 2013 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012-2015 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2013-2015 Thomas Gazagnaire <thomas@gazazagnaire.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
