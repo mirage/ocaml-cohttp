@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 2d08264567e82eedcc9f4cfaa49a19d8)
+# DO NOT EDIT (digest: c99ec3268548ab3194e3e2947e8caea1)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -18,7 +18,6 @@ true: annot, bin_annot
 "lib/mirage-http.cmxs": use_mirage-http
 <lib/*.ml{,i,y}>: pkg_cohttp.lwt-core
 <lib/*.ml{,i,y}>: pkg_conduit.mirage
-<lib/*.ml{,i,y}>: pkg_lwt.syntax
 <lib/*.ml{,i,y}>: pkg_sexplib.syntax
 <lib/*.ml{,i,y}>: pkg_tcpip.channel
 # OASIS_STOP

@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 120e4679a5100613b6b5c6a9d33858c7)
-HTTP
-HTTP_IO
+# DO NOT EDIT (digest: 726b0ca0d5a2997c48cba3a0fb4e184a)
+Cohttp_mirage
+Cohttp_mirage_io
 # OASIS_STOP
