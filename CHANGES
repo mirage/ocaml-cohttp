@@ -1,4 +1,4 @@
-0.16.1 (trunk):
+0.16.1 (2015-04-09):
 New features and bug fixes:
 * Fix handling of request paths starting with multiple slashes (#308)
 
