@@ -11,6 +11,8 @@ Compatibility breaking interface changes:
 * Simplify the `Net` signature which needs to be provided for Lwt servers
   to not be required.  Only the Lwt client needs a `Net` functor argument
   to make outgoing connections. (#274)
+* `Request.has_body` does not permit a body to be set for methods that
+  RFC7231 forbids from having one (`HEAD`, `GET` and `DELETE`).
 
 New features and bug fixes:
 * Fix linking problem caused by sub-libraries using cohttp modules outside the
@@ -33,8 +35,6 @@ New features and bug fixes:
   an override wasn't supplied, and to initialise a fresh Header value
   if none is present.
 * Do not override user-supplied headers in `post_form` or `redirect`.
-* `Request.has_body` does not permit a body to be set for methods that
-  RFC7231 forbids from having one (`HEAD`, `GET` and `DELETE`).
 * `Request.make` does not inject a `transfer-encoding` header if there
   is no body present in the request (#246).
 * `Server.respond` no longer overrides user-supplied headers that
