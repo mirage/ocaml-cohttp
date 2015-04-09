@@ -38,8 +38,12 @@ let parse_request_uri_ r uri name =
   String_io.M.(
     StringRequest.read (String_io.open_in r)
     >>= function
-    | `Ok pr ->
-      assert_equal pr.Request.uri uri
+    | `Ok { Request.uri = ruri } ->
+      let msg =
+        Printf.sprintf "expected path %s got %s"
+          (Uri.path uri) (Uri.path ruri)
+      in
+      assert_equal ~msg ruri uri
     | _ -> assert_failure (name^" parse failed")
   )
 
