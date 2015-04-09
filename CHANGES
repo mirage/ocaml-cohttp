@@ -1,3 +1,7 @@
+0.16.1 (trunk):
+New features and bug fixes:
+* Fix handling of request paths starting with multiple slashes (#308)
+
 0.16.0 (2015-03-23):
 
 Compatibility breaking interface changes:
