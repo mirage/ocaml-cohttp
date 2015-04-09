@@ -655,5 +655,4 @@ true: annot, bin_annot
 <examples/async/*.ml{,i,y}>: use_cohttp_async
 <examples/async/receive_post.{native,byte}>: custom
 # OASIS_STOP
-true: principal, strict_sequence, debug, short_paths
-true: annot
+true: principal, strict_sequence, debug
