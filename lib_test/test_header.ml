@@ -92,6 +92,8 @@ module Content_range = struct
   let content_range () = assert_equal (Some 101L) (H.get_content_range h2)
 end
 
+module Link = Cohttp.Link
+
 let links_printer link_list =
   String.concat "\n" (List.map Link.to_string link_list)
 
