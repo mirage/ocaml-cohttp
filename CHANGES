@@ -1,6 +1,11 @@
+0.16.1 (2015-04-09):
+New features and bug fixes:
+* Fix handling of request paths starting with multiple slashes (#308)
+
 0.16.0 (2015-03-23):
 
 Compatibility breaking interface changes:
+* Response.t and Request.t fields are no longer mutable
 * [lwt] Fix types in `post_form` to be a `string * string list` instead
   of a `Header.t` (#257)
 * Simplify the `Net` signature which needs to be provided for Lwt servers
@@ -8,8 +13,14 @@ Compatibility breaking interface changes:
   to make outgoing connections. (#274)
 * The `Request` and `Response` records are no longer mutable, so use
   functional updates instead via `Fieldslib.Field.fset Request.Fields.<field>`. (#296)
+* `Request.has_body` does not permit a body to be set for methods that
+  RFC7231 forbids from having one (`HEAD`, `GET` and `DELETE`).
 
 New features and bug fixes:
+* Fix linking problem caused by sub-libraries using cohttp modules outside the
+  cohttp pack.
+* Added async client for S3. (#304)
+* Fix String_io.read_line to trim '\r' from end of string (#300)
 * Fix `cohttp-server-lwt` to correctly bind to a specific interface (#298).
 * Add `Cohttp_async.request` to send raw, umodified requests.
 * Supplying a `content-range` or `content-range` header in any client
@@ -26,8 +37,6 @@ New features and bug fixes:
   an override wasn't supplied, and to initialise a fresh Header value
   if none is present.
 * Do not override user-supplied headers in `post_form` or `redirect`.
-* `Request.has_body` does not permit a body to be set for methods that
-  RFC7231 forbids from having one (`HEAD`, `GET` and `DELETE`).
 * `Request.make` does not inject a `transfer-encoding` header if there
   is no body present in the request (#246).
 * `Server.respond` no longer overrides user-supplied headers that

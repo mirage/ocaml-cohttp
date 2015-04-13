@@ -17,6 +17,7 @@
 
 open Core.Std
 open Async.Std
+open Cohttp
 
 module IO = Cohttp_async_io
 

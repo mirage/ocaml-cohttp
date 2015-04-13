@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        cohttp
-Version:     0.16.0
+Version:     0.16.1
 Synopsis:    HTTP library for Lwt, Async, JavaScript and Mirage
 Description: CoHTTP is an OCaml library for creating HTTP clients and
   daemons.  It has a portable HTTP parser.  Optional dependencies
@@ -53,6 +53,10 @@ Flag js
 
 Flag nettests
   Description: run the internet-using tests
+  Default:     false
+
+Flag async_s3_example
+  Description: build the async s3 example
   Default:     false
 
 Library cohttp_lwt
@@ -327,6 +331,15 @@ Executable "async-hello-world"
   Install:            false
   BuildDepends:       cohttp, cohttp.async
 
+Executable "async-s3-cp"
+  Path:               examples/async
+  MainIs:             s3_cp.ml
+  Build$:             flag(async) && flag(async_s3_example)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp, cohttp.async, nocrypto, cstruct
+
 Executable "test_xhr"
   Path:               lib_test
   MainIs:             test_xhr.ml
@@ -368,16 +381,6 @@ Test test_parser
 Test test_parser_async
   Run$:               flag(tests) && flag(async)
   Command:            $test_parser_async
-  WorkingDirectory:   lib_test
-
-Test test_net_lwt
-  Run$:               flag(nettests) && flag(lwt_unix)
-  Command:            $test_net_lwt
-  WorkingDirectory:   lib_test
-
-Test test_net_async
-  Run$:               flag(nettests) && flag(async)
-  Command:            $test_net_async
   WorkingDirectory:   lib_test
 
 
