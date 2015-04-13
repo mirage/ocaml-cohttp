@@ -30,13 +30,11 @@ let temp_server ?port spec callback =
     | Some p -> p in
   let server = Server.make ~callback:(fun _ req body -> spec req body) () in
   let uri = Uri.of_string ("http://0.0.0.0:" ^ (string_of_int port)) in
-  let server_ready = Lwt_unix.sleep 0.3 in (* XXX hackish *)
   let server = Lwt.catch
                  (fun () -> Server.create ~mode:(`TCP (`Port port)) server)
                  (function
                    | Lwt.Canceled -> Lwt.return_unit
                    | x -> Lwt.fail x) in
-  server_ready >>= fun () ->
   callback uri >|= fun res ->
   Lwt.cancel server;
   res
