@@ -155,10 +155,17 @@ module Make_client
           return (res, `Empty)
       end
 
-  let call ?(ctx=default_ctx) ?headers ?(body=`Empty) ?(chunked=true) meth uri =
+  let is_meth_chunked = function
+    | `HEAD -> false
+    | `GET -> false
+    | `DELETE -> false
+    | _ -> true
+
+  let call ?(ctx=default_ctx) ?headers ?(body=`Empty) ?chunked meth uri =
     let headers = match headers with None -> Header.init () | Some h -> h in
     lwt (conn,ic,oc) = Net.connect_uri ~ctx uri in
     let closefn () = Net.close ic oc in
+    let chunked = match chunked with None -> is_meth_chunked meth | Some v -> v in
     match chunked with
     | true ->
       let req = Request.make_for_client ~headers ~chunked meth uri in
@@ -177,14 +184,17 @@ module Make_client
 
   (* The HEAD should not have a response body *)
   let head ?ctx ?headers uri =
-    call ?headers ~chunked:false `HEAD uri
+    call ?headers `HEAD uri
     >|= fst
 
-  let get ?ctx ?headers uri = call ?ctx ?headers ~chunked:false `GET uri
-  let delete ?ctx ?headers uri = call ?ctx ?headers ~chunked:false `DELETE uri
-  let post ?ctx ?body ?chunked ?headers uri = call ?ctx ?headers ?body ?chunked `POST uri
-  let put ?ctx ?body ?chunked ?headers uri = call ?ctx ?headers ?body ?chunked `PUT uri
-  let patch ?ctx ?body ?chunked ?headers uri = call ?ctx ?headers ?body ?chunked `PATCH uri
+  let get ?ctx ?headers uri = call ?ctx ?headers `GET uri
+  let delete ?ctx ?headers uri = call ?ctx ?headers `DELETE uri
+  let post ?ctx ?body ?chunked ?headers uri =
+    call ?ctx ?headers ?body ?chunked `POST uri
+  let put ?ctx ?body ?chunked ?headers uri =
+    call ?ctx ?headers ?body ?chunked `PUT uri
+  let patch ?ctx ?body ?chunked ?headers uri =
+    call ?ctx ?headers ?body ?chunked `PATCH uri
 
   let post_form ?ctx ?headers ~params uri =
     let headers = Header.add_opt_unless_exists headers "content-type" "application/x-www-form-urlencoded" in
