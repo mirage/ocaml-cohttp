@@ -18,6 +18,8 @@
 open OUnit
 open Printf
 
+module StringResponse = Cohttp.Response.Make(Cohttp.String_io.M)
+
 module H = Cohttp.Header
 
 let valid_auth () =
@@ -73,19 +75,6 @@ let get_media_type () =
   assert_equal ~msg:"media type" ~printer:(opt_printer (fun x -> x))
     (Some "foo/bar") (Cohttp.Header.get_media_type header)
 
-(* returns true if the result list contains successes only.
-   Copied from oUnit source as it isnt exposed by the mli *)
-let rec was_successful =
-  function
-    | [] -> true
-    | RSuccess _::t
-    | RSkip _::t ->
-        was_successful t
-    | RFailure _::_
-    | RError _::_
-    | RTodo _::_ ->
-        false
-
 let list_valued_header () =
   let h = H.init () in
   let h = H.add h "accept" "foo" in
@@ -103,27 +92,336 @@ module Content_range = struct
   let content_range () = assert_equal (Some 101L) (H.get_content_range h2)
 end
 
-let _ =
-  let suites = [
-    "Media Type" >:: get_media_type;
-    "Valid Auth" >:: valid_auth;
-    "Valid Set-Cookie" >:: valid_set_cookie;
-    "Valid Cookie" >:: valid_cookie;
-    "Cookie with =" >:: cookie_with_eq_val;
-    "Content Range - none" >:: Content_range.none;
-    "Content Range - content-length" >:: Content_range.content_length;
-    "Content Range - content-range" >:: Content_range.content_range;
-    "Header - get list valued" >:: list_valued_header;
-  ] in
-  let verbose = ref false in
-  let set_verbose _ = verbose := true in
-  Arg.parse
-    [("-verbose", Arg.Unit set_verbose, "Run the test in verbose mode.");]
-    (fun x -> raise (Arg.Bad ("Bad argument : " ^ x)))
-    ("Usage: " ^ Sys.argv.(0) ^ " [-verbose]");
-  if not
-    (List.for_all
-       (fun suite -> was_successful (run_test_tt ~verbose:!verbose suite))
-       suites)
-  then exit 1
+let links_printer link_list =
+  String.concat "\n" (List.map Link.to_string link_list)
 
+let headers_of_response test_name response_string =
+  Cohttp.String_io.M.(
+    StringResponse.read (Cohttp.String_io.open_in response_string)
+    >>= function
+    | `Ok resp -> Cohttp.Response.headers resp
+    | _ -> assert_failure (test_name ^ " response parse failed")
+  )
+
+let get_resp lines =
+  "HTTP/1.1 200 OK\r\n"^(String.concat "\r\n" lines)^"\r\n\r\n"
+
+let empty_uri = Uri.of_string ""
+
+let link_simple () =
+  let next_tgt = "/page/2" in
+  let resp = get_resp ["Link: <"^next_tgt^">; rel=next"] in
+  let headers = headers_of_response "link_simple" resp in
+  let printer = links_printer in
+  assert_equal ~printer Link.([{
+    context = empty_uri;
+    arc = { empty_arc with relation=[Next] };
+    target = Uri.of_string next_tgt;
+  }]) (H.get_links headers)
+
+let link_multi_rel () =
+  let next_tgt = "/page/2" in
+  let resp = get_resp ["Link: <"^next_tgt^">; rel=\"next last\""] in
+  let headers = headers_of_response "link_multi_rel" resp in
+  let printer = links_printer in
+  assert_equal ~printer Link.([{
+    context = empty_uri;
+    arc = { empty_arc with relation=[Next; Last] };
+    target = Uri.of_string next_tgt;
+  }]) (H.get_links headers)
+
+let link_multi_line () =
+  let self_tgt = "/page/1" in
+  let next_tgt = "/page/2" in
+  let resp = get_resp [
+    "Link: <"^next_tgt^">; rel=\"next\"";
+    "Link: <"^self_tgt^">; rel=self";
+  ] in
+  let headers = headers_of_response "link_multi_line" resp in
+  let printer = links_printer in
+  assert_equal ~printer Link.([
+    {
+      context = empty_uri;
+      arc = { empty_arc with relation=[Next] };
+      target = Uri.of_string next_tgt;
+    };
+    {
+      context = empty_uri;
+      arc = { empty_arc with relation=[Self] };
+      target = Uri.of_string self_tgt;
+    };
+  ]) (H.get_links headers)
+
+let link_multi_multi () =
+  let next_tgt = "/page/2" in
+  let last_tgt = "/page/3" in
+  let resp = get_resp [
+    "Link: <"^next_tgt^">; rel=\"next\", <"^last_tgt^">; rel=last";
+  ] in
+  let headers = headers_of_response "link_multi_multi" resp in
+  let printer = links_printer in
+  assert_equal ~printer Link.([
+    {
+      context = empty_uri;
+      arc = { empty_arc with relation=[Next] };
+      target = Uri.of_string next_tgt;
+    };
+    {
+      context = empty_uri;
+      arc = { empty_arc with relation=[Last] };
+      target = Uri.of_string last_tgt;
+    };
+  ]) (H.get_links headers)
+
+let link_rel_uri () =
+  let uri_tgt = "/page/2" in
+  let uri_s = "http://example.com/a,valid;uri" in
+  let resp = get_resp [
+    "Link: <"^uri_tgt^">; rel=\"next "^uri_s^"\"; hreflang=en";
+  ] in
+  let headers = headers_of_response "link_rel_uri" resp in
+  let printer = links_printer in
+  assert_equal ~printer Link.([
+    {
+      context = empty_uri;
+      arc = { empty_arc with
+              relation = [
+                Next;
+                Extension (Uri.of_string uri_s);
+              ];
+              hreflang = Some "en";
+            };
+      target = Uri.of_string uri_tgt;
+    };
+  ]) (H.get_links headers)
+
+let link_anchor () =
+  let anchor = "/page/2" in
+  let target = "/page/1" in
+  let resp = get_resp [
+    "Link: <"^target^">; anchor=\""^anchor^"\"; rel=prev";
+  ] in
+  let headers = headers_of_response "link_rel_uri" resp in
+  let printer = links_printer in
+  assert_equal ~printer Link.([
+    {
+      context = Uri.of_string anchor;
+      arc = { empty_arc with
+              relation = [
+                Prev;
+              ];
+            };
+      target = Uri.of_string target;
+    };
+  ]) (H.get_links headers)
+
+let link_rev () =
+  let anchor = "/page/2" in
+  let resp = get_resp [
+    "Link: <"^anchor^">; rev=prev";
+  ] in
+  let headers = headers_of_response "link_rev" resp in
+  let printer = links_printer in
+  assert_equal ~printer Link.([
+    {
+      context = Uri.of_string anchor;
+      arc = { empty_arc with
+              reverse = true;
+              relation = [
+                Prev;
+              ];
+            };
+      target = empty_uri;
+    };
+  ]) (H.get_links headers)
+
+let link_media () =
+  let target = "/page/2" in
+  let resp = get_resp [
+    "Link: <"^target^">; media=screen";
+  ] in
+  let headers = headers_of_response "link_media" resp in
+  let printer = links_printer in
+  assert_equal ~printer Link.([
+    {
+      context = empty_uri;
+      arc = { empty_arc with
+              media = Some "screen";
+            };
+      target = Uri.of_string target;
+    };
+  ]) (H.get_links headers)
+
+let link_media_complex () =
+  let target = "/page/2" in
+  let resp = get_resp [
+    "Link: <"^target^">; media=\"screen, print and dpi < 200\"";
+  ] in
+  let headers = headers_of_response "link_media_complex" resp in
+  let printer = links_printer in
+  assert_equal ~printer Link.([
+    {
+      context = empty_uri;
+      arc = { empty_arc with
+              media = Some "screen, print and dpi < 200";
+            };
+      target = Uri.of_string target;
+    };
+  ]) (H.get_links headers)
+
+let link_title () =
+  let target = "/page/2" in
+  let resp = get_resp [
+    "Link: <"^target^">; title=\"Next!\"; rel=next";
+  ] in
+  let headers = headers_of_response "link_title" resp in
+  let printer = links_printer in
+  assert_equal ~printer Link.([
+    {
+      context = empty_uri;
+      arc = { empty_arc with
+              relation = [ Next ];
+              title = Some "Next!";
+            };
+      target = Uri.of_string target;
+    };
+  ]) (H.get_links headers)
+
+let link_title_star () =
+  let target = "/page/2" in
+  let resp = get_resp [
+    "Link: <"^target^">; title*=UTF-8'en'Next!; rel=next";
+  ] in
+  let headers = headers_of_response "link_title_star" resp in
+  let printer = links_printer in
+  assert_equal ~printer Link.([
+    {
+      context = empty_uri;
+      arc = { empty_arc with
+              relation = [ Next ];
+              title_ext = Some {
+                charset="UTF-8";
+                language="en";
+                value = "Next!";
+              };
+            };
+      target = Uri.of_string target;
+    };
+  ]) (H.get_links headers)
+
+let link_type_token () =
+  let target = "/page/2" in
+  let resp = get_resp [
+    "Link: <"^target^">; type=text/html; rel=next";
+  ] in
+  let headers = headers_of_response "link_type_token" resp in
+  let printer = links_printer in
+  assert_equal ~printer Link.([
+    {
+      context = empty_uri;
+      arc = { empty_arc with
+              relation = [ Next ];
+              media_type = Some ("text", "html");
+            };
+      target = Uri.of_string target;
+    };
+  ]) (H.get_links headers)
+
+let link_type_quoted () =
+  let target = "/page/2" in
+  let resp = get_resp [
+    "Link: <"^target^">; type=\"text/html\"; rel=next";
+  ] in
+  let headers = headers_of_response "link_type_quoted" resp in
+  let printer = links_printer in
+  assert_equal ~printer Link.([
+    {
+      context = empty_uri;
+      arc = { empty_arc with
+              relation = [ Next ];
+              media_type = Some ("text", "html");
+            };
+      target = Uri.of_string target;
+    };
+  ]) (H.get_links headers)
+
+let link_ext () =
+  let target = "/page/2" in
+  let resp = get_resp [
+    "Link: <"^target^">; see=saw; rel=next";
+  ] in
+  let headers = headers_of_response "link_ext" resp in
+  let printer = links_printer in
+  assert_equal ~printer Link.([
+    {
+      context = empty_uri;
+      arc = { empty_arc with
+              relation = [ Next ];
+              extensions = ["see", "saw"];
+            };
+      target = Uri.of_string target;
+    };
+  ]) (H.get_links headers)
+
+let link_ext_star () =
+  let target = "/page/2" in
+  let resp = get_resp [
+    "Link: <"^target^">; zig*=''zag; rel=next";
+  ] in
+  let headers = headers_of_response "link_ext" resp in
+  let printer = links_printer in
+  assert_equal ~printer Link.([
+    {
+      context = empty_uri;
+      arc = { empty_arc with
+              relation = [ Next ];
+              extension_exts = ["zig", {
+                charset = "";
+                language = "";
+                value="zag";
+              }];
+            };
+      target = Uri.of_string target;
+    };
+  ]) (H.get_links headers)
+
+;;
+Printexc.record_backtrace true;
+Alcotest.run "test_header" [
+  "Link", [
+    "simple", `Quick, link_simple;
+    "multiple rels", `Quick, link_multi_rel;
+    "multiple lines", `Quick, link_multi_line;
+    "multiheader", `Quick, link_multi_multi;
+    "rel uri", `Quick, link_rel_uri;
+    "anchor", `Quick, link_anchor;
+    "rev", `Quick, link_rev;
+    "media", `Quick, link_media;
+    "media complex", `Quick, link_media_complex;
+    "title", `Quick, link_title;
+    "title star", `Quick, link_title_star;
+    "type token", `Quick, link_type_token;
+    "type quoted", `Quick, link_type_quoted;
+    "extension", `Quick, link_ext;
+    "extension star", `Quick, link_ext_star;
+  ];
+  "Media Type", [
+    "Media Type", `Quick, get_media_type;
+  ];
+  "Auth", [
+    "Valid Auth", `Quick, valid_auth;
+  ];
+  "Cookie", [
+    "Valid Set-Cookie", `Quick, valid_set_cookie;
+    "Valid Cookie", `Quick, valid_cookie;
+    "Cookie with =", `Quick, cookie_with_eq_val;
+  ];
+  "Content Range", [
+    "none", `Quick, Content_range.none;
+    "content-length", `Quick, Content_range.content_length;
+    "content-range", `Quick, Content_range.content_range;
+  ];
+  "Header", [
+    "get list valued", `Quick, list_valued_header;
+  ];
+]
