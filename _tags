@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 43ac94cbae69d27aab17c420e739ded4)
+# DO NOT EDIT (digest: 778d9376bc3aab519536414f01946207)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -157,6 +157,7 @@ true: annot, bin_annot
 <lib_test/test_accept.{native,byte}>: use_cohttp
 <lib_test/test_accept.{native,byte}>: custom
 # Executable test_header
+<lib_test/test_header.{native,byte}>: pkg_alcotest
 <lib_test/test_header.{native,byte}>: pkg_base64
 <lib_test/test_header.{native,byte}>: pkg_bytes
 <lib_test/test_header.{native,byte}>: pkg_fieldslib
@@ -169,6 +170,7 @@ true: annot, bin_annot
 <lib_test/test_header.{native,byte}>: pkg_uri
 <lib_test/test_header.{native,byte}>: pkg_uri.services
 <lib_test/test_header.{native,byte}>: use_cohttp
+<lib_test/*.ml{,i,y}>: pkg_alcotest
 <lib_test/test_header.{native,byte}>: custom
 # Executable test_request
 <lib_test/test_request.{native,byte}>: pkg_base64
