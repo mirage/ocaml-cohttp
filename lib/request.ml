@@ -106,16 +106,22 @@ module Make(IO : S.IO) = struct
     parse_request_fst_line ic >>= function
     | `Eof -> return `Eof
     | `Invalid reason as r -> return r
-    | `Ok (meth, path, version) ->
+    | `Ok (meth, path_and_qs, version) ->
       Header_IO.parse ic >>= fun headers ->
-      let empty = Uri.of_string "" in
+      let empty_base = Uri.of_string "///" in
+      let pqs = match Stringext.split ~max:2 path_and_qs ~on:'?' with
+        | [] -> empty_base
+        | [path] -> Uri.with_path empty_base path
+        | path::qs::_ ->
+          let path_base = Uri.with_path empty_base path in
+          Uri.with_query path_base (Uri.query_of_encoded qs)
+      in
       let uri =
         match Header.get headers "host" with
-        | None -> Uri.with_path empty path
+        | None -> Uri.(with_scheme (with_host pqs None) None)
         | Some host ->
           let host_uri = Uri.of_string ("//"^host) in
-          let uri = Uri.with_path empty path in
-          let uri = Uri.with_host uri (Uri.host host_uri) in
+          let uri = Uri.with_host pqs (Uri.host host_uri) in
           Uri.with_port uri (Uri.port host_uri)
       in
       let encoding = Header.get_transfer_encoding headers in
