@@ -34,14 +34,23 @@ let auth_uri _ =
     (r |> Request.headers |> Header.get_authorization)
     (Some (`Basic ("foo", "bar")))
 
+let opt_default default = function
+  | None -> default
+  | Some v -> v
+
 let parse_request_uri_ r uri name =
   String_io.M.(
     StringRequest.read (String_io.open_in r)
     >>= function
     | `Ok { Request.uri = ruri } ->
-      let msg =
-        Printf.sprintf "expected path %s got %s"
-          (Uri.path uri) (Uri.path ruri)
+      let msg = Uri.(Printf.sprintf "expected %s %d %s %s\ngot %s %d %s %s"
+                       (opt_default "_" (host uri))
+                       (opt_default (-1) (port uri))
+                       (path uri) (encoded_of_query (query uri))
+                       (opt_default "_" (host ruri))
+                       (opt_default (-1) (port uri))
+                       (path ruri) (encoded_of_query (query ruri))
+                    )
       in
       assert_equal ~msg ruri uri
     | _ -> assert_failure (name^" parse failed")
@@ -79,7 +88,7 @@ let parse_request_uri_host_triple_slash _ =
 
 let parse_request_uri_no_slash _ =
   let r = "GET foo HTTP/1.1\r\n\r\n" in
-  let uri = Uri.with_path (Uri.of_string "") "foo" in
+  let uri = Uri.of_string "/foo" in
   parse_request_uri_ r uri "parse_request_uri_no_slash"
 
 let parse_request_uri_host_no_slash _ =
@@ -89,7 +98,7 @@ let parse_request_uri_host_no_slash _ =
 
 let parse_request_uri_path_like_scheme _ =
   let r = "GET http://example.net HTTP/1.1\r\n\r\n" in
-  let uri = Uri.with_path (Uri.of_string "") "http://example.net" in
+  let uri = Uri.of_string "/http://example.net" in
   parse_request_uri_ r uri "parse_request_uri_path_like_scheme"
 
 let parse_request_uri_host_path_like_scheme _ =
