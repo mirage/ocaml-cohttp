@@ -96,6 +96,16 @@ let parse_request_uri_host_no_slash _ =
   let uri = Uri.of_string "//example.com/foo" in
   parse_request_uri_ r uri "parse_request_uri_host_no_slash"
 
+let parse_request_uri_empty _ =
+  let r = "GET  HTTP/1.1\r\n\r\n" in
+  let uri = Uri.of_string "/" in
+  parse_request_uri_ r uri "parse_request_uri_empty"
+
+let parse_request_uri_host_empty _ =
+  let r = "GET  HTTP/1.1\r\nHost: example.com\r\n\r\n" in
+  let uri = Uri.of_string "//example.com/" in
+  parse_request_uri_ r uri "parse_request_uri_host_empty"
+
 let parse_request_uri_path_like_scheme _ =
   let r = "GET http://example.net HTTP/1.1\r\n\r\n" in
   let uri = Uri.of_string "http://example.net" in
@@ -147,6 +157,8 @@ let _ =
      >:: parse_request_uri_host_triple_slash
    ; "Parse request URI no slash" >:: parse_request_uri_no_slash
    ; "Parse request URI no slash with host" >:: parse_request_uri_host_no_slash
+   ; "Parse request URI empty" >:: parse_request_uri_empty
+   ; "Parse request URI empty with host" >:: parse_request_uri_host_empty
    ; "Parse request URI path like scheme" >:: parse_request_uri_path_like_scheme
    ; "Parse request URI path like scheme with host"
      >:: parse_request_uri_host_path_like_scheme
