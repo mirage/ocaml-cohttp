@@ -1657,12 +1657,7 @@ let output_type oc ~mli t =
 let output_status_types oc ~mli t =
   List.iter (output_type oc ~mli) t;
   append oc "type status = [";
-  List.iteri (fun i t ->
-      if i = 0 then
-        append oc "  | %s_status" t.section
-      else
-        append oc "  | %s_status" t.section
-    ) t;
+  List.iteri (fun i t -> append oc "  | %s_status" t.section) t;
   append oc "] with sexp";
   append oc "";
   append oc "type status_code = [`Code of int | status ] with sexp";
