@@ -1656,14 +1656,14 @@ let output_type oc ~mli t =
 
 let output_status_types oc ~mli t =
   List.iter (output_type oc ~mli) t;
-  append oc "type status =";
+  append oc "type status = [";
   List.iteri (fun i t ->
       if i = 0 then
-        append oc "  [ %s_status" t.section
+        append oc "  | %s_status" t.section
       else
         append oc "  | %s_status" t.section
     ) t;
-  append oc "  ] with sexp";
+  append oc "] with sexp";
   append oc "";
   append oc "type status_code = [`Code of int | status ] with sexp";
   append oc ""
@@ -1754,8 +1754,10 @@ type gen = {
 let g constr string = { constr; string }
 
 let output_gen_types oc ~mli (name, typ, gens) =
-  append oc "type %s = [ %s | `Other of string ] with sexp" typ
-    (String.concat " | " (List.map (fun g -> g.constr) gens));
+  append oc "type %s = [" typ;
+  List.iter (fun { constr } -> append oc "  | %s" constr) gens;
+  append oc "  | `Other of string";
+  append oc "] with sexp";
   append oc ""
 
 let output_gen_convert oc ~mli (name, typ, gens) =
@@ -1810,6 +1812,8 @@ let known_methods = [
     g "`PATCH"   "PATCH";
     g "`PUT"     "PUT";
     g "`OPTIONS" "OPTIONS";
+    g "`TRACE"   "TRACE";
+    g "`CONNECT" "CONNECT";
   ]
 
 let meth = ("method", "meth", known_methods)
@@ -1830,8 +1834,8 @@ let gen oc ~mli =
   output_is_code oc ~mli t
 
 let () =
-  let ml = open_out "../cohttp/code.ml" in
-  let mli = open_out "../cohttp/code.mli" in
+  let ml = open_out "../lib/code.ml" in
+  let mli = open_out "../lib/code.mli" in
   gen ml ~mli:false;
   gen mli ~mli:true;
   close_out ml;
