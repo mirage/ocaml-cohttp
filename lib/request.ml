@@ -108,15 +108,18 @@ module Make(IO : S.IO) = struct
     | `Invalid reason as r -> return r
     | `Ok (meth, path, version) ->
       Header_IO.parse ic >>= fun headers ->
-      let empty = Uri.of_string "" in
+      let uri = Uri.of_string path in
       let uri =
-        match Header.get headers "host" with
-        | None -> Uri.with_path empty path
-        | Some host ->
-          let host_uri = Uri.of_string ("//"^host) in
-          let uri = Uri.with_path empty path in
-          let uri = Uri.with_host uri (Uri.host host_uri) in
-          Uri.with_port uri (Uri.port host_uri)
+        match Uri.scheme uri with
+          Some _ -> uri (* we have an absoluteURI *)
+        | None ->
+           let uri = Uri.of_string ("//localhost"^path) in
+           match Header.get headers "host" with
+           | None -> Uri.with_host uri None
+           | Some host ->
+             let host_uri = Uri.of_string ("//"^host) in
+             let uri = Uri.with_host uri (Uri.host host_uri) in
+             Uri.with_port uri (Uri.port host_uri)
       in
       let encoding = Header.get_transfer_encoding headers in
       return (`Ok { headers; meth; uri; version; encoding })
