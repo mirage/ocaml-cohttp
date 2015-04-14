@@ -108,13 +108,12 @@ let parse_request_uri_host_empty _ =
 
 let parse_request_uri_path_like_scheme _ =
   let r = "GET http://example.net HTTP/1.1\r\n\r\n" in
-  let uri = Uri.of_string "http://example.net" in
+  let uri = Uri.of_string "http://example.net/" in
   parse_request_uri_ r uri "parse_request_uri_path_like_scheme"
 
 let parse_request_uri_host_path_like_scheme _ =
-  let path = "http://example.net" in
-  let r = "GET "^path^" HTTP/1.1\r\nHost: example.com\r\n\r\n" in
-  let uri = Uri.of_string path in
+  let r = "GET http://example.net HTTP/1.1\r\nHost: example.com\r\n\r\n" in
+  let uri = Uri.of_string "http://example.net/" in
   parse_request_uri_ r uri "parse_request_uri_host_path_like_scheme"
 
 let parse_request_uri_path_like_host_port _ =
@@ -140,6 +139,38 @@ let parse_request_uri_host_query _ =
   let r = "GET "^pqs^" HTTP/1.1\r\nHost: example.com\r\n\r\n" in
   let uri = Uri.of_string ("//example.com"^pqs) in
   parse_request_uri_ r uri "parse_request_uri_host_query"
+
+let parse_request_uri_query_no_slash _ =
+  let r = "GET ?foo HTTP/1.1\r\n\r\n" in
+  let uri = Uri.of_string "/?foo" in
+  parse_request_uri_ r uri "parse_request_uri_query_no_slash"
+
+let parse_request_uri_host_query_no_slash _ =
+  let r = "GET ?foo HTTP/1.1\r\nHost: example.com\r\n\r\n" in
+  let uri = Uri.of_string "//example.com/?foo" in
+  parse_request_uri_ r uri "parse_request_uri_host_query_no_slash"
+
+let parse_request_connect _ =
+  let r = "CONNECT vpn.example.net:443 HTTP/1.1\r\n" in
+  let uri = Uri.of_string "//vpn.example.net:443" in
+  parse_request_uri_ r uri "parse_request_connect"
+
+let parse_request_connect_host _ =
+  let r =
+    "CONNECT vpn.example.net:443 HTTP/1.1\r\nHost: vpn.example.com:443\r\n\r\n"
+  in
+  let uri = Uri.of_string "//vpn.example.net:443" in
+  parse_request_uri_ r uri "parse_request_connect_host"
+
+let parse_request_options _ =
+  let r = "OPTIONS * HTTP/1.1\r\n\r\n" in
+  let uri = Uri.of_string "*" in
+  parse_request_uri_ r uri "parse_request_options"
+
+let parse_request_options_host _ =
+  let r = "OPTIONS * HTTP/1.1\r\nHost: example.com:443\r\n\r\n" in
+  let uri = Uri.of_string "//example.com/*" in
+  parse_request_uri_ r uri "parse_request_options_host"
 
 let _ =
   ("Request" >:::
@@ -168,4 +199,12 @@ let _ =
      >:: parse_request_uri_host_path_like_host_port
    ; "Parse request URI with query string" >:: parse_request_uri_query
    ; "Parse request URI with query with host" >:: parse_request_uri_host_query
+   ; "Parse request URI no slash with query string"
+     >:: parse_request_uri_query_no_slash
+   ; "Parse request URI no slash with query with host"
+     >:: parse_request_uri_host_query_no_slash
+   ; "Parse CONNECT request URI" >:: parse_request_connect
+   ; "Parse CONNECT request URI with host" >:: parse_request_connect_host
+   ; "Parse OPTIONS request URI" >:: parse_request_options
+   ; "Parse OPTIONS request URI with host" >:: parse_request_options_host
    ]) |> run_test_tt_main
