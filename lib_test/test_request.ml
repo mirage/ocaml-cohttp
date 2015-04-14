@@ -98,13 +98,13 @@ let parse_request_uri_host_no_slash _ =
 
 let parse_request_uri_path_like_scheme _ =
   let r = "GET http://example.net HTTP/1.1\r\n\r\n" in
-  let uri = Uri.of_string "/http://example.net" in
+  let uri = Uri.of_string "http://example.net" in
   parse_request_uri_ r uri "parse_request_uri_path_like_scheme"
 
 let parse_request_uri_host_path_like_scheme _ =
   let path = "http://example.net" in
   let r = "GET "^path^" HTTP/1.1\r\nHost: example.com\r\n\r\n" in
-  let uri = Uri.with_path (Uri.of_string "//example.com") path in
+  let uri = Uri.of_string path in
   parse_request_uri_ r uri "parse_request_uri_host_path_like_scheme"
 
 let parse_request_uri_path_like_host_port _ =
