@@ -114,12 +114,15 @@ module Make(IO : S.IO) = struct
           Some _ -> uri (* we have an absoluteURI *)
         | None ->
            let uri = Uri.of_string ("//localhost"^path) in
-           match Header.get headers "host" with
-           | None -> Uri.with_host uri None
-           | Some host ->
-             let host_uri = Uri.of_string ("//"^host) in
-             let uri = Uri.with_host uri (Uri.host host_uri) in
-             Uri.with_port uri (Uri.port host_uri)
+           Uri.with_host uri None
+      in
+      let uri =
+        match Header.get headers "host" with
+        | None -> uri
+        | Some host ->
+          let host_uri = Uri.of_string ("//"^host) in
+          let uri = Uri.with_host uri (Uri.host host_uri) in
+          Uri.with_port uri (Uri.port host_uri)
       in
       let encoding = Header.get_transfer_encoding headers in
       return (`Ok { headers; meth; uri; version; encoding })
