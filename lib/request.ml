@@ -106,23 +106,26 @@ module Make(IO : S.IO) = struct
     parse_request_fst_line ic >>= function
     | `Eof -> return `Eof
     | `Invalid reason as r -> return r
-    | `Ok (meth, path_and_qs, version) ->
+    | `Ok (meth, request_uri_s, version) ->
       Header_IO.parse ic >>= fun headers ->
-      let empty_base = Uri.of_string "///" in
-      let pqs = match Stringext.split ~max:2 path_and_qs ~on:'?' with
-        | [] -> empty_base
-        | [path] -> Uri.with_path empty_base path
-        | path::qs::_ ->
-          let path_base = Uri.with_path empty_base path in
-          Uri.with_query path_base (Uri.query_of_encoded qs)
-      in
-      let uri =
-        match Header.get headers "host" with
-        | None -> Uri.(with_scheme (with_host pqs None) None)
-        | Some host ->
-          let host_uri = Uri.of_string ("//"^host) in
-          let uri = Uri.with_host pqs (Uri.host host_uri) in
-          Uri.with_port uri (Uri.port host_uri)
+      let uri = Uri.of_string request_uri_s in
+      let uri = match Uri.scheme uri with
+        | Some _ -> uri (* we have an absoluteURI *)
+        | None ->
+          let empty_base = Uri.of_string "///" in
+          let pqs = match Stringext.split ~max:2 request_uri_s ~on:'?' with
+            | [] -> empty_base
+            | [path] -> Uri.with_path empty_base path
+            | path::qs::_ ->
+              let path_base = Uri.with_path empty_base path in
+              Uri.with_query path_base (Uri.query_of_encoded qs)
+          in
+          match Header.get headers "host" with
+          | None -> Uri.(with_scheme (with_host pqs None) None)
+          | Some host ->
+            let host_uri = Uri.of_string ("//"^host) in
+            let uri = Uri.with_host pqs (Uri.host host_uri) in
+            Uri.with_port uri (Uri.port host_uri)
       in
       let encoding = Header.get_transfer_encoding headers in
       return (`Ok { headers; meth; uri; version; encoding })
