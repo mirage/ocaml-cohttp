@@ -1,3 +1,7 @@
+0.17.0 (trunk):
+New features and bug fixes:
+* CONNECT and TRACE methods added
+
 0.16.1 (2015-04-09):
 New features and bug fixes:
 * Fix handling of request paths starting with multiple slashes (#308)

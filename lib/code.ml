@@ -3,7 +3,18 @@
 open Sexplib.Std
 type version = [ `HTTP_1_0 | `HTTP_1_1 | `Other of string ] with sexp
 
-type meth = [ `GET | `POST | `HEAD | `DELETE | `PATCH | `PUT | `OPTIONS | `Other of string ] with sexp
+type meth = [
+  | `GET
+  | `POST
+  | `HEAD
+  | `DELETE
+  | `PATCH
+  | `PUT
+  | `OPTIONS
+  | `CONNECT
+  | `TRACE
+  | `Other of string
+] with sexp
 
 type informational_status =
   [ `Continue
@@ -121,6 +132,8 @@ let string_of_method: meth -> string = function
   | `PATCH -> "PATCH"
   | `PUT -> "PUT"
   | `OPTIONS -> "OPTIONS"
+  | `CONNECT -> "CONNECT"
+  | `TRACE -> "TRACE"
   | `Other s -> s
 
 let method_of_string: string -> meth = function
@@ -131,6 +144,8 @@ let method_of_string: string -> meth = function
   | "PATCH" -> `PATCH
   | "PUT" -> `PUT
   | "OPTIONS" -> `OPTIONS
+  | "CONNECT" -> `CONNECT
+  | "TRACE" -> `TRACE
   | s -> `Other s
 
 let compare_method a b =
