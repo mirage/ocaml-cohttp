@@ -26,7 +26,7 @@ Library cohttp
   Findlibname:   cohttp
   Pack:          true
   Modules:       S, Code, Header, Cookie, Request, Response, Transfer,
-                 Accept, Accept_parser, Accept_lexer, Accept_types,
+                 Accept, Accept_parser, Accept_lexer, Accept_types, Link,
                  Auth, Header_io, Transfer_io, Connection, Body, String_io, Conf
   BuildDepends:  re.emacs, stringext, uri (>= 1.5.0), uri.services,
                  fieldslib (>= 109.20.00), fieldslib.syntax,
@@ -167,7 +167,7 @@ Executable test_header
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp, oUnit (>= 1.0.2)
+  BuildDepends:       cohttp, oUnit (>= 1.0.2), alcotest
 
 Executable test_request
   Path:               lib_test

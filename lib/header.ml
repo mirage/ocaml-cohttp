@@ -37,7 +37,7 @@ let user_agent = Conf.user_agent
 let headers_with_list_values = Array.map LString.of_string [|
   "accept";"accept-charset";"accept-encoding";"accept-language";
   "accept-ranges";"allow";"cache-control";"connection";"content-encoding";
-  "content-language";"expect";"if-match";"if-none-match";"pragma";
+  "content-language";"expect";"if-match";"if-none-match";"link";"pragma";
   "proxy-authenticate";"te";"trailer";"transfer-encoding";"upgrade";
   "vary";"via";"warning";"www-authenticate"; |]
 
@@ -214,6 +214,14 @@ let get_location headers =
   match get headers "location" with
   | None -> None
   | Some u -> Some (Uri.of_string u)
+
+let get_links headers =
+  List.fold_left
+    (fun list link_s -> (Link.of_string link_s)@list)
+    [] (get_multi headers "link")
+
+let add_links headers links =
+  add_multi headers "link" (List.map Link.to_string links)
 
 let prepend_user_agent headers user_agent =
   let k = "user-agent" in
