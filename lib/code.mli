@@ -3,18 +3,7 @@
 open Sexplib.Std
 type version = [ `HTTP_1_0 | `HTTP_1_1 | `Other of string ] with sexp
 
-type meth = [
-  | `GET
-  | `POST
-  | `HEAD
-  | `DELETE
-  | `PATCH
-  | `PUT
-  | `OPTIONS
-  | `CONNECT
-  | `TRACE
-  | `Other of string
-] with sexp
+type meth = [ `GET | `POST | `HEAD | `DELETE | `PATCH | `PUT | `OPTIONS | `Other of string ] with sexp
 
 type informational_status =
   [ `Continue (** Client should continue with request *)
