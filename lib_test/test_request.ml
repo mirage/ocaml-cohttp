@@ -66,6 +66,11 @@ let parse_request_uri_host _ =
   let uri = Uri.of_string "//example.com/" in
   parse_request_uri_ r uri "parse_request_uri_host"
 
+let parse_request_uri_host_port _ =
+  let r = "GET / HTTP/1.1\r\nHost: example.com:8080\r\n\r\n" in
+  let uri = Uri.of_string "//example.com:8080/" in
+  parse_request_uri_ r uri "parse_request_uri_host_port"
+
 let parse_request_uri_double_slash _ =
   let r = "GET // HTTP/1.1\r\n\r\n" in
   let uri = Uri.with_path (Uri.of_string "") "//" in
@@ -169,7 +174,7 @@ let parse_request_options _ =
 
 let parse_request_options_host _ =
   let r = "OPTIONS * HTTP/1.1\r\nHost: example.com:443\r\n\r\n" in
-  let uri = Uri.of_string "//example.com/*" in
+  let uri = Uri.of_string "//example.com:443/*" in
   parse_request_uri_ r uri "parse_request_options_host"
 
 let _ =
@@ -180,6 +185,7 @@ let _ =
    ; "Auth from Uri" >:: auth_uri
    ; "Parse simple request URI" >:: parse_request_uri
    ; "Parse request URI with host" >:: parse_request_uri_host
+   ; "Parse request URI with host and port" >:: parse_request_uri_host_port
    ; "Parse request URI double slash" >:: parse_request_uri_double_slash
    ; "Parse request URI double slash with host"
      >:: parse_request_uri_host_double_slash
