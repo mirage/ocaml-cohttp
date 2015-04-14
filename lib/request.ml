@@ -115,14 +115,18 @@ module Make(IO : S.IO) = struct
       Header_IO.parse ic >>= fun headers ->
       let uri = Uri.of_string request_uri_s in
       let uri = match Uri.scheme uri with
-        | Some _ -> uri (* we have an absoluteURI *)
+        | Some _ -> (* we have an absoluteURI *)
+          Uri.(match path uri with "" -> with_path uri "/" | _ -> uri)
         | None ->
+          let empty = Uri.of_string "" in
           let empty_base = Uri.of_string "///" in
           let pqs = match Stringext.split ~max:2 request_uri_s ~on:'?' with
             | [] -> empty_base
-            | [path] -> Uri.with_path empty_base path
+            | [path] -> Uri.resolve "http" empty_base (Uri.with_path empty path)
             | path::qs::_ ->
-              let path_base = Uri.with_path empty_base path in
+              let path_base =
+                Uri.resolve "http" empty_base (Uri.with_path empty path)
+              in
               Uri.with_query path_base (Uri.query_of_encoded qs)
           in
           match Header.get headers "host" with
