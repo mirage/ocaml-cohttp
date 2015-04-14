@@ -106,6 +106,11 @@ module Make(IO : S.IO) = struct
     parse_request_fst_line ic >>= function
     | `Eof -> return `Eof
     | `Invalid reason as r -> return r
+    | `Ok (`CONNECT as meth, authority, version) ->
+      Header_IO.parse ic >>= fun headers ->
+      let uri = Uri.of_string ("//"^authority) in
+      let encoding = Header.get_transfer_encoding headers in
+      return (`Ok { headers; meth; uri; version; encoding })
     | `Ok (meth, request_uri_s, version) ->
       Header_IO.parse ic >>= fun headers ->
       let uri = Uri.of_string request_uri_s in
