@@ -52,30 +52,75 @@ let parse_request_uri _ =
   let uri = Uri.of_string "/" in
   parse_request_uri_ r uri "parse_request_uri"
 
-let parse_request_uri_double_slash _ =
-  let r = "GET // HTTP/1.1\r\n\r\n" in
-  let uri = Uri.with_path (Uri.of_string "") "//" in
-  parse_request_uri_ r uri "parse_request_uri_double_slash"
-
-let parse_request_uri_triple_slash _ =
-  let r = "GET /// HTTP/1.1\r\n\r\n" in
-  let uri = Uri.with_path (Uri.of_string "") "///" in
-  parse_request_uri_ r uri "parse_request_uri_triple_slash"
-
 let parse_request_uri_host _ =
   let r = "GET / HTTP/1.1\r\nHost: example.com\r\n\r\n" in
   let uri = Uri.of_string "//example.com/" in
   parse_request_uri_ r uri "parse_request_uri_host"
+
+let parse_request_uri_double_slash _ =
+  let r = "GET // HTTP/1.1\r\n\r\n" in
+  let uri = Uri.with_path (Uri.of_string "") "//" in
+  parse_request_uri_ r uri "parse_request_uri_double_slash"
 
 let parse_request_uri_host_double_slash _ =
   let r = "GET // HTTP/1.1\r\nHost: example.com\r\n\r\n" in
   let uri = Uri.of_string "//example.com//" in
   parse_request_uri_ r uri "parse_request_uri_host_double_slash"
 
+let parse_request_uri_triple_slash _ =
+  let r = "GET /// HTTP/1.1\r\n\r\n" in
+  let uri = Uri.with_path (Uri.of_string "") "///" in
+  parse_request_uri_ r uri "parse_request_uri_triple_slash"
+
 let parse_request_uri_host_triple_slash _ =
   let r = "GET /// HTTP/1.1\r\nHost: example.com\r\n\r\n" in
   let uri = Uri.of_string "//example.com///" in
   parse_request_uri_ r uri "parse_request_uri_host_triple_slash"
+
+let parse_request_uri_no_slash _ =
+  let r = "GET foo HTTP/1.1\r\n\r\n" in
+  let uri = Uri.with_path (Uri.of_string "") "foo" in
+  parse_request_uri_ r uri "parse_request_uri_no_slash"
+
+let parse_request_uri_host_no_slash _ =
+  let r = "GET foo HTTP/1.1\r\nHost: example.com\r\n\r\n" in
+  let uri = Uri.of_string "//example.com/foo" in
+  parse_request_uri_ r uri "parse_request_uri_host_no_slash"
+
+let parse_request_uri_path_like_scheme _ =
+  let r = "GET http://example.net HTTP/1.1\r\n\r\n" in
+  let uri = Uri.with_path (Uri.of_string "") "http://example.net" in
+  parse_request_uri_ r uri "parse_request_uri_path_like_scheme"
+
+let parse_request_uri_host_path_like_scheme _ =
+  let path = "http://example.net" in
+  let r = "GET "^path^" HTTP/1.1\r\nHost: example.com\r\n\r\n" in
+  let uri = Uri.with_path (Uri.of_string "//example.com") path in
+  parse_request_uri_ r uri "parse_request_uri_host_path_like_scheme"
+
+let parse_request_uri_path_like_host_port _ =
+  let path = "//example.net:8080" in
+  let r = "GET "^path^" HTTP/1.1\r\n\r\n" in
+  let uri = Uri.with_path (Uri.of_string "") path in
+  parse_request_uri_ r uri "parse_request_uri_path_like_host_port"
+
+let parse_request_uri_host_path_like_host_port _ =
+  let path = "//example.net:8080" in
+  let r = "GET "^path^" HTTP/1.1\r\nHost: example.com\r\n\r\n" in
+  let uri = Uri.with_path (Uri.of_string "//example.com") path in
+  parse_request_uri_ r uri "parse_request_uri_host_path_like_host_port"
+
+let parse_request_uri_query _ =
+  let pqs = "/?foo" in
+  let r = "GET "^pqs^" HTTP/1.1\r\n\r\n" in
+  let uri = Uri.of_string pqs in
+  parse_request_uri_ r uri "parse_request_uri_query"
+
+let parse_request_uri_host_query _ =
+  let pqs = "/?foo" in
+  let r = "GET "^pqs^" HTTP/1.1\r\nHost: example.com\r\n\r\n" in
+  let uri = Uri.of_string ("//example.com"^pqs) in
+  parse_request_uri_ r uri "parse_request_uri_host_query"
 
 let _ =
   ("Request" >:::
@@ -84,11 +129,22 @@ let _ =
    ; "Auth from Uri - do not override" >:: auth_uri_no_override
    ; "Auth from Uri" >:: auth_uri
    ; "Parse simple request URI" >:: parse_request_uri
-   ; "Parse request URI double slash" >:: parse_request_uri_double_slash
-   ; "Parse request URI triple slash" >:: parse_request_uri_triple_slash
    ; "Parse request URI with host" >:: parse_request_uri_host
+   ; "Parse request URI double slash" >:: parse_request_uri_double_slash
    ; "Parse request URI double slash with host"
      >:: parse_request_uri_host_double_slash
+   ; "Parse request URI triple slash" >:: parse_request_uri_triple_slash
    ; "Parse request URI triple slash with host"
      >:: parse_request_uri_host_triple_slash
+   ; "Parse request URI no slash" >:: parse_request_uri_no_slash
+   ; "Parse request URI no slash with host" >:: parse_request_uri_host_no_slash
+   ; "Parse request URI path like scheme" >:: parse_request_uri_path_like_scheme
+   ; "Parse request URI path like scheme with host"
+     >:: parse_request_uri_host_path_like_scheme
+   ; "Parse request URI path like host:port"
+     >:: parse_request_uri_path_like_host_port
+   ; "Parse request URI path like host:port with host"
+     >:: parse_request_uri_host_path_like_host_port
+   ; "Parse request URI with query string" >:: parse_request_uri_query
+   ; "Parse request URI with query with host" >:: parse_request_uri_host_query
    ]) |> run_test_tt_main
