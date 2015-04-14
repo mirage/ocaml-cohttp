@@ -169,7 +169,7 @@ let parse_request_connect_host _ =
 
 let parse_request_options _ =
   let r = "OPTIONS * HTTP/1.1\r\n\r\n" in
-  let uri = Uri.of_string "*" in
+  let uri = Uri.of_string "/*" in
   parse_request_uri_ r uri "parse_request_options"
 
 let parse_request_options_host _ =
