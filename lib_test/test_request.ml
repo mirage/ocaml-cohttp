@@ -40,42 +40,105 @@ let parse_request_uri_ r uri name =
     >>= function
     | `Ok { Request.uri = ruri } ->
       let msg =
-        Printf.sprintf "expected path %s got %s"
-          (Uri.path uri) (Uri.path ruri)
+        Printf.sprintf "expected uri %s got %s"
+          (Uri.to_string uri) (Uri.to_string ruri)
       in
       assert_equal ~msg ruri uri
     | _ -> assert_failure (name^" parse failed")
   )
 
+let parse_bad_request_uri_ r name =
+  String_io.M.(
+    StringRequest.read (String_io.open_in r)
+    >>= function
+    | `Ok { Request.uri = ruri } ->
+       let msg =
+        Printf.sprintf "expected an error but got %s"
+          (Uri.to_string ruri)
+      in
+      assert_equal ~msg true false
+    | `Invalid msg ->
+      assert_equal true true
+    | _ -> assert_failure (name^" parse failed")
+  )
 let parse_request_uri _ =
   let r = "GET / HTTP/1.1\r\n\r\n" in
   let uri = Uri.of_string "/" in
   parse_request_uri_ r uri "parse_request_uri"
-
-let parse_request_uri_double_slash _ =
-  let r = "GET // HTTP/1.1\r\n\r\n" in
-  let uri = Uri.with_path (Uri.of_string "") "//" in
-  parse_request_uri_ r uri "parse_request_uri_double_slash"
-
-let parse_request_uri_triple_slash _ =
-  let r = "GET /// HTTP/1.1\r\n\r\n" in
-  let uri = Uri.with_path (Uri.of_string "") "///" in
-  parse_request_uri_ r uri "parse_request_uri_triple_slash"
 
 let parse_request_uri_host _ =
   let r = "GET / HTTP/1.1\r\nHost: example.com\r\n\r\n" in
   let uri = Uri.of_string "//example.com/" in
   parse_request_uri_ r uri "parse_request_uri_host"
 
+let parse_request_uri_double_slash _ =
+  let path = "//" in
+  let r = "GET "^path^" HTTP/1.1\r\n\r\n" in
+  let uri = Uri.with_path (Uri.of_string "") path in
+  parse_request_uri_ r uri "parse_request_uri_double_slash"
+
 let parse_request_uri_host_double_slash _ =
-  let r = "GET // HTTP/1.1\r\nHost: example.com\r\n\r\n" in
+  let path = "//" in
+  let r = "GET "^path^" HTTP/1.1\r\nHost: example.com\r\n\r\n" in
   let uri = Uri.of_string "//example.com//" in
   parse_request_uri_ r uri "parse_request_uri_host_double_slash"
 
+let parse_request_uri_triple_slash _ =
+  let path = "///" in
+  let r = "GET "^path^" HTTP/1.1\r\n\r\n" in
+  let uri = Uri.with_path (Uri.of_string "") "///" in
+  parse_request_uri_ r uri "parse_request_uri_triple_slash"
+
 let parse_request_uri_host_triple_slash _ =
-  let r = "GET /// HTTP/1.1\r\nHost: example.com\r\n\r\n" in
+  let path = "///" in
+  let r = "GET "^path^" HTTP/1.1\r\nHost: example.com\r\n\r\n" in
   let uri = Uri.of_string "//example.com///" in
   parse_request_uri_ r uri "parse_request_uri_host_triple_slash"
+
+let parse_request_uri_no_slash _ =
+  let r = "GET foo HTTP/1.1\r\n\r\n" in
+  parse_bad_request_uri_ r "parse_request_uri_no_slash"
+
+let parse_request_uri_host_no_slash _ =
+  let r = "GET foo HTTP/1.1\r\nHost: example.com\r\n\r\n" in
+  parse_bad_request_uri_ r "parse_request_uri_host_no_slash"
+
+let parse_request_uri_path_like_scheme _ =
+  let path = "http://example.net" in
+  let r = "GET "^path^" HTTP/1.1\r\n\r\n" in
+  let uri = Uri.of_string path in
+  parse_request_uri_ r uri "parse_request_uri_path_like_scheme"
+
+let parse_request_uri_host_path_like_scheme _ =
+  let path = "http://example.net" in
+  let r = "GET "^path^" HTTP/1.1\r\nHost: example.com\r\n\r\n" in
+  let uri = Uri.of_string path in
+  parse_request_uri_ r uri "parse_request_uri_host_path_like_scheme"
+
+let parse_request_uri_path_like_host_port _ =
+  let path = "//example.net:8080" in
+  let r = "GET "^path^" HTTP/1.1\r\n\r\n" in
+  let uri = Uri.with_path (Uri.of_string "") path in
+  parse_request_uri_ r uri "parse_request_uri_path_like_host_port"
+
+let parse_request_uri_host_path_like_host_port _ =
+  let path = "//example.net:8080" in
+  let r = "GET "^path^" HTTP/1.1\r\nHost: example.com\r\n\r\n" in
+  let uri = Uri.with_path (Uri.of_string "") path in
+  let uri = Uri.with_host uri (Some "example.com") in
+  parse_request_uri_ r uri "parse_request_uri_host_path_like_host_port"
+
+let parse_request_uri_query _ =
+  let pqs = "/?foo" in
+  let r = "GET "^pqs^" HTTP/1.1\r\n\r\n" in
+  let uri = Uri.of_string pqs in
+  parse_request_uri_ r uri "parse_request_uri_query"
+
+let parse_request_uri_host_query _ =
+  let pqs = "/?foo" in
+  let r = "GET "^pqs^" HTTP/1.1\r\nHost: example.com\r\n\r\n" in
+  let uri = Uri.of_string ("//example.com"^pqs) in
+  parse_request_uri_ r uri "parse_request_uri_host_query"
 
 let _ =
   ("Request" >:::
@@ -84,11 +147,22 @@ let _ =
    ; "Auth from Uri - do not override" >:: auth_uri_no_override
    ; "Auth from Uri" >:: auth_uri
    ; "Parse simple request URI" >:: parse_request_uri
-   ; "Parse request URI double slash" >:: parse_request_uri_double_slash
-   ; "Parse request URI triple slash" >:: parse_request_uri_triple_slash
    ; "Parse request URI with host" >:: parse_request_uri_host
+   ; "Parse request URI double slash" >:: parse_request_uri_double_slash
    ; "Parse request URI double slash with host"
      >:: parse_request_uri_host_double_slash
+   ; "Parse request URI triple slash" >:: parse_request_uri_triple_slash
    ; "Parse request URI triple slash with host"
      >:: parse_request_uri_host_triple_slash
+   ; "Parse request URI no slash" >:: parse_request_uri_no_slash
+   ; "Parse request URI no slash with host" >:: parse_request_uri_host_no_slash
+   ; "Parse request URI path like scheme" >:: parse_request_uri_path_like_scheme
+   ; "Parse request URI path like scheme with host"
+     >:: parse_request_uri_host_path_like_scheme
+   ; "Parse request URI path like host:port"
+     >:: parse_request_uri_path_like_host_port
+   ; "Parse request URI path like host:port with host"
+     >:: parse_request_uri_host_path_like_host_port
+   ; "Parse request URI with query string" >:: parse_request_uri_query
+   ; "Parse request URI with query with host" >:: parse_request_uri_host_query
    ]) |> run_test_tt_main
