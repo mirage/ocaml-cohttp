@@ -132,12 +132,16 @@ module Make_client
   type ctx = Net.ctx with sexp_of
   let default_ctx = Net.default_ctx
 
-  let read_response ?closefn ic oc =
+  let read_response ?closefn ic oc meth =
     Response.read ic >>= function
     | `Invalid reason -> Lwt.fail (Failure ("Failed to read response: " ^ reason))
     | `Eof -> Lwt.fail (Failure "Client connection was closed")
     | `Ok res -> begin
-        match Response.has_body res with
+        let has_body = match meth with
+          | `HEAD -> `No
+          | _ -> Response.has_body res
+        in
+        match has_body with
         | `Yes | `Unknown ->
           let reader = Response.make_body_reader res ic in
           let stream = Cohttp_lwt_body.create_stream Response.read_body_chunk reader in
@@ -166,21 +170,23 @@ module Make_client
     lwt (conn,ic,oc) = Net.connect_uri ~ctx uri in
     let closefn () = Net.close ic oc in
     let chunked = match chunked with None -> is_meth_chunked meth | Some v -> v in
-    match chunked with
-    | true ->
-      let req = Request.make_for_client ~headers ~chunked meth uri in
-      Request.write (fun writer ->
+    let sent = match chunked with
+      | true ->
+        let req = Request.make_for_client ~headers ~chunked meth uri in
+        Request.write (fun writer ->
           Cohttp_lwt_body.write_body (Request.write_body writer) body) req oc
-      >>= fun () ->
-      read_response ~closefn ic oc
-    | false ->
-      (* If chunked is not allowed, then obtain the body length and insert header *)
-      lwt (body_length, buf) = Cohttp_lwt_body.length body in
-      let req = Request.make_for_client ~headers ~chunked ~body_length meth uri in
-      Request.write (fun writer ->
+      | false ->
+        (* If chunked is not allowed, then obtain the body length and
+           insert header *)
+        lwt (body_length, buf) = Cohttp_lwt_body.length body in
+        let req =
+          Request.make_for_client ~headers ~chunked ~body_length meth uri
+        in
+        Request.write (fun writer ->
           Cohttp_lwt_body.write_body (Request.write_body writer) buf) req oc
-      >>= fun () ->
-      read_response ~closefn ic oc
+    in
+    sent >>= fun () ->
+    read_response ~closefn ic oc meth
 
   (* The HEAD should not have a response body *)
   let head ?ctx ?headers uri =
@@ -204,21 +210,32 @@ module Make_client
   let callv ?(ctx=default_ctx) uri reqs =
     lwt (conn, ic, oc) = Net.connect_uri ~ctx uri in
     (* Serialise the requests out to the wire *)
-    let _ = Lwt_stream.iter_s (fun (req,body) ->
-        Request.write (fun writer ->
-            Cohttp_lwt_body.write_body (Request.write_body writer) body) req oc)
-        reqs in
-    (* Read the responses. For each response, ensure that the previous response
-     * has consumed the body before continuing to the next response, since HTTP/1.1
-     * pipelining cannot be interleaved. *)
+    lwt meths = Lwt_stream.fold_s (fun (req,body) meths ->
+      Request.write (fun writer ->
+        Cohttp_lwt_body.write_body (Request.write_body writer) body
+      ) req oc >>= fun () ->
+      return ((Request.meth req)::meths)
+    ) reqs [] in
+    (* Read the responses. For each response, ensure that the previous
+       response has consumed the body before continuing to the next
+       response because HTTP/1.1-pipelining cannot be interleaved. *)
+    let meth_stream = Lwt_stream.of_list (List.rev meths) in
     let read_m = Lwt_mutex.create () in
+    let last_body = ref None in
     let resps = Lwt_stream.from (fun () ->
-        let closefn () = Lwt_mutex.unlock read_m in
-        Lwt.catch (fun () ->
-          Lwt_mutex.with_lock read_m (fun () -> read_response ~closefn ic oc)
-          >|= (fun x -> Some x)
-        ) (fun _ -> return_none)
-      ) in
+      let closefn () = Lwt_mutex.unlock read_m in
+      match_lwt Lwt_stream.get meth_stream with
+      | None -> return_none
+      | Some meth ->
+        begin match !last_body with None -> return_unit | Some body ->
+          Cohttp_lwt_body.drain_body body
+        end >>= fun () ->
+        Lwt_mutex.with_lock read_m (fun () -> read_response ~closefn ic oc meth)
+        >|= (fun ((_,body) as x) ->
+          last_body := Some body;
+          Some x
+        )
+    ) in
     Lwt_stream.on_terminate resps (fun () -> Net.close ic oc);
     return resps
 end
