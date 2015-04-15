@@ -127,29 +127,37 @@ module Make(IO : S.IO) = struct
     | `Ok (meth, request_uri_s, version) ->
       Header_IO.parse ic >>= fun headers ->
       let uri = Uri.of_string request_uri_s in
-      let uri = match Uri.scheme uri with
+      match Uri.scheme uri with
         | Some _ -> (* we have an absoluteURI *)
-          Uri.(match path uri with "" -> with_path uri "/" | _ -> uri)
+          let uri = Uri.(
+            match path uri with "" -> with_path uri "/" | _ -> uri
+          ) in
+          return_request headers meth uri version
         | None ->
-          let empty = Uri.of_string "" in
-          let empty_base = Uri.of_string "///" in
-          let pqs = match Stringext.split ~max:2 request_uri_s ~on:'?' with
-            | [] -> empty_base
-            | [path] -> Uri.resolve "http" empty_base (Uri.with_path empty path)
-            | path::qs::_ ->
-              let path_base =
+          let len = String.length request_uri_s in
+          if len > 0 && String.get request_uri_s 0 <> '/'
+          then return (`Invalid "bad request URI")
+          else
+            let empty = Uri.of_string "" in
+            let empty_base = Uri.of_string "///" in
+            let pqs = match Stringext.split ~max:2 request_uri_s ~on:'?' with
+              | [] -> empty_base
+              | [path] ->
                 Uri.resolve "http" empty_base (Uri.with_path empty path)
-              in
-              Uri.with_query path_base (Uri.query_of_encoded qs)
-          in
-          match Header.get headers "host" with
-          | None -> Uri.(with_scheme (with_host pqs None) None)
-          | Some host ->
-            let host_uri = Uri.of_string ("//"^host) in
-            let uri = Uri.with_host pqs (Uri.host host_uri) in
-            Uri.with_port uri (Uri.port host_uri)
-      in
-      return_request headers meth uri version
+              | path::qs::_ ->
+                let path_base =
+                  Uri.resolve "http" empty_base (Uri.with_path empty path)
+                in
+                Uri.with_query path_base (Uri.query_of_encoded qs)
+            in
+            let uri = match Header.get headers "host" with
+              | None -> Uri.(with_scheme (with_host pqs None) None)
+              | Some host ->
+                let host_uri = Uri.of_string ("//"^host) in
+                let uri = Uri.with_host pqs (Uri.host host_uri) in
+                Uri.with_port uri (Uri.port host_uri)
+            in
+            return_request headers meth uri version
 
   (* Defined for method types in RFC7231 *)
   let has_body req =
