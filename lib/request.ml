@@ -74,6 +74,38 @@ let make_for_client ?headers ?(chunked=true) ?(body_length=Int64.zero) meth uri 
   in
   make ~meth ~encoding ?headers uri
 
+let uri_of_path_and_host ?host ~path =
+  let uri = Uri.of_string path in
+  let uri_opt =
+    match Uri.scheme uri with
+    | Some _ -> Some uri (* we have an absoluteURI *)
+    | None ->
+       (* not an absolute URI. path should start with a /.*)
+       let len = String.length path in
+       if len > 0 && String.get path 0 = '/' then
+         (* If path starts with // then we have an authority and
+            can use the already parsed uri *)
+         if len > 1 && String.get path 1 = '/' then
+           Some uri
+         else
+           (* else we have an absolute path *)
+           let uri = Uri.of_string ("//localhost"^path) in
+           Some (Uri.with_host uri None)
+       else
+         (* invalid path *)
+         None
+  in
+  match uri_opt with
+  | None -> `Invalid (Printf.sprintf "Invalid path %S" path)
+  | Some uri ->
+    match host with
+    | Some host when Uri.host uri = None ->
+      let host_uri = Uri.of_string ("//"^host) in
+      let uri = Uri.with_host uri (Uri.host host_uri) in
+      let uri = Uri.with_port uri (Uri.port host_uri) in
+      `Ok uri
+    | _ -> `Ok uri
+
 type tt = t
 module Make(IO : S.IO) = struct
   type t = tt
@@ -108,37 +140,12 @@ module Make(IO : S.IO) = struct
     | `Invalid reason as r -> return r
     | `Ok (meth, path, version) ->
       Header_IO.parse ic >>= fun headers ->
-      let uri = Uri.of_string path in
-      let uri_opt =
-        match Uri.scheme uri with
-          Some _ -> Some uri (* we have an absoluteURI *)
-        | None ->
-           (* not an absolute URI. path should start with a /.*)
-           let len = String.length path in
-           if len > 0 && String.get path 0 = '/' then
-             (* If path starts with // then we have an authority and
-                can use the already parsed uri *)
-             if len > 1 && String.get path 1 = '/' then
-               Some uri
-             else
-               (* else we have an absolute path *)
-               let uri = Uri.of_string ("//localhost"^path) in
-               Some (Uri.with_host uri None)
-           else
-             (* invalid path *)
-             None
+      let ret_uri = uri_of_path_and_host
+        ?host: (Header.get headers "host") ~path
       in
-      match uri_opt with
-      | None -> return (`Invalid (Printf.sprintf "Invalid path %S" path))
-      | Some uri ->
-        let uri =
-          match Header.get headers "host" with
-          | None -> uri
-          | Some host ->
-            let host_uri = Uri.of_string ("//"^host) in
-            let uri = Uri.with_host uri (Uri.host host_uri) in
-            Uri.with_port uri (Uri.port host_uri)
-        in
+      match ret_uri with
+      | `Invalid msg -> return (`Invalid msg)
+      | `Ok uri ->
         let encoding = Header.get_transfer_encoding headers in
         return (`Ok { headers; meth; uri; version; encoding })
 
