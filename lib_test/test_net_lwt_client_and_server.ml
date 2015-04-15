@@ -38,7 +38,9 @@ let make_server () =
     end
     |"/postnodrain" ->
        Server.respond_string ~status:`OK ~body:"nodrain" ()
-    |_ -> exit 0
+    |_ ->
+      async (fun () -> Lwt_unix.sleep 0.1 >>= fun () -> exit 0);
+      Server.respond_string ~status:`OK ~body:"shutting down" ()
   in
   lwt ctx = Conduit_lwt_unix.init ~src:address () in
   let ctx = Cohttp_lwt_unix_net.init ~ctx () in
@@ -102,9 +104,11 @@ let client () =
   let body () = Cohttp_lwt_body.of_string "foobar" in
   let body1 = body () in
   let body2 = body () in
+  let meth = `POST in
+  let encoding = Transfer.Chunked in
   let reqs = Lwt_stream.of_list [
-    Request.make ~encoding:Transfer.Chunked (Uri.of_string "/post"), body1;
-    Request.make ~encoding:Transfer.Chunked ~headers:(Header.of_list ["connection","close"])
+    Request.make ~meth ~encoding (Uri.of_string "/post"), body1;
+    Request.make ~meth ~encoding ~headers:(Header.of_list ["connection","close"])
       (Uri.of_string "/post"), body2;
   ] in
   lwt resp = Client.callv url reqs in
