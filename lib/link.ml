@@ -15,86 +15,166 @@
  *
  *)
 
+open Sexplib.Std
+
 (* From <https://tools.ietf.org/html/rfc5988> *)
-type rel =
-  | Extension of Uri.t
-  | Alternate
-  | Appendix
-  | Bookmark
-  | Chapter
-  | Contents
-  | Copyright
-  | Current
-  | Described_by
-  | Edit
-  | Edit_media
-  | Enclosure
-  | First
-  | Glossary
-  | Help
-  | Hub
-  | Index
-  | Last
-  | Latest_version
-  | License
-  | Next
-  | Next_archive
-  | Payment
-  | Predecessor_version
-  | Prev
-  | Prev_archive
-  | Related
-  | Replies
-  | Section
-  | Self
-  | Service
-  | Start
-  | Stylesheet
-  | Subsection
-  | Successor_version
-  | Up
-  | Version_history
-  | Via
-  | Working_copy
-  | Working_copy_of
+module Rel = struct
+  type t =
+    | Extension of Uri.t
+    | Alternate
+    | Appendix
+    | Bookmark
+    | Chapter
+    | Contents
+    | Copyright
+    | Current
+    | Described_by
+    | Edit
+    | Edit_media
+    | Enclosure
+    | First
+    | Glossary
+    | Help
+    | Hub
+    | Index
+    | Last
+    | Latest_version
+    | License
+    | Next
+    | Next_archive
+    | Payment
+    | Predecessor_version
+    | Prev
+    | Prev_archive
+    | Related
+    | Replies
+    | Section
+    | Self
+    | Service
+    | Start
+    | Stylesheet
+    | Subsection
+    | Successor_version
+    | Up
+    | Version_history
+    | Via
+    | Working_copy
+    | Working_copy_of
+  with sexp
 
-type language = string
+  let extension uri = Extension uri
+  let alternate = Alternate
+  let appendix = Appendix
+  let bookmark = Bookmark
+  let chapter = Chapter
+  let contents = Contents
+  let copyright = Copyright
+  let current = Current
+  let described_by = Described_by
+  let edit = Edit
+  let edit_media = Edit_media
+  let enclosure = Enclosure
+  let first = First
+  let glossary = Glossary
+  let help = Help
+  let hub = Hub
+  let index = Index
+  let last = Last
+  let latest_version = Latest_version
+  let license = License
+  let next = Next
+  let next_archive = Next_archive
+  let payment = Payment
+  let predecessor_version = Predecessor_version
+  let prev = Prev
+  let prev_archive = Prev_archive
+  let related = Related
+  let replies = Replies
+  let section = Section
+  let self = Self
+  let service = Service
+  let start = Start
+  let stylesheet = Stylesheet
+  let subsection = Subsection
+  let successor_version = Successor_version
+  let up = Up
+  let version_history = Version_history
+  let via = Via
+  let working_copy = Working_copy
+  let working_copy_of = Working_copy_of
+end
 
-type charset = string
+module Language = struct
+  type t = string
+  with sexp
 
-type 'a ext = {
-  charset : charset;
-  language : language;
-  value : 'a;
-}
+  let to_string x = x
+  let of_string x = x
+end
 
-type arc = {
-  reverse : bool;
-  relation : rel list;
-  hreflang : string option;
-  media : string option;
-  title : string option;
-  title_ext : string ext option;
-  media_type : (string * string) option;
-  extensions : (string * string) list;
-  extension_exts : (string * string ext) list;
-}
+module Charset = struct
+  type t = string
+  with sexp
+
+  let to_string x = x
+  let of_string x = x
+end
+
+module Ext = struct
+  type 'a t = {
+    charset : Charset.t;
+    language : Language.t;
+    value : 'a;
+  } with sexp, fields
+
+  let make ?(charset="") ?(language="") value = { charset; language; value }
+
+  let map f x = { x with value = f x.value }
+end
+
+module Arc = struct
+  type t = {
+    reverse : bool;
+    relation : Rel.t list;
+    hreflang : string option;
+    media : string option;
+    title : string option;
+    title_ext : string Ext.t option;
+    media_type : (string * string) option;
+    extensions : (string * string) list;
+    extension_exts : (string * string Ext.t) list;
+  } with sexp
+
+  let empty = {
+    reverse = false;
+    relation = [];
+    hreflang = None;
+    media = None;
+    title = None;
+    title_ext = None;
+    media_type = None;
+    extensions = [];
+    extension_exts = [];
+  }
+
+end
 
 type t = {
   context : Uri.t;
-  arc : arc;
+  arc : Arc.t;
   target : Uri.t;
 }
+with sexp
 
 (* TODO: this could be replaced with empty t/arc fupdate *)
 type param =
-  | Rel of rel list
+  | Rel of Rel.t list
   | Anchor of Uri.t
-  | Rev of rel list
-  | Hreflang of language
+  | Rev of Rel.t list
+  | Hreflang of Language.t
   | Media of string
   | Title of string
-  | Star of param ext
+  | Star of param Ext.t
   | Type of (string * string)
   | Link_extension of string * string
 
@@ -112,7 +192,7 @@ let until s start cl =
   | None -> Stringext.string_after s start, String.length s
   | Some i -> String.sub s start (i - start), i
 
-let string_of_rel = function
+let string_of_rel = Rel.(function
   | Alternate -> "alternate"
   | Appendix -> "appendix"
   | Bookmark -> "bookmark"
@@ -153,8 +233,9 @@ let string_of_rel = function
   | Working_copy -> "working-copy"
   | Working_copy_of -> "working-copy-of"
   | Extension uri -> Uri.to_string uri
+)
 
-let rel_of_string s =
+let rel_of_string s = Rel.(
   try ignore (String.index s ':'); Extension (Uri.of_string s)
   with Not_found -> match s with
     | "alternate" -> Alternate
@@ -197,6 +278,7 @@ let rel_of_string s =
     | "working-copy" -> Working_copy
     | "working-copy-of" -> Working_copy_of
     | _ -> Extension (Uri.of_string s)
+)
 
 let quoted_string_of_string s q =
   let rec first_quote q =
@@ -280,7 +362,7 @@ let rec params_of_string s i ps =
       params_of_string s i ((Title title)::ps)
     | "title*" ->
       let charset, language, v, i = star_of_string s i in
-      params_of_string s i ((Star { charset; language; value = Title v })::ps)
+      params_of_string s i ((Star { Ext.charset; language; value = Title v })::ps)
     | "type" ->
       let media_type, i = media_type_of_string s i in
       params_of_string s i ((Type media_type)::ps)
@@ -294,7 +376,7 @@ let rec params_of_string s i ps =
         let main = String.sub other 0 last in
         let charset, language, v, i = star_of_string s i in
         params_of_string s i
-          ((Star { charset; language; value = Link_extension (main, v) })::ps)
+          ((Star { Ext.charset; language; value = Link_extension (main, v) })::ps)
       else
         let v, i = quoted_string_of_string s i in
         params_of_string s i ((Link_extension (other, v))::ps)
@@ -308,12 +390,12 @@ let rec find_or_default f d = function
 let arc_of_relation_params ?(reverse=false) relation params =
   let extensions, extension_exts = List.fold_left (fun (x,xx) -> function
     | Link_extension (k, v) -> ((k, v)::x,xx)
-    | Star { charset; language; value = Link_extension (k, value) } ->
-      (x,(k,{ charset; language; value })::xx)
+    | Star { Ext.charset; language; value = Link_extension (k, value) } ->
+      (x,(k,{ Ext.charset; language; value })::xx)
     | _ -> (x,xx)
   ) ([],[]) params in
   {
-    reverse;
+    Arc.reverse;
     relation;
     hreflang=find_or_default
         (function Hreflang l -> Some (Some l) | _ -> None) None params;
@@ -323,8 +405,8 @@ let arc_of_relation_params ?(reverse=false) relation params =
         (function Title t -> Some (Some t) | _ -> None) None params;
     title_ext=find_or_default
         (function
-          | Star { charset; language; value = Title t } ->
-            Some (Some { charset; language; value = t })
+          | Star { Ext.charset; language; value = Title t } ->
+            Some (Some { Ext.charset; language; value = t })
           | _ -> None
         )
         None params;
@@ -334,20 +416,9 @@ let arc_of_relation_params ?(reverse=false) relation params =
     extension_exts;
   }
 
-let empty_arc = {
-  reverse = false;
-  relation = [];
-  hreflang = None;
-  media = None;
-  title = None;
-  title_ext = None;
-  media_type = None;
-  extensions = [];
-  extension_exts = [];
-}
 let empty = {
   context = Uri.of_string "";
-  arc = empty_arc;
+  arc = Arc.empty;
   target = Uri.of_string "";
 }
 
@@ -392,7 +463,7 @@ let of_string s =
 
 open Printf
 
-let arc_to_string context arc =
+let arc_to_string context arc = Arc.(
   let attrs = match arc.relation with
     | [] -> []
     | rels -> [
@@ -414,7 +485,7 @@ let arc_to_string context arc =
   in
   let attrs = match arc.title_ext with
     | None -> attrs
-    | Some { charset; language; value } ->
+    | Some { Ext.charset; language; value } ->
       (sprintf "title*=%s'%s'%s" charset language value)::attrs
   in
   let attrs = match arc.media_type with
@@ -424,7 +495,7 @@ let arc_to_string context arc =
   let attrs =
     (List.map (fun (k,v) -> sprintf "%s=%S" k v) arc.extensions)@attrs
   in
-  let attrs = (List.map (fun (k,{ charset; language; value }) ->
+  let attrs = (List.map (fun (k,{ Ext.charset; language; value }) ->
     sprintf "%s=%s'%s'%s" k charset language value
   ) arc.extension_exts)@attrs in
   let attrs =
@@ -432,6 +503,7 @@ let arc_to_string context arc =
     then attrs
     else (sprintf "anchor=\"%s\"" (Uri.to_string context))::attrs
   in String.concat "; " attrs
+)
 
 let to_string ({ context; arc; target }) =
   sprintf "<%s>; %s" (Uri.to_string target) (arc_to_string context arc)

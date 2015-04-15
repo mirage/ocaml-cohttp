@@ -117,7 +117,7 @@ let link_simple () =
   let printer = links_printer in
   assert_equal ~printer Link.([{
     context = empty_uri;
-    arc = { empty_arc with relation=[Next] };
+    arc = Arc.({ empty with relation=Rel.([next]) });
     target = Uri.of_string next_tgt;
   }]) (H.get_links headers)
 
@@ -128,7 +128,7 @@ let link_multi_rel () =
   let printer = links_printer in
   assert_equal ~printer Link.([{
     context = empty_uri;
-    arc = { empty_arc with relation=[Next; Last] };
+    arc = Arc.({ empty with relation=Rel.([next; last]) });
     target = Uri.of_string next_tgt;
   }]) (H.get_links headers)
 
@@ -144,12 +144,12 @@ let link_multi_line () =
   assert_equal ~printer Link.([
     {
       context = empty_uri;
-      arc = { empty_arc with relation=[Next] };
+      arc = Arc.({ empty with relation=Rel.([next]) });
       target = Uri.of_string next_tgt;
     };
     {
       context = empty_uri;
-      arc = { empty_arc with relation=[Self] };
+      arc = Arc.({ empty with relation=Rel.([self]) });
       target = Uri.of_string self_tgt;
     };
   ]) (H.get_links headers)
@@ -165,12 +165,12 @@ let link_multi_multi () =
   assert_equal ~printer Link.([
     {
       context = empty_uri;
-      arc = { empty_arc with relation=[Next] };
+      arc = Arc.({ empty with relation=Rel.([next]) });
       target = Uri.of_string next_tgt;
     };
     {
       context = empty_uri;
-      arc = { empty_arc with relation=[Last] };
+      arc = Arc.({ empty with relation=Rel.([last]) });
       target = Uri.of_string last_tgt;
     };
   ]) (H.get_links headers)
@@ -186,13 +186,13 @@ let link_rel_uri () =
   assert_equal ~printer Link.([
     {
       context = empty_uri;
-      arc = { empty_arc with
-              relation = [
-                Next;
-                Extension (Uri.of_string uri_s);
-              ];
-              hreflang = Some "en";
-            };
+      arc = Arc.({ empty with
+                   relation = Rel.([
+                     next;
+                     extension (Uri.of_string uri_s);
+                   ]);
+                   hreflang = Some "en";
+                 });
       target = Uri.of_string uri_tgt;
     };
   ]) (H.get_links headers)
@@ -208,11 +208,11 @@ let link_anchor () =
   assert_equal ~printer Link.([
     {
       context = Uri.of_string anchor;
-      arc = { empty_arc with
-              relation = [
-                Prev;
-              ];
-            };
+      arc = Arc.({ empty with
+                   relation = Rel.([
+                     prev;
+                   ]);
+                 });
       target = Uri.of_string target;
     };
   ]) (H.get_links headers)
@@ -227,12 +227,12 @@ let link_rev () =
   assert_equal ~printer Link.([
     {
       context = Uri.of_string anchor;
-      arc = { empty_arc with
-              reverse = true;
-              relation = [
-                Prev;
-              ];
-            };
+      arc = Arc.({ empty with
+                   reverse = true;
+                   relation = Rel.([
+                     prev;
+                   ]);
+                 });
       target = empty_uri;
     };
   ]) (H.get_links headers)
@@ -247,9 +247,9 @@ let link_media () =
   assert_equal ~printer Link.([
     {
       context = empty_uri;
-      arc = { empty_arc with
-              media = Some "screen";
-            };
+      arc = Arc.({ empty with
+                   media = Some "screen";
+                 });
       target = Uri.of_string target;
     };
   ]) (H.get_links headers)
@@ -264,9 +264,9 @@ let link_media_complex () =
   assert_equal ~printer Link.([
     {
       context = empty_uri;
-      arc = { empty_arc with
-              media = Some "screen, print and dpi < 200";
-            };
+      arc = Arc.({ empty with
+                   media = Some "screen, print and dpi < 200";
+                 });
       target = Uri.of_string target;
     };
   ]) (H.get_links headers)
@@ -281,10 +281,10 @@ let link_title () =
   assert_equal ~printer Link.([
     {
       context = empty_uri;
-      arc = { empty_arc with
-              relation = [ Next ];
-              title = Some "Next!";
-            };
+      arc = Arc.({ empty with
+                   relation = Rel.([ next ]);
+                   title = Some "Next!";
+                 });
       target = Uri.of_string target;
     };
   ]) (H.get_links headers)
@@ -299,14 +299,14 @@ let link_title_star () =
   assert_equal ~printer Link.([
     {
       context = empty_uri;
-      arc = { empty_arc with
-              relation = [ Next ];
-              title_ext = Some {
-                charset="UTF-8";
-                language="en";
-                value = "Next!";
-              };
-            };
+      arc = Arc.({ empty with
+                   relation = Rel.([ next ]);
+                   title_ext = Some
+                       (Ext.make
+                          ~charset:(Charset.of_string "UTF-8")
+                          ~language:(Language.of_string "en")
+                          "Next!");
+                 });
       target = Uri.of_string target;
     };
   ]) (H.get_links headers)
@@ -321,10 +321,10 @@ let link_type_token () =
   assert_equal ~printer Link.([
     {
       context = empty_uri;
-      arc = { empty_arc with
-              relation = [ Next ];
-              media_type = Some ("text", "html");
-            };
+      arc = Arc.({ empty with
+                   relation = Rel.([ next ]);
+                   media_type = Some ("text", "html");
+                 });
       target = Uri.of_string target;
     };
   ]) (H.get_links headers)
@@ -339,10 +339,10 @@ let link_type_quoted () =
   assert_equal ~printer Link.([
     {
       context = empty_uri;
-      arc = { empty_arc with
-              relation = [ Next ];
-              media_type = Some ("text", "html");
-            };
+      arc = Arc.({ empty with
+                   relation = Rel.([ next ]);
+                   media_type = Some ("text", "html");
+                 });
       target = Uri.of_string target;
     };
   ]) (H.get_links headers)
@@ -357,10 +357,10 @@ let link_ext () =
   assert_equal ~printer Link.([
     {
       context = empty_uri;
-      arc = { empty_arc with
-              relation = [ Next ];
-              extensions = ["see", "saw"];
-            };
+      arc = Arc.({ empty with
+                   relation = Rel.([ next ]);
+                   extensions = ["see", "saw"];
+                 });
       target = Uri.of_string target;
     };
   ]) (H.get_links headers)
@@ -375,14 +375,15 @@ let link_ext_star () =
   assert_equal ~printer Link.([
     {
       context = empty_uri;
-      arc = { empty_arc with
-              relation = [ Next ];
-              extension_exts = ["zig", {
-                charset = "";
-                language = "";
-                value="zag";
-              }];
-            };
+      arc = Arc.({ empty with
+                   relation = Rel.([ next ]);
+                   extension_exts = ["zig",
+                                     Ext.make
+                                       ~charset:(Charset.of_string "")
+                                       ~language:(Language.of_string "")
+                                       "zag"
+                                    ];
+                 });
       target = Uri.of_string target;
     };
   ]) (H.get_links headers)

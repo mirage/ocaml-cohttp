@@ -18,74 +18,100 @@
 (** RFC 5988 ("Web Linking") and RFC 5987 ("Character Set and Language
     Encoding for Hypertext Transfer Protocol (HTTP) Header Field Parameters") *)
 
-type rel =
-  | Extension of Uri.t
-  | Alternate
-  | Appendix
-  | Bookmark
-  | Chapter
-  | Contents
-  | Copyright
-  | Current
-  | Described_by
-  | Edit
-  | Edit_media
-  | Enclosure
-  | First
-  | Glossary
-  | Help
-  | Hub
-  | Index
-  | Last
-  | Latest_version
-  | License
-  | Next
-  | Next_archive
-  | Payment
-  | Predecessor_version
-  | Prev
-  | Prev_archive
-  | Related
-  | Replies
-  | Section
-  | Self
-  | Service
-  | Start
-  | Stylesheet
-  | Subsection
-  | Successor_version
-  | Up
-  | Version_history
-  | Via
-  | Working_copy
-  | Working_copy_of
+module Rel : sig
+  type t with sexp
 
-type language = string
+  val extension : Uri.t -> t
+  val alternate : t
+  val appendix : t
+  val bookmark : t
+  val chapter : t
+  val contents : t
+  val copyright : t
+  val current : t
+  val described_by : t
+  val edit : t
+  val edit_media : t
+  val enclosure : t
+  val first : t
+  val glossary : t
+  val help : t
+  val hub : t
+  val index : t
+  val last : t
+  val latest_version : t
+  val license : t
+  val next : t
+  val next_archive : t
+  val payment : t
+  val predecessor_version : t
+  val prev : t
+  val prev_archive : t
+  val related : t
+  val replies : t
+  val section : t
+  val self : t
+  val service : t
+  val start : t
+  val stylesheet : t
+  val subsection : t
+  val successor_version : t
+  val up : t
+  val version_history : t
+  val via : t
+  val working_copy : t
+  val working_copy_of : t
+end
 
-type charset = string
+module Language : sig
+  type t = private string with sexp
 
-type 'a ext = {
-  charset : charset;
-  language : language;
-  value : 'a;
-}
+  val to_string : t -> string
+  val of_string : string -> t
+end
 
-type arc = {
-  reverse : bool;
-  relation : rel list;
-  hreflang : string option;
-  media : string option;
-  title : string option;
-  title_ext : string ext option;
-  media_type : (string * string) option;
-  extensions : (string * string) list;
-  extension_exts : (string * string ext) list;
-}
+module Charset : sig
+  type t = private string with sexp
 
-type t = { context : Uri.t; arc : arc; target : Uri.t; }
+  val to_string : t -> string
+  val of_string : string -> t
+end
+
+module Ext : sig
+  type 'a t with sexp
+
+  val charset : 'a t -> Charset.t
+  val language : 'a t -> Language.t
+  val value : 'a t -> 'a
+
+  val make : ?charset:Charset.t -> ?language:Language.t -> 'a -> 'a t
+
+  val map : ('a -> 'b) -> 'a t -> 'b t
+end
+
+module Arc : sig
+  type t = {
+    reverse : bool;
+    relation : Rel.t list;
+    hreflang : string option;
+    media : string option;
+    title : string option;
+    title_ext : string Ext.t option;
+    media_type : (string * string) option;
+    extensions : (string * string) list;
+    extension_exts : (string * string Ext.t) list;
+  }
+
+  val empty : t
+end
+
+type t = {
+  context : Uri.t;
+  arc : Arc.t;
+  target : Uri.t;
+} with sexp
 
 val empty : t
-val empty_arc : arc
 
 val of_string : string -> t list
 
