@@ -35,8 +35,15 @@ module Make(IO : S.IO) = struct
           try Some (int_of_string ("0x" ^ hex)) with _ -> None
         in
         match chunk_size with
-        |None | Some 0 -> return Done
-        |Some count -> begin
+        | None -> return Done
+        | Some 0 -> (* TODO: Trailer header support *)
+          let rec read_until_empty_line () =
+            read_line ic >>= function
+            | None | Some "" -> return Done
+            | Some _trailer -> read_until_empty_line ()
+          in
+          read_until_empty_line ()
+        | Some count -> begin
           read_exactly ic count >>=
           function
           |None -> return Done
