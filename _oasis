@@ -194,7 +194,7 @@ Executable test_net_lwt
   Custom:             true
   CompiledObject:     best
   Install:            false
-  BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2)
+  BuildDepends:       cohttp, cohttp.lwt, oUnit (>= 1.0.2), alcotest
 
 Executable test_net_lwt_google
   Path:               lib_test
