@@ -61,6 +61,47 @@ module Rel = struct
     | Working_copy
     | Working_copy_of
   with sexp
+
+  let extension uri = Extension uri
+  let alternate = Alternate
+  let appendix = Appendix
+  let bookmark = Bookmark
+  let chapter = Chapter
+  let contents = Contents
+  let copyright = Copyright
+  let current = Current
+  let described_by = Described_by
+  let edit = Edit
+  let edit_media = Edit_media
+  let enclosure = Enclosure
+  let first = First
+  let glossary = Glossary
+  let help = Help
+  let hub = Hub
+  let index = Index
+  let last = Last
+  let latest_version = Latest_version
+  let license = License
+  let next = Next
+  let next_archive = Next_archive
+  let payment = Payment
+  let predecessor_version = Predecessor_version
+  let prev = Prev
+  let prev_archive = Prev_archive
+  let related = Related
+  let replies = Replies
+  let section = Section
+  let self = Self
+  let service = Service
+  let start = Start
+  let stylesheet = Stylesheet
+  let subsection = Subsection
+  let successor_version = Successor_version
+  let up = Up
+  let version_history = Version_history
+  let via = Via
+  let working_copy = Working_copy
+  let working_copy_of = Working_copy_of
 end
 
 module Language = struct

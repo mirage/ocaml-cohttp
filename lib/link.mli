@@ -19,48 +19,48 @@
     Encoding for Hypertext Transfer Protocol (HTTP) Header Field Parameters") *)
 
 module Rel : sig
-  type t =
-    | Extension of Uri.t
-    | Alternate
-    | Appendix
-    | Bookmark
-    | Chapter
-    | Contents
-    | Copyright
-    | Current
-    | Described_by
-    | Edit
-    | Edit_media
-    | Enclosure
-    | First
-    | Glossary
-    | Help
-    | Hub
-    | Index
-    | Last
-    | Latest_version
-    | License
-    | Next
-    | Next_archive
-    | Payment
-    | Predecessor_version
-    | Prev
-    | Prev_archive
-    | Related
-    | Replies
-    | Section
-    | Self
-    | Service
-    | Start
-    | Stylesheet
-    | Subsection
-    | Successor_version
-    | Up
-    | Version_history
-    | Via
-    | Working_copy
-    | Working_copy_of
-  with sexp
+  type t with sexp
+
+  val extension : Uri.t -> t
+  val alternate : t
+  val appendix : t
+  val bookmark : t
+  val chapter : t
+  val contents : t
+  val copyright : t
+  val current : t
+  val described_by : t
+  val edit : t
+  val edit_media : t
+  val enclosure : t
+  val first : t
+  val glossary : t
+  val help : t
+  val hub : t
+  val index : t
+  val last : t
+  val latest_version : t
+  val license : t
+  val next : t
+  val next_archive : t
+  val payment : t
+  val predecessor_version : t
+  val prev : t
+  val prev_archive : t
+  val related : t
+  val replies : t
+  val section : t
+  val self : t
+  val service : t
+  val start : t
+  val stylesheet : t
+  val subsection : t
+  val successor_version : t
+  val up : t
+  val version_history : t
+  val via : t
+  val working_copy : t
+  val working_copy_of : t
 end
 
 module Language : sig

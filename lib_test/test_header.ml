@@ -117,7 +117,7 @@ let link_simple () =
   let printer = links_printer in
   assert_equal ~printer Link.([{
     context = empty_uri;
-    arc = Arc.({ empty with relation=Rel.([Next]) });
+    arc = Arc.({ empty with relation=Rel.([next]) });
     target = Uri.of_string next_tgt;
   }]) (H.get_links headers)
 
@@ -128,7 +128,7 @@ let link_multi_rel () =
   let printer = links_printer in
   assert_equal ~printer Link.([{
     context = empty_uri;
-    arc = Arc.({ empty with relation=Rel.([Next; Last]) });
+    arc = Arc.({ empty with relation=Rel.([next; last]) });
     target = Uri.of_string next_tgt;
   }]) (H.get_links headers)
 
@@ -144,12 +144,12 @@ let link_multi_line () =
   assert_equal ~printer Link.([
     {
       context = empty_uri;
-      arc = Arc.({ empty with relation=Rel.([Next]) });
+      arc = Arc.({ empty with relation=Rel.([next]) });
       target = Uri.of_string next_tgt;
     };
     {
       context = empty_uri;
-      arc = Arc.({ empty with relation=Rel.([Self]) });
+      arc = Arc.({ empty with relation=Rel.([self]) });
       target = Uri.of_string self_tgt;
     };
   ]) (H.get_links headers)
@@ -165,12 +165,12 @@ let link_multi_multi () =
   assert_equal ~printer Link.([
     {
       context = empty_uri;
-      arc = Arc.({ empty with relation=Rel.([Next]) });
+      arc = Arc.({ empty with relation=Rel.([next]) });
       target = Uri.of_string next_tgt;
     };
     {
       context = empty_uri;
-      arc = Arc.({ empty with relation=Rel.([Last]) });
+      arc = Arc.({ empty with relation=Rel.([last]) });
       target = Uri.of_string last_tgt;
     };
   ]) (H.get_links headers)
@@ -188,8 +188,8 @@ let link_rel_uri () =
       context = empty_uri;
       arc = Arc.({ empty with
                    relation = Rel.([
-                     Next;
-                     Extension (Uri.of_string uri_s);
+                     next;
+                     extension (Uri.of_string uri_s);
                    ]);
                    hreflang = Some "en";
                  });
@@ -210,7 +210,7 @@ let link_anchor () =
       context = Uri.of_string anchor;
       arc = Arc.({ empty with
                    relation = Rel.([
-                     Prev;
+                     prev;
                    ]);
                  });
       target = Uri.of_string target;
@@ -230,7 +230,7 @@ let link_rev () =
       arc = Arc.({ empty with
                    reverse = true;
                    relation = Rel.([
-                     Prev;
+                     prev;
                    ]);
                  });
       target = empty_uri;
@@ -282,7 +282,7 @@ let link_title () =
     {
       context = empty_uri;
       arc = Arc.({ empty with
-                   relation = Rel.([ Next ]);
+                   relation = Rel.([ next ]);
                    title = Some "Next!";
                  });
       target = Uri.of_string target;
@@ -300,7 +300,7 @@ let link_title_star () =
     {
       context = empty_uri;
       arc = Arc.({ empty with
-                   relation = Rel.([ Next ]);
+                   relation = Rel.([ next ]);
                    title_ext = Some
                        (Ext.make
                           ~charset:(Charset.of_string "UTF-8")
@@ -322,7 +322,7 @@ let link_type_token () =
     {
       context = empty_uri;
       arc = Arc.({ empty with
-                   relation = Rel.([ Next ]);
+                   relation = Rel.([ next ]);
                    media_type = Some ("text", "html");
                  });
       target = Uri.of_string target;
@@ -340,7 +340,7 @@ let link_type_quoted () =
     {
       context = empty_uri;
       arc = Arc.({ empty with
-                   relation = Rel.([ Next ]);
+                   relation = Rel.([ next ]);
                    media_type = Some ("text", "html");
                  });
       target = Uri.of_string target;
@@ -358,7 +358,7 @@ let link_ext () =
     {
       context = empty_uri;
       arc = Arc.({ empty with
-                   relation = Rel.([ Next ]);
+                   relation = Rel.([ next ]);
                    extensions = ["see", "saw"];
                  });
       target = Uri.of_string target;
@@ -376,7 +376,7 @@ let link_ext_star () =
     {
       context = empty_uri;
       arc = Arc.({ empty with
-                   relation = Rel.([ Next ]);
+                   relation = Rel.([ next ]);
                    extension_exts = ["zig",
                                      Ext.make
                                        ~charset:(Charset.of_string "")
