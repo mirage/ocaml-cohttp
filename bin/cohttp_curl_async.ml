@@ -22,10 +22,11 @@ open Cohttp_async
 let show_headers h =
   Cohttp.Header.iter (fun k v -> List.iter v ~f:(Printf.eprintf "%s: %s\n%!" k)) h
 
-let make_net_req uri () =
+let make_net_req uri meth' () =
+  let meth = Cohttp.Code.method_of_string meth' in
   let uri = Uri.of_string uri in
   let headers = Cohttp.Header.of_list [ "connection", "close" ] in
-  Client.get ~headers uri
+  Client.call meth ~headers uri
   >>= fun (res, body) ->
    show_headers (Cohttp.Response.headers res);
    body
@@ -35,7 +36,11 @@ let make_net_req uri () =
 let _ =
   let open Command.Spec in
   Command.async_basic ~summary:"Fetch URL and print it"
-    (empty+> anon ("url" %: string))
+    (empty
+     +> anon ("url" %: string)
+     +> flag "-X" (optional_with_default "GET" string)
+       ~doc:" Set HTTP method"
+    )
     make_net_req
   |> Command.run
 
