@@ -154,8 +154,9 @@ module Make(IO : S.IO) = struct
   (* Defined for method types in RFC7231 *)
   let has_body req =
     match req.meth with
-    | `GET | `HEAD | `DELETE -> `No
-    | `POST | `PUT | `PATCH | `OPTIONS | `Other _ -> Transfer.has_body req.encoding
+    | `GET | `HEAD | `DELETE | `CONNECT | `TRACE -> `No
+    | `POST | `PUT | `PATCH | `OPTIONS | `Other _ ->
+      Transfer.has_body req.encoding
 
   let make_body_reader req ic = Transfer_IO.make_reader req.encoding ic
   let read_body_chunk = Transfer_IO.read
