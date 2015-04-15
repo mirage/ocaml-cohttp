@@ -1,7 +1,12 @@
 0.17.0 (trunk):
+
+Compatibility breaking interface changes:
+* CONNECT and TRACE methods added to Code. Exhaustive matches will need updating.
+
 New features and bug fixes:
-* CONNECT and TRACE methods added
-* Fix handling of request URI for query strings, proxies, CONNECT and more
+* Fix handling of request URI for query strings and CONNECT proxies
+* Fix precedence of Host header when request-URI is absolute URI
+* Fix request URI path to be non-empty except for * requests (e.g. OPTIONS *)
 
 0.16.1 (2015-04-09):
 New features and bug fixes:
