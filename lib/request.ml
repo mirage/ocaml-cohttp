@@ -102,15 +102,28 @@ module Make(IO : S.IO) = struct
       end
     | None -> return `Eof
 
+  let return_request headers meth uri version =
+    let encoding = Header.get_transfer_encoding headers in
+    return (`Ok { headers; meth; uri; version; encoding })
+
   let read ic =
     parse_request_fst_line ic >>= function
     | `Eof -> return `Eof
     | `Invalid reason as r -> return r
+    | `Ok (meth, "*", version) ->
+      Header_IO.parse ic >>= fun headers ->
+      let uri = match Header.get headers "host" with
+        | None -> Uri.of_string ""
+        | Some host ->
+          let host_uri = Uri.of_string ("//"^host) in
+          let uri = Uri.(with_host (of_string "") (host host_uri)) in
+          Uri.(with_port uri (port host_uri))
+      in
+      return_request headers meth uri version
     | `Ok (`CONNECT as meth, authority, version) ->
       Header_IO.parse ic >>= fun headers ->
       let uri = Uri.of_string ("//"^authority) in
-      let encoding = Header.get_transfer_encoding headers in
-      return (`Ok { headers; meth; uri; version; encoding })
+      return_request headers meth uri version
     | `Ok (meth, request_uri_s, version) ->
       Header_IO.parse ic >>= fun headers ->
       let uri = Uri.of_string request_uri_s in
@@ -136,8 +149,7 @@ module Make(IO : S.IO) = struct
             let uri = Uri.with_host pqs (Uri.host host_uri) in
             Uri.with_port uri (Uri.port host_uri)
       in
-      let encoding = Header.get_transfer_encoding headers in
-      return (`Ok { headers; meth; uri; version; encoding })
+      return_request headers meth uri version
 
   (* Defined for method types in RFC7231 *)
   let has_body req =
