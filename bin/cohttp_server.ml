@@ -100,3 +100,9 @@ let html_of_not_found path info = sprintf
   "<html><body><h2>Not Found</h2>
    <p><b>%s</b> was not found on this server</p>
    <hr />%s</body></html>" path info
+
+let html_of_method_not_allowed meth allowed path info = sprintf
+  "<html><body><h2>Method Not Allowed</h2>
+   <p><b>%s</b> is not an allowed method on <b>%s</b></p>
+   <p>Allowed methods on <b>%s</b> are <b>%s</b></p>
+   <hr />%s</body></html>" meth path path allowed info

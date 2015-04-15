@@ -22,18 +22,15 @@ open Cohttp_async
 
 open Cohttp_server
 
+let method_filter meth (res,body) = match meth with
+  | `HEAD -> return (res,`Empty)
+  | _ -> return (res,body)
+
 let serve_file ~docroot ~uri =
   Server.resolve_local_file ~docroot ~uri
   |> Server.respond_with_file
 
-(** HTTP handler *)
-let rec handler ~info ~docroot ~verbose ~index ~body sock req =
-  let uri = Cohttp.Request.uri req in
-  let path = Uri.path uri in
-  (* Log the request to the console *)
-  printf "%s %s%!"
-    (Cohttp.(Code.string_of_method (Request.meth req)))
-    path;
+let serve ~verbose ~info ~docroot ~index uri path =
   (* Get a canonical filename from the URL and docroot *)
   let file_name = Server.resolve_local_file ~docroot ~uri in
   try_with (fun () ->
@@ -86,6 +83,25 @@ let rec handler ~info ~docroot ~verbose ~index ~body sock req =
     | _ -> raise exn
     end
   )
+
+(** HTTP handler *)
+let rec handler ~info ~docroot ~verbose ~index ~body sock req =
+  let uri = Cohttp.Request.uri req in
+  let path = Uri.path uri in
+  (* Log the request to the console *)
+  printf "%s %s%!"
+    (Cohttp.(Code.string_of_method (Request.meth req)))
+    path;
+  match Request.meth req with
+  | (`GET | `HEAD) as meth ->
+    serve ~verbose ~info ~docroot ~index uri path
+    >>= method_filter meth
+  | meth ->
+    let meth = Cohttp.Code.string_of_method meth in
+    let allowed = "GET, HEAD" in
+    let headers = Cohttp.Header.of_list ["allow", allowed] in
+    Server.respond_with_string ~headers ~code:`Method_not_allowed
+      (html_of_method_not_allowed meth allowed path info)
 
 let determine_mode cert_file_path key_file_path =
   (* Determines if the server runs in http or https *)
