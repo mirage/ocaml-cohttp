@@ -29,7 +29,9 @@ let client uri ofile meth' =
   debug (fun d -> d "Client %s issued\n" meth');
   Client.call meth uri >>= fun (resp, body) ->
   let status = Response.status resp in
-  debug (fun d -> d "Client GET returned: %s\n" (Code.string_of_status status));
+  debug (fun d ->
+    d "Client %s returned: %s\n" meth' (Code.string_of_status status)
+  );
   (* TODO follow redirects *)
   match Code.is_success (Code.code_of_status status) with
   | false ->
