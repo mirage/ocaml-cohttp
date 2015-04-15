@@ -80,15 +80,10 @@ let uri_of_path_and_host ?host ~path =
     match Uri.scheme uri with
     | Some _ -> Some uri (* we have an absoluteURI *)
     | None ->
-       (* not an absolute URI. path should start with a /.*)
+       (* not an absolute URI. path should start with a /
+          and we have an absolute path. *)
        let len = String.length path in
        if len > 0 && String.get path 0 = '/' then
-         (* If path starts with // then we have an authority and
-            can use the already parsed uri *)
-         if len > 1 && String.get path 1 = '/' then
-           Some uri
-         else
-           (* else we have an absolute path *)
            let uri = Uri.of_string ("//localhost"^path) in
            Some (Uri.with_host uri None)
        else
