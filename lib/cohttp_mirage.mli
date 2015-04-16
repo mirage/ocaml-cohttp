@@ -24,5 +24,8 @@ module Client (Conduit:Conduit_mirage.S): sig
 end
 (** HTTP client. *)
 
-module Server (Flow: V1_LWT.FLOW): Cohttp_lwt.Server
+module Server (Flow: V1_LWT.FLOW): sig
+  include Cohttp_lwt.Server
+  val listen: t -> Flow.flow -> 'a -> 'b -> unit Lwt.t
+end
 (** HTTP server *)
