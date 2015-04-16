@@ -142,7 +142,7 @@ module Server : sig
   val close_finished : (_, _) t -> unit Deferred.t
   val is_closed      : (_, _) t -> bool
 
-  type response with sexp_of
+  type response = Response.t * Body.t with sexp_of
 
   val respond :
     ?flush:bool ->

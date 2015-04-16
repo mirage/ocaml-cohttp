@@ -25,6 +25,10 @@ open Cohttp_lwt_unix
 
 open Cohttp_server
 
+let method_filter meth (res,body) = match meth with
+  | `HEAD -> return (res,`Empty)
+  | _ -> return (res,body)
+
 let serve_file ~docroot ~uri =
   let fname = Server.resolve_local_file ~docroot ~uri in
   Server.respond_file ~fname ()
@@ -34,19 +38,7 @@ let ls_dir dir =
     (Lwt_stream.filter ((<>) ".")
        (Lwt_unix.files_of_directory dir))
 
-let handler ~info ~docroot ~verbose ~index (ch,conn) req body =
-  let uri = Cohttp.Request.uri req in
-  let path = Uri.path uri in
-  (* Log the request to the console *)
-  printf "%s %s %s %s\n%!"
-    (Cohttp.(Code.string_of_method (Request.meth req)))
-    path
-    (match verbose with
-    | true -> ""
-    | false -> ""
-    )
-    (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch));
-  (* Get a canonical filename from the URL and docroot *)
+let serve ~info ~docroot ~index uri path =
   let file_name = Server.resolve_local_file ~docroot ~uri in
   catch (fun () ->
     Lwt_unix.stat file_name
@@ -88,6 +80,30 @@ let handler ~info ~docroot ~verbose ~index (ch,conn) req body =
     else fail e
   | e -> fail e
   )
+
+let handler ~info ~docroot ~verbose ~index (ch,conn) req body =
+  let uri = Cohttp.Request.uri req in
+  let path = Uri.path uri in
+  (* Log the request to the console *)
+  printf "%s %s %s %s\n%!"
+    (Cohttp.(Code.string_of_method (Request.meth req)))
+    path
+    (match verbose with
+    | true -> ""
+    | false -> ""
+    )
+    (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch));
+  (* Get a canonical filename from the URL and docroot *)
+  match Request.meth req with
+  | (`GET | `HEAD) as meth ->
+    serve ~info ~docroot ~index uri path
+    >>= method_filter meth
+  | meth ->
+    let meth = Cohttp.Code.string_of_method meth in
+    let allowed = "GET, HEAD" in
+    let headers = Cohttp.Header.of_list ["allow", allowed] in
+    Server.respond_string ~headers ~status:`Method_not_allowed
+      ~body:(html_of_method_not_allowed meth allowed path info) ()
 
 let start_server docroot port host index verbose cert key () =
   printf "Listening for HTTP request on: %s %d\n" host port;

@@ -42,6 +42,7 @@ depends: [
   "base64" {>="2.0.0"}
   "magic-mime"
   "ounit" {test}
+  "alcotest" {test}
 ]
 build-doc: ["ocaml" "setup.ml" "-doc"]
 

@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: d9d4225cf518c44fbb1260ed8436e68c)
+# DO NOT EDIT (digest: 40d9185903aaa13ec2dadb62181b44c8)
 version = "0.16.1"
 description = "HTTP library for Lwt, Async, JavaScript and Mirage"
 requires =
@@ -9,6 +9,17 @@ archive(byte, plugin) = "cohttp.cma"
 archive(native) = "cohttp.cmxa"
 archive(native, plugin) = "cohttp.cmxs"
 exists_if = "cohttp.cma"
+package "lwt-unix-test" (
+ version = "0.16.1"
+ description = "HTTP library for Lwt, Async, JavaScript and Mirage"
+ requires = "cohttp.lwt unix lwt.unix oUnit"
+ archive(byte) = "cohttp_lwt_unix_test.cma"
+ archive(byte, plugin) = "cohttp_lwt_unix_test.cma"
+ archive(native) = "cohttp_lwt_unix_test.cmxa"
+ archive(native, plugin) = "cohttp_lwt_unix_test.cmxs"
+ exists_if = "cohttp_lwt_unix_test.cma"
+)
+
 package "lwt-core" (
  version = "0.16.1"
  description = "HTTP library for Lwt, Async, JavaScript and Mirage"
