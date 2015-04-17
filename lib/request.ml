@@ -102,30 +102,69 @@ module Make(IO : S.IO) = struct
       end
     | None -> return `Eof
 
+  let return_request headers meth uri version =
+    let encoding = Header.get_transfer_encoding headers in
+    return (`Ok { headers; meth; uri; version; encoding })
+
   let read ic =
     parse_request_fst_line ic >>= function
     | `Eof -> return `Eof
     | `Invalid reason as r -> return r
-    | `Ok (meth, path, version) ->
+    | `Ok (meth, "*", version) ->
       Header_IO.parse ic >>= fun headers ->
-      let empty = Uri.of_string "" in
-      let uri =
-        match Header.get headers "host" with
-        | None -> Uri.with_path empty path
+      let uri = match Header.get headers "host" with
+        | None -> Uri.of_string ""
         | Some host ->
           let host_uri = Uri.of_string ("//"^host) in
-          let uri = Uri.with_path empty path in
-          let uri = Uri.with_host uri (Uri.host host_uri) in
-          Uri.with_port uri (Uri.port host_uri)
+          let uri = Uri.(with_host (of_string "") (host host_uri)) in
+          Uri.(with_port uri (port host_uri))
       in
-      let encoding = Header.get_transfer_encoding headers in
-      return (`Ok { headers; meth; uri; version; encoding })
+      return_request headers meth uri version
+    | `Ok (`CONNECT as meth, authority, version) ->
+      Header_IO.parse ic >>= fun headers ->
+      let uri = Uri.of_string ("//"^authority) in
+      return_request headers meth uri version
+    | `Ok (meth, request_uri_s, version) ->
+      Header_IO.parse ic >>= fun headers ->
+      let uri = Uri.of_string request_uri_s in
+      match Uri.scheme uri with
+        | Some _ -> (* we have an absoluteURI *)
+          let uri = Uri.(
+            match path uri with "" -> with_path uri "/" | _ -> uri
+          ) in
+          return_request headers meth uri version
+        | None ->
+          let len = String.length request_uri_s in
+          if len > 0 && String.get request_uri_s 0 <> '/'
+          then return (`Invalid "bad request URI")
+          else
+            let empty = Uri.of_string "" in
+            let empty_base = Uri.of_string "///" in
+            let pqs = match Stringext.split ~max:2 request_uri_s ~on:'?' with
+              | [] -> empty_base
+              | [path] ->
+                Uri.resolve "http" empty_base (Uri.with_path empty path)
+              | path::qs::_ ->
+                let path_base =
+                  Uri.resolve "http" empty_base (Uri.with_path empty path)
+                in
+                Uri.with_query path_base (Uri.query_of_encoded qs)
+            in
+            let uri = match Header.get headers "host" with
+              | None -> Uri.(with_scheme (with_host pqs None) None)
+              | Some host ->
+                let host_uri = Uri.of_string ("//"^host) in
+                let uri = Uri.with_host pqs (Uri.host host_uri) in
+                Uri.with_port uri (Uri.port host_uri)
+            in
+            return_request headers meth uri version
 
   (* Defined for method types in RFC7231 *)
   let has_body req =
     match req.meth with
-    | `GET | `HEAD | `DELETE -> `No
-    | `POST | `PUT | `PATCH | `OPTIONS | `Other _ -> Transfer.has_body req.encoding
+    | `GET | `HEAD | `DELETE | `CONNECT | `TRACE -> `No
+    | `POST | `PUT | `PATCH | `OPTIONS | `Other _ ->
+      Transfer.has_body req.encoding
 
   let make_body_reader req ic = Transfer_IO.make_reader req.encoding ic
   let read_body_chunk = Transfer_IO.read

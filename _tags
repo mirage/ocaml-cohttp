@@ -688,3 +688,4 @@ true: annot, bin_annot
 <lib_test/test_sanity.{native,byte}>: custom
 # OASIS_STOP
 true: principal, strict_sequence, debug
+true: warn(@5@8@10@11@12@14@23@24@26@29)
