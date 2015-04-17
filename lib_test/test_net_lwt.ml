@@ -33,7 +33,7 @@ let make_net_reqv () =
   let last_header = Cohttp.Header.of_list ["connection","close"] in
   let reqs = [
       Request.make ~meth:`GET (Uri.of_string "/foo"), `Empty;
-      Request.make ~meth:`GET (Uri.of_string "/foo2"), `Empty;
+      Request.make ~meth:`HEAD (Uri.of_string "/foo2"), `Empty;
       Request.make ~meth:`GET ~headers:last_header (Uri.of_string "/foo3"), `Empty;
     ] in
   let uri = Uri.of_string "http://5.153.225.51" in
@@ -48,8 +48,7 @@ let make_net_reqv () =
     return ()
   ) resp >>= fun () ->
   assert_equal !num 3;
-  (* Run the callv without consuming bodies (i.e. a bug), and we only
-     get one *)
+  (* Run the callv without consuming bodies *)
   lwt resp = Client.callv uri (Lwt_stream.of_list reqs) in
   let num = ref 0 in
   Lwt_stream.iter_s (fun (res,body) ->
@@ -58,38 +57,20 @@ let make_net_reqv () =
     assert_equal (Response.status res) `Not_found;
     return ()
   ) resp >>= fun () ->
-  assert_equal !num 1;
+  assert_equal ~printer:string_of_int 3 !num;
   return ()
 
-let test_cases =
+let parser_tests =
   let tests = [
-    make_net_req "http://anil.recoil.org";
-    make_net_req "http://anil.recoil.org/";
-    make_net_req "https://github.com/";
-    make_net_reqv;
+    "recoil.org",  `Quick, make_net_req "http://anil.recoil.org";
+    "recoil.org/", `Quick, make_net_req "http://anil.recoil.org/";
+    "github.com/", `Quick, make_net_req "https://github.com/";
+    "pipelined",   `Quick, make_net_reqv;
   ] in
-  List.map (fun x -> "test" >:: (fun () -> Lwt_main.run (x ()))) tests
+  List.map (fun (n,s,x) -> n, s, (fun () -> Lwt_main.run (x ()))) tests
 
-(* Returns true if the result list contains successes only.
-   Copied from oUnit source as it isnt exposed by the mli *)
-let rec was_successful =
-  function
-    | [] -> true
-    | RSuccess _::t
-    | RSkip _::t ->
-        was_successful t
-    | RFailure _::_
-    | RError _::_
-    | RTodo _::_ ->
-        false
-
-let _ =
-  let suite = "Parser" >::: test_cases in
-  let verbose = ref false in
-  let set_verbose _ = verbose := true in
-  Arg.parse
-    [("-verbose", Arg.Unit set_verbose, "Run the test in verbose mode.");]
-    (fun x -> raise (Arg.Bad ("Bad argument : " ^ x)))
-    ("Usage: " ^ Sys.argv.(0) ^ " [-verbose]");
-  if not (was_successful (run_test_tt ~verbose:!verbose suite)) then
-  exit 1
+;;
+Printexc.record_backtrace true;
+Alcotest.run "test_header" [
+  "Parser", parser_tests;
+]
