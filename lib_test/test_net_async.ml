@@ -24,7 +24,7 @@ let show_headers h =
 
 let make_net_req () =
   let headers = Cohttp.Header.of_list [ "connection", "close" ] in
-  let uri = Uri.of_string "https://github.com/" in
+  let uri = Uri.of_string "http://github.com/" in
   Client.get ~headers uri
   >>= fun (res, body) ->
    show_headers (Cohttp.Response.headers res);
@@ -71,14 +71,11 @@ let make_net_post_req () =
   return ()
 
 let run () =
-  Monitor.try_with (fun () ->
     make_net_req ()
     >>= make_net_ssl_req
-    >>= make_net_post_req
-  )
 
 let test_cases =
   let open Command.Spec in
   Command.async_basic ~summary:"Run HTTP Async client tests"
-    empty make_net_req
+    empty run
   |> Command.run
