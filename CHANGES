@@ -1,18 +1,18 @@
 0.17.0 (2015-04-17):
 
 Compatibility breaking interface changes:
-* CONNECT and TRACE methods added to Code. Exhaustive matches will need updating.
+* `CONNECT` and `TRACE` methods added to `Code`.Exhaustive matches will need updating.
 
 New features and bug fixes:
-* Link header parsing has been added as Link, Header.get_links, Header.add_links
-* cohttp_server_* now obeys HEAD requests and responds 405 to unknown methods
-* Cohttp_async.Server.response type is now exposed as a response * body pair
+* `Link` header parsing has been added as `Cohttp.Link`, `Header.get_links` and `Header.add_links`
+* `cohttp_server_*` now obeys `HEAD` requests and responds 405 to unknown methods
+* `Cohttp_async.Server.response` type is now exposed as a `response * body` pair
 * Failure to read a body in a pipelined response no longer terminates the stream
-* Fix cohttp_curl_lwt -X HEAD sending empty chunked body (#313)
-* Fix a bug which left extra \r\n in buffer at end of chunked reads
-* Fix handling of request URI for query strings and CONNECT proxies (#308, #318)
-* Fix precedence of Host header when request-URI is absolute URI
-* Fix request URI path to be non-empty except for * requests (e.g. OPTIONS *)
+* Fix `cohttp_curl_lwt -X HEAD` sending empty chunked body (#313)
+* Fix a bug which left extra `\r\n` in buffer at end of chunked reads
+* Fix handling of request URI for query strings and `CONNECT` proxies (#308, #318)
+* Fix precedence of `Host` header when request-URI is absolute URI
+* Fix request URI path to be non-empty except for * requests (e.g. `OPTIONS *`)
 
 0.16.1 (2015-04-09):
 New features and bug fixes:
