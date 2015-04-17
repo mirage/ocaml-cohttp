@@ -1,4 +1,4 @@
-0.17.0 (trunk):
+0.17.0 (2015-04-17):
 
 Compatibility breaking interface changes:
 * CONNECT and TRACE methods added to Code. Exhaustive matches will need updating.
