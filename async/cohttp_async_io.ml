@@ -49,14 +49,19 @@ let read_line =
        |`Eof -> eprintf "<<<EOF\n"; None
     )
 
+let create_buf len =
+  let len' = min len 0x8000 in
+  String.create len', len'
+
 let read ic len =
-  let buf = String.create len in
+  let buf, len = create_buf len in
   Reader.read ic ~len buf >>| function
-  | `Ok len' -> String.sub buf 0 len'
+  | `Ok len' ->
+    if len' = len then buf else String.sub buf 0 len'
   | `Eof -> ""
 
 let read_exactly ic len =
-  let buf = String.create len in
+  let buf, len = create_buf len in
   Reader.really_read ic ~pos:0 ~len buf >>|
   function
   |`Ok -> Some buf
