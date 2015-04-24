@@ -31,7 +31,7 @@ let make_net_req uri meth' () =
    show_headers (Cohttp.Response.headers res);
    body
    |> Body.to_pipe
-   |> Pipe.iter ~f:(fun b -> prerr_endline ("XX " ^ b); return ())
+   |> Pipe.iter ~f:(fun b -> print_string b; return ())
 
 let _ =
   let open Command.Spec in

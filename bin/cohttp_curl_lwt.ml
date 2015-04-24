@@ -92,7 +92,7 @@ let cmd =
     `P "$(b,curl)(1), $(b,wget)(1)" ]
   in
   Term.(pure run_client $ verb $ ofile $ uri $ meth),
-  Term.info "cohttp-curl" ~version:"1.0.0" ~doc ~man
+  Term.info "cohttp-curl" ~version:Cohttp.Conf.version ~doc ~man
 
 let () =
   match Term.eval cmd

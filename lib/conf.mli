@@ -1,5 +1,6 @@
 (*
  * Copyright (c) 2015 Christophe Troestler <Christophe.Troestler@umons.ac.be>
+ * Copyright (c) 2015 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,3 +20,6 @@
 
 val user_agent : string
 (** User-Agent, including the version of this library. *)
+
+val version: string
+(** The version number of this library. *)

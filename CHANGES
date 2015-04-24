@@ -1,3 +1,10 @@
+0.17.1 (2015-04-24):
+* [async] Limit buffer size to a maximum of 32K in the Async backend
+  (#330 from Stanislav Artemkin).
+* Add `Cohttp.Conf.version` with the library version number included.
+* Remove debug output from `cohttp-curl-async`.
+* Add the beginning of a `DESIGN.md` document to explain the library structure.
+
 0.17.0 (2015-04-17):
 
 Compatibility breaking interface changes:

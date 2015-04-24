@@ -103,7 +103,7 @@ let cmd =
         on the issue tracker at <https://github.com/mirage/ocaml-cohttp/issues>";
   ] in
   Term.(pure lwt_start_proxy $ port $ host $ verb $ ssl_cert $ ssl_key),
-  Term.info "cohttp-proxy" ~version:"1.0.0" ~doc ~man
+  Term.info "cohttp-proxy" ~version:Cohttp.Conf.version ~doc ~man
 
 let () =
   match Term.eval cmd with
