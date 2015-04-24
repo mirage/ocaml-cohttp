@@ -16,3 +16,4 @@
  *)
 
 let user_agent = "ocaml-cohttp/0.17.0"
+let version = "0.17.0"
