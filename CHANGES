@@ -1,3 +1,6 @@
+0.17.2 (trunk):
+* Remove dependency on the Lwt Camlp4 syntax extension (#334).
+
 0.17.1 (2015-04-24):
 * [async] Limit buffer size to a maximum of 32K in the Async backend
   (#330 from Stanislav Artemkin).
