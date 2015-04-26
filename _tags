@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 0ad4df17498f27d1dda960ea7d20a378)
+# DO NOT EDIT (digest: 5fa3841c8dc3c29fb17f88da786b068b)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -92,7 +92,6 @@ true: annot, bin_annot
 <lwt/*.ml{,i,y}>: pkg_fieldslib
 <lwt/*.ml{,i,y}>: pkg_fieldslib.syntax
 <lwt/*.ml{,i,y}>: pkg_lwt
-<lwt/*.ml{,i,y}>: pkg_lwt.syntax
 <lwt/*.ml{,i,y}>: pkg_lwt.unix
 <lwt/*.ml{,i,y}>: pkg_magic-mime
 <lwt/*.ml{,i,y}>: pkg_oUnit
@@ -113,7 +112,6 @@ true: annot, bin_annot
 <lib_test/test_parser.{native,byte}>: pkg_fieldslib
 <lib_test/test_parser.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_parser.{native,byte}>: pkg_lwt
-<lib_test/test_parser.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_parser.{native,byte}>: pkg_lwt.unix
 <lib_test/test_parser.{native,byte}>: pkg_magic-mime
 <lib_test/test_parser.{native,byte}>: pkg_oUnit
@@ -198,7 +196,6 @@ true: annot, bin_annot
 <lib_test/test_net_lwt.{native,byte}>: pkg_fieldslib
 <lib_test/test_net_lwt.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_net_lwt.{native,byte}>: pkg_lwt
-<lib_test/test_net_lwt.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt.{native,byte}>: pkg_lwt.unix
 <lib_test/test_net_lwt.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_lwt.{native,byte}>: pkg_oUnit
@@ -221,7 +218,6 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_fieldslib
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt
-<lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt.unix
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_re.emacs
@@ -242,7 +238,6 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_fieldslib
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_lwt
-<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_lwt.unix
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_re.emacs
@@ -263,7 +258,6 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_fieldslib
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_lwt
-<lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_lwt.unix
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_re.emacs
@@ -284,7 +278,6 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_fieldslib
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt
-<lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt.unix
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_re.emacs
@@ -305,7 +298,6 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_fieldslib
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_lwt
-<lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_lwt.unix
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_re.emacs
@@ -326,7 +318,6 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_fieldslib
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt
-<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt.unix
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_re.emacs
@@ -468,7 +459,6 @@ true: annot, bin_annot
 <bin/cohttp_server_lwt.{native,byte}>: pkg_fieldslib
 <bin/cohttp_server_lwt.{native,byte}>: pkg_fieldslib.syntax
 <bin/cohttp_server_lwt.{native,byte}>: pkg_lwt
-<bin/cohttp_server_lwt.{native,byte}>: pkg_lwt.syntax
 <bin/cohttp_server_lwt.{native,byte}>: pkg_lwt.unix
 <bin/cohttp_server_lwt.{native,byte}>: pkg_magic-mime
 <bin/cohttp_server_lwt.{native,byte}>: pkg_re.emacs
@@ -490,7 +480,6 @@ true: annot, bin_annot
 <bin/cohttp_proxy_lwt.{native,byte}>: pkg_fieldslib
 <bin/cohttp_proxy_lwt.{native,byte}>: pkg_fieldslib.syntax
 <bin/cohttp_proxy_lwt.{native,byte}>: pkg_lwt
-<bin/cohttp_proxy_lwt.{native,byte}>: pkg_lwt.syntax
 <bin/cohttp_proxy_lwt.{native,byte}>: pkg_lwt.unix
 <bin/cohttp_proxy_lwt.{native,byte}>: pkg_magic-mime
 <bin/cohttp_proxy_lwt.{native,byte}>: pkg_re.emacs
@@ -512,7 +501,6 @@ true: annot, bin_annot
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_fieldslib
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_fieldslib.syntax
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_lwt
-<bin/cohttp_curl_lwt.{native,byte}>: pkg_lwt.syntax
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_lwt.unix
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_magic-mime
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_re.emacs
@@ -532,7 +520,6 @@ true: annot, bin_annot
 <bin/*.ml{,i,y}>: pkg_fieldslib
 <bin/*.ml{,i,y}>: pkg_fieldslib.syntax
 <bin/*.ml{,i,y}>: pkg_lwt
-<bin/*.ml{,i,y}>: pkg_lwt.syntax
 <bin/*.ml{,i,y}>: pkg_lwt.unix
 <bin/*.ml{,i,y}>: pkg_magic-mime
 <bin/*.ml{,i,y}>: pkg_re.emacs
@@ -606,6 +593,7 @@ true: annot, bin_annot
 "lib_test/test_xhr.byte": use_cohttp_lwt_xhr
 <lib_test/*.ml{,i,y}>: pkg_js_of_ocaml
 <lib_test/*.ml{,i,y}>: pkg_js_of_ocaml.syntax
+<lib_test/*.ml{,i,y}>: pkg_lwt.syntax
 <lib_test/*.ml{,i,y}>: use_cohttp_lwt_xhr
 "lib_test/test_xhr.byte": custom
 # Executable async-receive-post
@@ -649,7 +637,6 @@ true: annot, bin_annot
 <lib_test/test_sanity.{native,byte}>: pkg_fieldslib
 <lib_test/test_sanity.{native,byte}>: pkg_fieldslib.syntax
 <lib_test/test_sanity.{native,byte}>: pkg_lwt
-<lib_test/test_sanity.{native,byte}>: pkg_lwt.syntax
 <lib_test/test_sanity.{native,byte}>: pkg_lwt.unix
 <lib_test/test_sanity.{native,byte}>: pkg_magic-mime
 <lib_test/test_sanity.{native,byte}>: pkg_oUnit
@@ -670,7 +657,6 @@ true: annot, bin_annot
 <lib_test/*.ml{,i,y}>: pkg_fieldslib
 <lib_test/*.ml{,i,y}>: pkg_fieldslib.syntax
 <lib_test/*.ml{,i,y}>: pkg_lwt
-<lib_test/*.ml{,i,y}>: pkg_lwt.syntax
 <lib_test/*.ml{,i,y}>: pkg_lwt.unix
 <lib_test/*.ml{,i,y}>: pkg_magic-mime
 <lib_test/*.ml{,i,y}>: pkg_oUnit
