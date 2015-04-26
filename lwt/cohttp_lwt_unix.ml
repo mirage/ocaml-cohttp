@@ -53,24 +53,24 @@ module Server = struct
 
   exception Isnt_a_file
   let respond_file ?headers ~fname () =
-    try_lwt
+    Lwt.catch (fun () ->
       (* Check this isnt a directory first *)
       (fname |> Lwt_unix.stat >>= fun s ->
        if Unix.(s.st_kind <> S_REG)
        then fail Isnt_a_file
        else return_unit) >>= fun () ->
       let buffer_size = 16384 in
-      lwt ic = Lwt_io.open_file ~buffer_size ~mode:Lwt_io.input fname in
-      lwt len = Lwt_io.length ic in
+      Lwt_io.open_file ~buffer_size ~mode:Lwt_io.input fname >>= fun ic ->
+      Lwt_io.length ic >>= fun len ->
       let encoding = Cohttp.Transfer.Fixed len in
       let stream = Lwt_stream.from (fun () ->
-        try_lwt
+        Lwt.catch (fun () ->
           Lwt_io.read ~count:buffer_size ic >|= function
           | "" -> None
-          | buf -> Some buf
-        with exn ->
-          Lwt_log.ign_debug ~exn ("Error resolving file " ^ fname);
-          return_none
+          | buf -> Some buf)
+          (fun exn ->
+             Lwt_log.ign_debug ~exn ("Error resolving file " ^ fname);
+             return_none)
       ) in
       Lwt_stream.on_terminate stream (fun () ->
         ignore_result (Lwt_io.close ic));
@@ -79,12 +79,12 @@ module Server = struct
       let headers = Cohttp.Header.add_opt_unless_exists headers "content-type" mime_type in
       let res = Cohttp.Response.make ~status:`OK ~encoding ~headers () in
       return (res, body)
-    with
-    | Unix.Unix_error(Unix.ENOENT,_,_) | Isnt_a_file ->
-      respond_not_found ()
-    | exn ->
-      let body = Printexc.to_string exn in
-      respond_error ~status:`Internal_server_error ~body ()
+    ) (function
+      | Unix.Unix_error(Unix.ENOENT,_,_) | Isnt_a_file ->
+        respond_not_found ()
+      | exn ->
+        let body = Printexc.to_string exn in
+        respond_error ~status:`Internal_server_error ~body ())
 
   let create ?timeout ?stop ?(ctx=Cohttp_lwt_unix_net.default_ctx) ?(mode=`TCP (`Port 8080)) spec =
     Conduit_lwt_unix.serve ?timeout ?stop ~ctx:ctx.Cohttp_lwt_unix_net.ctx ~mode

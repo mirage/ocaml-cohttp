@@ -30,36 +30,42 @@ let iter fn x = Lwt_list.iter_s fn x
 
 let read_line ic =
   if !CD.debug_active then
-    (match_lwt Lwt_io.read_line_opt ic with
-     | None -> CD.debug_print "<<< EOF\n"; Lwt.return_none
-     | Some l as x -> CD.debug_print "<<< %s\n" l; Lwt.return x)
+    Lwt_io.read_line_opt ic >>= function
+    | None -> CD.debug_print "<<< EOF\n"; Lwt.return_none
+    | Some l as x -> CD.debug_print "<<< %s\n" l; Lwt.return x
   else
     Lwt_io.read_line_opt ic
 
 let read ic count =
- let count = min count Sys.max_string_length in
- if !CD.debug_active then
-   (lwt buf =
-       try_lwt Lwt_io.read ~count ic
-       with End_of_file -> return "" in
-     CD.debug_print "<<<[%d] %s" count buf;
-     return buf)
- else
-   (try_lwt Lwt_io.read ~count ic
-     with End_of_file -> return "")
+  let try_read () =
+    Lwt.catch (fun () -> Lwt_io.read ~count ic)
+      (function
+        | End_of_file -> return ""
+        | x -> Lwt.fail x) in
+  let count = min count Sys.max_string_length in
+  if !CD.debug_active then
+    try_read ()
+    >>= fun buf ->
+    CD.debug_print "<<<[%d] %s" count buf;
+    return buf
+  else
+    try_read ()
 
 let read_exactly ic buf off len =
+  let try_read () =
+    Lwt.try_bind (fun () -> Lwt_io.read_into_exactly ic buf off len)
+      (fun () -> return true)
+      (function
+        | End_of_file -> return false
+        | x -> Lwt.fail x) in
   if !CD.debug_active then
-   (lwt rd =
-        try_lwt Lwt_io.read_into_exactly ic buf off len >>= fun () ->  return true
-        with End_of_file -> return false in
-      (match rd with
-      |true -> CD.debug_print "<<< %S" (String.sub buf off len)
-      |false -> CD.debug_print "<<< <EOF>\n");
-      return rd)
+    try_read () >>= fun rd ->
+    (match rd with
+    | true -> CD.debug_print "<<< %S" (String.sub buf off len)
+    | false -> CD.debug_print "<<< <EOF>\n");
+    return rd
   else
-    (try_lwt Lwt_io.read_into_exactly ic buf off len >>= fun () ->  return true
-      with End_of_file -> return false)
+    try_read ()
 
 let read_exactly ic len =
   let buf = Bytes.create len in

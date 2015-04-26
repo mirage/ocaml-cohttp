@@ -31,16 +31,14 @@ let create_stream fn arg =
   let fin = ref false in
   Lwt_stream.from (fun () ->
     match !fin with
-    |true -> return_none
-    |false -> begin
-        match_lwt fn arg with
-        |Transfer.Done ->
-          return_none
-        |Transfer.Final_chunk c ->
+    | true -> return_none
+    | false -> begin
+        fn arg >>= function
+        | Transfer.Done -> return_none
+        | Transfer.Final_chunk c ->
           fin := true;
           return (Some c);
-        |Transfer.Chunk c ->
-          return (Some c)
+        | Transfer.Chunk c -> return (Some c)
       end
   )
 
@@ -92,7 +90,7 @@ let length (body:t) : (int64 * t) Lwt.t =
   match body with
   |#Body.t as body -> return (Body.length body, body)
   |`Stream s ->
-    lwt buf = to_string body in
+    to_string body >>= fun buf ->
     let len = Int64.of_int (String.length buf) in
     return (len, `String buf)
 

@@ -167,7 +167,7 @@ module Make_client
 
   let call ?(ctx=default_ctx) ?headers ?(body=`Empty) ?chunked meth uri =
     let headers = match headers with None -> Header.init () | Some h -> h in
-    lwt (conn,ic,oc) = Net.connect_uri ~ctx uri in
+    Net.connect_uri ~ctx uri >>= fun (conn, ic, oc) ->
     let closefn () = Net.close ic oc in
     let chunked = match chunked with None -> is_meth_chunked meth | Some v -> v in
     let sent = match chunked with
@@ -178,7 +178,7 @@ module Make_client
       | false ->
         (* If chunked is not allowed, then obtain the body length and
            insert header *)
-        lwt (body_length, buf) = Cohttp_lwt_body.length body in
+        Cohttp_lwt_body.length body >>= fun (body_length, buf) ->
         let req =
           Request.make_for_client ~headers ~chunked ~body_length meth uri
         in
@@ -208,14 +208,14 @@ module Make_client
     post ?ctx ~chunked:false ~headers ~body uri
 
   let callv ?(ctx=default_ctx) uri reqs =
-    lwt (conn, ic, oc) = Net.connect_uri ~ctx uri in
+    Net.connect_uri ~ctx uri >>= fun (conn, ic, oc) ->
     (* Serialise the requests out to the wire *)
-    lwt meths = Lwt_stream.fold_s (fun (req,body) meths ->
+    Lwt_stream.fold_s (fun (req,body) meths ->
       Request.write (fun writer ->
         Cohttp_lwt_body.write_body (Request.write_body writer) body
       ) req oc >>= fun () ->
       return ((Request.meth req)::meths)
-    ) reqs [] in
+    ) reqs [] >>= fun meths ->
     (* Read the responses. For each response, ensure that the previous
        response has consumed the body before continuing to the next
        response because HTTP/1.1-pipelining cannot be interleaved. *)
@@ -224,7 +224,7 @@ module Make_client
     let last_body = ref None in
     let resps = Lwt_stream.from (fun () ->
       let closefn () = Lwt_mutex.unlock read_m in
-      match_lwt Lwt_stream.get meth_stream with
+      Lwt_stream.get meth_stream >>= function
       | None -> return_none
       | Some meth ->
         begin match !last_body with None -> return_unit | Some body ->
@@ -400,21 +400,22 @@ module Make_server(IO:IO)
       (* Map the requests onto a response stream to serialise out *)
       let res_stream =
         Lwt_stream.map_s (fun (req, body) ->
-          try_lwt
-            spec.callback (io_id,conn_id) req body
-          with exn ->
-            respond_error ~body:(Printexc.to_string exn) ()
-          finally Cohttp_lwt_body.drain_body body
+          Lwt.finalize
+            (fun () ->
+               Lwt.catch
+                 (fun () -> spec.callback (io_id, conn_id) req body)
+                 (fun exn -> respond_error ~body:(Printexc.to_string exn) ()))
+            (fun () -> Cohttp_lwt_body.drain_body body)
         ) req_stream in
       (* Clean up resources when the response stream terminates and call
        * the user callback *)
       Lwt_stream.on_terminate res_stream conn_closed;
       (* Transmit the responses *)
-      for_lwt (res,body) in res_stream do
+      res_stream |> Lwt_stream.iter_s (fun (res,body) ->
         let flush = Response.flush res in
         Response.write ~flush (fun writer ->
           Cohttp_lwt_body.write_body (Response.write_body writer) body
         ) res oc
-      done
+      )
     in daemon_callback
 end

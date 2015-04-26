@@ -43,15 +43,10 @@ let connect_uri ~ctx uri =
   >>= fun client ->
   Conduit_lwt_unix.connect ~ctx:ctx.ctx client
 
-let close_in ic =
-  ignore_result (try_lwt Lwt_io.close ic with _ -> return_unit)
+let close c = Lwt.catch (fun () -> Lwt_io.close c) (fun _ -> return_unit)
 
-let close_out oc =
-  ignore_result (try_lwt Lwt_io.close oc with _ -> return_unit)
+let close_in ic = ignore_result (close ic)
 
-let close' ic oc =
-  try_lwt Lwt_io.close oc with _ -> return_unit >>= fun () ->
-  try_lwt Lwt_io.close ic with _ -> return_unit
+let close_out oc = ignore_result (close oc)
 
-let close ic oc =
-  ignore_result (close' ic oc)
+let close ic oc = ignore_result (close ic >>= fun () -> close oc)
