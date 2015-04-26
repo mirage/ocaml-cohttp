@@ -65,7 +65,7 @@ Library cohttp_lwt
   Path:          lwt
   Findlibname:   lwt-core
   FindlibParent: cohttp
-  BuildDepends:  lwt, uri, cohttp, lwt.syntax
+  BuildDepends:  lwt, uri, cohttp
   XMETARequires: lwt, uri, cohttp
   Modules:       Cohttp_lwt_body, Cohttp_lwt, String_io_lwt
 
@@ -85,7 +85,7 @@ Library cohttp_lwt_xhr
   Path:          js
   Findlibname:   js
   FindlibParent: cohttp
-  BuildDepends:  cohttp.lwt-core, js_of_ocaml, js_of_ocaml.syntax
+  BuildDepends:  cohttp.lwt-core, js_of_ocaml, js_of_ocaml.syntax, lwt.syntax
   XMETARequires: cohttp.lwt-core, js_of_ocaml
   Modules:       Cohttp_lwt_xhr
 
