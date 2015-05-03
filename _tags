@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 5fa3841c8dc3c29fb17f88da786b068b)
+# DO NOT EDIT (digest: 923a286005243ca2036762cd14142fad)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -35,16 +35,20 @@ true: annot, bin_annot
 "lib/body.cmx": for-pack(Cohttp)
 "lib/string_io.cmx": for-pack(Cohttp)
 "lib/conf.cmx": for-pack(Cohttp)
+# Library cohttp_test
+"lib/cohttp_test.cmxs": use_cohttp_test
 <lib/*.ml{,i,y}>: pkg_base64
 <lib/*.ml{,i,y}>: pkg_bytes
 <lib/*.ml{,i,y}>: pkg_fieldslib
 <lib/*.ml{,i,y}>: pkg_fieldslib.syntax
+<lib/*.ml{,i,y}>: pkg_oUnit
 <lib/*.ml{,i,y}>: pkg_re.emacs
 <lib/*.ml{,i,y}>: pkg_sexplib
 <lib/*.ml{,i,y}>: pkg_sexplib.syntax
 <lib/*.ml{,i,y}>: pkg_stringext
 <lib/*.ml{,i,y}>: pkg_uri
 <lib/*.ml{,i,y}>: pkg_uri.services
+<lib/*.ml{,i,y}>: use_cohttp
 # Library cohttp_lwt
 "lwt/cohttp_lwt.cmxs": use_cohttp_lwt
 # Library cohttp_lwt_unix
@@ -69,21 +73,6 @@ true: annot, bin_annot
 <js/*.ml{,i,y}>: use_cohttp_lwt
 # Library cohttp_async
 "async/cohttp_async.cmxs": use_cohttp_async
-<async/*.ml{,i,y}>: pkg_async
-<async/*.ml{,i,y}>: pkg_base64
-<async/*.ml{,i,y}>: pkg_bytes
-<async/*.ml{,i,y}>: pkg_conduit.async
-<async/*.ml{,i,y}>: pkg_fieldslib
-<async/*.ml{,i,y}>: pkg_fieldslib.syntax
-<async/*.ml{,i,y}>: pkg_magic-mime
-<async/*.ml{,i,y}>: pkg_re.emacs
-<async/*.ml{,i,y}>: pkg_sexplib
-<async/*.ml{,i,y}>: pkg_sexplib.syntax
-<async/*.ml{,i,y}>: pkg_stringext
-<async/*.ml{,i,y}>: pkg_threads
-<async/*.ml{,i,y}>: pkg_uri
-<async/*.ml{,i,y}>: pkg_uri.services
-<async/*.ml{,i,y}>: use_cohttp
 # Library cohttp_lwt_unix_test
 "lwt/cohttp_lwt_unix_test.cmxs": use_cohttp_lwt_unix_test
 <lwt/*.ml{,i,y}>: pkg_base64
@@ -105,6 +94,27 @@ true: annot, bin_annot
 <lwt/*.ml{,i,y}>: use_cohttp
 <lwt/*.ml{,i,y}>: use_cohttp_lwt
 <lwt/*.ml{,i,y}>: use_cohttp_lwt_unix
+<lwt/*.ml{,i,y}>: use_cohttp_test
+# Library cohttp_async_test
+"async/cohttp_async_test.cmxs": use_cohttp_async_test
+<async/*.ml{,i,y}>: pkg_async
+<async/*.ml{,i,y}>: pkg_base64
+<async/*.ml{,i,y}>: pkg_bytes
+<async/*.ml{,i,y}>: pkg_conduit.async
+<async/*.ml{,i,y}>: pkg_fieldslib
+<async/*.ml{,i,y}>: pkg_fieldslib.syntax
+<async/*.ml{,i,y}>: pkg_magic-mime
+<async/*.ml{,i,y}>: pkg_oUnit
+<async/*.ml{,i,y}>: pkg_re.emacs
+<async/*.ml{,i,y}>: pkg_sexplib
+<async/*.ml{,i,y}>: pkg_sexplib.syntax
+<async/*.ml{,i,y}>: pkg_stringext
+<async/*.ml{,i,y}>: pkg_threads
+<async/*.ml{,i,y}>: pkg_uri
+<async/*.ml{,i,y}>: pkg_uri.services
+<async/*.ml{,i,y}>: use_cohttp
+<async/*.ml{,i,y}>: use_cohttp_async
+<async/*.ml{,i,y}>: use_cohttp_test
 # Executable test_parser
 <lib_test/test_parser.{native,byte}>: pkg_base64
 <lib_test/test_parser.{native,byte}>: pkg_bytes
@@ -651,6 +661,7 @@ true: annot, bin_annot
 <lib_test/test_sanity.{native,byte}>: use_cohttp_lwt
 <lib_test/test_sanity.{native,byte}>: use_cohttp_lwt_unix
 <lib_test/test_sanity.{native,byte}>: use_cohttp_lwt_unix_test
+<lib_test/test_sanity.{native,byte}>: use_cohttp_test
 <lib_test/*.ml{,i,y}>: pkg_base64
 <lib_test/*.ml{,i,y}>: pkg_bytes
 <lib_test/*.ml{,i,y}>: pkg_conduit.lwt-unix
@@ -671,6 +682,7 @@ true: annot, bin_annot
 <lib_test/*.ml{,i,y}>: use_cohttp_lwt
 <lib_test/*.ml{,i,y}>: use_cohttp_lwt_unix
 <lib_test/*.ml{,i,y}>: use_cohttp_lwt_unix_test
+<lib_test/*.ml{,i,y}>: use_cohttp_test
 <lib_test/test_sanity.{native,byte}>: custom
 # OASIS_STOP
 true: principal, strict_sequence, debug

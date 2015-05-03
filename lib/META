@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 6a971f1fc0aa571e67858b56e5337a8c)
+# DO NOT EDIT (digest: 0993413eb2018c7116a8e1ceec9b45f9)
 version = "0.17.2"
 description = "HTTP library for Lwt, Async, JavaScript and Mirage"
 requires =
@@ -9,10 +9,21 @@ archive(byte, plugin) = "cohttp.cma"
 archive(native) = "cohttp.cmxa"
 archive(native, plugin) = "cohttp.cmxs"
 exists_if = "cohttp.cma"
+package "test" (
+ version = "0.17.2"
+ description = "HTTP library for Lwt, Async, JavaScript and Mirage"
+ requires = "cohttp oUnit"
+ archive(byte) = "cohttp_test.cma"
+ archive(byte, plugin) = "cohttp_test.cma"
+ archive(native) = "cohttp_test.cmxa"
+ archive(native, plugin) = "cohttp_test.cmxs"
+ exists_if = "cohttp_test.cma"
+)
+
 package "lwt-unix-test" (
  version = "0.17.2"
  description = "HTTP library for Lwt, Async, JavaScript and Mirage"
- requires = "cohttp.lwt unix lwt.unix oUnit"
+ requires = "cohttp.test cohttp.lwt unix lwt.unix oUnit"
  archive(byte) = "cohttp_lwt_unix_test.cma"
  archive(byte, plugin) = "cohttp_lwt_unix_test.cma"
  archive(native) = "cohttp_lwt_unix_test.cmxa"
@@ -51,6 +62,17 @@ package "js" (
  archive(native) = "cohttp_lwt_xhr.cmxa"
  archive(native, plugin) = "cohttp_lwt_xhr.cmxs"
  exists_if = "cohttp_lwt_xhr.cma"
+)
+
+package "async-test" (
+ version = "0.17.2"
+ description = "HTTP library for Lwt, Async, JavaScript and Mirage"
+ requires = "cohttp.test cohttp.async oUnit"
+ archive(byte) = "cohttp_async_test.cma"
+ archive(byte, plugin) = "cohttp_async_test.cma"
+ archive(native) = "cohttp_async_test.cmxa"
+ archive(native, plugin) = "cohttp_async_test.cmxs"
+ exists_if = "cohttp_async_test.cma"
 )
 
 package "async" (
