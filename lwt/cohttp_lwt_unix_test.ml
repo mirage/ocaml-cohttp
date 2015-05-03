@@ -3,8 +3,10 @@ open OUnit
 open Cohttp
 open Cohttp_lwt_unix
 
-type spec = Request.t -> Cohttp_lwt_body.t
-  -> (Response.t * Cohttp_lwt_body.t) Lwt.t
+type 'a io = 'a Lwt.t
+type body = Cohttp_lwt_body.t
+
+type spec = Request.t -> body -> (Response.t * body) io
 
 type async_test = unit -> unit Lwt.t
 
