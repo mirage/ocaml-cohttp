@@ -60,7 +60,7 @@ module Response = struct
   include (Make(IO) : module type of Make(IO) with type t := t)
 end
 
-let pipe_of_body read_chunk ic oc =
+let pipe_of_body read_chunk ic =
   let open Cohttp.Transfer in
   let (rd, wr) = Pipe.create () in
   let finished =
@@ -169,7 +169,7 @@ module Client = struct
     | `Ok res ->
       (* Build a response pipe for the body *)
       let reader = Response.make_body_reader res ic in
-      let rd = pipe_of_body (fun ic -> Response.read_body_chunk reader) ic oc in
+      let rd = pipe_of_body (fun ic -> Response.read_body_chunk reader) ic in
       don't_wait_for (
         Pipe.closed rd >>= fun () ->
         Deferred.all_ignore [Reader.close ic; Writer.close oc]
@@ -242,8 +242,7 @@ module Server = struct
     | `No | `Unknown -> `Empty
     | `Yes -> (* Create a Pipe for the body *)
       let reader = Request.make_body_reader req rd in
-      `Pipe (pipe_of_body (fun ic ->
-        Request.read_body_chunk reader) rd wr)
+      `Pipe (pipe_of_body (fun ic -> Request.read_body_chunk reader) rd)
 
   let handle_client handle_request sock rd wr =
     let last_body_pipe_drained = ref (Ivar.create ()) in
