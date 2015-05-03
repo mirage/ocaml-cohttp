@@ -304,6 +304,15 @@ Executable test_net_async_server
   Install:            false
   BuildDepends:       cohttp, cohttp.async, oUnit (>= 1.0.2)
 
+Executable test_async_integration
+  Path:               lib_test
+  MainIs:             test_async_integration.ml
+  Build$:             flag(tests) && flag(async)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp.async-test
+
 Executable "cohttp-server-async"
   Path:               bin
   MainIs:             cohttp_server_async.ml
@@ -422,6 +431,11 @@ Test test_parser_async
 Test test_sanity
   Run$:             flag(tests) && flag(lwt_unix)
   Command:          $test_sanity
+  WorkingDirectory: lib_test
+
+Test test_async_integration
+  Run$:             flag(tests) && flag(async)
+  Command:          $test_async_integration
   WorkingDirectory: lib_test
 
 SourceRepository master
