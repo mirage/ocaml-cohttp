@@ -23,5 +23,5 @@ module type S = sig
   -> (Uri.t -> (string * async_test) list) -> OUnit.test io
 
   (** Run an async unit test and return and print the result *)
-  val run_async_tests : OUnit.test io -> OUnit.test_result list
+  val run_async_tests : OUnit.test io -> OUnit.test_results io
 end
