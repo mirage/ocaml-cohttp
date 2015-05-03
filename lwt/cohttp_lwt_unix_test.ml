@@ -62,5 +62,4 @@ let test_server_s ?port ?(name="Cohttp Server Test") spec f =
       name >::: ounit_tests)
   end
 
-let run_async_tests test =
-  test |> Lwt_main.run |> OUnit.run_test_tt_main
+let run_async_tests test = test >|= OUnit.run_test_tt_main

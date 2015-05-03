@@ -59,4 +59,4 @@ let ts =
   end
 
 
-let _ = run_async_tests ts
+let _ = ts |> run_async_tests |> Lwt_main.run
