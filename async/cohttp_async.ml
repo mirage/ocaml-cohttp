@@ -156,25 +156,40 @@ end
 
 module Client = struct
 
-  let request ?interrupt ?(body=`Empty) req =
-    (* Connect to the remote side *)
-    Net.connect_uri ?interrupt req.Request.uri
-    >>= fun (ic,oc) ->
-    Request.write (fun writer -> Body.write Request.write_body body writer) req oc
-    >>= fun () ->
-    Response.read ic
-    >>| function
+  let read_request ic =
+    Response.read ic >>| function
     | `Eof -> failwith "Connection closed by remote host"
     | `Invalid reason -> failwith reason
     | `Ok res ->
       (* Build a response pipe for the body *)
       let reader = Response.make_body_reader res ic in
       let rd = pipe_of_body (fun ic -> Response.read_body_chunk reader) ic in
+      (res, `Pipe rd)
+
+  let request ?interrupt ?(body=`Empty) req =
+    (* Connect to the remote side *)
+    Net.connect_uri ?interrupt req.Request.uri
+    >>= fun (ic,oc) ->
+      Request.write (fun writer -> Body.write Request.write_body body writer) req oc
+    >>= fun () ->
+    read_request ic >>| fun (resp, body) ->
       don't_wait_for (
-        Pipe.closed rd >>= fun () ->
+        body |> Body.to_pipe |> Pipe.closed >>= fun () ->
+          Deferred.all_ignore [Reader.close ic; Writer.close oc]);
+    (resp, body)
+
+  let callv ?interrupt uri reqs =
+    Net.connect_uri ?interrupt uri >>| fun (ic, oc) ->
+    reqs |> Pipe.iter ~f:(fun (req, body) ->
+      Request.write (fun writer -> Body.write Request.write_body body writer)
+    req oc) |> don't_wait_for;
+    let responses = Reader.read_all ic (fun ic ->
+      ic |> read_request >>| (fun x -> `Ok x)) in
+    don't_wait_for (
+      Pipe.closed responses >>= fun () ->
         Deferred.all_ignore [Reader.close ic; Writer.close oc]
-      );
-      res, `Pipe rd
+    );
+    responses
 
   let call ?interrupt ?headers ?(chunked=false) ?(body=`Empty) meth uri =
     (* Create a request, then make the request.

@@ -71,6 +71,12 @@ module Client : sig
     Uri.t ->
     (Response.t * Body.t) Deferred.t
 
+  val callv :
+    ?interrupt:unit Deferred.t ->
+    Uri.t ->
+    (Request.t * Body.t) Pipe.Reader.t ->
+    (Response.t * Body.t) Pipe.Reader.t Deferred.t
+
   (** Send an HTTP GET request *)
   val get :
     ?interrupt:unit Deferred.t ->
