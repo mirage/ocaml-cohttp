@@ -8,25 +8,11 @@ type body = Body.t
 type spec = Request.t -> body -> (Response.t * body) io
 type async_test = unit -> unit io
 
-let port = ref 9193
-
-let next_port () =
-  let current_port = !port in
-  incr port;
-  current_port
-
-let response_sequence responses =
-  let xs = ref responses in
-  fun _ _ ->
-    match !xs with
-    | x::xs' ->
-        xs := xs';
-      x
-    | [] -> failwith "response_sequence: Server exhausted responses"
+let response_sequence = Cohttp_test.response_sequence failwith
 
 let temp_server ?port spec callback =
   let port = match port with
-    | None -> next_port ()
+    | None -> Cohttp_test.next_port ()
     | Some p -> p in
   let uri = Uri.of_string ("http://0.0.0.0:" ^ (string_of_int port)) in
   let server = Server.create (Tcp.on_port port) (fun ~body _sock req -> spec req body) in

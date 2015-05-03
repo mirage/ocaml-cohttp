@@ -10,25 +10,11 @@ type spec = Request.t -> body -> (Response.t * body) io
 
 type async_test = unit -> unit Lwt.t
 
-let port = ref 9193
-
-let next_port () =
-  let current_port = !port in
-  incr port;
-  current_port
-
-let response_sequence responses =
-  let xs = ref responses in
-  fun _ _ ->
-    match !xs with
-    | x::xs' ->
-      xs := xs';
-      x
-    | [] -> Lwt.fail_with "response_sequence: Server exhausted responses"
+let response_sequence = Cohttp_test.response_sequence Lwt.fail_with
 
 let temp_server ?port spec callback =
   let port = match port with
-    | None -> next_port ()
+    | None -> Cohttp_test.next_port ()
     | Some p -> p in
   let server = Server.make ~callback:(fun _ req body -> spec req body) () in
   let uri = Uri.of_string ("http://0.0.0.0:" ^ (string_of_int port)) in
