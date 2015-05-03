@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 923a286005243ca2036762cd14142fad)
+# DO NOT EDIT (digest: ca939fa07e91bbabbbe072870f7f76b4)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -416,11 +416,33 @@ true: annot, bin_annot
 <lib_test/test_net_async_server.{native,byte}>: pkg_uri.services
 <lib_test/test_net_async_server.{native,byte}>: use_cohttp
 <lib_test/test_net_async_server.{native,byte}>: use_cohttp_async
+<lib_test/test_net_async_server.{native,byte}>: custom
+# Executable test_async_integration
+<lib_test/test_async_integration.{native,byte}>: pkg_async
+<lib_test/test_async_integration.{native,byte}>: pkg_base64
+<lib_test/test_async_integration.{native,byte}>: pkg_bytes
+<lib_test/test_async_integration.{native,byte}>: pkg_conduit.async
+<lib_test/test_async_integration.{native,byte}>: pkg_fieldslib
+<lib_test/test_async_integration.{native,byte}>: pkg_fieldslib.syntax
+<lib_test/test_async_integration.{native,byte}>: pkg_magic-mime
+<lib_test/test_async_integration.{native,byte}>: pkg_oUnit
+<lib_test/test_async_integration.{native,byte}>: pkg_re.emacs
+<lib_test/test_async_integration.{native,byte}>: pkg_sexplib
+<lib_test/test_async_integration.{native,byte}>: pkg_sexplib.syntax
+<lib_test/test_async_integration.{native,byte}>: pkg_stringext
+<lib_test/test_async_integration.{native,byte}>: pkg_threads
+<lib_test/test_async_integration.{native,byte}>: pkg_uri
+<lib_test/test_async_integration.{native,byte}>: pkg_uri.services
+<lib_test/test_async_integration.{native,byte}>: use_cohttp
+<lib_test/test_async_integration.{native,byte}>: use_cohttp_async
+<lib_test/test_async_integration.{native,byte}>: use_cohttp_async_test
+<lib_test/test_async_integration.{native,byte}>: use_cohttp_test
 <lib_test/*.ml{,i,y}>: pkg_async
 <lib_test/*.ml{,i,y}>: pkg_conduit.async
 <lib_test/*.ml{,i,y}>: pkg_threads
 <lib_test/*.ml{,i,y}>: use_cohttp_async
-<lib_test/test_net_async_server.{native,byte}>: custom
+<lib_test/*.ml{,i,y}>: use_cohttp_async_test
+<lib_test/test_async_integration.{native,byte}>: custom
 # Executable cohttp-server-async
 <bin/cohttp_server_async.{native,byte}>: pkg_async
 <bin/cohttp_server_async.{native,byte}>: pkg_base64
