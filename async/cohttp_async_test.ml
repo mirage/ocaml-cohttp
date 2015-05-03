@@ -1,0 +1,63 @@
+open Core.Std
+open Async.Std
+open OUnit
+open Cohttp_async
+
+type 'a io = 'a Deferred.t
+type body = Body.t
+type spec = Request.t -> body -> (Response.t * body) io
+type async_test = unit -> unit io
+
+let port = ref 9193
+
+let next_port () =
+  let current_port = !port in
+  incr port;
+  current_port
+
+let response_sequence responses =
+  let xs = ref responses in
+  fun _ _ ->
+    match !xs with
+    | x::xs' ->
+        xs := xs';
+      x
+    | [] -> failwith "response_sequence: Server exhausted responses"
+
+let temp_server ?port spec callback =
+  let port = match port with
+    | None -> next_port ()
+    | Some p -> p in
+  let uri = Uri.of_string ("http://0.0.0.0:" ^ (string_of_int port)) in
+  let server = Server.create (Tcp.on_port port) (fun ~body _sock req -> spec req body) in
+  server >>= fun server ->
+    callback uri >>= fun res ->
+      Server.close server >>= fun () ->
+        return res
+
+let test_server_s ?port ?(name="Cohttp Server Test") spec f =
+  temp_server ?port spec begin fun uri ->
+    Log.Global.info "Test %s running on %s" name (Uri.to_string uri);
+    let tests = f uri in
+    let results =
+      tests
+    |> Deferred.List.map ~f:(fun (name, test) ->
+        Log.Global.debug "Running %s" name;
+        let res =
+          try_with test >>| function
+            | Ok () -> `Ok
+          | Error exn -> `Exn exn in
+        res >>| (fun res -> (name, res))) in
+    results >>| (fun results ->
+      let ounit_tests =
+        results
+          |> List.map ~f:(fun (name, res) ->
+              name >:: fun () ->
+                match res with
+            | `Ok -> ()
+            | `Exn x -> raise x) in
+      name >::: ounit_tests)
+  end
+
+let run_async_tests test =
+  test >>| (fun a -> a |> OUnit.run_test_tt_main)
