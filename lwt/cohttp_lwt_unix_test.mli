@@ -22,4 +22,4 @@ val test_server_s : ?port:int -> ?name:string -> spec
   -> (Uri.t -> (string * async_test) list) -> OUnit.test Lwt.t
 
 (** Run an async unit test and return and print the result *)
-val run_async_tests : OUnit.test Lwt.t -> OUnit.test_result list
+val run_async_tests : OUnit.test Lwt.t -> OUnit.test_result list Lwt.t
