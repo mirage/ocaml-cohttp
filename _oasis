@@ -35,6 +35,15 @@ Library cohttp
   XMETARequires: re.emacs, stringext, uri, uri.services, fieldslib,
                  sexplib, bytes, base64
 
+Library cohttp_test
+  Build$:        flag(tests)
+  Install:       false
+  Path:          lib
+  Findlibname:   test
+  FindlibParent: cohttp
+  Modules:       Cohttp_test
+  BuildDepends:  cohttp, oUnit
+
 Flag lwt
   Description: build the Lwt library
   Default:     false
@@ -104,8 +113,17 @@ Library cohttp_lwt_unix_test
   Path:          lwt
   Findlibname:   lwt-unix-test
   FindlibParent: cohttp
-  BuildDepends:  cohttp.lwt, unix, lwt.unix, oUnit
+  BuildDepends:  cohttp.test, cohttp.lwt, unix, lwt.unix, oUnit
   Modules:       Cohttp_lwt_unix_test
+
+Library cohttp_async_test
+  Build$:        flag(async) && flag(tests)
+  Install:       false
+  Path:          async
+  Findlibname:   async-test
+  FindlibParent: cohttp
+  BuildDepends:  cohttp.test, cohttp.async, oUnit
+  Modules:       Cohttp_async_test
 
 Document cohttp
   Title:                Cohttp docs
