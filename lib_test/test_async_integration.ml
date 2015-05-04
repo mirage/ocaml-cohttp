@@ -1,6 +1,7 @@
 open Core.Std
 open Async.Std
 open OUnit
+open Cohttp
 open Cohttp_async
 open Cohttp_async_test
 
@@ -15,7 +16,8 @@ let server =
 let ts =
   test_server_s server begin fun uri ->
     let empty_chunk () =
-      Client.get uri >>= fun (_, body) ->
+      let headers = Header.init_with "connection" "close" in
+      Client.get ~headers uri >>= fun (_, body) ->
       body |> Body.to_string >>| fun body ->
       assert_equal body (String.concat ~sep:"" chunk_body) in
     [ "empty chunk test", empty_chunk
