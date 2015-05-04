@@ -178,16 +178,41 @@ module Client = struct
           Deferred.all_ignore [Reader.close ic; Writer.close oc]);
     (resp, body)
 
+  (* Like Reader.read_all but allows you to control delay between reads *)
+  let read_all_delayed rd ~f =
+    let wait_for = ref Deferred.unit in
+    Reader.read_all rd (fun ic ->
+      !wait_for >>= fun () ->
+      f ic >>| function
+      | `Ok (result, wait_for') ->
+        wait_for := wait_for';
+        `Ok result
+      | `Eof -> `Eof
+    )
+
   let callv ?interrupt uri reqs =
+    let reqs_c = ref 0 in
+    let resp_c = ref 0 in
     Net.connect_uri ?interrupt uri >>| fun (ic, oc) ->
-    reqs |> Pipe.iter ~f:(fun (req, body) ->
+    reqs
+    |> Pipe.iter ~f:(fun (req, body) ->
+      incr reqs_c;
       Request.write (fun writer -> Body.write Request.write_body body writer)
-    req oc) |> don't_wait_for;
-    let responses = Reader.read_all ic (fun ic ->
-      ic |> read_request >>| (fun x -> `Ok x)) in
+        req oc)
+    |> don't_wait_for;
+    let responses = read_all_delayed ic ~f:(fun ic ->
+      if Pipe.is_closed reqs && (!resp_c >= !reqs_c)
+      then return `Eof
+      else
+        ic |> read_request >>| fun (resp, body) ->
+        incr resp_c;
+        `Ok (resp, body |> Body.to_pipe |> Pipe.closed)
+      )
+    in
     don't_wait_for (
+      Pipe.closed reqs >>= fun () ->
       Pipe.closed responses >>= fun () ->
-        Deferred.all_ignore [Reader.close ic; Writer.close oc]
+      Writer.close oc
     );
     responses
 
