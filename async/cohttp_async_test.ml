@@ -17,9 +17,9 @@ let temp_server ?port spec callback =
   let uri = Uri.of_string ("http://0.0.0.0:" ^ (string_of_int port)) in
   let server = Server.create (Tcp.on_port port) (fun ~body _sock req -> spec req body) in
   server >>= fun server ->
-    callback uri >>= fun res ->
-      Server.close server >>= fun () ->
-        return res
+  callback uri >>= fun res ->
+  Server.close server >>| fun () ->
+  res
 
 let test_server_s ?port ?(name="Cohttp Server Test") spec f =
   temp_server ?port spec begin fun uri ->
@@ -31,15 +31,15 @@ let test_server_s ?port ?(name="Cohttp Server Test") spec f =
         Log.Global.debug "Running %s" name;
         let res =
           try_with test >>| function
-            | Ok () -> `Ok
+          | Ok () -> `Ok
           | Error exn -> `Exn exn in
         res >>| (fun res -> (name, res))) in
     results >>| (fun results ->
       let ounit_tests =
         results
-          |> List.map ~f:(fun (name, res) ->
-              name >:: fun () ->
-                match res with
+        |> List.map ~f:(fun (name, res) ->
+          name >:: fun () ->
+            match res with
             | `Ok -> ()
             | `Exn x -> raise x) in
       name >::: ounit_tests)

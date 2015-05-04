@@ -21,7 +21,7 @@ module type S = sig
   (** Create a test suite against a server defined by spec. Tests
       run sequentially. *)
   val test_server_s : ?port:int -> ?name:string -> spec
-  -> (Uri.t -> (string * async_test) list) -> OUnit.test io
+    -> (Uri.t -> (string * async_test) list) -> OUnit.test io
 
   (** Run an async unit test and return and print the result *)
   val run_async_tests : OUnit.test io -> OUnit.test_results io
