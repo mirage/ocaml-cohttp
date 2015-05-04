@@ -27,7 +27,7 @@ let test_server_s ?port ?(name="Cohttp Server Test") spec f =
     let tests = f uri in
     let results =
       tests
-    |> Deferred.List.map ~f:(fun (name, test) ->
+      |> Deferred.List.map ~how:`Sequential ~f:(fun (name, test) ->
         Log.Global.debug "Running %s" name;
         let res =
           try_with test >>| function
