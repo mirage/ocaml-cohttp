@@ -1,7 +1,10 @@
 0.17.2 (trunk):
 * Remove dependency on the Lwt Camlp4 syntax extension (#334).
 * Add `make github` target to push documentation to GitHub Pages
-  (#338 from Jyotsna Prakash)
+  (#338 from Jyotsna Prakash).
+* [async] Add `Cohttp_async.Server.close` to shutdown server (#337).
+* Add Async integration tests and consolidate Lwt tests using the
+  new framework (#337).
 
 0.17.1 (2015-04-24):
 * [async] Limit buffer size to a maximum of 32K in the Async backend
