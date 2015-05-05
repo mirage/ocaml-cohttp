@@ -13,7 +13,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- *)
+*)
 
 open Core.Std
 open Async.Std
@@ -28,10 +28,10 @@ let make_net_req uri meth' () =
   let headers = Cohttp.Header.of_list [ "connection", "close" ] in
   Client.call meth ~headers uri
   >>= fun (res, body) ->
-   show_headers (Cohttp.Response.headers res);
-   body
-   |> Body.to_pipe
-   |> Pipe.iter ~f:(fun b -> print_string b; return ())
+  show_headers (Cohttp.Response.headers res);
+  body
+  |> Body.to_pipe
+  |> Pipe.iter ~f:(fun b -> print_string b; return ())
 
 let _ =
   let open Command.Spec in
@@ -39,7 +39,7 @@ let _ =
     (empty
      +> anon ("url" %: string)
      +> flag "-X" (optional_with_default "GET" string)
-       ~doc:" Set HTTP method"
+          ~doc:" Set HTTP method"
     )
     make_net_req
   |> Command.run
