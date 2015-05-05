@@ -263,10 +263,13 @@ module Server = struct
         let keep_alive = Request.is_keep_alive req in
         let flush = Response.flush res in
         let res =
-          let headers = Cohttp.Header.add_unless_exists
-              (Cohttp.Response.headers res)
-              "connection"
-              (if keep_alive then "keep-alive" else "close") in
+          let headers = 
+            let hdrs = 
+              Cohttp.Header.add_unless_exists (Cohttp.Response.headers res)
+              "connection" (if keep_alive then "keep-alive" else "close") in
+            match res_body with
+            | `Empty -> Cohttp.Header.add hdrs "content-length" "0"
+            | _ -> hdrs in
           { res with Response.headers } in
         Response.write ~flush (Body.write Response.write_body res_body) res wr >>= fun () ->
         Writer.flushed wr >>= fun () ->
