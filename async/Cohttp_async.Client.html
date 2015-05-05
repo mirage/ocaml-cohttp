@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Cohttp_async.Body.html">
+<link rel="next" href="Cohttp_async.Server.html">
+<link rel="Up" href="Cohttp_async.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Cohttp_async_io" rel="Chapter" href="Cohttp_async_io.html">
+<link title="Cohttp_async" rel="Chapter" href="Cohttp_async.html"><title>Cohttp_async.Client</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Cohttp_async.Body.html" title="Cohttp_async.Body">Previous</a>
+&nbsp;<a class="up" href="Cohttp_async.html" title="Cohttp_async">Up</a>
+&nbsp;<a class="post" href="Cohttp_async.Server.html" title="Cohttp_async.Server">Next</a>
+</div>
+<h1>Module <a href="type_Cohttp_async.Client.html">Cohttp_async.Client</a></h1>
+
+<pre><span class="keyword">module</span> Client: <code class="code">sig</code> <a href="Cohttp_async.Client.html">..</a> <code class="code">end</code></pre><hr width="100%">
+
+<pre><span id="VALrequest"><span class="keyword">val</span> request</span> : <code class="type">?interrupt:unit Async.Std.Deferred.t -><br>       ?body:<a href="Cohttp_async.Body.html#TYPEt">Cohttp_async.Body.t</a> -><br>       <a href="Cohttp_async.Request.html#TYPEt">Cohttp_async.Request.t</a> -><br>       (<a href="Cohttp_async.Response.html#TYPEt">Cohttp_async.Response.t</a> * <a href="Cohttp_async.Body.html#TYPEt">Cohttp_async.Body.t</a>) Async.Std.Deferred.t</code></pre><div class="info ">
+Send an HTTP request with an arbitrary body
+      The request is sent as-is.<br>
+</div>
+
+<pre><span id="VALcall"><span class="keyword">val</span> call</span> : <code class="type">?interrupt:unit Async.Std.Deferred.t -><br>       ?headers:Cohttp.Header.t -><br>       ?chunked:bool -><br>       ?body:<a href="Cohttp_async.Body.html#TYPEt">Cohttp_async.Body.t</a> -><br>       Cohttp.Code.meth -><br>       Uri.t -> (<a href="Cohttp_async.Response.html#TYPEt">Cohttp_async.Response.t</a> * <a href="Cohttp_async.Body.html#TYPEt">Cohttp_async.Body.t</a>) Async.Std.Deferred.t</code></pre><div class="info ">
+Send an HTTP request with arbitrary method and a body
+      Infers the transfer encoding<br>
+</div>
+
+<pre><span id="VALget"><span class="keyword">val</span> get</span> : <code class="type">?interrupt:unit Async.Std.Deferred.t -><br>       ?headers:Cohttp.Header.t -><br>       Uri.t -> (<a href="Cohttp_async.Response.html#TYPEt">Cohttp_async.Response.t</a> * <a href="Cohttp_async.Body.html#TYPEt">Cohttp_async.Body.t</a>) Async.Std.Deferred.t</code></pre><div class="info ">
+Send an HTTP GET request<br>
+</div>
+
+<pre><span id="VALhead"><span class="keyword">val</span> head</span> : <code class="type">?interrupt:unit Async.Std.Deferred.t -><br>       ?headers:Cohttp.Header.t -><br>       Uri.t -> <a href="Cohttp_async.Response.html#TYPEt">Cohttp_async.Response.t</a> Async.Std.Deferred.t</code></pre><div class="info ">
+Send an HTTP HEAD request<br>
+</div>
+
+<pre><span id="VALdelete"><span class="keyword">val</span> delete</span> : <code class="type">?interrupt:unit Async.Std.Deferred.t -><br>       ?headers:Cohttp.Header.t -><br>       Uri.t -> (<a href="Cohttp_async.Response.html#TYPEt">Cohttp_async.Response.t</a> * <a href="Cohttp_async.Body.html#TYPEt">Cohttp_async.Body.t</a>) Async.Std.Deferred.t</code></pre><div class="info ">
+Send an HTTP DELETE request<br>
+</div>
+
+<pre><span id="VALpost"><span class="keyword">val</span> post</span> : <code class="type">?interrupt:unit Async.Std.Deferred.t -><br>       ?headers:Cohttp.Header.t -><br>       ?chunked:bool -><br>       ?body:<a href="Cohttp_async.Body.html#TYPEt">Cohttp_async.Body.t</a> -><br>       Uri.t -> (<a href="Cohttp_async.Response.html#TYPEt">Cohttp_async.Response.t</a> * <a href="Cohttp_async.Body.html#TYPEt">Cohttp_async.Body.t</a>) Async.Std.Deferred.t</code></pre><div class="info ">
+Send an HTTP POST request.
+      <code class="code">chunked</code> encoding is off by default as not many servers support it<br>
+</div>
+
+<pre><span id="VALput"><span class="keyword">val</span> put</span> : <code class="type">?interrupt:unit Async.Std.Deferred.t -><br>       ?headers:Cohttp.Header.t -><br>       ?chunked:bool -><br>       ?body:<a href="Cohttp_async.Body.html#TYPEt">Cohttp_async.Body.t</a> -><br>       Uri.t -> (<a href="Cohttp_async.Response.html#TYPEt">Cohttp_async.Response.t</a> * <a href="Cohttp_async.Body.html#TYPEt">Cohttp_async.Body.t</a>) Async.Std.Deferred.t</code></pre><div class="info ">
+Send an HTTP PUT request.
+      <code class="code">chunked</code> encoding is off by default as not many servers support it<br>
+</div>
+
+<pre><span id="VALpatch"><span class="keyword">val</span> patch</span> : <code class="type">?interrupt:unit Async.Std.Deferred.t -><br>       ?headers:Cohttp.Header.t -><br>       ?chunked:bool -><br>       ?body:<a href="Cohttp_async.Body.html#TYPEt">Cohttp_async.Body.t</a> -><br>       Uri.t -> (<a href="Cohttp_async.Response.html#TYPEt">Cohttp_async.Response.t</a> * <a href="Cohttp_async.Body.html#TYPEt">Cohttp_async.Body.t</a>) Async.Std.Deferred.t</code></pre><div class="info ">
+Send an HTTP PATCH request.
+      <code class="code">chunked</code> encoding is off by default as not many servers support it<br>
+</div>
+
+<pre><span id="VALpost_form"><span class="keyword">val</span> post_form</span> : <code class="type">?interrupt:unit Async.Std.Deferred.t -><br>       ?headers:Cohttp.Header.t -><br>       params:(string * string list) list -><br>       Uri.t -> (<a href="Cohttp_async.Response.html#TYPEt">Cohttp_async.Response.t</a> * <a href="Cohttp_async.Body.html#TYPEt">Cohttp_async.Body.t</a>) Async.Std.Deferred.t</code></pre><div class="info ">
+Send an HTTP POST request in form format<br>
+</div>
+</body></html>

@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Connection.html">
+<link rel="next" href="String_io.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="S" rel="Chapter" href="S.html">
+<link title="Code" rel="Chapter" href="Code.html">
+<link title="Header" rel="Chapter" href="Header.html">
+<link title="Cookie" rel="Chapter" href="Cookie.html">
+<link title="Request" rel="Chapter" href="Request.html">
+<link title="Response" rel="Chapter" href="Response.html">
+<link title="Transfer" rel="Chapter" href="Transfer.html">
+<link title="Accept" rel="Chapter" href="Accept.html">
+<link title="Accept_parser" rel="Chapter" href="Accept_parser.html">
+<link title="Accept_lexer" rel="Chapter" href="Accept_lexer.html">
+<link title="Accept_types" rel="Chapter" href="Accept_types.html">
+<link title="Link" rel="Chapter" href="Link.html">
+<link title="Auth" rel="Chapter" href="Auth.html">
+<link title="Header_io" rel="Chapter" href="Header_io.html">
+<link title="Transfer_io" rel="Chapter" href="Transfer_io.html">
+<link title="Connection" rel="Chapter" href="Connection.html">
+<link title="Body" rel="Chapter" href="Body.html">
+<link title="String_io" rel="Chapter" href="String_io.html">
+<link title="Conf" rel="Chapter" href="Conf.html"><title>Body</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Connection.html" title="Connection">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="String_io.html" title="String_io">Next</a>
+</div>
+<h1>Module <a href="type_Body.html">Body</a></h1>
+
+<pre><span class="keyword">module</span> Body: <code class="code">sig</code> <a href="Body.html">..</a> <code class="code">end</code></pre><div class="info module top">
+HTTP request and response body handling<br>
+</div>
+<hr width="100%">
+
+<pre><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> = <code class="type">[ `Empty | `String of string | `Strings of string list ]</code> </pre>
+<div class="info ">
+Every HTTP body can at least be an empty value or a <code class="code">string</code><br>
+</div>
+
+
+<pre><span class="keyword">include</span> <a href="S.Body.html">S.Body</a></pre>
+<div class="info ">
+Signature for the core of HTTP body handling.  Implementations
+    will extend this signature to add more functions for streaming
+    responses via backend-specific functionality.<br>
+</div>
+
+<pre><span id="VALlength"><span class="keyword">val</span> length</span> : <code class="type"><a href="Body.html#TYPEt">t</a> -> int64</code></pre>
+<pre><span id="VALt_of_sexp"><span class="keyword">val</span> t_of_sexp</span> : <code class="type">Sexplib.Sexp.t -> <a href="Body.html#TYPEt">t</a></code></pre>
+<pre><span id="VAL__t_of_sexp__"><span class="keyword">val</span> __t_of_sexp__</span> : <code class="type">Sexplib.Sexp.t -> <a href="Body.html#TYPEt">t</a></code></pre>
+<pre><span id="VALsexp_of_t"><span class="keyword">val</span> sexp_of_t</span> : <code class="type"><a href="Body.html#TYPEt">t</a> -> Sexplib.Sexp.t</code></pre><br>
+Signature for the core of HTTP body handling.  Implementations
+    will extend this signature to add more functions for streaming
+    responses via backend-specific functionality.<br>
+</body></html>

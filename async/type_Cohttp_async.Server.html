@@ -1,0 +1,70 @@
+<html><head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Cohttp_async_io" rel="Chapter" href="Cohttp_async_io.html">
+<link title="Cohttp_async" rel="Chapter" href="Cohttp_async.html"><title>Cohttp_async.Server</title>
+</head>
+<body>
+<code class="code"><span class="keyword">sig</span><br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;(<span class="keywordsign">'</span>a,&nbsp;<span class="keywordsign">'</span>listening_on)&nbsp;t&nbsp;<span class="keyword">constraint</span>&nbsp;<span class="keywordsign">'</span>a&nbsp;=&nbsp;[&lt;&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Socket</span>.<span class="constructor">Address</span>.t&nbsp;]<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;close&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;([&lt;&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Socket</span>.<span class="constructor">Address</span>.t&nbsp;],&nbsp;<span class="keywordsign">'</span>a)&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Server</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;unit&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Deferred</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;close_finished&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;([&lt;&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Socket</span>.<span class="constructor">Address</span>.t&nbsp;],&nbsp;<span class="keywordsign">'</span>a)&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Server</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;unit&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Deferred</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;is_closed&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;([&lt;&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Socket</span>.<span class="constructor">Address</span>.t&nbsp;],&nbsp;<span class="keywordsign">'</span>a)&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Server</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;bool<br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;response&nbsp;=&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Response</span>.t&nbsp;*&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Body</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;respond&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?flush:bool&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?headers:<span class="constructor">Cohttp</span>.<span class="constructor">Header</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?body:<span class="constructor">Cohttp_async</span>.<span class="constructor">Body</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Cohttp</span>.<span class="constructor">Code</span>.status_code&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Server</span>.response&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Deferred</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;resolve_local_file&nbsp;:&nbsp;docroot:string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;uri:<span class="constructor">Uri</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;respond_with_pipe&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?flush:bool&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?headers:<span class="constructor">Cohttp</span>.<span class="constructor">Header</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?code:<span class="constructor">Cohttp</span>.<span class="constructor">Code</span>.status_code&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Pipe</span>.<span class="constructor">Reader</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Server</span>.response&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Deferred</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;respond_with_string&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?flush:bool&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?headers:<span class="constructor">Cohttp</span>.<span class="constructor">Header</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?code:<span class="constructor">Cohttp</span>.<span class="constructor">Code</span>.status_code&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Server</span>.response&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Deferred</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;respond_with_redirect&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?headers:<span class="constructor">Cohttp</span>.<span class="constructor">Header</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Uri</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Server</span>.response&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Deferred</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;respond_with_file&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?flush:bool&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?headers:<span class="constructor">Cohttp</span>.<span class="constructor">Header</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?error_body:string&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Server</span>.response&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Deferred</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;create&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?max_connections:int&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?max_pending_connections:int&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?buffer_age_limit:<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Writer</span>.buffer_age_limit&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?on_handler_error:[&nbsp;<span class="keywordsign">`</span><span class="constructor">Call</span>&nbsp;<span class="keyword">of</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;([&lt;&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Socket</span>.<span class="constructor">Address</span>.t&nbsp;]&nbsp;<span class="keyword">as</span>&nbsp;<span class="keywordsign">'</span>a)&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exn&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="keywordsign">`</span><span class="constructor">Ignore</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="keywordsign">`</span><span class="constructor">Raise</span>&nbsp;]&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?mode:<span class="constructor">Conduit_async</span>.server&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="keywordsign">'</span>a,&nbsp;<span class="keywordsign">'</span>listening_on)&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Tcp</span>.<span class="constructor">Where_to_listen</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;(body:<span class="constructor">Cohttp_async</span>.<span class="constructor">Body</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">'</span>a&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Request</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Server</span>.response&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Deferred</span>.t)&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="keywordsign">'</span>a,&nbsp;<span class="keywordsign">'</span>listening_on)&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Server</span>.t&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Deferred</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;sexp_of_t&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;(([&lt;&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Socket</span>.<span class="constructor">Address</span>.t&nbsp;]&nbsp;<span class="keyword">as</span>&nbsp;<span class="keywordsign">'</span>a)&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Sexplib</span>.<span class="constructor">Sexp</span>.t)&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="keywordsign">'</span>listening_on&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Sexplib</span>.<span class="constructor">Sexp</span>.t)&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="keywordsign">'</span>a,&nbsp;<span class="keywordsign">'</span>listening_on)&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Server</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Sexplib</span>.<span class="constructor">Sexp</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;sexp_of_response&nbsp;:&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Server</span>.response&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Sexplib</span>.<span class="constructor">Sexp</span>.t<br>
+<span class="keyword">end</span></code></body></html>

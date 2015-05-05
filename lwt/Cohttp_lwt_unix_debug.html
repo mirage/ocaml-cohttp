@@ -1,0 +1,41 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Cohttp_lwt_unix_net.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Cohttp_lwt_body" rel="Chapter" href="Cohttp_lwt_body.html">
+<link title="Cohttp_lwt" rel="Chapter" href="Cohttp_lwt.html">
+<link title="String_io_lwt" rel="Chapter" href="String_io_lwt.html">
+<link title="Cohttp_lwt_unix_io" rel="Chapter" href="Cohttp_lwt_unix_io.html">
+<link title="Cohttp_lwt_unix" rel="Chapter" href="Cohttp_lwt_unix.html">
+<link title="Cohttp_lwt_unix_net" rel="Chapter" href="Cohttp_lwt_unix_net.html">
+<link title="Cohttp_lwt_unix_debug" rel="Chapter" href="Cohttp_lwt_unix_debug.html"><title>Cohttp_lwt_unix_debug</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Cohttp_lwt_unix_net.html" title="Cohttp_lwt_unix_net">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;</div>
+<h1>Module <a href="type_Cohttp_lwt_unix_debug.html">Cohttp_lwt_unix_debug</a></h1>
+
+<pre><span class="keyword">module</span> Cohttp_lwt_unix_debug: <code class="code">sig</code> <a href="Cohttp_lwt_unix_debug.html">..</a> <code class="code">end</code></pre><div class="info module top">
+Debugging output for Cohttp Unix<br>
+</div>
+<hr width="100%">
+
+<pre><span id="VALdebug_active"><span class="keyword">val</span> debug_active</span> : <code class="type">bool Pervasives.ref</code></pre><div class="info ">
+Set <code class="code">debug_active</code> to true to activate debugging output that will
+    be sent to the standard error. Defaults to <code class="code">false</code>.<br>
+</div>
+
+<pre><span id="VALdebug_print"><span class="keyword">val</span> debug_print</span> : <code class="type">('a, unit, string, unit) Pervasives.format4 -> 'a</code></pre><div class="info ">
+<code class="code">debug_print fmt</code> will print the given <code class="code">fmt</code> format string and
+    arguments to the standard error, prepended by the process id.<br>
+</div>
+</body></html>

@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="Up" href="String_io.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="S" rel="Chapter" href="S.html">
+<link title="Code" rel="Chapter" href="Code.html">
+<link title="Header" rel="Chapter" href="Header.html">
+<link title="Cookie" rel="Chapter" href="Cookie.html">
+<link title="Request" rel="Chapter" href="Request.html">
+<link title="Response" rel="Chapter" href="Response.html">
+<link title="Transfer" rel="Chapter" href="Transfer.html">
+<link title="Accept" rel="Chapter" href="Accept.html">
+<link title="Accept_parser" rel="Chapter" href="Accept_parser.html">
+<link title="Accept_lexer" rel="Chapter" href="Accept_lexer.html">
+<link title="Accept_types" rel="Chapter" href="Accept_types.html">
+<link title="Link" rel="Chapter" href="Link.html">
+<link title="Auth" rel="Chapter" href="Auth.html">
+<link title="Header_io" rel="Chapter" href="Header_io.html">
+<link title="Transfer_io" rel="Chapter" href="Transfer_io.html">
+<link title="Connection" rel="Chapter" href="Connection.html">
+<link title="Body" rel="Chapter" href="Body.html">
+<link title="String_io" rel="Chapter" href="String_io.html">
+<link title="Conf" rel="Chapter" href="Conf.html"><title>String_io.M</title>
+</head>
+<body>
+<div class="navbar">&nbsp;<a class="up" href="String_io.html" title="String_io">Up</a>
+&nbsp;</div>
+<h1>Module <a href="type_String_io.M.html">String_io.M</a></h1>
+
+<pre><span class="keyword">module</span> M: <code class="type"><a href="S.IO.html">S.IO</a></code><code class="type"> 
+ with type 'a t = 'a
+ and type ic = buf
+ and type oc = Buffer.t</code></pre><div class="info module top">
+IO interface that uses <a href="String_io.html#TYPEbuf"><code class="code">String_io.buf</code></a> for input data and queues output
+   data into a <code class="code">Buffer.t</code><br>
+</div>
+<hr width="100%">
+
+<pre><span id="TYPEt"><span class="keyword">type</span> <code class="type">+'a</code> t</span> </pre>
+<div class="info ">
+<code class="code">'a t</code> represents a blocking monad state<br>
+</div>
+
+
+<pre><span id="VAL(>>=)"><span class="keyword">val</span> (&gt;&gt;=)</span> : <code class="type">'a <a href="S.IO.html#TYPEt">t</a> -> ('a -> 'b <a href="S.IO.html#TYPEt">t</a>) -> 'b <a href="S.IO.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">a &gt;&gt;= b</code> will pass the result of <code class="code">a</code> to the
+      <code class="code">b</code> function.  This is a monadic <code class="code">bind</code>.<br>
+</div>
+
+<pre><span id="VALreturn"><span class="keyword">val</span> return</span> : <code class="type">'a -> 'a <a href="S.IO.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">return a</code> will construct a constant IO value.<br>
+</div>
+
+<pre><span id="TYPEic"><span class="keyword">type</span> <code class="type"></code>ic</span> </pre>
+<div class="info ">
+<code class="code">ic</code> represents an input channel<br>
+</div>
+
+
+<pre><span id="TYPEoc"><span class="keyword">type</span> <code class="type"></code>oc</span> </pre>
+<div class="info ">
+<code class="code">oc</code> represents an output channel<br>
+</div>
+
+
+<pre><span id="TYPEconn"><span class="keyword">type</span> <code class="type"></code>conn</span> </pre>
+<div class="info ">
+<code class="code">conn</code> represents the underlying network flow<br>
+</div>
+
+
+<pre><span id="VALiter"><span class="keyword">val</span> iter</span> : <code class="type">('a -> unit <a href="S.IO.html#TYPEt">t</a>) -> 'a list -> unit <a href="S.IO.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">iter f l</code> will perform a blocking iteration using
+      <code class="code">f</code> over the <code class="code">l</code> list.  The result is determined
+      after all the iterating threads have completed in
+      serial.<br>
+</div>
+
+<pre><span id="VALread_line"><span class="keyword">val</span> read_line</span> : <code class="type"><a href="S.IO.html#TYPEic">ic</a> -> string option <a href="S.IO.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">read_line ic</code> will read a single line terminated
+      by CR or CRLF from the input channel <code class="code">ic</code>.  It returns
+      <code class="code">None</code> if EOF or other error condition is reached.<br>
+</div>
+
+<pre><span id="VALread"><span class="keyword">val</span> read</span> : <code class="type"><a href="S.IO.html#TYPEic">ic</a> -> int -> string <a href="S.IO.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">read ic len</code> will block until a maximum of <code class="code">len</code> characters
+      are read from the input channel <code class="code">ic</code>.  It returns an
+      empty string if EOF or some other error condition occurs
+      on the input channel, and can also return fewer than <code class="code">len</code>
+      characters if input buffering is not sufficient to satisfy the
+      request.<br>
+</div>
+
+<pre><span id="VALread_exactly"><span class="keyword">val</span> read_exactly</span> : <code class="type"><a href="S.IO.html#TYPEic">ic</a> -> int -> string option <a href="S.IO.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">read_exactly ic len</code> will block until exactly <code class="code">len</code> characters
+      are read from the input channel <code class="code">ic</code>.  If EOF or some other
+      error condition is reached, then <code class="code">None</code> is returned.<br>
+</div>
+
+<pre><span id="VALwrite"><span class="keyword">val</span> write</span> : <code class="type"><a href="S.IO.html#TYPEoc">oc</a> -> string -> unit <a href="S.IO.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">write oc s</code> will block until the complete <code class="code">s</code> string is
+      written to the output channel <code class="code">oc</code>.<br>
+</div>
+
+<pre><span id="VALflush"><span class="keyword">val</span> flush</span> : <code class="type"><a href="S.IO.html#TYPEoc">oc</a> -> unit <a href="S.IO.html#TYPEt">t</a></code></pre><div class="info ">
+<code class="code">flush oc</code> will return when all previously buffered content
+      from calling <a href="S.IO.html#VALwrite"><code class="code">S.IO.write</code></a> have been written to the output channel
+      <code class="code">oc</code>.<br>
+</div>
+</body></html>

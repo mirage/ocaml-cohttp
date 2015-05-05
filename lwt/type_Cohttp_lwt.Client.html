@@ -1,0 +1,71 @@
+<html><head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Cohttp_lwt_body" rel="Chapter" href="Cohttp_lwt_body.html">
+<link title="Cohttp_lwt" rel="Chapter" href="Cohttp_lwt.html">
+<link title="String_io_lwt" rel="Chapter" href="String_io_lwt.html">
+<link title="Cohttp_lwt_unix_io" rel="Chapter" href="Cohttp_lwt_unix_io.html">
+<link title="Cohttp_lwt_unix" rel="Chapter" href="Cohttp_lwt_unix.html">
+<link title="Cohttp_lwt_unix_net" rel="Chapter" href="Cohttp_lwt_unix_net.html">
+<link title="Cohttp_lwt_unix_debug" rel="Chapter" href="Cohttp_lwt_unix_debug.html"><title>Cohttp_lwt.Client</title>
+</head>
+<body>
+<code class="code"><span class="keyword">sig</span><br>
+&nbsp;&nbsp;<span class="keyword">module</span>&nbsp;<span class="constructor">IO</span>&nbsp;:&nbsp;<span class="constructor">IO</span><br>
+&nbsp;&nbsp;<span class="keyword">module</span>&nbsp;<span class="constructor">Request</span>&nbsp;:&nbsp;<span class="constructor">Request</span><br>
+&nbsp;&nbsp;<span class="keyword">module</span>&nbsp;<span class="constructor">Response</span>&nbsp;:&nbsp;<span class="constructor">Response</span><br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;ctx<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;default_ctx&nbsp;:&nbsp;<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Client</span>.ctx<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;call&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?ctx:<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Client</span>.ctx&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?headers:<span class="constructor">Cohttp</span>.<span class="constructor">Header</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?body:<span class="constructor">Cohttp_lwt_body</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?chunked:bool&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Cohttp</span>.<span class="constructor">Code</span>.meth&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Uri</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;(<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Response</span>.t&nbsp;*&nbsp;<span class="constructor">Cohttp_lwt_body</span>.t)&nbsp;<span class="constructor">Lwt</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;head&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?ctx:<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Client</span>.ctx&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?headers:<span class="constructor">Cohttp</span>.<span class="constructor">Header</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Uri</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Response</span>.t&nbsp;<span class="constructor">Lwt</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;get&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?ctx:<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Client</span>.ctx&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?headers:<span class="constructor">Cohttp</span>.<span class="constructor">Header</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Uri</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;(<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Response</span>.t&nbsp;*&nbsp;<span class="constructor">Cohttp_lwt_body</span>.t)&nbsp;<span class="constructor">Lwt</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;delete&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?ctx:<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Client</span>.ctx&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?headers:<span class="constructor">Cohttp</span>.<span class="constructor">Header</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Uri</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;(<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Response</span>.t&nbsp;*&nbsp;<span class="constructor">Cohttp_lwt_body</span>.t)&nbsp;<span class="constructor">Lwt</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;post&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?ctx:<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Client</span>.ctx&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?body:<span class="constructor">Cohttp_lwt_body</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?chunked:bool&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?headers:<span class="constructor">Cohttp</span>.<span class="constructor">Header</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Uri</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;(<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Response</span>.t&nbsp;*&nbsp;<span class="constructor">Cohttp_lwt_body</span>.t)&nbsp;<span class="constructor">Lwt</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;put&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?ctx:<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Client</span>.ctx&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?body:<span class="constructor">Cohttp_lwt_body</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?chunked:bool&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?headers:<span class="constructor">Cohttp</span>.<span class="constructor">Header</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Uri</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;(<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Response</span>.t&nbsp;*&nbsp;<span class="constructor">Cohttp_lwt_body</span>.t)&nbsp;<span class="constructor">Lwt</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;patch&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?ctx:<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Client</span>.ctx&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?body:<span class="constructor">Cohttp_lwt_body</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?chunked:bool&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?headers:<span class="constructor">Cohttp</span>.<span class="constructor">Header</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Uri</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;(<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Response</span>.t&nbsp;*&nbsp;<span class="constructor">Cohttp_lwt_body</span>.t)&nbsp;<span class="constructor">Lwt</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;post_form&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?ctx:<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Client</span>.ctx&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;?headers:<span class="constructor">Cohttp</span>.<span class="constructor">Header</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;params:(string&nbsp;*&nbsp;string&nbsp;list)&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Uri</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;(<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Response</span>.t&nbsp;*&nbsp;<span class="constructor">Cohttp_lwt_body</span>.t)&nbsp;<span class="constructor">Lwt</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;callv&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;?ctx:<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Client</span>.ctx&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Uri</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Request</span>.t&nbsp;*&nbsp;<span class="constructor">Cohttp_lwt_body</span>.t)&nbsp;<span class="constructor">Lwt_stream</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Response</span>.t&nbsp;*&nbsp;<span class="constructor">Cohttp_lwt_body</span>.t)&nbsp;<span class="constructor">Lwt_stream</span>.t&nbsp;<span class="constructor">Lwt</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;sexp_of_ctx&nbsp;:&nbsp;<span class="constructor">Cohttp_lwt</span>.<span class="constructor">Client</span>.ctx&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Sexplib</span>.<span class="constructor">Sexp</span>.t<br>
+<span class="keyword">end</span></code></body></html>

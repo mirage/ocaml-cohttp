@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Header.html">
+<link rel="next" href="Request.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="S" rel="Chapter" href="S.html">
+<link title="Code" rel="Chapter" href="Code.html">
+<link title="Header" rel="Chapter" href="Header.html">
+<link title="Cookie" rel="Chapter" href="Cookie.html">
+<link title="Request" rel="Chapter" href="Request.html">
+<link title="Response" rel="Chapter" href="Response.html">
+<link title="Transfer" rel="Chapter" href="Transfer.html">
+<link title="Accept" rel="Chapter" href="Accept.html">
+<link title="Accept_parser" rel="Chapter" href="Accept_parser.html">
+<link title="Accept_lexer" rel="Chapter" href="Accept_lexer.html">
+<link title="Accept_types" rel="Chapter" href="Accept_types.html">
+<link title="Link" rel="Chapter" href="Link.html">
+<link title="Auth" rel="Chapter" href="Auth.html">
+<link title="Header_io" rel="Chapter" href="Header_io.html">
+<link title="Transfer_io" rel="Chapter" href="Transfer_io.html">
+<link title="Connection" rel="Chapter" href="Connection.html">
+<link title="Body" rel="Chapter" href="Body.html">
+<link title="String_io" rel="Chapter" href="String_io.html">
+<link title="Conf" rel="Chapter" href="Conf.html"><title>Cookie</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Header.html" title="Header">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="Request.html" title="Request">Next</a>
+</div>
+<h1>Module <a href="type_Cookie.html">Cookie</a></h1>
+
+<pre><span class="keyword">module</span> Cookie: <code class="code">sig</code> <a href="Cookie.html">..</a> <code class="code">end</code></pre><div class="info module top">
+Functions for the HTTP Cookie and Set-Cookie header fields.
+    Using the Set-Cookie header field, an HTTP server can pass name/value
+    pairs and associated metadata (called cookies) to a user agent.  When
+    the user agent makes subsequent requests to the server, the user
+    agent uses the metadata and other information to determine whether to
+    return the name/value pairs in the Cookie header.<br>
+</div>
+<hr width="100%">
+
+<pre><span id="TYPEexpiration"><span class="keyword">type</span> <code class="type"></code>expiration</span> = <code class="type">[ `Max_age of int64 | `Session ]</code> </pre>
+<div class="info ">
+Lifetime of the cookie after which the user agent discards it<br>
+</div>
+
+
+<pre><span id="TYPEcookie"><span class="keyword">type</span> <code class="type"></code>cookie</span> = <code class="type">string * string</code> </pre>
+<div class="info ">
+A cookie is simply a key/value pair send from the client to the server<br>
+</div>
+
+
+<pre><span class="keyword">module</span> <a href="Cookie.Set_cookie_hdr.html">Set_cookie_hdr</a>: <code class="code">sig</code> <a href="Cookie.Set_cookie_hdr.html">..</a> <code class="code">end</code></pre>
+<pre><span class="keyword">module</span> <a href="Cookie.Cookie_hdr.html">Cookie_hdr</a>: <code class="code">sig</code> <a href="Cookie.Cookie_hdr.html">..</a> <code class="code">end</code></pre>
+<pre><span id="VALexpiration_of_sexp"><span class="keyword">val</span> expiration_of_sexp</span> : <code class="type">Sexplib.Sexp.t -> <a href="Cookie.html#TYPEexpiration">expiration</a></code></pre>
+<pre><span id="VAL__expiration_of_sexp__"><span class="keyword">val</span> __expiration_of_sexp__</span> : <code class="type">Sexplib.Sexp.t -> <a href="Cookie.html#TYPEexpiration">expiration</a></code></pre>
+<pre><span id="VALsexp_of_expiration"><span class="keyword">val</span> sexp_of_expiration</span> : <code class="type"><a href="Cookie.html#TYPEexpiration">expiration</a> -> Sexplib.Sexp.t</code></pre><div class="info ">
+A cookie is simply a key/value pair send from the client to the server<br>
+</div>
+<br>
+A header which a server sends to a client to request that the client
+    returns the cookie in future requests, under certain conditions.<br>
+<br>
+Return an HTTP header<br>
+<br>
+Return the list of cookies sent by the server<br>
+<br>
+The name-value binding<br>
+<br>
+The value<br>
+<br>
+The expiration<br>
+<br>
+The domain for which the cookie is valid, if any<br>
+<br>
+The path for which the cookie is valid, if any<br>
+<br>
+Has the cookie's secure attribute been set?<br>
+<br>
+Return the list of cookies sent by the client<br>
+<br>
+<code class="code">serialize cookies</code> returns an HTTP header containing <code class="code">cookies</code><br>
+</body></html>

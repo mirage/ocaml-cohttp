@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Cohttp_lwt_unix_io.html">
+<link rel="next" href="Cohttp_lwt_unix_net.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Cohttp_lwt_body" rel="Chapter" href="Cohttp_lwt_body.html">
+<link title="Cohttp_lwt" rel="Chapter" href="Cohttp_lwt.html">
+<link title="String_io_lwt" rel="Chapter" href="String_io_lwt.html">
+<link title="Cohttp_lwt_unix_io" rel="Chapter" href="Cohttp_lwt_unix_io.html">
+<link title="Cohttp_lwt_unix" rel="Chapter" href="Cohttp_lwt_unix.html">
+<link title="Cohttp_lwt_unix_net" rel="Chapter" href="Cohttp_lwt_unix_net.html">
+<link title="Cohttp_lwt_unix_debug" rel="Chapter" href="Cohttp_lwt_unix_debug.html"><link title="Request and Response modules" rel="Section" href="#2_RequestandResponsemodules">
+<link title="Module types for Client and Server" rel="Section" href="#2_ModuletypesforClientandServer">
+<link title="Lwt-Unix Client and Server implementations" rel="Section" href="#2_LwtUnixClientandServerimplementations">
+<title>Cohttp_lwt_unix</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Cohttp_lwt_unix_io.html" title="Cohttp_lwt_unix_io">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="Cohttp_lwt_unix_net.html" title="Cohttp_lwt_unix_net">Next</a>
+</div>
+<h1>Module <a href="type_Cohttp_lwt_unix.html">Cohttp_lwt_unix</a></h1>
+
+<pre><span class="keyword">module</span> Cohttp_lwt_unix: <code class="code">sig</code> <a href="Cohttp_lwt_unix.html">..</a> <code class="code">end</code></pre><div class="info module top">
+HTTP client and server using the <code class="code">Lwt_unix</code> interfaces.<br>
+</div>
+<hr width="100%">
+<br>
+<h2 id="2_RequestandResponsemodules">Request and Response modules</h2><br>
+
+<pre><span class="keyword">module</span> <a href="Cohttp_lwt_unix.Request.html">Request</a>: <code class="type"><a href="Cohttp_lwt.Request.html">Cohttp_lwt.Request</a></code><code class="type">  with module IO = <a href="Cohttp_lwt_unix_io.html">Cohttp_lwt_unix_io</a></code></pre><div class="info">
+The <code class="code">Request</code> module holds the information about a HTTP request, and
+    also includes the <a href="Cohttp_lwt_unix_io.html"><code class="code">Cohttp_lwt_unix_io</code></a> functions to handle large
+    message bodies.
+</div>
+
+<pre><span class="keyword">module</span> <a href="Cohttp_lwt_unix.Response.html">Response</a>: <code class="type"><a href="Cohttp_lwt.Response.html">Cohttp_lwt.Response</a></code><code class="type">  with module IO = <a href="Cohttp_lwt_unix_io.html">Cohttp_lwt_unix_io</a></code></pre><div class="info">
+The <code class="code">Response</code> module holds the information about a HTTP response, and
+    also includes the <a href="Cohttp_lwt_unix_io.html"><code class="code">Cohttp_lwt_unix_io</code></a> functions to handle large
+    message bodies.
+</div>
+<br>
+<h2 id="2_ModuletypesforClientandServer">Module types for Client and Server</h2><br>
+
+<pre><span class="keyword">module type</span> <a href="Cohttp_lwt_unix.C.html">C</a> = <code class="code">sig</code> <a href="Cohttp_lwt_unix.C.html">..</a> <code class="code">end</code></pre><div class="info">
+The <code class="code">Client</code> module type defines the additional UNIX-specific functions
+  that are exposed in addition to the <a href="Cohttp_lwt.Client.html"><code class="code">Cohttp_lwt.Client</code></a> interface.
+</div>
+
+<pre><span class="keyword">module type</span> <a href="Cohttp_lwt_unix.S.html">S</a> = <code class="code">sig</code> <a href="Cohttp_lwt_unix.S.html">..</a> <code class="code">end</code></pre><div class="info">
+This module type defines the additional UNIX-specific functions that are
+  exposed in addition to the <a href="Cohttp_lwt.Server.html"><code class="code">Cohttp_lwt.Server</code></a> interface.
+</div>
+<br>
+<h2 id="2_LwtUnixClientandServerimplementations">Lwt-Unix Client and Server implementations</h2><br>
+
+<pre><span class="keyword">module</span> <a href="Cohttp_lwt_unix.Client.html">Client</a>: <code class="type"><a href="Cohttp_lwt_unix.C.html">C</a></code><code class="type"> </code></pre><div class="info">
+The <code class="code">Client</code> module implements the full UNIX HTTP client interface,
+  including the UNIX-specific functions defined in <a href="Cohttp_lwt_unix.C.html"><code class="code">Cohttp_lwt_unix.C</code></a>.
+</div>
+
+<pre><span class="keyword">module</span> <a href="Cohttp_lwt_unix.Server.html">Server</a>: <code class="type"><a href="Cohttp_lwt_unix.S.html">S</a></code><code class="type"> </code></pre><div class="info">
+The <code class="code">Server</code> module implements the full UNIX HTTP server interface,
+  including the UNIX-specific functions defined in <a href="Cohttp_lwt_unix.S.html"><code class="code">Cohttp_lwt_unix.S</code></a>.
+</div>
+</body></html>

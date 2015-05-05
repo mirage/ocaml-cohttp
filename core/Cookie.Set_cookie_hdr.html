@@ -1,0 +1,150 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="next" href="Cookie.Cookie_hdr.html">
+<link rel="Up" href="Cookie.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="S" rel="Chapter" href="S.html">
+<link title="Code" rel="Chapter" href="Code.html">
+<link title="Header" rel="Chapter" href="Header.html">
+<link title="Cookie" rel="Chapter" href="Cookie.html">
+<link title="Request" rel="Chapter" href="Request.html">
+<link title="Response" rel="Chapter" href="Response.html">
+<link title="Transfer" rel="Chapter" href="Transfer.html">
+<link title="Accept" rel="Chapter" href="Accept.html">
+<link title="Accept_parser" rel="Chapter" href="Accept_parser.html">
+<link title="Accept_lexer" rel="Chapter" href="Accept_lexer.html">
+<link title="Accept_types" rel="Chapter" href="Accept_types.html">
+<link title="Link" rel="Chapter" href="Link.html">
+<link title="Auth" rel="Chapter" href="Auth.html">
+<link title="Header_io" rel="Chapter" href="Header_io.html">
+<link title="Transfer_io" rel="Chapter" href="Transfer_io.html">
+<link title="Connection" rel="Chapter" href="Connection.html">
+<link title="Body" rel="Chapter" href="Body.html">
+<link title="String_io" rel="Chapter" href="String_io.html">
+<link title="Conf" rel="Chapter" href="Conf.html"><title>Cookie.Set_cookie_hdr</title>
+</head>
+<body>
+<div class="navbar">&nbsp;<a class="up" href="Cookie.html" title="Cookie">Up</a>
+&nbsp;<a class="post" href="Cookie.Cookie_hdr.html" title="Cookie.Cookie_hdr">Next</a>
+</div>
+<h1>Module <a href="type_Cookie.Set_cookie_hdr.html">Cookie.Set_cookie_hdr</a></h1>
+
+<pre><span class="keyword">module</span> Set_cookie_hdr: <code class="code">sig</code> <a href="Cookie.Set_cookie_hdr.html">..</a> <code class="code">end</code></pre><hr width="100%">
+
+<pre><code><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.cookie">cookie</span>&nbsp;: <code class="type"><a href="Cookie.html#TYPEcookie">Cookie.cookie</a></code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.expiration">expiration</span>&nbsp;: <code class="type"><a href="Cookie.html#TYPEexpiration">Cookie.expiration</a></code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.domain">domain</span>&nbsp;: <code class="type">string option</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.path">path</span>&nbsp;: <code class="type">string option</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.secure">secure</span>&nbsp;: <code class="type">bool</code>;</code></td>
+
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.http_only">http_only</span>&nbsp;: <code class="type">bool</code>;</code></td>
+
+</tr></table>
+}
+
+
+
+<pre><span id="VALhttp_only"><span class="keyword">val</span> http_only</span> : <code class="type"><a href="Cookie.Set_cookie_hdr.html#TYPEt">t</a> -> bool</code></pre>
+<pre><span id="VALsecure"><span class="keyword">val</span> secure</span> : <code class="type"><a href="Cookie.Set_cookie_hdr.html#TYPEt">t</a> -> bool</code></pre>
+<pre><span id="VALpath"><span class="keyword">val</span> path</span> : <code class="type"><a href="Cookie.Set_cookie_hdr.html#TYPEt">t</a> -> string option</code></pre>
+<pre><span id="VALdomain"><span class="keyword">val</span> domain</span> : <code class="type"><a href="Cookie.Set_cookie_hdr.html#TYPEt">t</a> -> string option</code></pre>
+<pre><span id="VALexpiration"><span class="keyword">val</span> expiration</span> : <code class="type"><a href="Cookie.Set_cookie_hdr.html#TYPEt">t</a> -> <a href="Cookie.html#TYPEexpiration">Cookie.expiration</a></code></pre>
+<pre><span id="VALcookie"><span class="keyword">val</span> cookie</span> : <code class="type"><a href="Cookie.Set_cookie_hdr.html#TYPEt">t</a> -> <a href="Cookie.html#TYPEcookie">Cookie.cookie</a></code></pre>
+<pre><span class="keyword">module</span> <a href="Cookie.Set_cookie_hdr.Fields.html">Fields</a>: <code class="code">sig</code> <a href="Cookie.Set_cookie_hdr.Fields.html">..</a> <code class="code">end</code></pre><div class="info">
+A header which a server sends to a client to request that the client
+    returns the cookie in future requests, under certain conditions.
+</div>
+
+<pre><span id="VALmake"><span class="keyword">val</span> make</span> : <code class="type">?expiration:<a href="Cookie.html#TYPEexpiration">Cookie.expiration</a> -><br>       ?path:string -><br>       ?domain:string -><br>       ?secure:bool -> ?http_only:bool -> <a href="Cookie.html#TYPEcookie">Cookie.cookie</a> -> <a href="Cookie.Set_cookie_hdr.html#TYPEt">t</a></code></pre>
+<pre><span id="VALserialize"><span class="keyword">val</span> serialize</span> : <code class="type">?version:[ `HTTP_1_0 | `HTTP_1_1 ] -><br>       <a href="Cookie.Set_cookie_hdr.html#TYPEt">t</a> -> string * string</code></pre><div class="info ">
+Return an HTTP header<br>
+</div>
+
+<pre><span id="VALextract"><span class="keyword">val</span> extract</span> : <code class="type"><a href="Header.html#TYPEt">Header.t</a> -> (string * <a href="Cookie.Set_cookie_hdr.html#TYPEt">t</a>) list</code></pre><div class="info ">
+Return the list of cookies sent by the server<br>
+</div>
+
+<pre><span id="VALcookie"><span class="keyword">val</span> cookie</span> : <code class="type"><a href="Cookie.Set_cookie_hdr.html#TYPEt">t</a> -> <a href="Cookie.html#TYPEcookie">Cookie.cookie</a></code></pre><div class="info ">
+The name-value binding<br>
+</div>
+
+<pre><span id="VALvalue"><span class="keyword">val</span> value</span> : <code class="type"><a href="Cookie.Set_cookie_hdr.html#TYPEt">t</a> -> string</code></pre><div class="info ">
+The value<br>
+</div>
+
+<pre><span id="VALexpiration"><span class="keyword">val</span> expiration</span> : <code class="type"><a href="Cookie.Set_cookie_hdr.html#TYPEt">t</a> -> <a href="Cookie.html#TYPEexpiration">Cookie.expiration</a></code></pre><div class="info ">
+The expiration<br>
+</div>
+
+<pre><span id="VALdomain"><span class="keyword">val</span> domain</span> : <code class="type"><a href="Cookie.Set_cookie_hdr.html#TYPEt">t</a> -> string option</code></pre><div class="info ">
+The domain for which the cookie is valid, if any<br>
+</div>
+
+<pre><span id="VALpath"><span class="keyword">val</span> path</span> : <code class="type"><a href="Cookie.Set_cookie_hdr.html#TYPEt">t</a> -> string option</code></pre><div class="info ">
+The path for which the cookie is valid, if any<br>
+</div>
+
+<pre><span id="VALsecure"><span class="keyword">val</span> secure</span> : <code class="type"><a href="Cookie.Set_cookie_hdr.html#TYPEt">t</a> -> bool</code></pre>
+<pre><span id="VALt_of_sexp"><span class="keyword">val</span> t_of_sexp</span> : <code class="type">Sexplib.Sexp.t -> <a href="Cookie.Set_cookie_hdr.html#TYPEt">t</a></code></pre>
+<pre><span id="VALsexp_of_t"><span class="keyword">val</span> sexp_of_t</span> : <code class="type"><a href="Cookie.Set_cookie_hdr.html#TYPEt">t</a> -> Sexplib.Sexp.t</code></pre><div class="info ">
+A header which a server sends to a client to request that the client
+    returns the cookie in future requests, under certain conditions.<br>
+</div>
+<br>
+Return an HTTP header<br>
+<br>
+Return the list of cookies sent by the server<br>
+<br>
+The name-value binding<br>
+<br>
+The value<br>
+<br>
+The expiration<br>
+<br>
+The domain for which the cookie is valid, if any<br>
+<br>
+The path for which the cookie is valid, if any<br>
+<br>
+Has the cookie's secure attribute been set?<br>
+</body></html>

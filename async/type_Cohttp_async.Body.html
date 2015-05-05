@@ -1,0 +1,36 @@
+<html><head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Cohttp_async_io" rel="Chapter" href="Cohttp_async_io.html">
+<link title="Cohttp_async" rel="Chapter" href="Cohttp_async.html"><title>Cohttp_async.Body</title>
+</head>
+<body>
+<code class="code"><span class="keyword">sig</span><br>
+&nbsp;&nbsp;<span class="keyword">type</span>&nbsp;t&nbsp;=<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[&nbsp;<span class="keywordsign">`</span><span class="constructor">Empty</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="keywordsign">`</span><span class="constructor">Pipe</span>&nbsp;<span class="keyword">of</span>&nbsp;string&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Pipe</span>.<span class="constructor">Reader</span>.t<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="keywordsign">`</span><span class="constructor">String</span>&nbsp;<span class="keyword">of</span>&nbsp;string<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keywordsign">|</span>&nbsp;<span class="keywordsign">`</span><span class="constructor">Strings</span>&nbsp;<span class="keyword">of</span>&nbsp;string&nbsp;list&nbsp;]<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;empty&nbsp;:&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;of_string&nbsp;:&nbsp;string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;of_string_list&nbsp;:&nbsp;string&nbsp;list&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;transfer_encoding&nbsp;:&nbsp;t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Cohttp</span>.<span class="constructor">Transfer</span>.encoding<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;drain&nbsp;:&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Body</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;unit&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Deferred</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;is_empty&nbsp;:&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Body</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;bool&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Deferred</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;to_string&nbsp;:&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Body</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Deferred</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;to_string_list&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Body</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;list&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Deferred</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;to_pipe&nbsp;:&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Body</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Pipe</span>.<span class="constructor">Reader</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;of_pipe&nbsp;:&nbsp;string&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Pipe</span>.<span class="constructor">Reader</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Body</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;map&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Body</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;f:(string&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string)&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Body</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;as_pipe&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Body</span>.t&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;f:(string&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Pipe</span>.<span class="constructor">Reader</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;string&nbsp;<span class="constructor">Async</span>.<span class="constructor">Std</span>.<span class="constructor">Pipe</span>.<span class="constructor">Reader</span>.t)&nbsp;<span class="keywordsign">-&gt;</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Body</span>.t<br>
+&nbsp;&nbsp;<span class="keyword">val</span>&nbsp;sexp_of_t&nbsp;:&nbsp;<span class="constructor">Cohttp_async</span>.<span class="constructor">Body</span>.t&nbsp;<span class="keywordsign">-&gt;</span>&nbsp;<span class="constructor">Sexplib</span>.<span class="constructor">Sexp</span>.t<br>
+<span class="keyword">end</span></code></body></html>

@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Cohttp_lwt.IO.html">
+<link rel="next" href="Cohttp_lwt.Request.html">
+<link rel="Up" href="Cohttp_lwt.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="Cohttp_lwt_body" rel="Chapter" href="Cohttp_lwt_body.html">
+<link title="Cohttp_lwt" rel="Chapter" href="Cohttp_lwt.html">
+<link title="String_io_lwt" rel="Chapter" href="String_io_lwt.html">
+<link title="Cohttp_lwt_unix_io" rel="Chapter" href="Cohttp_lwt_unix_io.html">
+<link title="Cohttp_lwt_unix" rel="Chapter" href="Cohttp_lwt_unix.html">
+<link title="Cohttp_lwt_unix_net" rel="Chapter" href="Cohttp_lwt_unix_net.html">
+<link title="Cohttp_lwt_unix_debug" rel="Chapter" href="Cohttp_lwt_unix_debug.html"><title>Cohttp_lwt.Net</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Cohttp_lwt.IO.html" title="Cohttp_lwt.IO">Previous</a>
+&nbsp;<a class="up" href="Cohttp_lwt.html" title="Cohttp_lwt">Up</a>
+&nbsp;<a class="post" href="Cohttp_lwt.Request.html" title="Cohttp_lwt.Request">Next</a>
+</div>
+<h1>Module type <a href="type_Cohttp_lwt.Net.html">Cohttp_lwt.Net</a></h1>
+
+<pre><span class="keyword">module type</span> Net = <code class="code">sig</code> <a href="Cohttp_lwt.Net.html">..</a> <code class="code">end</code></pre><div class="info modtype top">
+The <code class="code">Net</code> module type defines how to connect to a remote node
+    and close the resulting channels to clean up.<br>
+</div>
+<hr width="100%">
+
+<pre><span class="keyword">module</span> <a href="Cohttp_lwt.Net.IO.html">IO</a>: <code class="type"><a href="Cohttp_lwt.IO.html">Cohttp_lwt.IO</a></code><code class="type"> </code></pre>
+<pre><span id="TYPEctx"><span class="keyword">type</span> <code class="type"></code>ctx</span> </pre>
+
+
+<pre><span id="VALdefault_ctx"><span class="keyword">val</span> default_ctx</span> : <code class="type"><a href="Cohttp_lwt.Net.html#TYPEctx">ctx</a></code></pre>
+<pre><span id="VALconnect_uri"><span class="keyword">val</span> connect_uri</span> : <code class="type">ctx:<a href="Cohttp_lwt.Net.html#TYPEctx">ctx</a> -><br>       Uri.t -> (Cohttp_lwt.IO.conn * Cohttp_lwt.IO.ic * Cohttp_lwt.IO.oc) Lwt.t</code></pre>
+<pre><span id="VALclose_in"><span class="keyword">val</span> close_in</span> : <code class="type">Cohttp_lwt.IO.ic -> unit</code></pre>
+<pre><span id="VALclose_out"><span class="keyword">val</span> close_out</span> : <code class="type">Cohttp_lwt.IO.oc -> unit</code></pre>
+<pre><span id="VALclose"><span class="keyword">val</span> close</span> : <code class="type">Cohttp_lwt.IO.ic -> Cohttp_lwt.IO.oc -> unit</code></pre>
+<pre><span id="VALsexp_of_ctx"><span class="keyword">val</span> sexp_of_ctx</span> : <code class="type"><a href="Cohttp_lwt.Net.html#TYPEctx">ctx</a> -> Sexplib.Sexp.t</code></pre></body></html>

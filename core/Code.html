@@ -1,0 +1,222 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="S.html">
+<link rel="next" href="Header.html">
+<link rel="Up" href="index.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="S" rel="Chapter" href="S.html">
+<link title="Code" rel="Chapter" href="Code.html">
+<link title="Header" rel="Chapter" href="Header.html">
+<link title="Cookie" rel="Chapter" href="Cookie.html">
+<link title="Request" rel="Chapter" href="Request.html">
+<link title="Response" rel="Chapter" href="Response.html">
+<link title="Transfer" rel="Chapter" href="Transfer.html">
+<link title="Accept" rel="Chapter" href="Accept.html">
+<link title="Accept_parser" rel="Chapter" href="Accept_parser.html">
+<link title="Accept_lexer" rel="Chapter" href="Accept_lexer.html">
+<link title="Accept_types" rel="Chapter" href="Accept_types.html">
+<link title="Link" rel="Chapter" href="Link.html">
+<link title="Auth" rel="Chapter" href="Auth.html">
+<link title="Header_io" rel="Chapter" href="Header_io.html">
+<link title="Transfer_io" rel="Chapter" href="Transfer_io.html">
+<link title="Connection" rel="Chapter" href="Connection.html">
+<link title="Body" rel="Chapter" href="Body.html">
+<link title="String_io" rel="Chapter" href="String_io.html">
+<link title="Conf" rel="Chapter" href="Conf.html"><title>Code</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="S.html" title="S">Previous</a>
+&nbsp;<a class="up" href="index.html" title="Index">Up</a>
+&nbsp;<a class="post" href="Header.html" title="Header">Next</a>
+</div>
+<h1>Module <a href="type_Code.html">Code</a></h1>
+
+<pre><span class="keyword">module</span> Code: <code class="code">sig</code> <a href="Code.html">..</a> <code class="code">end</code></pre><div class="info module top">
+Client should continue with request<br>
+</div>
+<hr width="100%">
+
+<pre><span id="TYPEversion"><span class="keyword">type</span> <code class="type"></code>version</span> = <code class="type">[ `HTTP_1_0 | `HTTP_1_1 | `Other of string ]</code> </pre>
+
+
+<pre><span id="TYPEmeth"><span class="keyword">type</span> <code class="type"></code>meth</span> = <code class="type">[ `CONNECT<br>       | `DELETE<br>       | `GET<br>       | `HEAD<br>       | `OPTIONS<br>       | `Other of string<br>       | `PATCH<br>       | `POST<br>       | `PUT<br>       | `TRACE ]</code> </pre>
+
+
+<pre><span id="TYPEinformational_status"><span class="keyword">type</span> <code class="type"></code>informational_status</span> = <code class="type">[ `Checkpoint | `Continue | `Processing | `Switching_protocols ]</code> </pre>
+<div class="info ">
+Informational<br>
+</div>
+
+
+<pre><span id="TYPEsuccess_status"><span class="keyword">type</span> <code class="type"></code>success_status</span> = <code class="type">[ `Accepted<br>       | `Already_reported<br>       | `Created<br>       | `Im_used<br>       | `Multi_status<br>       | `No_content<br>       | `Non_authoritative_information<br>       | `OK<br>       | `Partial_content<br>       | `Reset_content ]</code> </pre>
+<div class="info ">
+Success<br>
+</div>
+
+
+<pre><span id="TYPEredirection_status"><span class="keyword">type</span> <code class="type"></code>redirection_status</span> = <code class="type">[ `Found<br>       | `Moved_permanently<br>       | `Multiple_choices<br>       | `Not_modified<br>       | `Resume_incomplete<br>       | `See_other<br>       | `Switch_proxy<br>       | `Temporary_redirect<br>       | `Use_proxy ]</code> </pre>
+<div class="info ">
+Redirection<br>
+</div>
+
+
+<pre><span id="TYPEclient_error_status"><span class="keyword">type</span> <code class="type"></code>client_error_status</span> = <code class="type">[ `Bad_request<br>       | `Blocked_by_windows_parental_controls<br>       | `Client_closed_request<br>       | `Conflict<br>       | `Enhance_your_calm<br>       | `Expectation_failed<br>       | `Failed_dependency<br>       | `Forbidden<br>       | `Gone<br>       | `I_m_a_teapot<br>       | `Length_required<br>       | `Locked<br>       | `Method_not_allowed<br>       | `No_response<br>       | `Not_acceptable<br>       | `Not_found<br>       | `Payment_required<br>       | `Precondition_failed<br>       | `Precondition_required<br>       | `Proxy_authentication_required<br>       | `Request_entity_too_large<br>       | `Request_header_fields_too_large<br>       | `Request_timeout<br>       | `Request_uri_too_long<br>       | `Requested_range_not_satisfiable<br>       | `Retry_with<br>       | `Too_many_requests<br>       | `Unauthorized<br>       | `Unprocessable_entity<br>       | `Unsupported_media_type<br>       | `Upgrade_required<br>       | `Wrong_exchange_server ]</code> </pre>
+<div class="info ">
+Client_error<br>
+</div>
+
+
+<pre><span id="TYPEserver_error_status"><span class="keyword">type</span> <code class="type"></code>server_error_status</span> = <code class="type">[ `Bad_gateway<br>       | `Bandwidth_limit_exceeded<br>       | `Gateway_timeout<br>       | `Http_version_not_supported<br>       | `Insufficient_storage<br>       | `Internal_server_error<br>       | `Loop_detected<br>       | `Network_authentication_required<br>       | `Network_connect_timeout_error<br>       | `Network_read_timeout_error<br>       | `Not_extended<br>       | `Not_implemented<br>       | `Service_unavailable<br>       | `Variant_also_negotiates ]</code> </pre>
+<div class="info ">
+Server_error<br>
+</div>
+
+
+<pre><span id="TYPEstatus"><span class="keyword">type</span> <code class="type"></code>status</span> = <code class="type">[ `Accepted<br>       | `Already_reported<br>       | `Bad_gateway<br>       | `Bad_request<br>       | `Bandwidth_limit_exceeded<br>       | `Blocked_by_windows_parental_controls<br>       | `Checkpoint<br>       | `Client_closed_request<br>       | `Conflict<br>       | `Continue<br>       | `Created<br>       | `Enhance_your_calm<br>       | `Expectation_failed<br>       | `Failed_dependency<br>       | `Forbidden<br>       | `Found<br>       | `Gateway_timeout<br>       | `Gone<br>       | `Http_version_not_supported<br>       | `I_m_a_teapot<br>       | `Im_used<br>       | `Insufficient_storage<br>       | `Internal_server_error<br>       | `Length_required<br>       | `Locked<br>       | `Loop_detected<br>       | `Method_not_allowed<br>       | `Moved_permanently<br>       | `Multi_status<br>       | `Multiple_choices<br>       | `Network_authentication_required<br>       | `Network_connect_timeout_error<br>       | `Network_read_timeout_error<br>       | `No_content<br>       | `No_response<br>       | `Non_authoritative_information<br>       | `Not_acceptable<br>       | `Not_extended<br>       | `Not_found<br>       | `Not_implemented<br>       | `Not_modified<br>       | `OK<br>       | `Partial_content<br>       | `Payment_required<br>       | `Precondition_failed<br>       | `Precondition_required<br>       | `Processing<br>       | `Proxy_authentication_required<br>       | `Request_entity_too_large<br>       | `Request_header_fields_too_large<br>       | `Request_timeout<br>       | `Request_uri_too_long<br>       | `Requested_range_not_satisfiable<br>       | `Reset_content<br>       | `Resume_incomplete<br>       | `Retry_with<br>       | `See_other<br>       | `Service_unavailable<br>       | `Switch_proxy<br>       | `Switching_protocols<br>       | `Temporary_redirect<br>       | `Too_many_requests<br>       | `Unauthorized<br>       | `Unprocessable_entity<br>       | `Unsupported_media_type<br>       | `Upgrade_required<br>       | `Use_proxy<br>       | `Variant_also_negotiates<br>       | `Wrong_exchange_server ]</code> </pre>
+
+
+<pre><span id="TYPEstatus_code"><span class="keyword">type</span> <code class="type"></code>status_code</span> = <code class="type">[ `Accepted<br>       | `Already_reported<br>       | `Bad_gateway<br>       | `Bad_request<br>       | `Bandwidth_limit_exceeded<br>       | `Blocked_by_windows_parental_controls<br>       | `Checkpoint<br>       | `Client_closed_request<br>       | `Code of int<br>       | `Conflict<br>       | `Continue<br>       | `Created<br>       | `Enhance_your_calm<br>       | `Expectation_failed<br>       | `Failed_dependency<br>       | `Forbidden<br>       | `Found<br>       | `Gateway_timeout<br>       | `Gone<br>       | `Http_version_not_supported<br>       | `I_m_a_teapot<br>       | `Im_used<br>       | `Insufficient_storage<br>       | `Internal_server_error<br>       | `Length_required<br>       | `Locked<br>       | `Loop_detected<br>       | `Method_not_allowed<br>       | `Moved_permanently<br>       | `Multi_status<br>       | `Multiple_choices<br>       | `Network_authentication_required<br>       | `Network_connect_timeout_error<br>       | `Network_read_timeout_error<br>       | `No_content<br>       | `No_response<br>       | `Non_authoritative_information<br>       | `Not_acceptable<br>       | `Not_extended<br>       | `Not_found<br>       | `Not_implemented<br>       | `Not_modified<br>       | `OK<br>       | `Partial_content<br>       | `Payment_required<br>       | `Precondition_failed<br>       | `Precondition_required<br>       | `Processing<br>       | `Proxy_authentication_required<br>       | `Request_entity_too_large<br>       | `Request_header_fields_too_large<br>       | `Request_timeout<br>       | `Request_uri_too_long<br>       | `Requested_range_not_satisfiable<br>       | `Reset_content<br>       | `Resume_incomplete<br>       | `Retry_with<br>       | `See_other<br>       | `Service_unavailable<br>       | `Switch_proxy<br>       | `Switching_protocols<br>       | `Temporary_redirect<br>       | `Too_many_requests<br>       | `Unauthorized<br>       | `Unprocessable_entity<br>       | `Unsupported_media_type<br>       | `Upgrade_required<br>       | `Use_proxy<br>       | `Variant_also_negotiates<br>       | `Wrong_exchange_server ]</code> </pre>
+
+
+<pre><span id="VALstring_of_version"><span class="keyword">val</span> string_of_version</span> : <code class="type"><a href="Code.html#TYPEversion">version</a> -> string</code></pre><div class="info ">
+Convert a version to a string.<br>
+</div>
+
+<pre><span id="VALversion_of_string"><span class="keyword">val</span> version_of_string</span> : <code class="type">string -> <a href="Code.html#TYPEversion">version</a></code></pre><div class="info ">
+Convert a string to a version.<br>
+</div>
+
+<pre><span id="VALcompare_version"><span class="keyword">val</span> compare_version</span> : <code class="type"><a href="Code.html#TYPEversion">version</a> -> <a href="Code.html#TYPEversion">version</a> -> int</code></pre><div class="info ">
+Comparison function for <code class="code">version</code> values<br>
+</div>
+
+<pre><span id="VALstring_of_method"><span class="keyword">val</span> string_of_method</span> : <code class="type"><a href="Code.html#TYPEmeth">meth</a> -> string</code></pre><div class="info ">
+Convert a method to a string.<br>
+</div>
+
+<pre><span id="VALmethod_of_string"><span class="keyword">val</span> method_of_string</span> : <code class="type">string -> <a href="Code.html#TYPEmeth">meth</a></code></pre><div class="info ">
+Convert a string to a method.<br>
+</div>
+
+<pre><span id="VALcompare_method"><span class="keyword">val</span> compare_method</span> : <code class="type"><a href="Code.html#TYPEmeth">meth</a> -> <a href="Code.html#TYPEmeth">meth</a> -> int</code></pre><div class="info ">
+Comparison function for <code class="code">method</code> values<br>
+</div>
+
+<pre><span id="VALstatus_of_code"><span class="keyword">val</span> status_of_code</span> : <code class="type">int -> <a href="Code.html#TYPEstatus_code">status_code</a></code></pre><div class="info ">
+Generate status values from int codes.<br>
+</div>
+
+<pre><span id="VALcode_of_status"><span class="keyword">val</span> code_of_status</span> : <code class="type"><a href="Code.html#TYPEstatus_code">status_code</a> -> int</code></pre><div class="info ">
+Generate an int code from a status value.<br>
+</div>
+
+<pre><span id="VALstring_of_status"><span class="keyword">val</span> string_of_status</span> : <code class="type"><a href="Code.html#TYPEstatus_code">status_code</a> -> string</code></pre><div class="info ">
+Give a description of the given status value.<br>
+</div>
+
+<pre><span id="VALreason_phrase_of_code"><span class="keyword">val</span> reason_phrase_of_code</span> : <code class="type">int -> string</code></pre><div class="info ">
+Give a description of the given int code.<br>
+</div>
+
+<pre><span id="VALis_informational"><span class="keyword">val</span> is_informational</span> : <code class="type">int -> bool</code></pre><div class="info ">
+Is the given int code belong to the class of "informational" return code ?<br>
+</div>
+
+<pre><span id="VALis_success"><span class="keyword">val</span> is_success</span> : <code class="type">int -> bool</code></pre><div class="info ">
+Is the given int code belong to the class of "success" return code ?<br>
+</div>
+
+<pre><span id="VALis_redirection"><span class="keyword">val</span> is_redirection</span> : <code class="type">int -> bool</code></pre><div class="info ">
+Is the given int code belong to the class of "redirection" return code ?<br>
+</div>
+
+<pre><span id="VALis_client_error"><span class="keyword">val</span> is_client_error</span> : <code class="type">int -> bool</code></pre><div class="info ">
+Is the given int code belong to the class of "client_error" return code ?<br>
+</div>
+
+<pre><span id="VALis_server_error"><span class="keyword">val</span> is_server_error</span> : <code class="type">int -> bool</code></pre><div class="info ">
+Is the given int code belong to the class of "server_error" return code ?<br>
+</div>
+
+<pre><span id="VALis_error"><span class="keyword">val</span> is_error</span> : <code class="type">int -> bool</code></pre>
+<pre><span id="VALversion_of_sexp"><span class="keyword">val</span> version_of_sexp</span> : <code class="type">Sexplib.Sexp.t -> <a href="Code.html#TYPEversion">version</a></code></pre>
+<pre><span id="VAL__version_of_sexp__"><span class="keyword">val</span> __version_of_sexp__</span> : <code class="type">Sexplib.Sexp.t -> <a href="Code.html#TYPEversion">version</a></code></pre>
+<pre><span id="VALsexp_of_version"><span class="keyword">val</span> sexp_of_version</span> : <code class="type"><a href="Code.html#TYPEversion">version</a> -> Sexplib.Sexp.t</code></pre>
+<pre><span id="VALmeth_of_sexp"><span class="keyword">val</span> meth_of_sexp</span> : <code class="type">Sexplib.Sexp.t -> <a href="Code.html#TYPEmeth">meth</a></code></pre>
+<pre><span id="VAL__meth_of_sexp__"><span class="keyword">val</span> __meth_of_sexp__</span> : <code class="type">Sexplib.Sexp.t -> <a href="Code.html#TYPEmeth">meth</a></code></pre>
+<pre><span id="VALsexp_of_meth"><span class="keyword">val</span> sexp_of_meth</span> : <code class="type"><a href="Code.html#TYPEmeth">meth</a> -> Sexplib.Sexp.t</code></pre>
+<pre><span id="VALinformational_status_of_sexp"><span class="keyword">val</span> informational_status_of_sexp</span> : <code class="type">Sexplib.Sexp.t -> <a href="Code.html#TYPEinformational_status">informational_status</a></code></pre>
+<pre><span id="VAL__informational_status_of_sexp__"><span class="keyword">val</span> __informational_status_of_sexp__</span> : <code class="type">Sexplib.Sexp.t -> <a href="Code.html#TYPEinformational_status">informational_status</a></code></pre>
+<pre><span id="VALsexp_of_informational_status"><span class="keyword">val</span> sexp_of_informational_status</span> : <code class="type"><a href="Code.html#TYPEinformational_status">informational_status</a> -> Sexplib.Sexp.t</code></pre><div class="info ">
+Informational<br>
+</div>
+
+<pre><span id="VALsuccess_status_of_sexp"><span class="keyword">val</span> success_status_of_sexp</span> : <code class="type">Sexplib.Sexp.t -> <a href="Code.html#TYPEsuccess_status">success_status</a></code></pre>
+<pre><span id="VAL__success_status_of_sexp__"><span class="keyword">val</span> __success_status_of_sexp__</span> : <code class="type">Sexplib.Sexp.t -> <a href="Code.html#TYPEsuccess_status">success_status</a></code></pre>
+<pre><span id="VALsexp_of_success_status"><span class="keyword">val</span> sexp_of_success_status</span> : <code class="type"><a href="Code.html#TYPEsuccess_status">success_status</a> -> Sexplib.Sexp.t</code></pre><div class="info ">
+Success<br>
+</div>
+
+<pre><span id="VALredirection_status_of_sexp"><span class="keyword">val</span> redirection_status_of_sexp</span> : <code class="type">Sexplib.Sexp.t -> <a href="Code.html#TYPEredirection_status">redirection_status</a></code></pre>
+<pre><span id="VAL__redirection_status_of_sexp__"><span class="keyword">val</span> __redirection_status_of_sexp__</span> : <code class="type">Sexplib.Sexp.t -> <a href="Code.html#TYPEredirection_status">redirection_status</a></code></pre>
+<pre><span id="VALsexp_of_redirection_status"><span class="keyword">val</span> sexp_of_redirection_status</span> : <code class="type"><a href="Code.html#TYPEredirection_status">redirection_status</a> -> Sexplib.Sexp.t</code></pre><div class="info ">
+Redirection<br>
+</div>
+
+<pre><span id="VALclient_error_status_of_sexp"><span class="keyword">val</span> client_error_status_of_sexp</span> : <code class="type">Sexplib.Sexp.t -> <a href="Code.html#TYPEclient_error_status">client_error_status</a></code></pre>
+<pre><span id="VAL__client_error_status_of_sexp__"><span class="keyword">val</span> __client_error_status_of_sexp__</span> : <code class="type">Sexplib.Sexp.t -> <a href="Code.html#TYPEclient_error_status">client_error_status</a></code></pre>
+<pre><span id="VALsexp_of_client_error_status"><span class="keyword">val</span> sexp_of_client_error_status</span> : <code class="type"><a href="Code.html#TYPEclient_error_status">client_error_status</a> -> Sexplib.Sexp.t</code></pre><div class="info ">
+Client_error<br>
+</div>
+
+<pre><span id="VALserver_error_status_of_sexp"><span class="keyword">val</span> server_error_status_of_sexp</span> : <code class="type">Sexplib.Sexp.t -> <a href="Code.html#TYPEserver_error_status">server_error_status</a></code></pre>
+<pre><span id="VAL__server_error_status_of_sexp__"><span class="keyword">val</span> __server_error_status_of_sexp__</span> : <code class="type">Sexplib.Sexp.t -> <a href="Code.html#TYPEserver_error_status">server_error_status</a></code></pre>
+<pre><span id="VALsexp_of_server_error_status"><span class="keyword">val</span> sexp_of_server_error_status</span> : <code class="type"><a href="Code.html#TYPEserver_error_status">server_error_status</a> -> Sexplib.Sexp.t</code></pre><div class="info ">
+Server_error<br>
+</div>
+
+<pre><span id="VALstatus_of_sexp"><span class="keyword">val</span> status_of_sexp</span> : <code class="type">Sexplib.Sexp.t -> <a href="Code.html#TYPEstatus">status</a></code></pre>
+<pre><span id="VAL__status_of_sexp__"><span class="keyword">val</span> __status_of_sexp__</span> : <code class="type">Sexplib.Sexp.t -> <a href="Code.html#TYPEstatus">status</a></code></pre>
+<pre><span id="VALsexp_of_status"><span class="keyword">val</span> sexp_of_status</span> : <code class="type"><a href="Code.html#TYPEstatus">status</a> -> Sexplib.Sexp.t</code></pre>
+<pre><span id="VALstatus_code_of_sexp"><span class="keyword">val</span> status_code_of_sexp</span> : <code class="type">Sexplib.Sexp.t -> <a href="Code.html#TYPEstatus_code">status_code</a></code></pre>
+<pre><span id="VAL__status_code_of_sexp__"><span class="keyword">val</span> __status_code_of_sexp__</span> : <code class="type">Sexplib.Sexp.t -> <a href="Code.html#TYPEstatus_code">status_code</a></code></pre>
+<pre><span id="VALsexp_of_status_code"><span class="keyword">val</span> sexp_of_status_code</span> : <code class="type"><a href="Code.html#TYPEstatus_code">status_code</a> -> Sexplib.Sexp.t</code></pre><br>
+Convert a version to a string.<br>
+<br>
+Convert a string to a version.<br>
+<br>
+Comparison function for <code class="code">version</code> values<br>
+<br>
+Convert a method to a string.<br>
+<br>
+Convert a string to a method.<br>
+<br>
+Comparison function for <code class="code">method</code> values<br>
+<br>
+Generate status values from int codes.<br>
+<br>
+Generate an int code from a status value.<br>
+<br>
+Give a description of the given status value.<br>
+<br>
+Give a description of the given int code.<br>
+<br>
+Is the given int code belong to the class of "informational" return code ?<br>
+<br>
+Is the given int code belong to the class of "success" return code ?<br>
+<br>
+Is the given int code belong to the class of "redirection" return code ?<br>
+<br>
+Is the given int code belong to the class of "client_error" return code ?<br>
+<br>
+Is the given int code belong to the class of "server_error" return code ?<br>
+<br>
+Return true for client and server error status codes.<br>
+</body></html>

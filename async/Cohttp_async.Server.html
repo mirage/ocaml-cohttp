@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="Cohttp_async.Client.html">
+<link rel="Up" href="Cohttp_async.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Cohttp_async_io" rel="Chapter" href="Cohttp_async_io.html">
+<link title="Cohttp_async" rel="Chapter" href="Cohttp_async.html"><title>Cohttp_async.Server</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="Cohttp_async.Client.html" title="Cohttp_async.Client">Previous</a>
+&nbsp;<a class="up" href="Cohttp_async.html" title="Cohttp_async">Up</a>
+&nbsp;</div>
+<h1>Module <a href="type_Cohttp_async.Server.html">Cohttp_async.Server</a></h1>
+
+<pre><span class="keyword">module</span> Server: <code class="code">sig</code> <a href="Cohttp_async.Server.html">..</a> <code class="code">end</code></pre><hr width="100%">
+
+<pre><span id="TYPEt"><span class="keyword">type</span> <code class="type">([< Async.Std.Socket.Address.t ], 'listening_on)</code> t</span> </pre>
+
+
+<pre><span id="VALclose"><span class="keyword">val</span> close</span> : <code class="type">([< Async.Std.Socket.Address.t ], 'a) <a href="Cohttp_async.Server.html#TYPEt">t</a> -><br>       unit Async.Std.Deferred.t</code></pre>
+<pre><span id="VALclose_finished"><span class="keyword">val</span> close_finished</span> : <code class="type">([< Async.Std.Socket.Address.t ], 'a) <a href="Cohttp_async.Server.html#TYPEt">t</a> -><br>       unit Async.Std.Deferred.t</code></pre>
+<pre><span id="VALis_closed"><span class="keyword">val</span> is_closed</span> : <code class="type">([< Async.Std.Socket.Address.t ], 'a) <a href="Cohttp_async.Server.html#TYPEt">t</a> -> bool</code></pre>
+<pre><span id="TYPEresponse"><span class="keyword">type</span> <code class="type"></code>response</span> = <code class="type"><a href="Cohttp_async.Response.html#TYPEt">Cohttp_async.Response.t</a> * <a href="Cohttp_async.Body.html#TYPEt">Cohttp_async.Body.t</a></code> </pre>
+
+
+<pre><span id="VALrespond"><span class="keyword">val</span> respond</span> : <code class="type">?flush:bool -><br>       ?headers:Cohttp.Header.t -><br>       ?body:<a href="Cohttp_async.Body.html#TYPEt">Cohttp_async.Body.t</a> -><br>       Cohttp.Code.status_code -> <a href="Cohttp_async.Server.html#TYPEresponse">response</a> Async.Std.Deferred.t</code></pre>
+<pre><span id="VALresolve_local_file"><span class="keyword">val</span> resolve_local_file</span> : <code class="type">docroot:string -> uri:Uri.t -> string</code></pre><div class="info ">
+Resolve a URI and a docroot into a concrete local filename.<br>
+</div>
+
+<pre><span id="VALrespond_with_pipe"><span class="keyword">val</span> respond_with_pipe</span> : <code class="type">?flush:bool -><br>       ?headers:Cohttp.Header.t -><br>       ?code:Cohttp.Code.status_code -><br>       string Async.Std.Pipe.Reader.t -><br>       <a href="Cohttp_async.Server.html#TYPEresponse">response</a> Async.Std.Deferred.t</code></pre><div class="info ">
+Respond with a <code class="code">string</code> Pipe that provides the response string Pipe.Reader.t.<br>
+</div>
+<div class="param_info"><code class="code">code</code> : Default is HTTP 200 `OK</div>
+
+<pre><span id="VALrespond_with_string"><span class="keyword">val</span> respond_with_string</span> : <code class="type">?flush:bool -><br>       ?headers:Cohttp.Header.t -><br>       ?code:Cohttp.Code.status_code -><br>       string -> <a href="Cohttp_async.Server.html#TYPEresponse">response</a> Async.Std.Deferred.t</code></pre><div class="info ">
+Respond with a static <code class="code">string</code><br>
+</div>
+<div class="param_info"><code class="code">code</code> : Default is HTTP 200 `OK</div>
+
+<pre><span id="VALrespond_with_redirect"><span class="keyword">val</span> respond_with_redirect</span> : <code class="type">?headers:Cohttp.Header.t -><br>       Uri.t -> <a href="Cohttp_async.Server.html#TYPEresponse">response</a> Async.Std.Deferred.t</code></pre><div class="info ">
+Respond with a redirect to an absolute <code class="code">uri</code><br>
+</div>
+
+<pre><span id="VALrespond_with_file"><span class="keyword">val</span> respond_with_file</span> : <code class="type">?flush:bool -><br>       ?headers:Cohttp.Header.t -><br>       ?error_body:string -><br>       string -> <a href="Cohttp_async.Server.html#TYPEresponse">response</a> Async.Std.Deferred.t</code></pre><div class="info ">
+Respond with file contents, and <code class="code">error_string Pipe.Reader.t</code> if the file isn't found<br>
+</div>
+
+<pre><span id="VALcreate"><span class="keyword">val</span> create</span> : <code class="type">?max_connections:int -><br>       ?max_pending_connections:int -><br>       ?buffer_age_limit:Async.Std.Writer.buffer_age_limit -><br>       ?on_handler_error:[ `Call of<br>                             ([< Async.Std.Socket.Address.t ] as 'a) -> exn -> unit<br>                         | `Ignore<br>                         | `Raise ] -><br>       ?mode:Conduit_async.server -><br>       ('a, 'listening_on) Async.Std.Tcp.Where_to_listen.t -><br>       (body:<a href="Cohttp_async.Body.html#TYPEt">Cohttp_async.Body.t</a> -><br>        'a -><br>        <a href="Cohttp_async.Request.html#TYPEt">Cohttp_async.Request.t</a> -> <a href="Cohttp_async.Server.html#TYPEresponse">response</a> Async.Std.Deferred.t) -><br>       ('a, 'listening_on) <a href="Cohttp_async.Server.html#TYPEt">t</a> Async.Std.Deferred.t</code></pre><div class="info ">
+Build a HTTP server, based on the <code class="code">Tcp.Server</code> interface<br>
+</div>
+
+<pre><span id="VALsexp_of_t"><span class="keyword">val</span> sexp_of_t</span> : <code class="type">(([< Async.Std.Socket.Address.t ] as 'a) -> Sexplib.Sexp.t) -><br>       ('listening_on -> Sexplib.Sexp.t) -><br>       ('a, 'listening_on) <a href="Cohttp_async.Server.html#TYPEt">t</a> -> Sexplib.Sexp.t</code></pre>
+<pre><span id="VALsexp_of_response"><span class="keyword">val</span> sexp_of_response</span> : <code class="type"><a href="Cohttp_async.Server.html#TYPEresponse">response</a> -> Sexplib.Sexp.t</code></pre><br>
+Resolve a URI and a docroot into a concrete local filename.<br>
+<br>
+Respond with a <code class="code">string</code> Pipe that provides the response string Pipe.Reader.t.<br>
+<br>
+Respond with a static <code class="code">string</code><br>
+<br>
+Respond with a redirect to an absolute <code class="code">uri</code><br>
+<br>
+Respond with file contents, and <code class="code">error_string Pipe.Reader.t</code> if the file isn't found<br>
+<br>
+Build a HTTP server, based on the <code class="code">Tcp.Server</code> interface<br>
+</body></html>

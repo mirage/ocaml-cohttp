@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<link rel="stylesheet" href="style.css" type="text/css">
+<meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+<link rel="Start" href="index.html">
+<link rel="previous" href="S.Http_io.html">
+<link rel="next" href="S.Response.html">
+<link rel="Up" href="S.html">
+<link title="Index of types" rel=Appendix href="index_types.html">
+<link title="Index of values" rel=Appendix href="index_values.html">
+<link title="Index of modules" rel=Appendix href="index_modules.html">
+<link title="Index of module types" rel=Appendix href="index_module_types.html">
+<link title="S" rel="Chapter" href="S.html">
+<link title="Code" rel="Chapter" href="Code.html">
+<link title="Header" rel="Chapter" href="Header.html">
+<link title="Cookie" rel="Chapter" href="Cookie.html">
+<link title="Request" rel="Chapter" href="Request.html">
+<link title="Response" rel="Chapter" href="Response.html">
+<link title="Transfer" rel="Chapter" href="Transfer.html">
+<link title="Accept" rel="Chapter" href="Accept.html">
+<link title="Accept_parser" rel="Chapter" href="Accept_parser.html">
+<link title="Accept_lexer" rel="Chapter" href="Accept_lexer.html">
+<link title="Accept_types" rel="Chapter" href="Accept_types.html">
+<link title="Link" rel="Chapter" href="Link.html">
+<link title="Auth" rel="Chapter" href="Auth.html">
+<link title="Header_io" rel="Chapter" href="Header_io.html">
+<link title="Transfer_io" rel="Chapter" href="Transfer_io.html">
+<link title="Connection" rel="Chapter" href="Connection.html">
+<link title="Body" rel="Chapter" href="Body.html">
+<link title="String_io" rel="Chapter" href="String_io.html">
+<link title="Conf" rel="Chapter" href="Conf.html"><title>S.Request</title>
+</head>
+<body>
+<div class="navbar"><a class="pre" href="S.Http_io.html" title="S.Http_io">Previous</a>
+&nbsp;<a class="up" href="S.html" title="S">Up</a>
+&nbsp;<a class="post" href="S.Response.html" title="S.Response">Next</a>
+</div>
+<h1>Module type <a href="type_S.Request.html">S.Request</a></h1>
+
+<pre><span class="keyword">module type</span> Request = <code class="code">sig</code> <a href="S.Request.html">..</a> <code class="code">end</code></pre><hr width="100%">
+
+<pre><code><span id="TYPEt"><span class="keyword">type</span> <code class="type"></code>t</span> = {</code></pre><table class="typetable">
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.headers">headers</span>&nbsp;: <code class="type"><a href="Header.html#TYPEt">Header.t</a></code>;</code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+HTTP request headers<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.meth">meth</span>&nbsp;: <code class="type"><a href="Code.html#TYPEmeth">Code.meth</a></code>;</code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+HTTP request method<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.uri">uri</span>&nbsp;: <code class="type">Uri.t</code>;</code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+Full HTTP request uri<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.version">version</span>&nbsp;: <code class="type"><a href="Code.html#TYPEversion">Code.version</a></code>;</code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+HTTP version, usually 1.1<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr>
+<tr>
+<td align="left" valign="top" >
+<code>&nbsp;&nbsp;</code></td>
+<td align="left" valign="top" >
+<code><span id="TYPEELTt.encoding">encoding</span>&nbsp;: <code class="type"><a href="Transfer.html#TYPEencoding">Transfer.encoding</a></code>;</code></td>
+<td class="typefieldcomment" align="left" valign="top" ><code>(*</code></td><td class="typefieldcomment" align="left" valign="top" ><div class="info ">
+transfer encoding of this HTTP request<br>
+</div>
+</td><td class="typefieldcomment" align="left" valign="bottom" ><code>*)</code></td>
+</tr></table>
+}
+
+
+
+<pre><span id="VALencoding"><span class="keyword">val</span> encoding</span> : <code class="type"><a href="S.Request.html#TYPEt">t</a> -> <a href="Transfer.html#TYPEencoding">Transfer.encoding</a></code></pre>
+<pre><span id="VALversion"><span class="keyword">val</span> version</span> : <code class="type"><a href="S.Request.html#TYPEt">t</a> -> <a href="Code.html#TYPEversion">Code.version</a></code></pre>
+<pre><span id="VALuri"><span class="keyword">val</span> uri</span> : <code class="type"><a href="S.Request.html#TYPEt">t</a> -> Uri.t</code></pre>
+<pre><span id="VALmeth"><span class="keyword">val</span> meth</span> : <code class="type"><a href="S.Request.html#TYPEt">t</a> -> <a href="Code.html#TYPEmeth">Code.meth</a></code></pre>
+<pre><span id="VALheaders"><span class="keyword">val</span> headers</span> : <code class="type"><a href="S.Request.html#TYPEt">t</a> -> <a href="Header.html#TYPEt">Header.t</a></code></pre>
+<pre><span class="keyword">module</span> <a href="S.Request.Fields.html">Fields</a>: <code class="code">sig</code> <a href="S.Request.Fields.html">..</a> <code class="code">end</code></pre>
+<pre><span id="VALmake"><span class="keyword">val</span> make</span> : <code class="type">?meth:<a href="Code.html#TYPEmeth">Code.meth</a> -><br>       ?version:<a href="Code.html#TYPEversion">Code.version</a> -><br>       ?encoding:<a href="Transfer.html#TYPEencoding">Transfer.encoding</a> -> ?headers:<a href="Header.html#TYPEt">Header.t</a> -> Uri.t -> <a href="S.Request.html#TYPEt">t</a></code></pre><div class="info ">
+Return true whether the connection should be reused<br>
+</div>
+
+<pre><span id="VALis_keep_alive"><span class="keyword">val</span> is_keep_alive</span> : <code class="type"><a href="S.Request.html#TYPEt">t</a> -> bool</code></pre>
+<pre><span id="VALmake_for_client"><span class="keyword">val</span> make_for_client</span> : <code class="type">?headers:<a href="Header.html#TYPEt">Header.t</a> -><br>       ?chunked:bool -> ?body_length:int64 -> <a href="Code.html#TYPEmeth">Code.meth</a> -> Uri.t -> <a href="S.Request.html#TYPEt">t</a></code></pre>
+<pre><span id="VALt_of_sexp"><span class="keyword">val</span> t_of_sexp</span> : <code class="type">Sexplib.Sexp.t -> <a href="S.Request.html#TYPEt">t</a></code></pre>
+<pre><span id="VALsexp_of_t"><span class="keyword">val</span> sexp_of_t</span> : <code class="type"><a href="S.Request.html#TYPEt">t</a> -> Sexplib.Sexp.t</code></pre><br>
+Return true whether the connection should be reused<br>
+</body></html>
