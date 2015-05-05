@@ -109,7 +109,7 @@ Library cohttp_lwt_unix_test
 
 Document cohttp
   Title:                Cohttp docs
-  Type:                 ocamlbuild (0.3)
+  Type:                 ocamlbuild (0.4)
   BuildTools+:          ocamldoc
   Install:              true
   XOCamlbuildPath:      lib
@@ -117,25 +117,16 @@ Document cohttp
 
 Document cohttp_lwt
   Title:                Cohttp Lwt docs
-  Type:                 ocamlbuild (0.3)
-  BuildTools+:          ocamldoc
-  Build$:               flag(lwt)
-  Install:              true
-  XOCamlbuildPath:      lwt
-  XOCamlbuildLibraries: cohttp.lwt-core
-
-Document cohttp_lwt_unix
-  Title:                Cohttp Lwt UNIX docs
-  Type:                 ocamlbuild (0.3)
+  Type:                 ocamlbuild (0.4)
   BuildTools+:          ocamldoc
   Build$:               flag(lwt_unix)
   Install:              true
   XOCamlbuildPath:      lwt
-  XOCamlbuildLibraries: cohttp.lwt
+  XOCamlbuildLibraries: cohttp.lwt-core, cohttp.lwt
 
 Document cohttp_async
   Title:                Cohttp Async docs
-  Type:                 ocamlbuild (0.3)
+  Type:                 ocamlbuild (0.4)
   BuildTools+:          ocamldoc
   Build$:               flag(async)
   Install:              true

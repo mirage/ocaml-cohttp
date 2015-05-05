@@ -9,12 +9,6 @@ LWT_UNIX ?= $(shell if ocamlfind query lwt.unix >/dev/null 2>&1; then echo --ena
 ASYNC ?= $(shell if ocamlfind query async >/dev/null 2>&1; then echo --enable-async; fi)
 JS ?= $(shell if ocamlfind query js_of_ocaml >/dev/null 2>&1; then echo --enable-js; fi)
 
-DOCDIR = docs
-DOC_COHTTP = $(DOCDIR)/cohttp
-DOC_ASYNC = $(DOCDIR)/async
-DOC_LWT = $(DOCDIR)/cohttp_lwt
-DOC_LWTUNIX = $(DOCDIR)/cohttp_lwt_unix
-
 setup.bin: setup.ml
 	ocamlopt.opt -o $@ $< 2>/dev/null || ocamlopt -o $@ $< 2>/dev/null || ocamlc -o $@ $<
 	rm -f setup.cmx setup.cmi setup.o setup.cmo
@@ -28,20 +22,28 @@ build: setup.data setup.bin
 doc: setup.data setup.bin
 	./setup.bin -doc
 
+DOCDIR = .gh-pages
+DOC_COHTTP = $(DOCDIR)/core
+DOC_ASYNC = $(DOCDIR)/async
+DOC_LWT = $(DOCDIR)/lwt
+
 github: doc
-	git checkout gh-pages
-	git merge master --no-edit
-	$(MAKE)
-	rm -Rf $(DOCDIR)
-	mkdir -p $(DOC_COHTTP) $(DOC_ASYNC) $(DOC_LWT) $(DOC_LWTUNIX)
-	cp _build/lib/cohttp.docdir/* $(DOC_COHTTP)
+	git clone `git config --get remote.origin.url` .gh-pages --reference .
+	git -C .gh-pages checkout --orphan gh-pages
+	git -C .gh-pages reset
+	git -C .gh-pages clean -dxf
+	mkdir -p $(DOC_COHTTP) $(DOC_ASYNC) $(DOC_LWT)
+	cp  _build/lib/cohttp.docdir/* $(DOC_COHTTP)
+	cp docs/nice-style.css $(DOC_COHTTP)/style.css
 	cp _build/async/cohttp_async.docdir/* $(DOC_ASYNC)
+	cp docs/nice-style.css $(DOC_ASYNC)/style.css
 	cp _build/lwt/cohttp_lwt.docdir/* $(DOC_LWT)
-	cp _build/lwt/cohttp_lwt_unix.docdir/* $(DOC_LWTUNIX)
-	git add $(DOCDIR)/*/*.html $(DOCDIR)/*/*.css
-	git commit -m 'sync ocamldoc' *.html *.css
-	git push
-	git checkout master
+	cp docs/nice-style.css $(DOC_LWT)/style.css
+	cp docs/index.html $(DOCDIR)/index.html
+	git -C .gh-pages add .
+	git -C .gh-pages commit -m "Update Pages"
+	git -C .gh-pages push origin gh-pages -f
+	rm -rf .gh-pages
 
 install: setup.bin
 	./setup.bin -install
