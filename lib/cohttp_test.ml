@@ -7,7 +7,8 @@ module type S = sig
   type spec = Request.t -> body -> (Response.t * body) io
   type async_test = unit -> unit io
 
-  val response_sequence : (Response.t * body) io list -> spec
+  val const : (Response.t * body) io -> spec
+  val response_sequence : spec list -> spec
   val temp_server : ?port:int -> spec -> (Uri.t -> 'a io) -> 'a io
   val test_server_s : ?port:int -> ?name:string -> spec
     -> (Uri.t -> (string * async_test) list) -> OUnit.test io
@@ -23,9 +24,11 @@ let next_port () =
 
 let response_sequence fail responses =
   let xs = ref responses in
-  fun _ _ ->
+  fun req body ->
     match !xs with
     | x::xs' ->
       xs := xs';
-      x
+      x req body
     | [] -> fail "response_sequence: Server exhausted responses"
+
+let const resp _ _ = resp
