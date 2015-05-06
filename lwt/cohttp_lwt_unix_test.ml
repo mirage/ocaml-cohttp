@@ -10,6 +10,8 @@ type spec = Request.t -> body -> (Response.t * body) io
 
 type async_test = unit -> unit Lwt.t
 
+let const = Cohttp_test.const
+
 let response_sequence = Cohttp_test.response_sequence Lwt.fail_with
 
 let temp_server ?port spec callback =
