@@ -236,7 +236,7 @@ module Server = struct
   let close_finished t = Tcp.Server.close_finished t.server
   let is_closed t = Tcp.Server.is_closed t.server
 
-  let read_body req rd wr =
+  let read_body req rd =
     match Request.has_body req with
     (* TODO maybe attempt to read body *)
     | `No | `Unknown -> `Empty
@@ -253,7 +253,7 @@ module Server = struct
         Request.read rd >>| function
         | `Eof | `Invalid _ -> `Eof
         | `Ok req ->
-          let body = read_body req rd wr in
+          let body = read_body req rd in
           last_body_pipe_drained := Ivar.create ();
           `Ok (req, body)
       ) in
