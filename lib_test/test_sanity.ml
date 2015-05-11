@@ -10,8 +10,7 @@ let message = "Hello sanity!"
 let chunk_body = ["one"; ""; " "; "bar"; ""]
 
 let server =
-  response_sequence [
-    (* t *)
+  [ (* t *)
     Server.respond_string ~status:`OK ~body:message ();
     (* empty_chunk *)
     Server.respond ~status:`OK ~body:(Body.of_string_list chunk_body) ();
@@ -20,6 +19,8 @@ let server =
     Server.respond ~status:`OK ~body:(Body.of_string_list chunk_body) ();
     Server.respond ~status:`OK ~body:(Body.of_string "") ();
   ]
+  |> List.map const
+  |> response_sequence
 
 let ts =
   Cohttp_lwt_unix_test.test_server_s server begin fun uri ->

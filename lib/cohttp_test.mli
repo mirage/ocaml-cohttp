@@ -9,9 +9,12 @@ module type S = sig
 
   type async_test = unit -> unit io
 
-  (** A server that returns the list of responses in sequences and crashes
-      on further requests *)
-  val response_sequence : (Response.t * body) io list -> spec
+  (** A constant handler that always returns its argument *)
+  val const : (Response.t * body) io -> spec
+
+  (** A server that process requests using the provided specs in sequence
+      and crashes on further reqeusts *)
+  val response_sequence : spec list -> spec
 
   (** Create a temporary server according to spec that lives until the callback
       thread is determined. The uri provided in the callback should be the base
@@ -29,4 +32,6 @@ end
 
 (** Internal API. Subject to breakage *)
 val next_port : unit -> int
-val response_sequence : (string -> 'a) -> 'a list -> 'b -> 'c -> 'a
+val response_sequence : (string -> 'a) -> ('b -> 'c -> 'a) list
+  -> 'b -> 'c -> 'a
+val const : 'a -> 'c -> 'd -> 'a
