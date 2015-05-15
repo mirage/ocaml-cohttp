@@ -81,7 +81,7 @@ let pipe_of_body read_chunk ic =
          | Done -> return (`Finished ())
       ) in
   don't_wait_for (finished >>| fun () -> Pipe.close wr);
-  rd
+  (rd, finished)
 
 module Body = struct
   module B = Cohttp.Body
