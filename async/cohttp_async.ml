@@ -163,8 +163,9 @@ module Client = struct
     | `Ok res ->
       (* Build a response pipe for the body *)
       let reader = Response.make_body_reader res ic in
-      let rd = pipe_of_body (fun ic -> Response.read_body_chunk reader) ic in
-      (res, `Pipe rd)
+      let (rd, finished_read) =
+        pipe_of_body (fun ic -> Response.read_body_chunk reader) ic in
+      (res, `Pipe rd, finished_read)
 
   let request ?interrupt ?(body=`Empty) req =
     (* Connect to the remote side *)
@@ -172,10 +173,10 @@ module Client = struct
     >>= fun (ic,oc) ->
       Request.write (fun writer -> Body.write Request.write_body body writer) req oc
     >>= fun () ->
-    read_request ic >>| fun (resp, body) ->
-      don't_wait_for (
-        body |> Body.to_pipe |> Pipe.closed >>= fun () ->
-          Deferred.all_ignore [Reader.close ic; Writer.close oc]);
+    read_request ic >>| fun (resp, body, body_finished) ->
+    don't_wait_for (
+      body_finished >>= fun () ->
+      Deferred.all_ignore [Reader.close ic; Writer.close oc]);
     (resp, body)
 
   (* Like Reader.read_all but allows you to control delay between reads *)
@@ -282,7 +283,8 @@ module Server = struct
     | `No | `Unknown -> `Empty
     | `Yes -> (* Create a Pipe for the body *)
       let reader = Request.make_body_reader req rd in
-      `Pipe (pipe_of_body (fun ic -> Request.read_body_chunk reader) rd)
+      let (p, _) = pipe_of_body (fun ic -> Request.read_body_chunk reader) rd in
+      `Pipe p
 
   let handle_client handle_request sock rd wr =
     let last_body_pipe_drained = ref (Ivar.create ()) in
