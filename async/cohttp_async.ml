@@ -179,18 +179,6 @@ module Client = struct
       Deferred.all_ignore [Reader.close ic; Writer.close oc]);
     (resp, body)
 
-  (* Like Reader.read_all but allows you to control delay between reads *)
-  let read_all_delayed rd ~f =
-    let wait_for = ref Deferred.unit in
-    Reader.read_all rd (fun ic ->
-      !wait_for >>= fun () ->
-      f ic >>| function
-      | `Ok (result, wait_for') ->
-        wait_for := wait_for';
-        `Ok result
-      | `Eof -> `Eof
-    )
-
   let callv ?interrupt uri reqs =
     let reqs_c = ref 0 in
     let resp_c = ref 0 in
@@ -201,15 +189,21 @@ module Client = struct
       Request.write (fun writer -> Body.write Request.write_body body writer)
         req oc)
     |> don't_wait_for;
-    let responses = read_all_delayed ic ~f:(fun ic ->
+    let last_body = ref None in
+    let responses = Reader.read_all ic (fun ic ->
+      let last_body_drained =
+        match !last_body with
+        | None -> Deferred.unit
+        | Some b -> b in
+      last_body_drained >>= fun () ->
       if Pipe.is_closed reqs && (!resp_c >= !reqs_c)
       then return `Eof
       else
-        ic |> read_request >>| fun (resp, body) ->
+        ic |> read_request >>| fun (resp, body, body_finished) ->
         incr resp_c;
-        `Ok (resp, body |> Body.to_pipe |> Pipe.closed)
-      )
-    in
+        last_body := Some body_finished;
+        `Ok (resp, body)
+    ) in
     don't_wait_for (
       Pipe.closed reqs >>= fun () ->
       Pipe.closed responses >>= fun () ->
