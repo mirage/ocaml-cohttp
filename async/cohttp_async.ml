@@ -171,7 +171,7 @@ module Client = struct
     (* Connect to the remote side *)
     Net.connect_uri ?interrupt req.Request.uri
     >>= fun (ic,oc) ->
-      Request.write (fun writer -> Body.write Request.write_body body writer) req oc
+    Request.write (fun writer -> Body.write Request.write_body body writer) req oc
     >>= fun () ->
     read_request ic >>| fun (resp, body, body_finished) ->
     don't_wait_for (
