@@ -187,43 +187,42 @@ let parse_request_uri_host_traversal _ =
   let uri = `Ok (Uri.of_string "//example.com/etc/shadow") in
   parse_request_uri_ r uri "parse_request_uri_host_traversal"
 
-let _ =
-  ("Request" >:::
-   [ "Test header has auth" >:: header_has_auth
-   ; "Test uri has user info" >:: uri_has_userinfo
-   ; "Auth from Uri - do not override" >:: auth_uri_no_override
-   ; "Auth from Uri" >:: auth_uri
-   ; "Parse simple request URI" >:: parse_request_uri
-   ; "Parse request URI with host" >:: parse_request_uri_host
-   ; "Parse request URI with host and port" >:: parse_request_uri_host_port
-   ; "Parse request URI double slash" >:: parse_request_uri_double_slash
-   ; "Parse request URI double slash with host"
-     >:: parse_request_uri_host_double_slash
-   ; "Parse request URI triple slash" >:: parse_request_uri_triple_slash
-   ; "Parse request URI triple slash with host"
-     >:: parse_request_uri_host_triple_slash
-   ; "Parse request URI no slash" >:: parse_request_uri_no_slash
-   ; "Parse request URI no slash with host" >:: parse_request_uri_host_no_slash
-   ; "Parse request URI empty" >:: parse_request_uri_empty
-   ; "Parse request URI empty with host" >:: parse_request_uri_host_empty
-   ; "Parse request URI path like scheme" >:: parse_request_uri_path_like_scheme
-   ; "Parse request URI path like scheme with host"
-     >:: parse_request_uri_host_path_like_scheme
-   ; "Parse request URI path like host:port"
-     >:: parse_request_uri_path_like_host_port
-   ; "Parse request URI path like host:port with host"
-     >:: parse_request_uri_host_path_like_host_port
-   ; "Parse request URI with query string" >:: parse_request_uri_query
-   ; "Parse request URI with query with host" >:: parse_request_uri_host_query
-   ; "Parse request URI no slash with query string"
-     >:: parse_request_uri_query_no_slash
-   ; "Parse request URI no slash with query with host"
-     >:: parse_request_uri_host_query_no_slash
-   ; "Parse CONNECT request URI" >:: parse_request_connect
-   ; "Parse CONNECT request URI with host" >:: parse_request_connect_host
-   ; "Parse OPTIONS request URI" >:: parse_request_options
-   ; "Parse OPTIONS request URI with host" >:: parse_request_options_host
-   ; "Parse request URI parent traversal" >:: parse_request_uri_traversal
-   ; "Parse request URI parent traversal with host"
-     >:: parse_request_uri_host_traversal
-   ]) |> run_test_tt_main
+;;
+Printexc.record_backtrace true;
+Alcotest.run "test_request" [
+  "Auth", [
+    "header has auth", `Quick, header_has_auth;
+    "URI has user info", `Quick, uri_has_userinfo;
+    "from URI - do not override", `Quick, auth_uri_no_override;
+    "from URI", `Quick, auth_uri;
+  ];
+  "Parse URI", [
+    "simple", `Quick, parse_request_uri;
+    "with host", `Quick, parse_request_uri_host;
+    "with host and port", `Quick, parse_request_uri_host_port;
+    "double slash", `Quick, parse_request_uri_double_slash;
+    "double slash with host", `Quick, parse_request_uri_host_double_slash;
+    "triple slash", `Quick, parse_request_uri_triple_slash;
+    "triple slash with host", `Quick, parse_request_uri_host_triple_slash;
+    "no slash", `Quick, parse_request_uri_no_slash;
+    "no slash with host", `Quick, parse_request_uri_host_no_slash;
+    "empty", `Quick, parse_request_uri_empty;
+    "empty with host", `Quick, parse_request_uri_host_empty;
+    "path like scheme", `Quick, parse_request_uri_path_like_scheme;
+    "path like scheme with host", `Quick, parse_request_uri_host_path_like_scheme;
+    "path like host:port", `Quick, parse_request_uri_path_like_host_port;
+    "path like host:port with host",
+    `Quick, parse_request_uri_host_path_like_host_port;
+    "with query string", `Quick, parse_request_uri_query;
+    "with query with host", `Quick, parse_request_uri_host_query;
+    "no slash with query string", `Quick, parse_request_uri_query_no_slash;
+    "no slash with query with host",
+    `Quick, parse_request_uri_host_query_no_slash;
+    "CONNECT", `Quick, parse_request_connect;
+    "CONNECT with host", `Quick, parse_request_connect_host;
+    "OPTIONS", `Quick, parse_request_options;
+    "OPTIONS with host", `Quick, parse_request_options_host;
+    "parent traversal", `Quick, parse_request_uri_traversal;
+    "parent traversal with host", `Quick, parse_request_uri_host_traversal;
+  ];
+]
