@@ -52,7 +52,7 @@ let parse_request_uri_ r expected name =
                        (path ruri) (encoded_of_query (query ruri))
                     )
       in
-      assert_equal ~msg uri ruri
+      assert_equal ~cmp:Uri.equal ~msg uri ruri
     | `Invalid rmsg, `Invalid msg ->
       assert_equal rmsg msg
     | _ -> assert_failure (name^" unexpected request parse result")
