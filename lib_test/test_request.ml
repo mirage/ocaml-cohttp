@@ -4,7 +4,7 @@ open Cohttp
 
 module StringRequest = Request.Make(String_io.M)
 
-let uri_userinfo = Uri.of_string "http://foo:bar@ocaml.org"
+let uri_userinfo = Uri.of_string "http://foo:bar%2525@ocaml.org"
 
 let header_auth =
   let h = Header.init () in
@@ -32,7 +32,7 @@ let auth_uri _ =
   let r = Request.make uri_userinfo in
   assert_equal
     (r |> Request.headers |> Header.get_authorization)
-    (Some (`Basic ("foo", "bar")))
+    (Some (`Basic ("foo", "bar%25")))
 
 let opt_default default = function
   | None -> default
