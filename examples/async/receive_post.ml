@@ -21,7 +21,7 @@ let start_server port () =
 
 let () =
   Command.async_basic
-    ~summary:"Simple http server that ouputs body of POST's"
+    ~summary:"Simple http server that outputs body of POST's"
     Command.Spec.(empty +>
                   flag "-p" (optional_with_default 8080 int)
                     ~doc:"int Source port to listen on"
