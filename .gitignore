@@ -8,3 +8,4 @@ setup.bin
 *.docdir
 *.native
 *.byte
+_tests/
