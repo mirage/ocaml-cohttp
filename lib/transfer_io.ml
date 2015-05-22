@@ -67,7 +67,9 @@ module Make(IO : S.IO) = struct
       match !remaining with
       | 0L -> return Done
       | len ->
-        read ic (Int64.to_int len) >>= function
+        let len' = Int64.to_int len in
+        let read_len = min len' 0x8000 in
+        read ic read_len >>= function
         | "" -> return Done
         | buf ->
           remaining := Int64.sub !remaining (Int64.of_int (String.length buf));
