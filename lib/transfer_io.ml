@@ -65,15 +65,17 @@ module Make(IO : S.IO) = struct
     let read ~remaining ic () =
       (* TODO functorise string to a bigbuffer *)
       match !remaining with
-      |0L -> return Done
-      |len ->
-        read ic (Int64.to_int len) >>= function
+      | 0L -> return Done
+      | len ->
+        let len' = Int64.to_int len in
+        let read_len = min len' 0x8000 in
+        read ic read_len >>= function
         | "" -> return Done
         | buf ->
           remaining := Int64.sub !remaining (Int64.of_int (String.length buf));
           return (match !remaining with
-                  | 0L -> Final_chunk buf
-                  | _ -> Chunk buf)
+            | 0L -> Final_chunk buf
+            | _  -> Chunk buf)
 
     (* TODO enforce that the correct length is written? *)
     let write oc buf =
