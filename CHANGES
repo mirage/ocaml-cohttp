@@ -5,6 +5,7 @@
 * [async] Add `Cohttp_async.Server.close` to shutdown server (#337).
 * Add Async integration tests and consolidate Lwt tests using the
   new framework (#337).
+* Fix allocation of massive buffer when handling fixed size http bodies (#345)
 
 0.17.1 (2015-04-24):
 * [async] Limit buffer size to a maximum of 32K in the Async backend
