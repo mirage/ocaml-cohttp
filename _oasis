@@ -44,29 +44,33 @@ Library cohttp_test
   Modules:       Cohttp_test
   BuildDepends:  cohttp, oUnit
 
+Flag all
+  Description: build everything that is possible
+  Default:     false
+
 Flag lwt
   Description: build the Lwt library
-  Default:     false
+  Default$:    flag(all)
 
 Flag lwt_unix
   Description: build the Lwt-unix library
-  Default:     false
+  Default$:    flag(all)
 
 Flag async
   Description: build the Core/Async library
-  Default:     false
+  Default$:    flag(all)
 
 Flag js
   Description: build the Javascript XHR client library
-  Default:     false
+  Default$:    flag(all)
 
 Flag nettests
   Description: run the internet-using tests
-  Default:     false
+  Default$:    flag(all)
 
 Flag async_s3_example
   Description: build the async s3 example
-  Default:     false
+  Default$:    flag(all)
 
 Library cohttp_lwt
   Build$:        flag(lwt)
