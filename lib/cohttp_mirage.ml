@@ -73,7 +73,7 @@ module Server (Flow: V1_LWT.FLOW) = struct
   module XResponse = Cohttp_lwt.Make_response(HTTP_IO)
   include Cohttp_lwt.Make_server(HTTP_IO)(XRequest)(XResponse)
 
-  let listen spec flow ic oc =
+  let listen spec flow =
     let ch = Channel.create flow in
     callback spec flow ch ch
 

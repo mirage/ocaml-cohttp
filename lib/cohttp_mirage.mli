@@ -26,6 +26,6 @@ end
 
 module Server (Flow: V1_LWT.FLOW): sig
   include Cohttp_lwt.Server
-  val listen: t -> Flow.flow -> 'a -> 'b -> unit Lwt.t
+  val listen: t -> Flow.flow -> unit Lwt.t
 end
 (** HTTP server *)
