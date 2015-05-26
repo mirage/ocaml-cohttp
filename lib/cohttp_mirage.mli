@@ -18,9 +18,9 @@
 
 (** Cohttp implementation for mirage *)
 
-module Client (Conduit:Conduit_mirage.S): sig
+module Client: sig
   include Cohttp_lwt.Client
-  val ctx: Resolver_lwt.t -> Conduit.ctx -> ctx
+  val ctx: Resolver_lwt.t -> Conduit_mirage.t -> ctx
 end
 (** HTTP client. *)
 
