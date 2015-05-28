@@ -64,7 +64,11 @@ module Make(IO : S.IO) = struct
        let flush = false in
        return (`Ok { encoding; headers; version; status; flush })
 
-  let has_body {encoding} = Transfer.has_body encoding
+  let has_body {status; encoding} =
+    (* rfc7230#section-5.7.1 *)
+    match status with
+    | #Code.informational_status | `No_content | `Not_modified -> `No
+    | #Code.status_code -> Transfer.has_body encoding
   let make_body_reader {encoding} ic = Transfer_IO.make_reader encoding ic
   let read_body_chunk = Transfer_IO.read
 
