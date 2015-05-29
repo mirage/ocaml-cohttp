@@ -18,6 +18,8 @@ let server =
     Server.respond ~status:`OK ~body:(Body.of_string "") ();
     Server.respond ~status:`OK ~body:(Body.of_string_list chunk_body) ();
     Server.respond ~status:`OK ~body:(Body.of_string "") ();
+    (* not modified *)
+    Server.respond ~status:`Not_modified ~body:Body.empty ()
   ]
   |> List.map const
   |> response_sequence
@@ -51,11 +53,16 @@ let ts =
         incr counter
       ) resps >>= fun () ->
       assert_equal ~printer:string_of_int 3 !counter;
-      return_unit
-    in
+      return_unit in
+    let not_modified_has_no_body () =
+      Client.get uri >>= fun (resp, body) ->
+      assert_equal (Response.status resp) `Not_modified;
+      body |> Body.is_empty >|= fun is_empty ->
+      assert_bool "No body returned when not modified" is_empty in
     [ "sanity test", t
     ; "empty chunk test", empty_chunk
     ; "pipelined chunk test", pipelined_chunk
+    ; "no body when response is not modified", not_modified_has_no_body
     ]
   end
 
