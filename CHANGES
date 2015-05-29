@@ -1,6 +1,8 @@
 0.17.3 (trunk):
 * Add Cohttp_async.Client.callv. Allows for making requests while reusing an
   HTTP conncetion (#344) 
+* Responses of status 1xx/204/304 have no bodies and cohttp should not attempt
+  to read them (#355)
 
 0.17.2 (2015-05-24):
 * Remove dependency on the Lwt Camlp4 syntax extension (#334).
