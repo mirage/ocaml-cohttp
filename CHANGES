@@ -1,3 +1,6 @@
+2.3.0 (29-05-2015)
+* Adapt to conduit 0.8.4
+
 2.2.0: (08-04-2015)
 * Do not user `lwt.syntax`
 * Rename `HTTP` to `Cohttp_Mirage` (#9)
