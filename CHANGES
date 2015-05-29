@@ -1,6 +1,6 @@
 0.17.3 (trunk):
 * Add Cohttp_async.Client.callv. Allows for making requests while reusing an
-  HTTP conncetion (#344) 
+  HTTP connection (#344) 
 * Responses of status 1xx/204/304 have no bodies and cohttp should not attempt
   to read them (#355)
 
@@ -60,7 +60,7 @@ New features and bug fixes:
 * Added async client for S3. (#304)
 * Fix String_io.read_line to trim '\r' from end of string (#300)
 * Fix `cohttp-server-lwt` to correctly bind to a specific interface (#298).
-* Add `Cohttp_async.request` to send raw, umodified requests.
+* Add `Cohttp_async.request` to send raw, unmodified requests.
 * Supplying a `content-range` or `content-range` header in any client
   request will always override any other encoding preference (#281).
 * Add a `cohttp-lwt-proxy` to act as an HTTP proxy. (#248)
@@ -240,7 +240,7 @@ New features and bugfixes:
 * Fix buggy Async chunked POST handling.
 
 0.10.0 (2014-03-02):
-* Interface change: The `Request` and `Response` module types now explictly
+* Interface change: The `Request` and `Response` module types now explicitly
   signal `Eof` and `Invalid` (for errors), to help the backend distinguish them.
 * Interface change: Unify HTTP body handling across backends into a `Cohttp.Body`
   module.  This is extended by Async/Lwt implementations with their specific
@@ -325,7 +325,7 @@ New features and bugfixes:
 * Remove `Cohttp_async.body` type alias and just use `string Pipe.Reader.t` for more explicit types.
 
 0.9.7 (2013-05-10):
-* Attach a GC finaliser to the Lwt client to ensure that even an HTTP body isnt consumed, the socket will eventually be closed (#11).
+* Attach a GC finaliser to the Lwt client to ensure that even an HTTP body isn't consumed, the socket will eventually be closed (#11).
 * Add an Async.Server interface, and revise the Client interface to be more in line with Core standards.
 * Add 422 Unprocessable Entity code.
 * Refactor modules better across Lwt/Async, but incompatible with earlier releases for Async (Lwt is unchanged at present).
