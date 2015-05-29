@@ -15,7 +15,7 @@ let response_bodies = [ "Testing"
 let ok s = Server.respond `OK ~body:(Body.of_string s)
 
 let chunk size = String.init ~f:(Fn.const 'X') size
-let chunk_size = 30000
+let chunk_size = 33_000
 let chunks = 3
 
 let server =
