@@ -14,6 +14,10 @@ let response_bodies = [ "Testing"
 
 let ok s = Server.respond `OK ~body:(Body.of_string s)
 
+let chunk size = String.init ~f:(Fn.const 'X') size
+let chunk_size = 30000
+let chunks = 3
+
 let server =
   [ (* empty_chunk *)
     const @@ Server.respond `OK ~body:(Body.of_string_list chunk_body);
@@ -22,9 +26,23 @@ let server =
     (* large request *)
     (fun _ body ->
        body |> Body.to_string >>| String.length >>= fun len ->
-       Server.respond_with_string (Int.to_string len))
+       Server.respond_with_string (Int.to_string len));
   ] @ (* pipelined_chunk *)
   (response_bodies |> List.map ~f:(Fn.compose const ok))
+  @ [ (* large response chunked *)
+    (fun _ _ ->
+       let body =
+         let (r, w) = Pipe.create () in
+         let chunk = chunk chunk_size in
+         for i = 0 to chunks - 1 do
+           Pipe.write_without_pushback w chunk
+         done;
+         Pipe.close w;
+         r
+       in
+       Server.respond_with_pipe ~code:`OK body
+    )
+  ]
   |> response_sequence
 
 
@@ -60,12 +78,17 @@ let ts =
                          let expected_body = body_q |> Queue.dequeue_exn in
                          body |> Body.to_string >>| fun body ->
                          assert_equal ~printer expected_body body
-                       )
-    in
+                       ) in
+    let large_chunked_response () =
+      Client.get ~headers uri >>= fun (resp, body) ->
+      assert_equal Cohttp.Transfer.Chunked (Response.encoding resp);
+      body |> Body.to_string >>| String.length >>| fun len ->
+      assert_equal ~printer:(Int.to_string) (chunk_size * chunks) len in
     [ "empty chunk test", empty_chunk
     ; "large response", large_response
     ; "large request", large_request
     ; "pipelined chunk test", pipelined_chunk
+    ; "large chunked response", large_chunked_response
     ]
   end
 
