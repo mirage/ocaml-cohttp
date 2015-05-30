@@ -50,12 +50,16 @@ let read_line =
     )
 
 let read ic len =
+  if len > 0x8000 then
+    invalid_arg "read: trying to allocate more than 0x8000 bytes";
   let buf = String.create len in
   Reader.read ic ~len buf >>| function
   | `Ok len' -> String.sub buf 0 len'
   | `Eof -> ""
 
 let read_exactly ic len =
+  if len > 0x8000 then
+    invalid_arg "read: trying to allocate more than 0x8000 bytes";
   let buf = String.create len in
   Reader.really_read ic ~pos:0 ~len buf >>|
   function
