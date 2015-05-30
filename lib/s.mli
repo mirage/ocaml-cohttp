@@ -60,11 +60,6 @@ module type IO = sig
       request. *)
   val read : ic -> int -> string t
 
-  (** [read_exactly ic len] will block until exactly [len] characters
-      are read from the input channel [ic].  If EOF or some other
-      error condition is reached, then {!None} is returned. *)
-  val read_exactly : ic -> int -> string option t
-
   (** [write oc s] will block until the complete [s] string is
       written to the output channel [oc]. *)
   val write : oc -> string -> unit t
