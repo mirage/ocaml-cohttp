@@ -22,16 +22,16 @@
 (** The encoding format detected from the [transfer-encoding] and
     [content-length] headers *)
 type encoding =
- | Chunked             (** dynamic chunked encoding *)
- | Fixed of int64      (** fixed size content *)
- | Unknown             (** unknown body size, which leads to best-effort *)
+  | Chunked             (** dynamic chunked encoding *)
+  | Fixed of int64      (** fixed size content *)
+  | Unknown             (** unknown body size, which leads to best-effort *)
 with sexp
 
 (** A chunk of body that also signals if there to more to arrive *)
 type chunk =
- | Chunk of string (** chunk of data and not the end of stream *)
- | Final_chunk of string (** the last chunk of data, so no more should be read *)
- | Done (** no more body data is present *)
+  | Chunk of string (** chunk of data and not the end of stream *)
+  | Final_chunk of string (** the last chunk of data, so no more should be read *)
+  | Done (** no more body data is present *)
 with sexp
 
 (** Convert the encoding format to a human-readable string *)

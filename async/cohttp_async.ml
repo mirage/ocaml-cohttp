@@ -294,20 +294,20 @@ module Server = struct
           `Ok (req, body)
       ) in
     Pipe.iter requests_pipe ~f:(fun (req, body) ->
-        handle_request ~body sock req
-        >>= fun (res, res_body) ->
-        let keep_alive = Request.is_keep_alive req in
-        let flush = Response.flush res in
-        let res =
-          let headers = Cohttp.Header.add_unless_exists
-              (Cohttp.Response.headers res)
-              "connection"
-              (if keep_alive then "keep-alive" else "close") in
-          { res with Response.headers } in
-        Response.write ~flush (Body.write Response.write_body res_body) res wr >>= fun () ->
-        Writer.flushed wr >>= fun () ->
-        Body.drain body >>| Ivar.fill !last_body_pipe_drained
-      ) >>= fun () ->
+      handle_request ~body sock req
+      >>= fun (res, res_body) ->
+      let keep_alive = Request.is_keep_alive req in
+      let flush = Response.flush res in
+      let res =
+        let headers = Cohttp.Header.add_unless_exists
+                        (Cohttp.Response.headers res)
+                        "connection"
+                        (if keep_alive then "keep-alive" else "close") in
+        { res with Response.headers } in
+      Response.write ~flush (Body.write Response.write_body res_body) res wr >>= fun () ->
+      Writer.flushed wr >>= fun () ->
+      Body.drain body >>| Ivar.fill !last_body_pipe_drained
+    ) >>= fun () ->
     Writer.close wr >>= fun () ->
     Reader.close rd
 
