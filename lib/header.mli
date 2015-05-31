@@ -77,6 +77,7 @@ val fold : (string -> string -> 'a -> 'a) -> t -> 'a -> 'a
 val of_list : (string * string) list -> t
 val to_list : t -> (string * string) list
 val to_lines : t -> string list
+val to_string : t -> string
 
 val get_content_range : t -> Int64.t option
 val get_media_type : t -> string option
