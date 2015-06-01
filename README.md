@@ -164,7 +164,7 @@ serve the files over HTTP.
 $ cohttp-server-async
 ```
 
-Assuming that the server is running cohttp's source directory:
+Assuming that the server is running in cohttp's source directory:
 
 ```
 $ cohttp-curl-lwt 'http://0.0.0.0:8080/_oasis'
