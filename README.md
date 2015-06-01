@@ -9,7 +9,7 @@ libraries:
 * `Cohttp_async` uses the [Async](https://realworldocaml.org/v1/en/html/concurrent-programming-with-async.html)
   library.
 * `Cohttp_lwt` exposes an OS-independent Lwt interface, which is used
-  by the the [Mirage](http://www.openmirage.org) interface
+  by the [Mirage](http://www.openmirage.org) interface
   to generate standalone microkernels (see the [mirage-http](https://github.com/mirage/mirage-http)
   repository).
 * `Cohttp_lwt_xhr` compiles to a JavaScript module that maps the Cohttp
@@ -39,14 +39,33 @@ You can also obtain the development release:
 $ opam pin add cohttp --dev-repo
 ```
 
-## Simple HTTP server
+## Binaries
 
-If you install the Async dependency, then a `cohttp-server-async` binary will
-also be built and installed that acts in a similar fashion to the Python
-`SimpleHTTPServer`.  Just run `cohttp-server-async` in a directory and it will
-open up a local port and serve the files over HTTP.
+Cohttp comes with a few simple binaries that are handy, useful testing cohttp
+itself, and serve as examples of how to use cohttp. The binaries come in two
+flavours - Async and Lwt based.
 
-There is also an Lwt version of the SimpleHTTPServer installed as the
-`cohttp-server-lwt` binary.  The source code for both is in the `bin/`
-subdirectory and is a good starting point for how to write servers using
-the library.
+* `$ cohttp-curl-{lwt,async}`
+
+This is a simple curl utility implemented using cohttp. An example of an
+invocation is:
+
+```
+$ cohttp-curl-lwt -v -X GET "http://www.reddit.com/"
+```
+
+* `$ cohttp-server-{lwt,async}`
+
+This binary acts in a similar fashion to the Python `SimpleHTTPServer`. Just
+run `cohttp-server-async` in a directory and it will open up a local port and
+serve the files over HTTP.
+
+```
+$ cohttp-server-async
+```
+
+Assuming that the server is running cohttp's source directory:
+
+```
+$ cohttp-curl-lwt 'http://0.0.0.0:8080/_oasis'
+```
