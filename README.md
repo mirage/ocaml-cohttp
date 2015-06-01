@@ -85,6 +85,60 @@ There's a few things to notice:
 * We must trigger lwt's event loop for the request to run. `Lwt_man.run` will
   run the event loop and return with final value of `body` which we then print.
 
+Consult the following modules for reference:
+
+* [Cohttp_lwt.Client](https://github.com/mirage/ocaml-cohttp/blob/master/lwt/cohttp_lwt.mli)
+* [Cohttp_async.Client](https://github.com/mirage/ocaml-cohttp/blob/master/async/cohttp_async.mli)
+
+## Basic Server Tutorial
+
+Implementing a server in cohttp is mostly equivalent to implementing a function
+of type:
+
+```ocaml
+conn -> Cohttp.Request.t -> Cohttp_lwt_body.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+```
+
+The parameters are self explanatory but we'll summarize them quickly here:
+
+* `conn` - contains connection information
+* `Cohttp.Request.t` - Request information such as method, uri, headers, etc.
+* `Cohttp_lwt_body.t` - Contains the request body. You must manually decode the
+  request body into json, form encoded pairs, etc. For cohttp, the body is
+  simply binary data.
+
+Here's an example of a simple cohttp server that outputs back request
+information.
+
+```ocaml
+open Lwt
+open Cohttp
+open Cohttp_lwt_unix
+
+let server =
+  let s =
+    Server.make ~callback:(fun _conn req body ->
+      let uri = req |> Request.uri |> Uri.to_string in
+      let meth = req |> Request.meth |> Status.string_of_meth in
+      let headers = req |> Response.headers |> Header.to_string in
+      body |> Cohtp_lwt_body.to_string >|= fun body ->
+      Printf.sprintf "Uri: %s\nMethod: %s\nHeaders\nHeaders: %s\nBody: %s"
+        uri meth headers body
+      >|= fun body ->
+      Server.respond_string ~status:`OK ~body ()
+    ) in
+  Server.create ~mode:(`TCP (`Port 8000)) s
+
+let _ = Lwt_main.run server
+```
+
+The following modules are useful references:
+
+* [Cohttp_lwt.Server](https://github.com/mirage/ocaml-cohttp/blob/master/lwt/cohttp_lwt.mli) - Common to mirage and Unix
+* [Cohttp_lwt_unix.Server](https://github.com/mirage/ocaml-cohttp/blob/master/lwt/cohttp_lwt_unix.mli) - Unix specific.
+* [Cohttp_async.Server](https://github.com/mirage/ocaml-cohttp/blob/master/async/cohttp_async.mli)
+
+
 ## Binaries
 
 Cohttp comes with a few simple binaries that are handy, useful testing cohttp
