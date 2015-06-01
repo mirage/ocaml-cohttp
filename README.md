@@ -39,6 +39,52 @@ You can also obtain the development release:
 $ opam pin add cohttp --dev-repo
 ```
 
+## Client Tutorial
+
+Cohttp provides clients for Async, Lwt, and jsoo (Lwt based). In this tutorial,
+we will use the lwt client but it should be easily translateable to Async.
+
+To create a simple request, use one of the methods in `Cohttp_lwt_unix.Client`.
+`call` is the most general, there are also http method specialized such as
+`get`, `post`, etc.
+
+For example downloading the reddit frontpage:
+
+```ocaml
+open Lwt
+open Cohttp
+open Cohttp_lwt_unix
+
+let body =
+  Client.get (Uri.of_string "http://www.reddit.com/") >>= fun (resp, body) ->
+  let code = resp |> Response.status |> Code.code_of_status in
+  Printf.printf "Response code: %d\n" code;
+  Printf.printf "Headers: %s\n" (resp |> Response.headers |> Header.to_strgin);
+  body |> Cohttp_lwt_body.to_string >|= fun body ->
+  Printf.printf "Bode of length: %d\n" (String.length body);
+  body
+
+let () =
+  let body = Lwt_main.run body in
+  print_endline ("Received body\n" ^ body)
+```
+
+There's a few things to notice:
+
+* We open 2 modules. `Cohttp` contains the backend independent stuff and
+  `Cohttp_lwt_unix` is the lwt + unix specific stuff.
+
+* `Client.get` accepts a `Uri.t` and makes an http request. `Client.get` also
+  accepts optional arguments for things like header information.
+* The http response is returned in a tuple. The first element of the tuple
+  contains the response's status code, headers, http version, etc. The second
+  element contains the body.
+* The body is then converted to a string and is returned (after the length is
+  printed). Note that `Cohttp_lwt_body.to_string` hence it's up to us to keep
+  a reference to the result.
+* We must trigger lwt's event loop for the request to run. `Lwt_man.run` will
+  run the event loop and return with final value of `body` which we then print.
+
 ## Binaries
 
 Cohttp comes with a few simple binaries that are handy, useful testing cohttp
