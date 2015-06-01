@@ -29,6 +29,9 @@ let make ?(version=`HTTP_1_1) ?(status=`OK) ?(flush=false) ?(encoding=Transfer.C
   let headers = match headers with None -> Header.init () |Some h -> h in
   { encoding; headers; version; flush; status }
 
+let pp_hum ppf r =
+  Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib.Sexp.to_string)
+
 type tt = t
 module Make(IO : S.IO) = struct
   type t = tt

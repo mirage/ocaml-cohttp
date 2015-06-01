@@ -29,6 +29,9 @@
     serializers to convert to-and-from an {!Core.Std.Sexp.t}. *)
 include S.Response
 
+(** Human-readable output, used by the toplevel printer *)
+val pp_hum : Format.formatter -> t -> unit
+
 (** Functor to construct the IO-specific response handling function *)
 module Make(IO : S.IO) : S.Http_io
   with type t = t
