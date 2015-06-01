@@ -44,6 +44,15 @@ Library cohttp_test
   Modules:       Cohttp_test
   BuildDepends:  cohttp, oUnit
 
+Library cohttp_top
+  Install:       true
+  Path:          top
+  Findlibname:   top
+  FindlibParent: cohttp
+  XMETARequires: cohttp
+  BuildDepends:  compiler-libs.toplevel
+  Modules:       Cohttp_top
+
 Flag all
   Description: build everything that is possible
   Default:     false
