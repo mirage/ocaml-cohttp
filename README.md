@@ -139,7 +139,7 @@ The following modules are useful references:
 * [Cohttp_async.Server](https://github.com/mirage/ocaml-cohttp/blob/master/async/cohttp_async.mli)
 
 
-## Binaries
+## Installed Binaries
 
 Cohttp comes with a few simple binaries that are handy, useful testing cohttp
 itself, and serve as examples of how to use cohttp. The binaries come in two
