@@ -30,7 +30,7 @@ let make ?(version=`HTTP_1_1) ?(status=`OK) ?(flush=false) ?(encoding=Transfer.C
   { encoding; headers; version; flush; status }
 
 let pp_hum ppf r =
-  Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib.Sexp.to_string)
+  Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib.Sexp.to_string_hum)
 
 type tt = t
 module Make(IO : S.IO) = struct
