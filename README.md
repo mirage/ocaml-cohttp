@@ -1,6 +1,6 @@
 [![Join the chat at https://gitter.im/mirage/ocaml-cohttp](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/mirage/ocaml-cohttp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-CoHTTP is an OCaml library for creating HTTP daemons.  It has a portable
+Cohttp is an OCaml library for creating HTTP daemons.  It has a portable
 HTTP parser, and implementations using various asynchronous programming
 libraries:
 
