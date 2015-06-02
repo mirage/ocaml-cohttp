@@ -56,8 +56,6 @@ end
 
 module type Client = sig
   module IO : IO
-  module Request : Request
-  module Response : Response
 
   type ctx with sexp_of
   val default_ctx : ctx
@@ -121,13 +119,11 @@ end
 
 module Make_client
     (IO:IO)
-    (Request:Request with module IO = IO)
-    (Response:Response with module IO = IO)
     (Net:Net with module IO = IO) = struct
 
   module IO = IO
-  module Request = Request
-  module Response = Response
+  module Response = Make_response(IO)
+  module Request = Make_request(IO)
 
   type ctx = Net.ctx with sexp_of
   let default_ctx = Net.default_ctx
@@ -243,8 +239,6 @@ end
 (** Configuration of servers. *)
 module type Server = sig
   module IO : IO
-  module Request : Request
-  module Response : Response
 
   type conn = IO.conn * Cohttp.Connection.t
 
@@ -289,13 +283,10 @@ module type Server = sig
 end
 
 
-module Make_server(IO:IO)
-    (Request:Request with module IO=IO)
-    (Response:Response with module IO=IO)
-= struct
+module Make_server(IO:IO) = struct
   module IO = IO
-  module Request = Request
-  module Response = Response
+  module Request = Make_request(IO)
+  module Response = Make_response(IO)
 
   type conn = IO.conn * Cohttp.Connection.t
 

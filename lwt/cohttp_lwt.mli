@@ -69,8 +69,6 @@ module Make_response(IO:IO) : Response with module IO = IO
     up, but this can take some additional time to happen. *)
 module type Client = sig
   module IO : IO
-  module Request : Request
-  module Response : Response
 
   type ctx with sexp_of
   val default_ctx : ctx
@@ -144,24 +142,15 @@ module type Client = sig
 end
 
 (** The [Make_client] functor glues together a {! Cohttp.S.IO } implementation
-    with {! Cohttp.Request } and {! Cohttp.Response } to send requests down
-    a connection that is established by the  {! Net } module.
-    The resulting module satisfies the {! Client } module type. *)
-module Make_client
-    (IO:IO)
-    (Request:Request with module IO = IO)
-    (Response:Response with module IO = IO)
-    (Net:Net with module IO = IO) : Client
+    to send requests down a connection that is established by the  {! Net }
+    module.  The resulting module satisfies the {! Client } module type. *)
+module Make_client (IO:IO) (Net:Net with module IO = IO) : Client
     with module IO=IO
-     and module Request=Request
-     and module Response=Response
      and type ctx = Net.ctx
 
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)
 module type Server = sig
   module IO : IO
-  module Request : Request
-  module Response : Response
 
   type conn = IO.conn * Cohttp.Connection.t
 
@@ -215,13 +204,6 @@ module type Server = sig
 end
 
 (** The [Make_server] functor glues together a {! Cohttp.S.IO } implementation
-    with {! Cohttp.Request } and {! Cohttp.Response } to send requests down
-    a connection that is established by the  {! Net } module.
-    The resulting module satisfies the {! Server } module type. *)
-module Make_server
-    (IO:IO)
-    (Request:Request with module IO=IO)
-    (Response:Response with module IO=IO)
-  : Server with module IO = IO
-            and module Request = Request
-            and module Response = Response
+    to send requests down a connection that is established by the  {! Net }
+    module.  The resulting module satisfies the {! Server } module type. *)
+module Make_server (IO:IO) : Server with module IO = IO

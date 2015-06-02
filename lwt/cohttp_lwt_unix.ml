@@ -22,8 +22,6 @@ module Response = Cohttp_lwt.Make_response(Cohttp_lwt_unix_io)
 module type C = sig
   include Cohttp_lwt.Client
     with module IO = Cohttp_lwt_unix_io
-     and module Request = Request
-     and module Response = Response
      and type ctx = Cohttp_lwt_unix_net.ctx
   val custom_ctx: ?ctx:Conduit_lwt_unix.ctx -> ?resolver:Resolver_lwt.t -> unit -> ctx
 
@@ -32,13 +30,12 @@ end
 module Client = struct
   include
     Cohttp_lwt.Make_client
-      (Cohttp_lwt_unix_io)(Request)(Response)(Cohttp_lwt_unix_net)
+      (Cohttp_lwt_unix_io)(Cohttp_lwt_unix_net)
 
   let custom_ctx = Cohttp_lwt_unix_net.init
 end
 
-module Server_core =
-  Cohttp_lwt.Make_server (Cohttp_lwt_unix_io)(Request)(Response)
+module Server_core = Cohttp_lwt.Make_server (Cohttp_lwt_unix_io)
 
 module Server = struct
   include Server_core
@@ -92,10 +89,7 @@ module Server = struct
 end
 
 module type S = sig
-
   include Cohttp_lwt.Server with module IO = Cohttp_lwt_unix_io
-                             and module Request = Request
-                             and module Response = Response
 
   val resolve_file :
     docroot:string -> uri:Uri.t -> string
