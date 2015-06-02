@@ -1,4 +1,8 @@
 2.3.0 (29-05-2015)
+* Simplify the `Client` signature to be a simple module. It is not
+  a functor depending on `Conduit` anymore and the context is now
+  more explicit.
+* Expose type equalities for `IO.conn` in the `Server` functor
 * Adapt to conduit 0.8.4
 
 2.2.0: (08-04-2015)
