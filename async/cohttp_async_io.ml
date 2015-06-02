@@ -55,13 +55,6 @@ let read ic len =
   | `Ok len' -> String.sub buf 0 len'
   | `Eof -> ""
 
-let read_exactly ic len =
-  let buf = String.create len in
-  Reader.really_read ic ~pos:0 ~len buf >>|
-  function
-  |`Ok -> Some buf
-  |`Eof _ -> None
-
 let write =
   check_debug
     (fun oc buf ->

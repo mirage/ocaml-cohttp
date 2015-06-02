@@ -51,28 +51,6 @@ let read ic count =
   else
     try_read ()
 
-let read_exactly ic buf off len =
-  let try_read () =
-    Lwt.try_bind (fun () -> Lwt_io.read_into_exactly ic buf off len)
-      (fun () -> Lwt.return_true)
-      (function
-        | End_of_file -> Lwt.return_false
-        | x -> Lwt.fail x) in
-  if !CD.debug_active then
-    try_read () >>= fun rd ->
-    (match rd with
-    | true -> CD.debug_print "<<< %S" (String.sub buf off len)
-    | false -> CD.debug_print "<<< <EOF>\n");
-    return rd
-  else
-    try_read ()
-
-let read_exactly ic len =
-  let buf = Bytes.create len in
-  read_exactly ic buf 0 len >>= function
-    | true -> return (Some buf)
-    | false -> Lwt.return_none
-
 let write oc buf =
   if !CD.debug_active then
     (CD.debug_print ">>> %s" buf; Lwt_io.write oc buf)

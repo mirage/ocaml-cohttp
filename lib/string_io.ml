@@ -74,8 +74,6 @@ module M = struct
       Some s
     end
 
-  let read_exactly x n = return (read_exactly' x n)
-
   let read x n =
     match read_exactly' x n with
     | None when x.pos >= x.len -> raise End_of_file
