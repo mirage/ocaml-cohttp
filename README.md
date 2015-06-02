@@ -61,7 +61,7 @@ let body =
   Printf.printf "Response code: %d\n" code;
   Printf.printf "Headers: %s\n" (resp |> Response.headers |> Header.to_string);
   body |> Cohttp_lwt_body.to_string >|= fun body ->
-  Printf.printf "Bode of length: %d\n" (String.length body);
+  Printf.printf "Body of length: %d\n" (String.length body);
   body
 
 let () =
@@ -82,7 +82,7 @@ There's a few things to notice:
 * The body is then converted to a string and is returned (after the length is
   printed). Note that `Cohttp_lwt_body.to_string` hence it's up to us to keep
   a reference to the result.
-* We must trigger lwt's event loop for the request to run. `Lwt_man.run` will
+* We must trigger lwt's event loop for the request to run. `Lwt_main.run` will
   run the event loop and return with final value of `body` which we then print.
 
 Consult the following modules for reference:
