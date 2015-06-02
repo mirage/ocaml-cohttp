@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: e44c7776ad3e33b5f7a5cacdf7e3cf51)
+# DO NOT EDIT (digest: b921c1d200fd6e1b8de9feccf73a5876)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -666,6 +666,64 @@ true: annot, bin_annot
 <examples/async/*.ml{,i,y}>: use_cohttp
 <examples/async/*.ml{,i,y}>: use_cohttp_async
 <examples/async/receive_post.{native,byte}>: custom
+# Executable client_lwt_doc_example
+<examples/doc/client_lwt.{native,byte}>: pkg_base64
+<examples/doc/client_lwt.{native,byte}>: pkg_bytes
+<examples/doc/client_lwt.{native,byte}>: pkg_conduit.lwt-unix
+<examples/doc/client_lwt.{native,byte}>: pkg_fieldslib
+<examples/doc/client_lwt.{native,byte}>: pkg_fieldslib.syntax
+<examples/doc/client_lwt.{native,byte}>: pkg_lwt
+<examples/doc/client_lwt.{native,byte}>: pkg_lwt.unix
+<examples/doc/client_lwt.{native,byte}>: pkg_magic-mime
+<examples/doc/client_lwt.{native,byte}>: pkg_re.emacs
+<examples/doc/client_lwt.{native,byte}>: pkg_sexplib
+<examples/doc/client_lwt.{native,byte}>: pkg_sexplib.syntax
+<examples/doc/client_lwt.{native,byte}>: pkg_stringext
+<examples/doc/client_lwt.{native,byte}>: pkg_unix
+<examples/doc/client_lwt.{native,byte}>: pkg_uri
+<examples/doc/client_lwt.{native,byte}>: pkg_uri.services
+<examples/doc/client_lwt.{native,byte}>: use_cohttp
+<examples/doc/client_lwt.{native,byte}>: use_cohttp_lwt
+<examples/doc/client_lwt.{native,byte}>: use_cohttp_lwt_unix
+<examples/doc/client_lwt.{native,byte}>: custom
+# Executable server_lwt_doc_example
+<examples/doc/server_lwt.{native,byte}>: pkg_base64
+<examples/doc/server_lwt.{native,byte}>: pkg_bytes
+<examples/doc/server_lwt.{native,byte}>: pkg_conduit.lwt-unix
+<examples/doc/server_lwt.{native,byte}>: pkg_fieldslib
+<examples/doc/server_lwt.{native,byte}>: pkg_fieldslib.syntax
+<examples/doc/server_lwt.{native,byte}>: pkg_lwt
+<examples/doc/server_lwt.{native,byte}>: pkg_lwt.unix
+<examples/doc/server_lwt.{native,byte}>: pkg_magic-mime
+<examples/doc/server_lwt.{native,byte}>: pkg_re.emacs
+<examples/doc/server_lwt.{native,byte}>: pkg_sexplib
+<examples/doc/server_lwt.{native,byte}>: pkg_sexplib.syntax
+<examples/doc/server_lwt.{native,byte}>: pkg_stringext
+<examples/doc/server_lwt.{native,byte}>: pkg_unix
+<examples/doc/server_lwt.{native,byte}>: pkg_uri
+<examples/doc/server_lwt.{native,byte}>: pkg_uri.services
+<examples/doc/server_lwt.{native,byte}>: use_cohttp
+<examples/doc/server_lwt.{native,byte}>: use_cohttp_lwt
+<examples/doc/server_lwt.{native,byte}>: use_cohttp_lwt_unix
+<examples/doc/*.ml{,i,y}>: pkg_base64
+<examples/doc/*.ml{,i,y}>: pkg_bytes
+<examples/doc/*.ml{,i,y}>: pkg_conduit.lwt-unix
+<examples/doc/*.ml{,i,y}>: pkg_fieldslib
+<examples/doc/*.ml{,i,y}>: pkg_fieldslib.syntax
+<examples/doc/*.ml{,i,y}>: pkg_lwt
+<examples/doc/*.ml{,i,y}>: pkg_lwt.unix
+<examples/doc/*.ml{,i,y}>: pkg_magic-mime
+<examples/doc/*.ml{,i,y}>: pkg_re.emacs
+<examples/doc/*.ml{,i,y}>: pkg_sexplib
+<examples/doc/*.ml{,i,y}>: pkg_sexplib.syntax
+<examples/doc/*.ml{,i,y}>: pkg_stringext
+<examples/doc/*.ml{,i,y}>: pkg_unix
+<examples/doc/*.ml{,i,y}>: pkg_uri
+<examples/doc/*.ml{,i,y}>: pkg_uri.services
+<examples/doc/*.ml{,i,y}>: use_cohttp
+<examples/doc/*.ml{,i,y}>: use_cohttp_lwt
+<examples/doc/*.ml{,i,y}>: use_cohttp_lwt_unix
+<examples/doc/server_lwt.{native,byte}>: custom
 # Executable test_sanity
 <lib_test/test_sanity.{native,byte}>: pkg_base64
 <lib_test/test_sanity.{native,byte}>: pkg_bytes
