@@ -59,7 +59,7 @@ let body =
   Client.get (Uri.of_string "http://www.reddit.com/") >>= fun (resp, body) ->
   let code = resp |> Response.status |> Code.code_of_status in
   Printf.printf "Response code: %d\n" code;
-  Printf.printf "Headers: %s\n" (resp |> Response.headers |> Header.to_strgin);
+  Printf.printf "Headers: %s\n" (resp |> Response.headers |> Header.to_string);
   body |> Cohttp_lwt_body.to_string >|= fun body ->
   Printf.printf "Bode of length: %d\n" (String.length body);
   body
@@ -116,20 +116,18 @@ open Cohttp
 open Cohttp_lwt_unix
 
 let server =
-  let s =
-    Server.make ~callback:(fun _conn req body ->
-      let uri = req |> Request.uri |> Uri.to_string in
-      let meth = req |> Request.meth |> Status.string_of_meth in
-      let headers = req |> Response.headers |> Header.to_string in
-      body |> Cohtp_lwt_body.to_string >|= fun body ->
-      Printf.sprintf "Uri: %s\nMethod: %s\nHeaders\nHeaders: %s\nBody: %s"
-        uri meth headers body
-      >|= fun body ->
-      Server.respond_string ~status:`OK ~body ()
-    ) in
-  Server.create ~mode:(`TCP (`Port 8000)) s
+  let callback _conn req body =
+    let uri = req |> Request.uri |> Uri.to_string in
+    let meth = req |> Request.meth |> Code.string_of_method in
+    let headers = req |> Request.headers |> Header.to_string in
+    body |> Cohttp_lwt_body.to_string >|= (fun body ->
+      (Printf.sprintf "Uri: %s\nMethod: %s\nHeaders\nHeaders: %s\nBody: %s"
+         uri meth headers body))
+    >>= (fun body -> Server.respond_string ~status:`OK ~body ())
+  in
+  Server.create ~mode:(`TCP (`Port 8000)) (Server.make ~callback ())
 
-let _ = Lwt_main.run server
+let () = ignore (Lwt_main.run server)
 ```
 
 The following modules are useful references:
