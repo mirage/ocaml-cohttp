@@ -1,8 +1,14 @@
-0.17.3 (trunk):
+0.18.0 (2015-06-02):
 * Add Cohttp_async.Client.callv. Allows for making requests while reusing an
   HTTP connection (#344) 
 * Responses of status 1xx/204/304 have no bodies and cohttp should not attempt
   to read them (#355)
+* Add top level printers. See cohttp.top findlib package (#363)
+* Add `Header.to_string` (#362)
+* Fix chunk truncation in chunked transfer encoding (#360)
+
+Compatibility breaking interface changes:
+* Remove `Request`/`Response` modules outside of Cohttp pack (#349)
 
 0.17.2 (2015-05-24):
 * Remove dependency on the Lwt Camlp4 syntax extension (#334).
