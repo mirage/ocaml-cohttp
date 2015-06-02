@@ -105,3 +105,6 @@ val prepend_user_agent : t -> string -> t
     "User-Agent" field (if any). *)
 
 val connection : t -> [`Keep_alive | `Close | `Unknown of string] option
+
+(** Human-readable output, used by the toplevel printer *)
+val pp_hum : Format.formatter -> t -> unit

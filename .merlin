@@ -32,6 +32,7 @@ PKG cmdliner
 PKG js_of_ocaml
 PKG magic-mime
 PKG alcotest
+PKG compiler-libs.toplevel
 
 B _build/
 B _build/lwt

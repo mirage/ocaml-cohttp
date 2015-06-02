@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 0993413eb2018c7116a8e1ceec9b45f9)
+# DO NOT EDIT (digest: 43144d443f8df44ab09d0fc9136bc5d0)
 version = "0.17.2"
 description = "HTTP library for Lwt, Async, JavaScript and Mirage"
 requires =
@@ -9,6 +9,17 @@ archive(byte, plugin) = "cohttp.cma"
 archive(native) = "cohttp.cmxa"
 archive(native, plugin) = "cohttp.cmxs"
 exists_if = "cohttp.cma"
+package "top" (
+ version = "0.17.2"
+ description = "HTTP library for Lwt, Async, JavaScript and Mirage"
+ requires = "cohttp"
+ archive(byte) = "cohttp_top.cma"
+ archive(byte, plugin) = "cohttp_top.cma"
+ archive(native) = "cohttp_top.cmxa"
+ archive(native, plugin) = "cohttp_top.cmxs"
+ exists_if = "cohttp_top.cma"
+)
+
 package "test" (
  version = "0.17.2"
  description = "HTTP library for Lwt, Async, JavaScript and Mirage"

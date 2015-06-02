@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 811b48ecb494c9283414e38214743062)
+# DO NOT EDIT (digest: e44c7776ad3e33b5f7a5cacdf7e3cf51)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -49,6 +49,9 @@ true: annot, bin_annot
 <lib/*.ml{,i,y}>: pkg_uri
 <lib/*.ml{,i,y}>: pkg_uri.services
 <lib/*.ml{,i,y}>: use_cohttp
+# Library cohttp_top
+"top/cohttp_top.cmxs": use_cohttp_top
+<top/*.ml{,i,y}>: pkg_compiler-libs.toplevel
 # Library cohttp_lwt
 "lwt/cohttp_lwt.cmxs": use_cohttp_lwt
 # Library cohttp_lwt_unix

@@ -70,6 +70,9 @@ let make_for_client ?headers ?(chunked=true) ?(body_length=Int64.zero) meth uri 
   in
   make ~meth ~encoding ?headers uri
 
+let pp_hum ppf r =
+  Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib.Sexp.to_string_hum)
+
 type tt = t
 module Make(IO : S.IO) = struct
   type t = tt
