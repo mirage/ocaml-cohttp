@@ -398,6 +398,24 @@ Executable "async-receive-post"
   Install:            false
   BuildDepends:       cohttp, cohttp.async
 
+Executable client_lwt_doc_example
+  Path:               examples/doc
+  MainIs:             client_lwt.ml
+  Build$:             flag(lwt_unix)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp.lwt
+
+Executable server_lwt_doc_example
+  Path:               examples/doc
+  MainIs:             server_lwt.ml
+  Build$:             flag(lwt_unix)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp.lwt
+
 Executable "test_sanity"
   Path:               lib_test
   MainIs:             test_sanity.ml
