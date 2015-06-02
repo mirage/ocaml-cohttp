@@ -49,6 +49,5 @@ module Make(IO : S.IO) = struct
     return (Uri.query_of_encoded body)
 
   let write headers oc =
-    iter (IO.write oc) (Header.to_lines headers) >>= fun () ->
-    IO.write oc "\r\n"
+    IO.write oc (Header.to_string headers)
 end
