@@ -357,5 +357,4 @@ module Server = struct
     >>| fun server ->
     { server }
 
-  let close { server } = Tcp.Server.close server
 end

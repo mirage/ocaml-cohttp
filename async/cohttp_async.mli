@@ -197,6 +197,4 @@ module Server : sig
     ('address, 'listening_on) Tcp.Where_to_listen.t
     -> (body:Body.t -> 'address -> Request.t -> response Deferred.t)
     -> ('address, 'listening_on) t Deferred.t
-
-  val close : (_, _) t -> unit Deferred.t
 end
