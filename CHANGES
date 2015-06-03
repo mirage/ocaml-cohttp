@@ -14,7 +14,6 @@ Compatibility breaking interface changes:
 * Remove dependency on the Lwt Camlp4 syntax extension (#334).
 * Add `make github` target to push documentation to GitHub Pages
   (#338 from Jyotsna Prakash).
-* [async] Add `Cohttp_async.Server.close` to shutdown server (#337).
 * Add Async integration tests and consolidate Lwt tests using the
   new framework (#337).
 * Fix allocation of massive buffer when handling fixed size http bodies (#345)
