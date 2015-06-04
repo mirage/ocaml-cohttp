@@ -84,7 +84,7 @@ Flag async_s3_example
 Library cohttp_lwt
   Build$:        flag(lwt)
   Install$:      flag(lwt)
-  Path:          lwt
+  Path:          lwt-core
   Findlibname:   lwt-core
   FindlibParent: cohttp
   BuildDepends:  lwt, uri, cohttp
