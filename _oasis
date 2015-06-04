@@ -141,6 +141,7 @@ Library cohttp_async
   FindlibParent: cohttp
   BuildDepends:  uri, cohttp, threads, async, conduit.async (>= 0.7.0), magic-mime
   Modules:       Cohttp_async_io,
+                 Cohttp_async_body,
                  Cohttp_async
 
 Library cohttp_lwt_unix_test
