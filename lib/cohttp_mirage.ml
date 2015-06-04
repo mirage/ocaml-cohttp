@@ -58,9 +58,7 @@ module Client = struct
   let ctx resolver conduit = { Net_IO.resolver; conduit }
 
   (* Build all the core modules from the [Cohttp_lwt] functors *)
-  module XRequest = Cohttp_lwt.Make_request(HTTP_IO)
-  module XResponse = Cohttp_lwt.Make_response(HTTP_IO)
-  include Cohttp_lwt.Make_client(HTTP_IO)(XRequest)(XResponse)(Net_IO)
+  include Cohttp_lwt.Make_client(HTTP_IO)(Net_IO)
 
 end
 
@@ -68,9 +66,7 @@ module Server (Flow: V1_LWT.FLOW) = struct
 
   module Channel = Channel.Make(Flow)
   module HTTP_IO = Cohttp_mirage_io.Make(Channel)
-  module XRequest = Cohttp_lwt.Make_request(HTTP_IO)
-  module XResponse = Cohttp_lwt.Make_response(HTTP_IO)
-  include Cohttp_lwt.Make_server(HTTP_IO)(XRequest)(XResponse)
+  include Cohttp_lwt.Make_server(HTTP_IO)
 
   let listen spec flow =
     let ch = Channel.create flow in
