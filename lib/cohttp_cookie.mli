@@ -56,7 +56,7 @@ module Set_cookie_hdr : sig
     t -> string * string
   (** Return an HTTP header *)
 
-  val extract : Header.t -> (string * t) list
+  val extract : Cohttp_header.t -> (string * t) list
   (** Return the list of cookies sent by the server *)
 
   val cookie : t -> cookie
@@ -80,7 +80,7 @@ end
 
 module Cookie_hdr : sig
 
-  val extract : Header.t -> cookie list
+  val extract : Cohttp_header.t -> cookie list
   (** Return the list of cookies sent by the client *)
 
   val serialize : cookie list -> string * string

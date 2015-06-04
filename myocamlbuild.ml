@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: f8cf6fae04112673f46bcb3d498f509a) *)
+(* DO NOT EDIT (digest: f8d4533a85fc6a2551927c272aed5559) *)
 module OASISGettext = struct
 (* # 22 "src/oasis/OASISGettext.ml" *)
 
@@ -613,22 +613,23 @@ let package_default =
           ("cohttp_test", ["lib"], []);
           ("cohttp_top", ["top"], []);
           ("cohttp_lwt", ["lwt"], []);
-          ("cohttp_lwt_unix", ["lwt"], []);
+          ("cohttp_lwt_unix", ["lwt_unix"], []);
           ("cohttp_lwt_xhr", ["js"], []);
           ("cohttp_async", ["async"], []);
-          ("cohttp_lwt_unix_test", ["lwt"], []);
+          ("cohttp_lwt_unix_test", ["lwt_unix"], []);
           ("cohttp_async_test", ["async"], [])
        ];
      lib_c = [];
      flags = [];
      includes =
        [
+          ("lwt_unix", ["lib"; "lwt"]);
           ("lwt", ["lib"]);
-          ("lib_test", ["async"; "js"; "lib"; "lwt"]);
+          ("lib_test", ["async"; "js"; "lib"; "lwt_unix"]);
           ("js", ["lwt"]);
-          ("examples/doc", ["lwt"]);
+          ("examples/doc", ["lwt_unix"]);
           ("examples/async", ["async"; "lib"]);
-          ("bin", ["async"; "lib"; "lwt"]);
+          ("bin", ["async"; "lib"; "lwt_unix"]);
           ("async", ["lib"])
        ]
   }
@@ -638,6 +639,6 @@ let conf = {MyOCamlbuildFindlib.no_automatic_syntax = false}
 
 let dispatch_default = MyOCamlbuildBase.dispatch_default conf package_default;;
 
-# 642 "myocamlbuild.ml"
+# 643 "myocamlbuild.ml"
 (* OASIS_STOP *)
 Ocamlbuild_plugin.dispatch dispatch_default;;

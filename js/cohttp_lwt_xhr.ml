@@ -57,7 +57,7 @@ end
 
 module Make_api(X : sig
 
-  module IO : S.IO
+  module IO : Cohttp.S.IO
   module Request : Cohttp_lwt.Request
   module Response : Cohttp_lwt.Response
 
@@ -104,7 +104,7 @@ end
 
 module Make_client_async(P : Params) = Make_api(struct
 
-  module IO = String_io_lwt
+  module IO = Cohttp_string_io_lwt
   module Response = Cohttp_lwt.Make_response(IO)
   module Request = Cohttp_lwt.Make_request(IO)
   module Header_io = Cohttp.Header_io.Make(IO)
@@ -175,7 +175,7 @@ end)
 
 module Make_client_sync(P : Params) = Make_api(struct
 
-  module IO = String_io_lwt
+  module IO = Cohttp_string_io_lwt
   module Response = Cohttp_lwt.Make_response(IO)
   module Request = Cohttp_lwt.Make_request(IO)
   module Header_io = Cohttp.Header_io.Make(IO)

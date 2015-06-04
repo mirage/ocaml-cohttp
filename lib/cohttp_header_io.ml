@@ -22,10 +22,10 @@ let split_header str =
   | x::y::[] -> [x; Stringext.trim_left y]
   | x -> x
 
-module Make(IO : S.IO) = struct
+module Make(IO : Cohttp_s.IO) = struct
   open IO
 
-  module Transfer_IO = Transfer_io.Make(IO)
+  module Transfer_IO = Cohttp_transfer_io.Make(IO)
 
   let parse ic =
     (* consume also trailing "^\r\n$" line *)
@@ -36,18 +36,18 @@ module Make(IO : S.IO) = struct
           match split_header line with
           | [hd;tl] ->
               let header = String.lowercase hd in
-              parse_headers' (Header.add headers header tl);
+              parse_headers' (Cohttp_header.add headers header tl);
           | _ -> return headers
       end
-    in parse_headers' (Header.init ())
+    in parse_headers' (Cohttp_header.init ())
 
   let parse_form headers ic =
     (* If the form is query-encoded, then extract those parameters also *)
-    let encoding = Header.get_transfer_encoding headers in
+    let encoding = Cohttp_header.get_transfer_encoding headers in
     let reader = Transfer_IO.make_reader encoding ic in
     Transfer_IO.to_string reader >>= fun body ->
     return (Uri.query_of_encoded body)
 
   let write headers oc =
-    IO.write oc (Header.to_string headers)
+    IO.write oc (Cohttp_header.to_string headers)
 end

@@ -15,8 +15,8 @@
  *
  *)
 
-open Transfer
-module Make(IO : S.IO) : sig
+open Cohttp_transfer
+module Make(IO : Cohttp_s.IO) : sig
   type reader
   type writer
 
