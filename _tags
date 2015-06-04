@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: b921c1d200fd6e1b8de9feccf73a5876)
+# DO NOT EDIT (digest: b25149d0da0648e251cc6e158f327514)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -54,8 +54,20 @@ true: annot, bin_annot
 <top/*.ml{,i,y}>: pkg_compiler-libs.toplevel
 # Library cohttp_lwt
 "lwt/cohttp_lwt.cmxs": use_cohttp_lwt
+<lwt/*.ml{,i,y}>: pkg_base64
+<lwt/*.ml{,i,y}>: pkg_bytes
+<lwt/*.ml{,i,y}>: pkg_fieldslib
+<lwt/*.ml{,i,y}>: pkg_fieldslib.syntax
+<lwt/*.ml{,i,y}>: pkg_lwt
+<lwt/*.ml{,i,y}>: pkg_re.emacs
+<lwt/*.ml{,i,y}>: pkg_sexplib
+<lwt/*.ml{,i,y}>: pkg_sexplib.syntax
+<lwt/*.ml{,i,y}>: pkg_stringext
+<lwt/*.ml{,i,y}>: pkg_uri
+<lwt/*.ml{,i,y}>: pkg_uri.services
+<lwt/*.ml{,i,y}>: use_cohttp
 # Library cohttp_lwt_unix
-"lwt/cohttp_lwt_unix.cmxs": use_cohttp_lwt_unix
+"lwt_unix/cohttp_lwt_unix.cmxs": use_cohttp_lwt_unix
 # Library cohttp_lwt_xhr
 "js/cohttp_lwt_xhr.cmxs": use_cohttp_lwt_xhr
 <js/*.ml{,i,y}>: pkg_base64
@@ -77,27 +89,27 @@ true: annot, bin_annot
 # Library cohttp_async
 "async/cohttp_async.cmxs": use_cohttp_async
 # Library cohttp_lwt_unix_test
-"lwt/cohttp_lwt_unix_test.cmxs": use_cohttp_lwt_unix_test
-<lwt/*.ml{,i,y}>: pkg_base64
-<lwt/*.ml{,i,y}>: pkg_bytes
-<lwt/*.ml{,i,y}>: pkg_conduit.lwt-unix
-<lwt/*.ml{,i,y}>: pkg_fieldslib
-<lwt/*.ml{,i,y}>: pkg_fieldslib.syntax
-<lwt/*.ml{,i,y}>: pkg_lwt
-<lwt/*.ml{,i,y}>: pkg_lwt.unix
-<lwt/*.ml{,i,y}>: pkg_magic-mime
-<lwt/*.ml{,i,y}>: pkg_oUnit
-<lwt/*.ml{,i,y}>: pkg_re.emacs
-<lwt/*.ml{,i,y}>: pkg_sexplib
-<lwt/*.ml{,i,y}>: pkg_sexplib.syntax
-<lwt/*.ml{,i,y}>: pkg_stringext
-<lwt/*.ml{,i,y}>: pkg_unix
-<lwt/*.ml{,i,y}>: pkg_uri
-<lwt/*.ml{,i,y}>: pkg_uri.services
-<lwt/*.ml{,i,y}>: use_cohttp
-<lwt/*.ml{,i,y}>: use_cohttp_lwt
-<lwt/*.ml{,i,y}>: use_cohttp_lwt_unix
-<lwt/*.ml{,i,y}>: use_cohttp_test
+"lwt_unix/cohttp_lwt_unix_test.cmxs": use_cohttp_lwt_unix_test
+<lwt_unix/*.ml{,i,y}>: pkg_base64
+<lwt_unix/*.ml{,i,y}>: pkg_bytes
+<lwt_unix/*.ml{,i,y}>: pkg_conduit.lwt-unix
+<lwt_unix/*.ml{,i,y}>: pkg_fieldslib
+<lwt_unix/*.ml{,i,y}>: pkg_fieldslib.syntax
+<lwt_unix/*.ml{,i,y}>: pkg_lwt
+<lwt_unix/*.ml{,i,y}>: pkg_lwt.unix
+<lwt_unix/*.ml{,i,y}>: pkg_magic-mime
+<lwt_unix/*.ml{,i,y}>: pkg_oUnit
+<lwt_unix/*.ml{,i,y}>: pkg_re.emacs
+<lwt_unix/*.ml{,i,y}>: pkg_sexplib
+<lwt_unix/*.ml{,i,y}>: pkg_sexplib.syntax
+<lwt_unix/*.ml{,i,y}>: pkg_stringext
+<lwt_unix/*.ml{,i,y}>: pkg_unix
+<lwt_unix/*.ml{,i,y}>: pkg_uri
+<lwt_unix/*.ml{,i,y}>: pkg_uri.services
+<lwt_unix/*.ml{,i,y}>: use_cohttp
+<lwt_unix/*.ml{,i,y}>: use_cohttp_lwt
+<lwt_unix/*.ml{,i,y}>: use_cohttp_lwt_unix
+<lwt_unix/*.ml{,i,y}>: use_cohttp_test
 # Library cohttp_async_test
 "async/cohttp_async_test.cmxs": use_cohttp_async_test
 <async/*.ml{,i,y}>: pkg_async
