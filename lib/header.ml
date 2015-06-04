@@ -228,9 +228,9 @@ let get_location headers =
   | Some u -> Some (Uri.of_string u)
 
 let get_links headers =
-  List.fold_left
-    (fun list link_s -> (Link.of_string link_s)@list)
-    [] (get_multi headers "link")
+  List.rev (List.fold_left
+    (fun list link_s -> List.rev_append (Link.of_string link_s) list)
+    [] (get_multi headers "link"))
 
 let add_links headers links =
   add_multi headers "link" (List.map Link.to_string links)

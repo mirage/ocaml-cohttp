@@ -396,6 +396,15 @@ let trim_ws () =
       | None -> "None"
       | Some x -> "\"" ^ x ^ "\"") (H.get headers "age") (Some "281")
 
+let test_cachecontrol_concat () =
+  let resp = get_resp ["Cache-Control: public";
+                       "Cache-Control: max-age:86400"] in
+  let  h = headers_of_response "concat Cache-Control" resp in
+  assert_equal
+    ~printer:(function
+      | None -> "None"
+      | Some x -> x) (Some "public,max-age:86400") (H.get h "Cache-Control")
+
 ;;
 Printexc.record_backtrace true;
 Alcotest.run "test_header" [
@@ -431,6 +440,9 @@ Alcotest.run "test_header" [
     "none", `Quick, Content_range.none;
     "content-length", `Quick, Content_range.content_length;
     "content-range", `Quick, Content_range.content_range;
+  ];
+  "Cache Control", [
+    "concat", `Quick, test_cachecontrol_concat
   ];
   "Header", [
     "get list valued", `Quick, list_valued_header;
