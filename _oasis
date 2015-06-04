@@ -19,15 +19,32 @@ Homepage:    https://github.com/mirage/ocaml-cohttp
 License:     ISC
 Plugins:     META (0.4)
 BuildTools:  ocamlbuild
-FilesAB:     lib/conf.ml.ab
+FilesAB:     lib/cohttp_conf.ml.ab
 
 Library cohttp
   Path:          lib
   Findlibname:   cohttp
-  Pack:          true
-  Modules:       S, Code, Header, Cookie, Request, Response, Transfer,
-                 Accept, Accept_parser, Accept_lexer, Accept_types, Link,
-                 Auth, Header_io, Transfer_io, Connection, Body, String_io, Conf
+  Modules:       Cohttp,
+                 Cohttp_s,
+                 Cohttp_code,
+                 Cohttp_header,
+                 Cohttp_cookie,
+                 Cohttp_request,
+                 Cohttp_response,
+                 Cohttp_transfer,
+                 Cohttp_accept,
+                 Cohttp_accept_parser,
+                 Cohttp_accept_lexer,
+                 Cohttp_accept_types,
+                 Cohttp_link,
+                 Cohttp_auth,
+                 Cohttp_header_io,
+                 Cohttp_transfer_io,
+                 Cohttp_connection,
+                 Cohttp_body,
+                 Cohttp_string_io,
+                 Cohttp_conf
+
   BuildDepends:  re.emacs, stringext, uri (>= 1.5.0), uri.services,
                  fieldslib (>= 109.20.00), fieldslib.syntax,
                  sexplib (>= 109.53.00), sexplib.syntax,
@@ -89,7 +106,9 @@ Library cohttp_lwt
   FindlibParent: cohttp
   BuildDepends:  lwt, uri, cohttp
   XMETARequires: lwt, uri, cohttp
-  Modules:       Cohttp_lwt_body, Cohttp_lwt, String_io_lwt
+  Modules:       Cohttp_lwt_body,
+                 Cohttp_lwt,
+                 Cohttp_string_io_lwt
 
 Library cohttp_lwt_unix
   Build$:        flag(lwt_unix)
@@ -99,7 +118,10 @@ Library cohttp_lwt_unix
   FindlibParent: cohttp
   BuildDepends:  cohttp.lwt-core, unix, lwt.unix, conduit.lwt-unix (>= 0.7.0), magic-mime
   XMETARequires: cohttp.lwt-core, unix, lwt.unix, conduit.lwt-unix, magic-mime
-  Modules:       Cohttp_lwt_unix_io, Cohttp_lwt_unix, Cohttp_lwt_unix_net, Cohttp_lwt_unix_debug
+  Modules:       Cohttp_lwt_unix_io,
+                 Cohttp_lwt_unix,
+                 Cohttp_lwt_unix_net,
+                 Cohttp_lwt_unix_debug
 
 Library cohttp_lwt_xhr
   Build$:        flag(lwt) && flag(js)
@@ -118,7 +140,8 @@ Library cohttp_async
   Findlibname:   async
   FindlibParent: cohttp
   BuildDepends:  uri, cohttp, threads, async, conduit.async (>= 0.7.0), magic-mime
-  Modules:       Cohttp_async_io, Cohttp_async
+  Modules:       Cohttp_async_io,
+                 Cohttp_async
 
 Library cohttp_lwt_unix_test
   Build$:        flag(lwt_unix) && flag(tests)
