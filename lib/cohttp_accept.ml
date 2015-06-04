@@ -19,9 +19,9 @@
 (* TODO: sorting? *)
 
 open Printf
-include Accept_types
-module Parser = Accept_parser
-module Lexer = Accept_lexer
+include Cohttp_accept_types
+module Parser = Cohttp_accept_parser
+module Lexer = Cohttp_accept_lexer
 
 let parse_using p s = p Lexer.header_value (Lexing.from_string s)
 let media_ranges = function

@@ -15,6 +15,8 @@
  *
 *)
 
+module Transfer = Cohttp_transfer
+
 open Sexplib.Std
 
 type t = [

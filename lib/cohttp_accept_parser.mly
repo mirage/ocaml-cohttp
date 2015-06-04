@@ -17,7 +17,7 @@
 */
 
 %{
-  open Accept_types
+  open Cohttp_accept_types
 
   type param = Q of int | Kv of (string * pv)
 
@@ -33,10 +33,10 @@
 %token STAR SLASH SEMI COMMA EQUAL EOI
 %token <string> TOK QS
 %start media_ranges charsets encodings languages
-%type <(Accept_types.media_range * Accept_types.p list) Accept_types.qlist> media_ranges
-%type <Accept_types.charset Accept_types.qlist> charsets
-%type <Accept_types.encoding Accept_types.qlist> encodings
-%type <Accept_types.language Accept_types.qlist> languages
+%type <(Cohttp_accept_types.media_range * Cohttp_accept_types.p list) Cohttp_accept_types.qlist> media_ranges
+%type <Cohttp_accept_types.charset Cohttp_accept_types.qlist> charsets
+%type <Cohttp_accept_types.encoding Cohttp_accept_types.qlist> encodings
+%type <Cohttp_accept_types.language Cohttp_accept_types.qlist> languages
 %%
 
 param :

@@ -18,35 +18,35 @@
 open Sexplib.Std
 
 type t = {
-  headers: Header.t;
-  meth: Code.meth;
-  uri: Uri.t;
-  version: Code.version;
-  encoding: Transfer.encoding;
+  headers:  Cohttp_header.t;
+  meth:     Cohttp_code.meth;
+  uri:      Uri.t;
+  version:  Cohttp_code.version;
+  encoding: Cohttp_transfer.encoding;
 } with fields, sexp
 
 let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
   let headers =
     match headers with
-    | None -> Header.init ()
+    | None -> Cohttp_header.init ()
     | Some h -> h in
   let headers =
     (* Add user:password auth to headers from uri
      * if headers don't already have auth *)
-    match Header.get_authorization headers, Uri.user uri, Uri.password uri with
+    match Cohttp_header.get_authorization headers, Uri.user uri, Uri.password uri with
     | None, Some user, Some pass ->
       let auth = `Basic (user, pass) in
-      Header.add_authorization headers auth
+      Cohttp_header.add_authorization headers auth
     | _, _, _ -> headers
   in
   let encoding =
     (* Check for a content-length in the supplied headers first *)
-    match Header.get_content_range headers with
-    | Some clen -> Transfer.Fixed clen
+    match Cohttp_header.get_content_range headers with
+    | Some clen -> Cohttp_transfer.Fixed clen
     | None -> begin
        (* Otherwise look for an API-level encoding specification *)
        match encoding with
-       | None -> Transfer.Fixed Int64.zero
+       | None -> Cohttp_transfer.Fixed Int64.zero
        | Some e -> e
     end
   in
@@ -54,7 +54,7 @@ let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
 
 let is_keep_alive { version; headers; _ } =
   not (version = `HTTP_1_0 ||
-       (match Header.connection headers with
+       (match Cohttp_header.connection headers with
         | Some `Close -> true
         | _ -> false))
 
@@ -65,8 +65,8 @@ let is_keep_alive { version; headers; _ } =
 let make_for_client ?headers ?(chunked=true) ?(body_length=Int64.zero) meth uri =
   let encoding =
     match chunked with
-    | true -> Transfer.Chunked
-    | false -> Transfer.Fixed body_length
+    | true -> Cohttp_transfer.Chunked
+    | false -> Cohttp_transfer.Fixed body_length
   in
   make ~meth ~encoding ?headers uri
 
@@ -74,20 +74,20 @@ let pp_hum ppf r =
   Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib.Sexp.to_string_hum)
 
 type tt = t
-module Make(IO : S.IO) = struct
+module Make(IO : Cohttp_s.IO) = struct
   type t = tt
   module IO = IO
-  module Header_IO = Header_io.Make(IO)
-  module Transfer_IO = Transfer_io.Make(IO)
-  type reader = Transfer_IO.reader
-  type writer = Transfer_IO.writer
+  module Cohttp_header_IO = Cohttp_header_io.Make(IO)
+  module Cohttp_transfer_IO = Cohttp_transfer_io.Make(IO)
+  type reader = Cohttp_transfer_IO.reader
+  type writer = Cohttp_transfer_IO.writer
 
   open IO
 
   let url_decode url = Uri.pct_decode url
 
   let parse_request_fst_line ic =
-    let open Code in
+    let open Cohttp_code in
     read_line ic >>= function
     | Some request_line -> begin
         match Stringext.split request_line ~on:' ' with
@@ -102,7 +102,7 @@ module Make(IO : S.IO) = struct
     | None -> return `Eof
 
   let return_request headers meth uri version =
-    let encoding = Header.get_transfer_encoding headers in
+    let encoding = Cohttp_header.get_transfer_encoding headers in
     return (`Ok { headers; meth; uri; version; encoding })
 
   let read ic =
@@ -110,8 +110,8 @@ module Make(IO : S.IO) = struct
     | `Eof -> return `Eof
     | `Invalid reason as r -> return r
     | `Ok (meth, "*", version) ->
-      Header_IO.parse ic >>= fun headers ->
-      let uri = match Header.get headers "host" with
+      Cohttp_header_IO.parse ic >>= fun headers ->
+      let uri = match Cohttp_header.get headers "host" with
         | None -> Uri.of_string ""
         | Some host ->
           let host_uri = Uri.of_string ("//"^host) in
@@ -120,11 +120,11 @@ module Make(IO : S.IO) = struct
       in
       return_request headers meth uri version
     | `Ok (`CONNECT as meth, authority, version) ->
-      Header_IO.parse ic >>= fun headers ->
+      Cohttp_header_IO.parse ic >>= fun headers ->
       let uri = Uri.of_string ("//"^authority) in
       return_request headers meth uri version
     | `Ok (meth, request_uri_s, version) ->
-      Header_IO.parse ic >>= fun headers ->
+      Cohttp_header_IO.parse ic >>= fun headers ->
       let uri = Uri.of_string request_uri_s in
       match Uri.scheme uri with
         | Some _ -> (* we have an absoluteURI *)
@@ -149,7 +149,7 @@ module Make(IO : S.IO) = struct
                 in
                 Uri.with_query path_base (Uri.query_of_encoded qs)
             in
-            let uri = match Header.get headers "host" with
+            let uri = match Cohttp_header.get headers "host" with
               | None -> Uri.(with_scheme (with_host pqs None) None)
               | Some host ->
                 let host_uri = Uri.of_string ("//"^host) in
@@ -163,18 +163,18 @@ module Make(IO : S.IO) = struct
     match req.meth with
     | `GET | `HEAD | `DELETE | `CONNECT | `TRACE -> `No
     | `POST | `PUT | `PATCH | `OPTIONS | `Other _ ->
-      Transfer.has_body req.encoding
+      Cohttp_transfer.has_body req.encoding
 
-  let make_body_reader req ic = Transfer_IO.make_reader req.encoding ic
-  let read_body_chunk = Transfer_IO.read
+  let make_body_reader req ic = Cohttp_transfer_IO.make_reader req.encoding ic
+  let read_body_chunk = Cohttp_transfer_IO.read
 
   let write_header req oc =
     let fst_line =
       Printf.sprintf "%s %s %s\r\n"
-        (Code.string_of_method req.meth)
+        (Cohttp_code.string_of_method req.meth)
         (Uri.path_and_query req.uri)
-        (Code.string_of_version req.version) in
-    let headers = Header.add_unless_exists req.headers "host"
+        (Cohttp_code.string_of_version req.version) in
+    let headers = Cohttp_header.add_unless_exists req.headers "host"
                     (Uri.host_with_default ~default:"localhost" req.uri ^
                      match Uri.port req.uri with
                      | Some p -> ":" ^ string_of_int p
@@ -182,22 +182,22 @@ module Make(IO : S.IO) = struct
                     ) in
     let headers =
       match has_body req with
-      | `Yes | `Unknown -> Header.add_transfer_encoding headers req.encoding
+      | `Yes | `Unknown -> Cohttp_header.add_transfer_encoding headers req.encoding
       | `No -> headers in
     IO.write oc fst_line >>= fun _ ->
-    Header_IO.write headers oc
+    Cohttp_header_IO.write headers oc
 
   let make_body_writer ?flush req oc =
-    Transfer_IO.make_writer ?flush req.encoding oc
+    Cohttp_transfer_IO.make_writer ?flush req.encoding oc
 
-  let write_body = Transfer_IO.write
+  let write_body = Cohttp_transfer_IO.write
 
   let write_footer req oc =
     match req.encoding with
-    | Transfer.Chunked ->
+    | Cohttp_transfer.Chunked ->
       (* TODO Trailer header support *)
       IO.write oc "0\r\n\r\n"
-    | Transfer.Fixed _ | Transfer.Unknown -> return ()
+    | Cohttp_transfer.Fixed _ | Cohttp_transfer.Unknown -> return ()
 
   let write ?flush write_body req oc =
     write_header req oc >>= fun () ->
@@ -205,6 +205,6 @@ module Make(IO : S.IO) = struct
     write_body writer >>= fun () ->
     write_footer req oc
 
-  let is_form req = Header.is_form req.headers
-  let read_form req ic = Header_IO.parse_form req.headers ic
+  let is_form req = Cohttp_header.is_form req.headers
+  let read_form req ic = Cohttp_header_IO.parse_form req.headers ic
 end

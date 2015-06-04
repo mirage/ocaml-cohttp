@@ -32,7 +32,7 @@ val open_in : string -> buf
 
 (** IO interface that uses {!buf} for input data and queues output
    data into a {!Buffer.t} *)
-module M : S.IO
+module M : Cohttp_s.IO
  with type 'a t = 'a
  and type ic = buf
  and type oc = Buffer.t

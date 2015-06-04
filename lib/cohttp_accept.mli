@@ -18,24 +18,24 @@
 
 (** Accept-Encoding HTTP header parsing and generation *)
 
-type pv = Accept_types.pv =
+type pv = Cohttp_accept_types.pv =
     T of string
   | S of string with sexp
 
 type p = string * pv with sexp
 
 type media_range =
-  Accept_types.media_range =
+  Cohttp_accept_types.media_range =
     MediaType of string * string
   | AnyMediaSubtype of string
   | AnyMedia with sexp
 
-type charset = Accept_types.charset =
+type charset = Cohttp_accept_types.charset =
     Charset of string
   | AnyCharset with sexp
 
 type encoding =
-  Accept_types.encoding =
+  Cohttp_accept_types.encoding =
     Encoding of string
   | Gzip
   | Compress
@@ -43,7 +43,7 @@ type encoding =
   | Identity
   | AnyEncoding with sexp
 
-type language = Accept_types.language =
+type language = Cohttp_accept_types.language =
     Language of string list
   | AnyLanguage with sexp
 

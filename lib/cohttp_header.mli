@@ -82,20 +82,20 @@ val to_string : t -> string
 val get_content_range : t -> Int64.t option
 val get_media_type : t -> string option
 val get_connection_close : t -> bool
-val get_acceptable_media_ranges : t -> (Accept.media_range * Accept.p list) Accept.qlist
-val get_acceptable_charsets : t -> Accept.charset Accept.qlist
-val get_acceptable_encodings : t -> Accept.encoding Accept.qlist
-val get_acceptable_languages : t -> Accept.language Accept.qlist
-val get_transfer_encoding : t -> Transfer.encoding
-val add_transfer_encoding : t -> Transfer.encoding -> t
-val add_authorization : t -> Auth.credential -> t
-val get_authorization : t -> Auth.credential option
-val add_authorization_req : t -> Auth.challenge -> t
+val get_acceptable_media_ranges : t -> (Cohttp_accept.media_range * Cohttp_accept.p list) Cohttp_accept.qlist
+val get_acceptable_charsets : t -> Cohttp_accept.charset Cohttp_accept.qlist
+val get_acceptable_encodings : t -> Cohttp_accept.encoding Cohttp_accept.qlist
+val get_acceptable_languages : t -> Cohttp_accept.language Cohttp_accept.qlist
+val get_transfer_encoding : t -> Cohttp_transfer.encoding
+val add_transfer_encoding : t -> Cohttp_transfer.encoding -> t
+val add_authorization : t -> Cohttp_auth.credential -> t
+val get_authorization : t -> Cohttp_auth.credential option
+val add_authorization_req : t -> Cohttp_auth.challenge -> t
 val is_form : t -> bool
 val get_location : t -> Uri.t option
 
-val add_links : t -> Link.t list -> t
-val get_links : t -> Link.t list
+val add_links : t -> Cohttp_link.t list -> t
+val get_links : t -> Cohttp_link.t list
 
 val user_agent : string
 (** The User-Agent header used by this library, including the version

@@ -28,6 +28,6 @@ type t = [
 (** Signature for the core of HTTP body handling.  Implementations
     will extend this signature to add more functions for streaming
     responses via backend-specific functionality.  *)
-include S.Body with type t := t
+include Cohttp_s.Body with type t := t
 
 val length : t -> int64

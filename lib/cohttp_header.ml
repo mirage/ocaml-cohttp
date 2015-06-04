@@ -32,7 +32,7 @@ end
 module StringMap = Map.Make(LString)
 type t = string list StringMap.t
 
-let user_agent = Conf.user_agent
+let user_agent = Cohttp_conf.user_agent
 
 let headers_with_list_values = Array.map LString.of_string [|
   "accept";"accept-charset";"accept-encoding";"accept-language";
@@ -176,30 +176,30 @@ let get_media_type headers =
   | None -> None
 
 let get_acceptable_media_ranges headers =
-  Accept.media_ranges (get headers "accept")
+  Cohttp_accept.media_ranges (get headers "accept")
 
 let get_acceptable_charsets headers =
-  Accept.charsets (get headers "accept-charset")
+  Cohttp_accept.charsets (get headers "accept-charset")
 
 let get_acceptable_encodings headers =
-  Accept.encodings (get headers "accept-encoding")
+  Cohttp_accept.encodings (get headers "accept-encoding")
 
 let get_acceptable_languages headers =
-  Accept.languages (get headers "accept-language")
+  Cohttp_accept.languages (get headers "accept-language")
 
 (* Parse the transfer-encoding and content-length headers to
  * determine how to decode a body *)
 let get_transfer_encoding headers =
   match get headers "transfer-encoding" with
-  | Some "chunked" -> Transfer.Chunked
+  | Some "chunked" -> Cohttp_transfer.Chunked
   | Some _ | None -> begin
     match get_content_range headers with
-    |Some len -> Transfer.Fixed len
-    |None -> Transfer.Unknown
+    |Some len -> Cohttp_transfer.Fixed len
+    |None -> Cohttp_transfer.Unknown
   end
 
 let add_transfer_encoding headers enc =
-  let open Transfer in
+  let open Cohttp_transfer in
   (* Only add a header if one doesnt already exist, e.g. from the app *)
   match get_transfer_encoding headers, enc with
   |Fixed _,_  (* App has supplied a content length, so use that *)
@@ -209,15 +209,15 @@ let add_transfer_encoding headers enc =
   |Unknown, Unknown -> headers
 
 let add_authorization_req headers challenge =
-  add headers "www-authenticate" (Auth.string_of_challenge challenge)
+  add headers "www-authenticate" (Cohttp_auth.string_of_challenge challenge)
 
 let add_authorization headers cred =
-  add headers "authorization" (Auth.string_of_credential cred)
+  add headers "authorization" (Cohttp_auth.string_of_credential cred)
 
 let get_authorization headers =
   match get headers "authorization" with
   |None -> None
-  |Some v -> Some (Auth.credential_of_string v)
+  |Some v -> Some (Cohttp_auth.credential_of_string v)
 
 let is_form headers =
   get_media_type headers = (Some "application/x-www-form-urlencoded")
@@ -229,11 +229,11 @@ let get_location headers =
 
 let get_links headers =
   List.fold_left
-    (fun list link_s -> (Link.of_string link_s)@list)
+    (fun list link_s -> (Cohttp_link.of_string link_s)@list)
     [] (get_multi headers "link")
 
 let add_links headers links =
-  add_multi headers "link" (List.map Link.to_string links)
+  add_multi headers "link" (List.map Cohttp_link.to_string links)
 
 let prepend_user_agent headers user_agent =
   let k = "user-agent" in

@@ -79,7 +79,7 @@ module type Http_io = sig
   val read : IO.ic -> [ `Eof | `Invalid of string | `Ok of t ] IO.t
   val has_body : t -> [ `No | `Unknown | `Yes ]
   val make_body_reader : t -> IO.ic -> reader
-  val read_body_chunk : reader -> Transfer.chunk IO.t
+  val read_body_chunk : reader -> Cohttp_transfer.chunk IO.t
 
   val is_form: t -> bool
   val read_form : t -> IO.ic -> (string * string list) list IO.t
@@ -93,41 +93,41 @@ end
 
 module type Request = sig
   type t = {
-    headers: Header.t;    (** HTTP request headers *)
-    meth: Code.meth;      (** HTTP request method *)
-    uri: Uri.t;           (** Full HTTP request uri *)
-    version: Code.version; (** HTTP version, usually 1.1 *)
-    encoding: Transfer.encoding; (** transfer encoding of this HTTP request *)
+    headers:  Cohttp_header.t;    (** HTTP request headers *)
+    meth:     Cohttp_code.meth;      (** HTTP request method *)
+    uri:      Uri.t;           (** Full HTTP request uri *)
+    version:  Cohttp_code.version; (** HTTP version, usually 1.1 *)
+    encoding: Cohttp_transfer.encoding; (** transfer encoding of this HTTP request *)
   } with fields, sexp
 
-  val make : ?meth:Code.meth -> ?version:Code.version ->
-    ?encoding:Transfer.encoding -> ?headers:Header.t ->
+  val make : ?meth:Cohttp_code.meth -> ?version:Cohttp_code.version ->
+    ?encoding:Cohttp_transfer.encoding -> ?headers:Cohttp_header.t ->
     Uri.t -> t
   (** Return true whether the connection should be reused *)
   val is_keep_alive : t -> bool
 
   val make_for_client:
-    ?headers:Header.t ->
+    ?headers:Cohttp_header.t ->
     ?chunked:bool ->
     ?body_length:int64 ->
-    Code.meth -> Uri.t -> t
+    Cohttp_code.meth -> Uri.t -> t
 end
 
 module type Response = sig
   type t = {
-    encoding: Transfer.encoding; (** Transfer encoding of this HTTP response *)
-    headers: Header.t;    (** response HTTP headers *)
-    version: Code.version; (** (** HTTP version, usually 1.1 *) *)
-    status: Code.status_code; (** HTTP status code of the response *)
-    flush: bool;
+    encoding: Cohttp_transfer.encoding; (** Cohttp_transfer encoding of this HTTP response *)
+    headers:  Cohttp_header.t;    (** response HTTP headers *)
+    version:  Cohttp_code.version; (** (** HTTP version, usually 1.1 *) *)
+    status:   Cohttp_code.status_code; (** HTTP status code of the response *)
+    flush:    bool;
   } with fields, sexp
 
   val make :
-    ?version:Code.version ->
-    ?status:Code.status_code ->
+    ?version:Cohttp_code.version ->
+    ?status:Cohttp_code.status_code ->
     ?flush:bool ->
-    ?encoding:Transfer.encoding ->
-    ?headers:Header.t ->
+    ?encoding:Cohttp_transfer.encoding ->
+    ?headers:Cohttp_header.t ->
     unit -> t
 end
 
@@ -140,5 +140,5 @@ module type Body = sig
   val of_string : string -> t
   val of_string_list : string list -> t
   val map : (string -> string) -> t -> t
-  val transfer_encoding : t -> Transfer.encoding
+  val transfer_encoding : t -> Cohttp_transfer.encoding
 end

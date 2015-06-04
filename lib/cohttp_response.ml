@@ -18,33 +18,33 @@
 open Sexplib.Std
 
 type t = {
-  encoding: Transfer.encoding;
-  headers: Header.t;
-  version: Code.version;
-  status: Code.status_code;
+  encoding: Cohttp_transfer.encoding;
+  headers:  Cohttp_header.t;
+  version:  Cohttp_code.version;
+  status:   Cohttp_code.status_code;
   flush: bool;
 } with fields, sexp
 
-let make ?(version=`HTTP_1_1) ?(status=`OK) ?(flush=false) ?(encoding=Transfer.Chunked) ?headers () =
-  let headers = match headers with None -> Header.init () |Some h -> h in
+let make ?(version=`HTTP_1_1) ?(status=`OK) ?(flush=false) ?(encoding=Cohttp_transfer.Chunked) ?headers () =
+  let headers = match headers with None -> Cohttp_header.init () |Some h -> h in
   { encoding; headers; version; flush; status }
 
 let pp_hum ppf r =
   Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib.Sexp.to_string_hum)
 
 type tt = t
-module Make(IO : S.IO) = struct
+module Make(IO : Cohttp_s.IO) = struct
   type t = tt
   module IO = IO
-  module Header_IO = Header_io.Make(IO)
-  module Transfer_IO = Transfer_io.Make(IO)
-  type reader = Transfer_IO.reader
-  type writer = Transfer_IO.writer
+  module Header_IO   = Cohttp_header_io.Make(IO)
+  module Transfer_IO = Cohttp_transfer_io.Make(IO)
+  type reader        = Transfer_IO.reader
+  type writer        = Transfer_IO.writer
 
   open IO
 
   let parse_response_fst_line ic =
-    let open Code in
+    let open Cohttp_code in
     read_line ic >>= function
     | Some response_line -> begin
       match Stringext.split response_line ~on:' ' with
@@ -63,22 +63,22 @@ module Make(IO : S.IO) = struct
     | `Invalid reason as r -> return r
     | `Ok (version, status) ->
        Header_IO.parse ic >>= fun headers ->
-       let encoding = Header.get_transfer_encoding headers in
+       let encoding = Cohttp_header.get_transfer_encoding headers in
        let flush = false in
        return (`Ok { encoding; headers; version; status; flush })
 
   let has_body {status; encoding} =
     (* rfc7230#section-5.7.1 *)
     match status with
-    | #Code.informational_status | `No_content | `Not_modified -> `No
-    | #Code.status_code -> Transfer.has_body encoding
+    | #Cohttp_code.informational_status | `No_content | `Not_modified -> `No
+    | #Cohttp_code.status_code -> Cohttp_transfer.has_body encoding
   let make_body_reader {encoding} ic = Transfer_IO.make_reader encoding ic
   let read_body_chunk = Transfer_IO.read
 
   let write_header res oc =
-    write oc (Printf.sprintf "%s %s\r\n" (Code.string_of_version res.version)
-      (Code.string_of_status res.status)) >>= fun () ->
-    let headers = Header.add_transfer_encoding res.headers res.encoding in
+    write oc (Printf.sprintf "%s %s\r\n" (Cohttp_code.string_of_version res.version)
+      (Cohttp_code.string_of_status res.status)) >>= fun () ->
+    let headers = Cohttp_header.add_transfer_encoding res.headers res.encoding in
     Header_IO.write headers oc
 
   let make_body_writer ?flush {encoding} oc =
@@ -88,10 +88,10 @@ module Make(IO : S.IO) = struct
 
   let write_footer {encoding} oc =
     match encoding with
-    |Transfer.Chunked ->
+    |Cohttp_transfer.Chunked ->
        (* TODO Trailer header support *)
        IO.write oc "0\r\n\r\n"
-    |Transfer.Fixed _ | Transfer.Unknown -> return ()
+    |Cohttp_transfer.Fixed _ | Cohttp_transfer.Unknown -> return ()
 
   let write ?flush fn req oc =
     write_header req oc >>= fun () ->
@@ -99,6 +99,6 @@ module Make(IO : S.IO) = struct
     fn writer >>= fun () ->
     write_footer req oc
 
-  let is_form req = Header.is_form req.headers
+  let is_form req = Cohttp_header.is_form req.headers
   let read_form req ic = Header_IO.parse_form req.headers ic
 end

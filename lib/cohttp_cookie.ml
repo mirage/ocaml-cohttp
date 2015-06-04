@@ -120,7 +120,7 @@ module Set_cookie_hdr = struct
 
   (* TODO: check dupes+order *)
   let extract hdr =
-    Header.fold (function
+    Cohttp_header.fold (function
       | "set-cookie" -> extract_1_0
       | "set-cookie2" -> extract_1_1
       | _ -> (fun _ a -> a)
@@ -154,7 +154,7 @@ module Cookie_hdr = struct
             | n :: [] -> (n, "")
             | n :: v :: _ -> (n, v)
           in (List.map split_pair cookies) @ acc
-      ) [] (Header.get_multi hdr "cookie")
+      ) [] (Cohttp_header.get_multi hdr "cookie")
 
   let serialize cookies =
     "cookie", String.concat "; " (List.map (fun (k, v) -> k ^ "=" ^ v) cookies)

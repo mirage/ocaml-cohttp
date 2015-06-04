@@ -15,11 +15,11 @@
  *
  *)
 
-open Transfer
+open Cohttp_transfer
 
-module Make(IO : S.IO) = struct
+module Make(IO : Cohttp_s.IO) = struct
   open IO
-  type reader = unit -> Transfer.chunk IO.t
+  type reader = unit -> Cohttp_transfer.chunk IO.t
   type writer = string -> unit IO.t
 
   module Chunked = struct

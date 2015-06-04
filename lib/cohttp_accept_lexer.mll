@@ -16,7 +16,7 @@
   PERFORMANCE OF THIS SOFTWARE.
 *)
 {
-  open Accept_parser
+  open Cohttp_accept_parser
 }
 
 (* <http://tools.ietf.org/html/rfc2616#section-2.2> *)
