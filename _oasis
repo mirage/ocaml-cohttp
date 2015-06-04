@@ -94,7 +94,7 @@ Library cohttp_lwt
 Library cohttp_lwt_unix
   Build$:        flag(lwt_unix)
   Install$:      flag(lwt_unix)
-  Path:          lwt
+  Path:          lwt_unix
   Findlibname:   lwt
   FindlibParent: cohttp
   BuildDepends:  cohttp.lwt-core, unix, lwt.unix, conduit.lwt-unix (>= 0.7.0), magic-mime
@@ -123,7 +123,7 @@ Library cohttp_async
 Library cohttp_lwt_unix_test
   Build$:        flag(lwt_unix) && flag(tests)
   Install:       false
-  Path:          lwt
+  Path:          lwt_unix
   Findlibname:   lwt-unix-test
   FindlibParent: cohttp
   BuildDepends:  cohttp.test, cohttp.lwt, unix, lwt.unix, oUnit
