@@ -1,22 +1,23 @@
 # OASIS_START
-# DO NOT EDIT (digest: da6a8b9256861c8afe6c4aefaa984041)
-S
-Code
-Header
-Cookie
-Request
-Response
-Transfer
-Accept
-Accept_parser
-Accept_lexer
-Accept_types
-Link
-Auth
-Header_io
-Transfer_io
-Connection
-Body
-String_io
-Conf
+# DO NOT EDIT (digest: 0b80eacdcafb5bfa85fd05aed90b35cb)
+Cohttp
+Cohttp_s
+Cohttp_code
+Cohttp_header
+Cohttp_cookie
+Cohttp_request
+Cohttp_response
+Cohttp_transfer
+Cohttp_accept
+Cohttp_accept_parser
+Cohttp_accept_lexer
+Cohttp_accept_types
+Cohttp_link
+Cohttp_auth
+Cohttp_header_io
+Cohttp_transfer_io
+Cohttp_connection
+Cohttp_body
+Cohttp_string_io
+Cohttp_conf
 # OASIS_STOP
