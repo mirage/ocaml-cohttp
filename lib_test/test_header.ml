@@ -388,6 +388,14 @@ let link_ext_star () =
     };
   ]) (H.get_links headers)
 
+let trim_ws () =
+  let resp = get_resp ["Age: 281   "] in
+  let headers = headers_of_response "trim whitespace" resp in
+  assert_equal
+    ~printer:(function
+      | None -> "None"
+      | Some x -> "\"" ^ x ^ "\"") (H.get headers "age") (Some "281")
+
 ;;
 Printexc.record_backtrace true;
 Alcotest.run "test_header" [
@@ -426,5 +434,6 @@ Alcotest.run "test_header" [
   ];
   "Header", [
     "get list valued", `Quick, list_valued_header;
+    "trim whitespace", `Quick, trim_ws;
   ];
 ]

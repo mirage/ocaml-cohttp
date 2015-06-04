@@ -19,7 +19,7 @@
 
 let split_header str =
   match Stringext.split ~max:2 ~on:':' str with
-  | x::y::[] -> [x; Stringext.trim_left y]
+  | x::y::[] -> [x; String.trim y]
   | x -> x
 
 module Make(IO : S.IO) = struct
