@@ -1,0 +1,10 @@
+# OASIS_START
+# DO NOT EDIT (digest: 435073994fab860e7b6accf0d72c9f1e)
+../lwt-core/Cohttp_lwt_body
+../lwt-core/Cohttp_lwt
+../lwt-core/String_io_lwt
+Cohttp_lwt_unix_io
+Cohttp_lwt_unix
+Cohttp_lwt_unix_net
+Cohttp_lwt_unix_debug
+# OASIS_STOP
