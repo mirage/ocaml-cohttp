@@ -19,7 +19,7 @@
 
 let split_header str =
   match Stringext.split ~max:2 ~on:':' str with
-  | x::y::[] -> [x; Stringext.trim_left y]
+  | x::y::[] -> [x; String.trim y]
   | x -> x
 
 module Make(IO : S.IO) = struct
@@ -27,11 +27,13 @@ module Make(IO : S.IO) = struct
 
   module Transfer_IO = Transfer_io.Make(IO)
 
+  let rev _k v = List.rev v
+
   let parse ic =
     (* consume also trailing "^\r\n$" line *)
     let rec parse_headers' headers =
       read_line ic >>= function
-      |Some "" | None -> return headers
+      |Some "" | None -> return (Header.map rev headers)
       |Some line -> begin
           match split_header line with
           | [hd;tl] ->
