@@ -1,6 +1,11 @@
+0.18.1 (2015-06-05):
+
+* Remove trailing whitespace from headers (#372)
+* Don't reverse order of list valued headers (#372)
+
 0.18.0 (2015-06-02):
 * Add Cohttp_async.Client.callv. Allows for making requests while reusing an
-  HTTP connection (#344) 
+  HTTP connection (#344)
 * Responses of status 1xx/204/304 have no bodies and cohttp should not attempt
   to read them (#355)
 * Add top level printers. See cohttp.top findlib package (#363)
