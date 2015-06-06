@@ -310,7 +310,7 @@ module Make_server(IO:IO) = struct
     Filename.concat docroot rel_path
 
   let respond ?headers ?(flush=true) ~status ~body () =
-    let encoding = 
+    let encoding =
       match headers with
       | None -> Cohttp_lwt_body.transfer_encoding body
       | Some headers ->
