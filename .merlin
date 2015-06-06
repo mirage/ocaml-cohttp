@@ -34,11 +34,4 @@ PKG magic-mime
 PKG alcotest
 PKG compiler-libs.toplevel
 
-B _build/
-B _build/lwt
-B _build/lib_test
-B _build/async
-B _build/lib
-B _build/examples/async
-B _build/bin
-B _build/js
+B _build/**
