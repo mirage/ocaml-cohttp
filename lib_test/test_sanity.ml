@@ -1,5 +1,6 @@
 open Lwt
 open OUnit
+open Cohttp
 open Cohttp_lwt_unix
 open Cohttp_lwt_unix_test
 
@@ -57,6 +58,9 @@ let ts =
     let not_modified_has_no_body () =
       Client.get uri >>= fun (resp, body) ->
       assert_equal (Response.status resp) `Not_modified;
+      let headers = Response.headers resp in
+      assert_equal ~printer:Transfer.string_of_encoding
+        Transfer.Unknown (Header.get_transfer_encoding headers);
       body |> Body.is_empty >|= fun is_empty ->
       assert_bool "No body returned when not modified" is_empty in
     [ "sanity test", t
