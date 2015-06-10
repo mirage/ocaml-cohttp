@@ -1,3 +1,6 @@
+2.4.0 (10-06-2015)
+* Support cohttp 0.18 (#13, by @rgrinberg)
+
 2.3.0 (29-05-2015)
 * Simplify the `Client` signature to be a simple module. It is not
   a functor depending on `Conduit` anymore and the context is now
