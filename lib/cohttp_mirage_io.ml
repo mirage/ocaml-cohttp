@@ -40,26 +40,6 @@ module Make(Channel:V1_LWT.CHANNEL) = struct
          return (Cstruct.to_string iop))
       (function End_of_file -> return "" | e -> Lwt.fail e)
 
-  let read_exactly ic buf off len =
-    let rec read acc left =
-      match left with
-      | 0   -> return (List.rev acc)
-      | len ->
-        Channel.read_some ~len ic >>= fun iop ->
-        read (iop::acc) (left - (Cstruct.len iop))
-    in
-    read [] len >>= fun iov ->
-    (* XXX TODO this is hyper slow! *)
-    let srcbuf = Cstruct.copyv iov in
-    Bytes.blit srcbuf 0 buf off (String.length srcbuf);
-    return true
-
-  let read_exactly ic len =
-    let buf = Bytes.create len in
-    read_exactly ic buf 0 len >>= function
-    | true -> return (Some buf)
-    | false -> return None
-
   let write oc buf =
     Channel.write_string oc buf 0 (String.length buf);
     Channel.flush oc
