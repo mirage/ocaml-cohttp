@@ -11,7 +11,7 @@ remove:  ["ocamlfind" "remove" "mirage-http"]
 depends: [
   "ocamlfind" {build}
   "mirage-types-lwt" {>= "2.0.0"}
-  "mirage-conduit"
+  "mirage-conduit" {>= "2.2.0"}
   "lwt" {>= "2.4.3"}
   "cohttp" {>= "0.16.0"}
   "camlp4"
