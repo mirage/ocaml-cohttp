@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: 8ea63ab3419754229e503792f49f665c)
-version = "2.3.0"
+# DO NOT EDIT (digest: 149a3cc9eb16e5d81c3dc3ea7259bf98)
+version = "2.4.0"
 description = "Mirage HTTP clent and server for Unix"
 requires = "cohttp.lwt-core tcpip.channel lwt conduit.mirage sexplib"
 archive(byte) = "mirage-http.cma"
