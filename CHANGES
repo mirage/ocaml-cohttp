@@ -1,3 +1,7 @@
+0.18.2 (2015-06-19):
+
+* Do not add content encoding for 204's (#375)
+
 0.18.1 (2015-06-05):
 
 * Remove trailing whitespace from headers (#372)
