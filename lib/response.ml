@@ -67,18 +67,26 @@ module Make(IO : S.IO) = struct
        let flush = false in
        return (`Ok { encoding; headers; version; status; flush })
 
-  let has_body {status; encoding} =
-    (* rfc7230#section-5.7.1 *)
-    match status with
-    | #Code.informational_status | `No_content | `Not_modified -> `No
-    | #Code.status_code -> Transfer.has_body encoding
+  let allowed_body response = (* rfc7230#section-5.7.1 *)
+    match status response with
+    | #Code.informational_status | `No_content | `Not_modified -> false
+    | #Code.status_code -> true
+
+  let has_body response =
+    if allowed_body response
+    then Transfer.has_body (encoding response)
+    else `No
+
   let make_body_reader {encoding} ic = Transfer_IO.make_reader encoding ic
   let read_body_chunk = Transfer_IO.read
 
   let write_header res oc =
     write oc (Printf.sprintf "%s %s\r\n" (Code.string_of_version res.version)
       (Code.string_of_status res.status)) >>= fun () ->
-    let headers = Header.add_transfer_encoding res.headers res.encoding in
+    let headers =
+      if allowed_body res
+      then Header.add_transfer_encoding res.headers res.encoding
+      else res.headers in
     Header_IO.write headers oc
 
   let make_body_writer ?flush {encoding} oc =
