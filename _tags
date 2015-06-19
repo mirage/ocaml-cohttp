@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: b921c1d200fd6e1b8de9feccf73a5876)
+# DO NOT EDIT (digest: 96c43695999b12657423ef4f010e1492)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -53,7 +53,19 @@ true: annot, bin_annot
 "top/cohttp_top.cmxs": use_cohttp_top
 <top/*.ml{,i,y}>: pkg_compiler-libs.toplevel
 # Library cohttp_lwt
-"lwt/cohttp_lwt.cmxs": use_cohttp_lwt
+"lwt-core/cohttp_lwt.cmxs": use_cohttp_lwt
+<lwt-core/*.ml{,i,y}>: pkg_base64
+<lwt-core/*.ml{,i,y}>: pkg_bytes
+<lwt-core/*.ml{,i,y}>: pkg_fieldslib
+<lwt-core/*.ml{,i,y}>: pkg_fieldslib.syntax
+<lwt-core/*.ml{,i,y}>: pkg_lwt
+<lwt-core/*.ml{,i,y}>: pkg_re.emacs
+<lwt-core/*.ml{,i,y}>: pkg_sexplib
+<lwt-core/*.ml{,i,y}>: pkg_sexplib.syntax
+<lwt-core/*.ml{,i,y}>: pkg_stringext
+<lwt-core/*.ml{,i,y}>: pkg_uri
+<lwt-core/*.ml{,i,y}>: pkg_uri.services
+<lwt-core/*.ml{,i,y}>: use_cohttp
 # Library cohttp_lwt_unix
 "lwt/cohttp_lwt_unix.cmxs": use_cohttp_lwt_unix
 # Library cohttp_lwt_xhr
