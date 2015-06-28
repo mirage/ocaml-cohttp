@@ -20,7 +20,11 @@ let server =
     Server.respond ~status:`OK ~body:(Body.of_string_list chunk_body) ();
     Server.respond ~status:`OK ~body:(Body.of_string "") ();
     (* not modified *)
-    Server.respond ~status:`Not_modified ~body:Body.empty ()
+    Server.respond ~status:`Not_modified ~body:Body.empty ();
+    (* pipelined_interleave *)
+    Server.respond_string ~status:`OK ~body:"one" ();
+    Server.respond_string ~status:`OK ~body:"two" ();
+    Server.respond_string ~status:`OK ~body:"three" ();
   ]
   |> List.map const
   |> response_sequence
@@ -63,10 +67,37 @@ let ts =
         Transfer.Unknown (Header.get_transfer_encoding headers);
       body |> Body.is_empty >|= fun is_empty ->
       assert_bool "No body returned when not modified" is_empty in
+    let pipelined_interleave () =
+      let r n =
+        let uri = Uri.with_query' uri ["test", (string_of_int n)] in
+        (Request.make uri, Body.empty) in
+      let (reqs, push) = Lwt_stream.create () in
+      push (Some (r 1));
+      push (Some (r 2));
+      Client.callv uri reqs >>= fun resps ->
+      let resps = Lwt_stream.map_s (fun (_, b) -> Body.to_string b) resps in
+      Lwt_stream.fold (fun b i ->
+        Lwt_log.ign_info_f "Request %i\n" i;
+        begin match i with
+        | 0 -> assert_equal b "one"
+        | 1 ->
+          assert_equal b "two";
+          Lwt_log.ign_info "Sending extra request";
+          push (Some (r 3))
+        | 2 ->
+          assert_equal b "three";
+          push None;
+        | x -> assert_failure ("Test failed with " ^ string_of_int x)
+        end;
+        succ i
+      ) resps 0 >|= fun l ->
+      assert_equal l 3
+    in
     [ "sanity test", t
     ; "empty chunk test", empty_chunk
     ; "pipelined chunk test", pipelined_chunk
     ; "no body when response is not modified", not_modified_has_no_body
+    ; "pipelined with interleaving requests", pipelined_interleave
     ]
   end
 
