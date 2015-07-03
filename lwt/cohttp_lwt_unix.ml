@@ -56,13 +56,13 @@ module Server = struct
        if Unix.(s.st_kind <> S_REG)
        then fail Isnt_a_file
        else return_unit) >>= fun () ->
-      let buffer_size = 16384 in
-      Lwt_io.open_file ~buffer_size ~mode:Lwt_io.input fname >>= fun ic ->
+      let buffer = Lwt_bytes.create 16384 in
+      Lwt_io.open_file ~buffer ~mode:Lwt_io.input fname >>= fun ic ->
       Lwt_io.length ic >>= fun len ->
       let encoding = Cohttp.Transfer.Fixed len in
       let stream = Lwt_stream.from (fun () ->
         Lwt.catch (fun () ->
-          Lwt_io.read ~count:buffer_size ic >|= function
+          Lwt_io.read ~count:16384 ic >|= function
           | "" -> None
           | buf -> Some buf)
           (fun exn ->
