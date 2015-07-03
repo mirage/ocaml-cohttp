@@ -206,32 +206,29 @@ module Make_client
   let callv ?(ctx=default_ctx) uri reqs =
     Net.connect_uri ~ctx uri >>= fun (conn, ic, oc) ->
     (* Serialise the requests out to the wire *)
-    Lwt_stream.fold_s (fun (req,body) meths ->
+    let meth_stream = Lwt_stream.map_s (fun (req,body) ->
       Request.write (fun writer ->
         Cohttp_lwt_body.write_body (Request.write_body writer) body
       ) req oc >>= fun () ->
-      return ((Request.meth req)::meths)
-    ) reqs [] >>= fun meths ->
+      return (Request.meth req)
+    ) reqs in
     (* Read the responses. For each response, ensure that the previous
        response has consumed the body before continuing to the next
        response because HTTP/1.1-pipelining cannot be interleaved. *)
-    let meth_stream = Lwt_stream.of_list (List.rev meths) in
     let read_m = Lwt_mutex.create () in
     let last_body = ref None in
-    let resps = Lwt_stream.from (fun () ->
-      let closefn () = Lwt_mutex.unlock read_m in
-      Lwt_stream.get meth_stream >>= function
-      | None -> return_none
-      | Some meth ->
-        begin match !last_body with None -> return_unit | Some body ->
-          Cohttp_lwt_body.drain_body body
-        end >>= fun () ->
-        Lwt_mutex.with_lock read_m (fun () -> read_response ~closefn ic oc meth)
-        >|= (fun ((_,body) as x) ->
-          last_body := Some body;
-          Some x
-        )
-    ) in
+    let closefn () = Lwt_mutex.unlock read_m in
+    let resps = Lwt_stream.map_s (fun meth ->
+      begin match !last_body with
+      | None -> return_unit
+      | Some body -> Cohttp_lwt_body.drain_body body
+      end >>= fun () ->
+      Lwt_mutex.with_lock read_m (fun () -> read_response ~closefn ic oc meth)
+      >|= (fun ((_,body) as x) ->
+        last_body := Some body;
+        x
+      )
+    ) meth_stream in
     Lwt_stream.on_terminate resps (fun () -> Net.close ic oc);
     return resps
 end
