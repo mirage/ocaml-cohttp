@@ -1,3 +1,6 @@
+2.5.0 (05-07-2015)
+* Depends on `channel` instead of the full `tcpip` stack
+
 2.4.0 (10-06-2015)
 * Support cohttp 0.18 (#13, by @rgrinberg)
 
