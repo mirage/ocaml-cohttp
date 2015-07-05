@@ -15,5 +15,6 @@ depends: [
   "lwt" {>= "2.4.3"}
   "cohttp" {>= "0.18.0"}
   "sexplib"
+  "channel"
 ]
 available: [ocaml-version >= "4.00.0"]
