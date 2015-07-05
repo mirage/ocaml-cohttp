@@ -1,6 +1,6 @@
 OASISFormat: 0.3
 Name:        mirage-http
-Version:     2.4.0
+Version:     2.5.0
 Synopsis:    Mirage HTTP clent and server for Unix
 Authors:     Anil Madhavapeddy, Thomas Gazagnaire
 License:     ISC
@@ -12,4 +12,4 @@ Library "mirage-http"
   Path:               lib
   Findlibname:        mirage-http
   Modules:            Cohttp_mirage, Cohttp_mirage_io
-  BuildDepends:       cohttp.lwt-core, tcpip.channel, conduit.mirage, sexplib
+  BuildDepends:       cohttp.lwt-core, channel, conduit.mirage, sexplib
