@@ -31,6 +31,7 @@ PKG conduit.lwt
 PKG cmdliner
 PKG js_of_ocaml
 PKG magic-mime
+PKG oUnit
 PKG alcotest
 PKG compiler-libs.toplevel
 
