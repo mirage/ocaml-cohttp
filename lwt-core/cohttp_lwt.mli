@@ -104,6 +104,8 @@ module type Client = sig
 
   val delete :
     ?ctx:ctx ->
+    ?body:Cohttp_lwt_body.t ->
+    ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
