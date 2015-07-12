@@ -95,6 +95,8 @@ module Client : sig
   val delete :
     ?interrupt:unit Deferred.t ->
     ?headers:Cohttp.Header.t ->
+    ?chunked:bool ->
+    ?body:Body.t ->
     Uri.t ->
     (Response.t * Body.t) Deferred.t
 
