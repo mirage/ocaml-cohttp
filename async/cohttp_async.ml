@@ -255,8 +255,8 @@ module Client = struct
   let patch ?interrupt ?headers ?(chunked=false) ?body uri =
     call ?interrupt ?headers ~chunked ?body `PATCH uri
 
-  let delete ?interrupt ?headers uri =
-    call ?interrupt ?headers ~chunked:false `DELETE uri
+  let delete ?interrupt ?headers ?(chunked=false) ?body uri =
+    call ?interrupt ?headers ~chunked ?body `DELETE uri
 end
 
 module Server = struct
