@@ -80,6 +80,8 @@ module type Client = sig
 
   val delete :
     ?ctx:ctx ->
+    ?body:Cohttp_lwt_body.t ->
+    ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
@@ -190,7 +192,8 @@ module Make_client
     >|= fst
 
   let get ?ctx ?headers uri = call ?ctx ?headers `GET uri
-  let delete ?ctx ?headers uri = call ?ctx ?headers `DELETE uri
+  let delete ?ctx ?body ?chunked ?headers uri =
+    call ?ctx ?headers ?body ?chunked `DELETE uri
   let post ?ctx ?body ?chunked ?headers uri =
     call ?ctx ?headers ?body ?chunked `POST uri
   let put ?ctx ?body ?chunked ?headers uri =
