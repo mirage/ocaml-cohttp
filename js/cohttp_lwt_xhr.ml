@@ -86,7 +86,7 @@ end) = struct
     >|= fst
 
   let get ?ctx ?headers uri = call ?ctx ?headers ~chunked:false `GET uri
-  let delete ?ctx ?headers uri = call ?ctx ?headers ~chunked:false `DELETE uri
+  let delete ?ctx ?body ?chunked ?headers uri = call ?ctx ?headers ?body ?chunked `DELETE uri
   let post ?ctx ?body ?chunked ?headers uri = call ?ctx ?headers ?body ?chunked `POST uri
   let put ?ctx ?body ?chunked ?headers uri = call ?ctx ?headers ?body ?chunked `PUT uri
   let patch ?ctx ?body ?chunked ?headers uri = call ?ctx ?headers ?body ?chunked `PATCH uri
