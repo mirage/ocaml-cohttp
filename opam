@@ -61,6 +61,7 @@ depopts: [
 conflicts: [
   "async" {<"111.25.00"}
   "lwt" {<"2.4.7"}
+  "lwt" {>="2.5.0"}
 ]
 
 available: [ocaml-version >= "4.01.0"]
