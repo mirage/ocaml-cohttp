@@ -18,6 +18,14 @@
 
 (** Accept-Encoding HTTP header parsing and generation *)
 
+(** Qualities are integers between 0 and 1000.
+    A header with ["q=0.7"] corresponds to a quality of [700].
+*)
+type q = int with sexp
+
+(** Lists, annotated with qualities. *)
+type 'a qlist = (q * 'a) list with sexp
+
 type pv = Accept_types.pv =
     T of string
   | S of string with sexp
@@ -43,13 +51,14 @@ type encoding =
   | Identity
   | AnyEncoding with sexp
 
+(** Basic language range tag.
+    ["en-gb"] is represented as [Language ["en"; "gb"]].
+    @see <https://tools.ietf.org/html/rfc7231#section-5.3.5> the specification.
+*)
 type language = Accept_types.language =
     Language of string list
   | AnyLanguage with sexp
 
-type q = int with sexp
-
-type 'a qlist = (q * 'a) list with sexp
 
 val media_ranges :
   string option -> (media_range * p list) qlist
