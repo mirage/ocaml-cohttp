@@ -37,19 +37,14 @@ let read_line ic =
     Lwt_io.read_line_opt ic
 
 let read ic count =
-  let try_read () =
-    Lwt.catch (fun () -> Lwt_io.read ~count ic)
-      (function
-        | End_of_file -> return ""
-        | x -> Lwt.fail x) in
   let count = min count Sys.max_string_length in
   if !CD.debug_active then
-    try_read ()
+    Lwt_io.read ~count ic
     >>= fun buf ->
     CD.debug_print "<<<[%d] %s" count buf;
     return buf
   else
-    try_read ()
+    Lwt_io.read ~count ic
 
 let write oc buf =
   if !CD.debug_active then
