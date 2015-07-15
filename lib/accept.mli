@@ -26,6 +26,11 @@ type q = int with sexp
 (** Lists, annotated with qualities. *)
 type 'a qlist = (q * 'a) list with sexp
 
+(** Sort by quality, biggest first.
+    Respect the initial ordering.
+*)
+val qsort : 'a qlist -> 'a qlist
+
 type pv = Accept_types.pv =
     T of string
   | S of string with sexp
