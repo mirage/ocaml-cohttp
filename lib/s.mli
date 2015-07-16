@@ -84,7 +84,7 @@ module type Request = sig
   type t = {
     headers: Header.t;    (** HTTP request headers *)
     meth: Code.meth;      (** HTTP request method *)
-    uri: Uri.t;           (** Full HTTP request uri *)
+    path: string;         (** Request path and query *)
     version: Code.version; (** HTTP version, usually 1.1 *)
     encoding: Transfer.encoding; (** transfer encoding of this HTTP request *)
   } [@@deriving fields, sexp]
@@ -94,6 +94,8 @@ module type Request = sig
     Uri.t -> t
   (** Return true whether the connection should be reused *)
   val is_keep_alive : t -> bool
+
+  val uri : t -> Uri.t
 
   val make_for_client:
     ?headers:Header.t ->

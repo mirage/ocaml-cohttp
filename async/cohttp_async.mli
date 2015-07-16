@@ -44,6 +44,7 @@ module Client : sig
     ?interrupt:unit Deferred.t ->
     ?ssl_config:Conduit_async.Ssl.config ->
     ?body:Body.t ->
+    target:Uri.t ->
     Request.t ->
     (Response.t * Body.t) Deferred.t
 

@@ -19,7 +19,7 @@ open Sexplib.Std
 type t = {
   headers: Header.t;
   meth: Code.meth;
-  uri: Uri.t;
+  path: string;
   version: Code.version;
   encoding: Transfer.encoding;
 } [@@deriving fields, sexp]
@@ -29,6 +29,12 @@ let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
     match headers with
     | None -> Header.init ()
     | Some h -> h in
+  let headers =
+    Header.add_unless_exists headers "host"
+      (Uri.host_with_default ~default:"localhost" uri ^
+       match Uri.port uri with
+       | Some p -> ":" ^ string_of_int p
+       | None -> "") in
   let headers =
     (* Add user:password auth to headers from uri
      * if headers don't already have auth *)
@@ -49,7 +55,7 @@ let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
        | Some e -> e
     end
   in
-  { meth; version; headers; uri; encoding }
+  { meth; version; headers; path=(Uri.path_and_query uri); encoding }
 
 let is_keep_alive { version; headers; _ } =
   not (version = `HTTP_1_0 ||
@@ -71,6 +77,53 @@ let make_for_client ?headers ?(chunked=true) ?(body_length=Int64.zero) meth uri 
 
 let pp_hum ppf r =
   Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib.Sexp.to_string_hum)
+
+(* Validate path when reading URI. Implemented for compatibility with old
+   implementation rather than efficiency *)
+let is_valid_uri path meth =
+  path = "*" || meth = `CONNECT ||
+  (match Uri.scheme (Uri.of_string path) with
+   | Some _ -> true
+   | None -> not (String.length path > 0 && path.[0] <> '/'))
+
+let uri { path ; headers ; meth ; _ } =
+  match path with
+  | "*" ->
+    begin match Header.get headers "host" with
+    | None -> Uri.of_string ""
+    | Some host ->
+      let host_uri = Uri.of_string ("//"^host) in
+      let uri = Uri.(with_host (of_string "") (host host_uri)) in
+      Uri.(with_port uri (port host_uri))
+    end
+  | authority when meth = `CONNECT -> Uri.of_string ("//" ^ authority)
+  | path ->
+    let uri = Uri.of_string path in
+    begin match Uri.scheme uri with
+    | Some _ -> (* we have an absoluteURI *)
+      Uri.(match path uri with "" -> with_path uri "/" | _ -> uri)
+    | None ->
+      let empty = Uri.of_string "" in
+      let empty_base = Uri.of_string "///" in
+      let pqs = match Stringext.split ~max:2 path ~on:'?' with
+        | [] -> empty_base
+        | [path] ->
+          Uri.resolve "http" empty_base (Uri.with_path empty path)
+        | path::qs::_ ->
+          let path_base =
+            Uri.resolve "http" empty_base (Uri.with_path empty path)
+          in
+          Uri.with_query path_base (Uri.query_of_encoded qs)
+      in
+      let uri = match Header.get headers "host" with
+        | None -> Uri.(with_scheme (with_host pqs None) None)
+        | Some host ->
+          let host_uri = Uri.of_string ("//"^host) in
+          let uri = Uri.with_host pqs (Uri.host host_uri) in
+          Uri.with_port uri (Uri.port host_uri)
+      in
+      uri
+    end
 
 type tt = t
 module Make(IO : S.IO) = struct
@@ -98,62 +151,17 @@ module Make(IO : S.IO) = struct
       end
     | None -> return `Eof
 
-  let return_request headers meth uri version =
-    let encoding = Header.get_transfer_encoding headers in
-    return (`Ok { headers; meth; uri; version; encoding })
-
   let read ic =
     parse_request_fst_line ic >>= function
     | `Eof -> return `Eof
     | `Invalid reason as r -> return r
-    | `Ok (meth, "*", version) ->
-      Header_IO.parse ic >>= fun headers ->
-      let uri = match Header.get headers "host" with
-        | None -> Uri.of_string ""
-        | Some host ->
-          let host_uri = Uri.of_string ("//"^host) in
-          let uri = Uri.(with_host (of_string "") (host host_uri)) in
-          Uri.(with_port uri (port host_uri))
-      in
-      return_request headers meth uri version
-    | `Ok (`CONNECT as meth, authority, version) ->
-      Header_IO.parse ic >>= fun headers ->
-      let uri = Uri.of_string ("//"^authority) in
-      return_request headers meth uri version
-    | `Ok (meth, request_uri_s, version) ->
-      Header_IO.parse ic >>= fun headers ->
-      let uri = Uri.of_string request_uri_s in
-      match Uri.scheme uri with
-        | Some _ -> (* we have an absoluteURI *)
-          let uri = Uri.(
-            match path uri with "" -> with_path uri "/" | _ -> uri
-          ) in
-          return_request headers meth uri version
-        | None ->
-          let len = String.length request_uri_s in
-          if len > 0 && String.get request_uri_s 0 <> '/'
-          then return (`Invalid "bad request URI")
-          else
-            let empty = Uri.of_string "" in
-            let empty_base = Uri.of_string "///" in
-            let pqs = match Stringext.split ~max:2 request_uri_s ~on:'?' with
-              | [] -> empty_base
-              | [path] ->
-                Uri.resolve "http" empty_base (Uri.with_path empty path)
-              | path::qs::_ ->
-                let path_base =
-                  Uri.resolve "http" empty_base (Uri.with_path empty path)
-                in
-                Uri.with_query path_base (Uri.query_of_encoded qs)
-            in
-            let uri = match Header.get headers "host" with
-              | None -> Uri.(with_scheme (with_host pqs None) None)
-              | Some host ->
-                let host_uri = Uri.of_string ("//"^host) in
-                let uri = Uri.with_host pqs (Uri.host host_uri) in
-                Uri.with_port uri (Uri.port host_uri)
-            in
-            return_request headers meth uri version
+    | `Ok (meth, path, version) ->
+      if is_valid_uri path meth then
+        Header_IO.parse ic >>= fun headers ->
+        let encoding = Header.get_transfer_encoding headers in
+        return (`Ok { headers; meth; path; version; encoding })
+      else
+        return (`Invalid "bad request URI")
 
   (* Defined for method types in RFC7231 *)
   let has_body req =
@@ -169,14 +177,9 @@ module Make(IO : S.IO) = struct
     let fst_line =
       Printf.sprintf "%s %s %s\r\n"
         (Code.string_of_method req.meth)
-        (Uri.path_and_query req.uri)
+        req.path
         (Code.string_of_version req.version) in
-    let headers = Header.add_unless_exists req.headers "host"
-                    (Uri.host_with_default ~default:"localhost" req.uri ^
-                     match Uri.port req.uri with
-                     | Some p -> ":" ^ string_of_int p
-                     | None -> ""
-                    ) in
+    let headers = req.headers in
     let headers =
       match has_body req with
       | `Yes | `Unknown -> Header.add_transfer_encoding headers req.encoding
