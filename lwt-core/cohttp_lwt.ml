@@ -18,6 +18,8 @@
 open Cohttp
 open Lwt
 
+module Body = Cohttp_lwt_body
+
 module type IO = S.IO with type 'a t = 'a Lwt.t
 
 module type Net = sig
@@ -63,10 +65,10 @@ module type Client = sig
   val call :
     ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
-    ?body:Cohttp_lwt_body.t ->
+    ?body:Body.t ->
     ?chunked:bool ->
     Cohttp.Code.meth ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
+    Uri.t -> (Response.t * Body.t) Lwt.t
 
   val head :
     ?ctx:ctx ->
@@ -76,47 +78,47 @@ module type Client = sig
   val get :
     ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
+    Uri.t -> (Response.t * Body.t) Lwt.t
 
   val delete :
     ?ctx:ctx ->
-    ?body:Cohttp_lwt_body.t ->
+    ?body:Body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
+    Uri.t -> (Response.t * Body.t) Lwt.t
 
   val post :
     ?ctx:ctx ->
-    ?body:Cohttp_lwt_body.t ->
+    ?body:Body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
+    Uri.t -> (Response.t * Body.t) Lwt.t
 
   val put :
     ?ctx:ctx ->
-    ?body:Cohttp_lwt_body.t ->
+    ?body:Body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
+    Uri.t -> (Response.t * Body.t) Lwt.t
 
   val patch :
     ?ctx:ctx ->
-    ?body:Cohttp_lwt_body.t ->
+    ?body:Body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
+    Uri.t -> (Response.t * Body.t) Lwt.t
 
   val post_form :
     ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     params:(string * string list) list ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
+    Uri.t -> (Response.t * Body.t) Lwt.t
 
   val callv :
     ?ctx:ctx ->
     Uri.t ->
-    (Request.t * Cohttp_lwt_body.t) Lwt_stream.t ->
-    (Response.t * Cohttp_lwt_body.t) Lwt_stream.t Lwt.t
+    (Request.t * Body.t) Lwt_stream.t ->
+    (Response.t * Body.t) Lwt_stream.t Lwt.t
 end
 
 module Make_client
@@ -143,7 +145,7 @@ module Make_client
         match has_body with
         | `Yes | `Unknown ->
           let reader = Response.make_body_reader res ic in
-          let stream = Cohttp_lwt_body.create_stream
+          let stream = Body.create_stream
                          Response.read_body_chunk reader in
           (match closefn with
            |Some fn ->
@@ -152,7 +154,7 @@ module Make_client
              Gc.finalise gcfn stream
            |None -> ()
           );
-          let body = Cohttp_lwt_body.of_stream stream in
+          let body = Body.of_stream stream in
           return (res, body)
         | `No ->
           (match closefn with |Some fn -> fn () |None -> ());
@@ -177,16 +179,16 @@ module Make_client
       | true ->
         let req = Request.make_for_client ~headers ~chunked meth uri in
         Request.write (fun writer ->
-          Cohttp_lwt_body.write_body (Request.write_body writer) body) req oc
+          Body.write_body (Request.write_body writer) body) req oc
       | false ->
         (* If chunked is not allowed, then obtain the body length and
            insert header *)
-        Cohttp_lwt_body.length body >>= fun (body_length, buf) ->
+        Body.length body >>= fun (body_length, buf) ->
         let req =
           Request.make_for_client ~headers ~chunked ~body_length meth uri
         in
         Request.write (fun writer ->
-          Cohttp_lwt_body.write_body (Request.write_body writer) buf) req oc
+          Body.write_body (Request.write_body writer) buf) req oc
     in
     sent >>= fun () ->
     read_response ~closefn ic oc meth
@@ -209,7 +211,7 @@ module Make_client
   let post_form ?ctx ?headers ~params uri =
     let headers = Header.add_opt_unless_exists headers
                     "content-type" "application/x-www-form-urlencoded" in
-    let body = Cohttp_lwt_body.of_string (Uri.encoded_of_query params) in
+    let body = Body.of_string (Uri.encoded_of_query params) in
     post ?ctx ~chunked:false ~headers ~body uri
 
   let callv ?(ctx=default_ctx) uri reqs =
@@ -217,7 +219,7 @@ module Make_client
     (* Serialise the requests out to the wire *)
     let meth_stream = Lwt_stream.map_s (fun (req,body) ->
       Request.write (fun writer ->
-        Cohttp_lwt_body.write_body (Request.write_body writer) body
+        Body.write_body (Request.write_body writer) body
       ) req oc >>= fun () ->
       return (Request.meth req)
     ) reqs in
@@ -230,7 +232,7 @@ module Make_client
     let resps = Lwt_stream.map_s (fun meth ->
       begin match !last_body with
       | None -> return_unit
-      | Some body -> Cohttp_lwt_body.drain_body body
+      | Some body -> Body.drain_body body
       end >>= fun () ->
       Lwt_mutex.with_lock read_m (fun () -> read_response ~closefn ic oc meth)
       >|= (fun ((_,body) as x) ->
@@ -251,8 +253,8 @@ module type Server = sig
   type t
 
   val make : ?conn_closed:(conn -> unit)
-    -> callback:(conn -> Cohttp.Request.t -> Cohttp_lwt_body.t
-                 -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t)
+    -> callback:(conn -> Cohttp.Request.t -> Body.t
+                 -> (Cohttp.Response.t * Body.t) Lwt.t)
     -> unit -> t
 
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
@@ -261,30 +263,30 @@ module type Server = sig
     ?headers:Cohttp.Header.t ->
     ?flush:bool ->
     status:Cohttp.Code.status_code ->
-    body:Cohttp_lwt_body.t ->
-    unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+    body:Body.t ->
+    unit -> (Cohttp.Response.t * Body.t) Lwt.t
 
   val respond_string :
     ?headers:Cohttp.Header.t ->
     status:Cohttp.Code.status_code ->
-    body:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+    body:string -> unit -> (Cohttp.Response.t * Body.t) Lwt.t
 
   val respond_error :
     ?headers:Header.t ->
     ?status:Cohttp.Code.status_code ->
-    body:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+    body:string -> unit -> (Cohttp.Response.t * Body.t) Lwt.t
 
   val respond_redirect :
     ?headers:Cohttp.Header.t ->
-    uri:Uri.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+    uri:Uri.t -> unit -> (Cohttp.Response.t * Body.t) Lwt.t
 
   val respond_need_auth :
     ?headers:Cohttp.Header.t ->
     auth:Cohttp.Auth.challenge ->
-    unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+    unit -> (Cohttp.Response.t * Body.t) Lwt.t
 
   val respond_not_found :
-    ?uri:Uri.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+    ?uri:Uri.t -> unit -> (Cohttp.Response.t * Body.t) Lwt.t
 
   val callback: t -> IO.conn -> IO.ic -> IO.oc -> unit Lwt.t
 end
@@ -301,8 +303,8 @@ module Make_server(IO:IO) = struct
     callback :
       conn ->
       Cohttp.Request.t ->
-      Cohttp_lwt_body.t ->
-      (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t;
+      Body.t ->
+      (Cohttp.Response.t * Body.t) Lwt.t;
     conn_closed: conn -> unit;
   }
 
@@ -319,10 +321,10 @@ module Make_server(IO:IO) = struct
   let respond ?headers ?(flush=true) ~status ~body () =
     let encoding =
       match headers with
-      | None -> Cohttp_lwt_body.transfer_encoding body
+      | None -> Body.transfer_encoding body
       | Some headers ->
         match Header.get_transfer_encoding headers with
-        | Transfer.Unknown -> Cohttp_lwt_body.transfer_encoding body
+        | Transfer.Unknown -> Body.transfer_encoding body
         | t -> t
     in
     let res = Response.make ~status ~flush ~encoding ?headers () in
@@ -332,7 +334,7 @@ module Make_server(IO:IO) = struct
     let res = Response.make ~status
                 ~encoding:(Transfer.Fixed (Int64.of_int (String.length body)))
                 ?headers () in
-    let body = Cohttp_lwt_body.of_string body in
+    let body = Body.of_string body in
     return (res,body)
 
   let respond_error ?headers ?(status=`Internal_server_error) ~body () =
@@ -382,13 +384,12 @@ module Make_server(IO:IO) = struct
               match Request.has_body req with
               | `Yes ->
                 let reader = Request.make_body_reader req ic in
-                let body_stream = Cohttp_lwt_body.create_stream
+                let body_stream = Body.create_stream
                                     Request.read_body_chunk reader in
                 Lwt_stream.on_terminate body_stream
                   (fun () -> Lwt_mutex.unlock read_m);
-                let body = Cohttp_lwt_body.of_stream body_stream in
-                (* The read_m remains locked until the caller reads the body
-                *)
+                let body = Body.of_stream body_stream in
+                (* The read_m remains locked until the caller reads the body *)
                 return (Some (req, body))
               (* TODO for now we are just repeating the old behaviour
                * of ignoring the body in the request. Perhaps it should be
@@ -406,7 +407,7 @@ module Make_server(IO:IO) = struct
              Lwt.catch
                (fun () -> spec.callback (io_id, conn_id) req body)
                (fun exn -> respond_error ~body:(Printexc.to_string exn) ()))
-          (fun () -> Cohttp_lwt_body.drain_body body)
+          (fun () -> Body.drain_body body)
       ) req_stream in
     (* Clean up resources when the response stream terminates and call
      * the user callback *)
@@ -415,7 +416,7 @@ module Make_server(IO:IO) = struct
     res_stream |> Lwt_stream.iter_s (fun (res,body) ->
       let flush = Response.flush res in
       Response.write ~flush (fun writer ->
-        Cohttp_lwt_body.write_body (Response.write_body writer) body
+        Body.write_body (Response.write_body writer) body
       ) res oc
     )
 end
