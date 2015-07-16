@@ -24,6 +24,13 @@ type t = {
   encoding: Transfer.encoding;
 } [@@deriving fields, sexp]
 
+let fixed_zero = Transfer.Fixed Int64.zero
+
+let guess_encoding ?(encoding=fixed_zero) headers =
+  match Header.get_content_range headers with
+  | Some clen -> Transfer.Fixed clen
+  | None -> encoding
+
 let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
   let headers =
     match headers with
@@ -42,26 +49,12 @@ let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
     | None, Some user, Some pass ->
       let auth = `Basic (user, pass) in
       Header.add_authorization headers auth
-    | _, _, _ -> headers
-  in
-  let encoding =
-    (* Check for a content-length in the supplied headers first *)
-    match Header.get_content_range headers with
-    | Some clen -> Transfer.Fixed clen
-    | None -> begin
-       (* Otherwise look for an API-level encoding specification *)
-       match encoding with
-       | None -> Transfer.Fixed Int64.zero
-       | Some e -> e
-    end
-  in
+    | _, _, _ -> headers in
+  let encoding = guess_encoding ?encoding headers in
   { meth; version; headers; path=(Uri.path_and_query uri); encoding }
 
-let create ?headers ?(version=`HTTP_1_1) ?(encoding=Transfer.Fixed Int64.zero)
-      ~meth ~path () =
-  { headers = (match headers with
-      | None -> Header.init ()
-      | Some h -> h)
+let create ?headers ?(version=`HTTP_1_1) ?(encoding=fixed_zero) ~meth ~path () =
+  { headers = (match headers with | None -> Header.init () | Some h -> h)
   ; encoding
   ; version
   ; meth
