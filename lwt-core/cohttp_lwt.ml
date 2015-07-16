@@ -132,7 +132,8 @@ module Make_client
 
   let read_response ?closefn ic oc meth =
     Response.read ic >>= function
-    | `Invalid reason -> Lwt.fail (Failure ("Failed to read response: " ^ reason))
+    | `Invalid reason ->
+      Lwt.fail (Failure ("Failed to read response: " ^ reason))
     | `Eof -> Lwt.fail (Failure "Client connection was closed")
     | `Ok res -> begin
         let has_body = match meth with
@@ -142,7 +143,8 @@ module Make_client
         match has_body with
         | `Yes | `Unknown ->
           let reader = Response.make_body_reader res ic in
-          let stream = Cohttp_lwt_body.create_stream Response.read_body_chunk reader in
+          let stream = Cohttp_lwt_body.create_stream
+                         Response.read_body_chunk reader in
           (match closefn with
            |Some fn ->
              Lwt_stream.on_terminate stream fn;
@@ -167,7 +169,10 @@ module Make_client
     let headers = match headers with None -> Header.init () | Some h -> h in
     Net.connect_uri ~ctx uri >>= fun (conn, ic, oc) ->
     let closefn () = Net.close ic oc in
-    let chunked = match chunked with None -> is_meth_chunked meth | Some v -> v in
+    let chunked =
+      match chunked with
+      | None -> is_meth_chunked meth
+      | Some v -> v in
     let sent = match chunked with
       | true ->
         let req = Request.make_for_client ~headers ~chunked meth uri in
@@ -202,7 +207,8 @@ module Make_client
     call ?ctx ?headers ?body ?chunked `PATCH uri
 
   let post_form ?ctx ?headers ~params uri =
-    let headers = Header.add_opt_unless_exists headers "content-type" "application/x-www-form-urlencoded" in
+    let headers = Header.add_opt_unless_exists headers
+                    "content-type" "application/x-www-form-urlencoded" in
     let body = Cohttp_lwt_body.of_string (Uri.encoded_of_query params) in
     post ?ctx ~chunked:false ~headers ~body uri
 
@@ -255,7 +261,8 @@ module type Server = sig
     ?headers:Cohttp.Header.t ->
     ?flush:bool ->
     status:Cohttp.Code.status_code ->
-    body:Cohttp_lwt_body.t -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+    body:Cohttp_lwt_body.t ->
+    unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val respond_string :
     ?headers:Cohttp.Header.t ->
@@ -314,17 +321,17 @@ module Make_server(IO:IO) = struct
       match headers with
       | None -> Cohttp_lwt_body.transfer_encoding body
       | Some headers ->
-         match Header.get_transfer_encoding headers with
-         | Transfer.Unknown -> Cohttp_lwt_body.transfer_encoding body
-         | t -> t
+        match Header.get_transfer_encoding headers with
+        | Transfer.Unknown -> Cohttp_lwt_body.transfer_encoding body
+        | t -> t
     in
     let res = Response.make ~status ~flush ~encoding ?headers () in
     return (res, body)
 
   let respond_string ?headers ~status ~body () =
     let res = Response.make ~status
-        ~encoding:(Transfer.Fixed (Int64.of_int (String.length body)))
-        ?headers () in
+                ~encoding:(Transfer.Fixed (Int64.of_int (String.length body)))
+                ?headers () in
     let body = Cohttp_lwt_body.of_string body in
     return (res,body)
 
@@ -371,23 +378,27 @@ module Make_server(IO:IO) = struct
               return_none
             | `Ok req -> begin
                 early_close := not (Request.is_keep_alive req);
-                (* Ensure the input body has been fully read before reading again *)
+                (* Ensure the input body has been fully read before reading
+                   again *)
                 match Request.has_body req with
                 | `Yes ->
                   let reader = Request.make_body_reader req ic in
-                  let body_stream = Cohttp_lwt_body.create_stream Request.read_body_chunk reader in
-                  Lwt_stream.on_terminate body_stream (fun () -> Lwt_mutex.unlock read_m);
+                  let body_stream = Cohttp_lwt_body.create_stream
+                                      Request.read_body_chunk reader in
+                  Lwt_stream.on_terminate body_stream
+                    (fun () -> Lwt_mutex.unlock read_m);
                   let body = Cohttp_lwt_body.of_stream body_stream in
-                  (* The read_m remains locked until the caller reads the body *)
+                  (* The read_m remains locked until the caller reads the body
+                  *)
                   return (Some (req, body))
                 (* TODO for now we are just repeating the old behaviour
-                 * of ignoring the body in the request. Perhaps it should
-                 * be changed it did for responses *)
+                 * of ignoring the body in the request. Perhaps it should be
+                 * changed it did for responses *)
                 | `No | `Unknown ->
                   Lwt_mutex.unlock read_m;
                   return (Some (req, `Empty))
               end
-        ) in
+      ) in
       (* Map the requests onto a response stream to serialise out *)
       let res_stream =
         Lwt_stream.map_s (fun (req, body) ->
