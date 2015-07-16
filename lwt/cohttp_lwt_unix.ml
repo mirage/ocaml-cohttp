@@ -20,9 +20,7 @@ module Request = Cohttp_lwt.Make_request(Cohttp_lwt_unix_io)
 module Response = Cohttp_lwt.Make_response(Cohttp_lwt_unix_io)
 
 module type C = sig
-  include Cohttp_lwt.Client
-    with module IO = Cohttp_lwt_unix_io
-     and type ctx = Cohttp_lwt_unix_net.ctx
+  include Cohttp_lwt.Client with type ctx = Cohttp_lwt_unix_net.ctx
   val custom_ctx: ?ctx:Conduit_lwt_unix.ctx -> ?resolver:Resolver_lwt.t -> unit -> ctx
 
 end

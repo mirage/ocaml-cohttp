@@ -68,7 +68,6 @@ module Make_response(IO:IO) : Response with module IO = IO
     fashion.  It will still be finalized by a GC hook if it is not used
     up, but this can take some additional time to happen. *)
 module type Client = sig
-  module IO : IO
 
   type ctx with sexp_of
   val default_ctx : ctx
@@ -147,8 +146,7 @@ end
     to send requests down a connection that is established by the  {! Net }
     module.  The resulting module satisfies the {! Client } module type. *)
 module Make_client (IO:IO) (Net:Net with module IO = IO) : Client
-    with module IO=IO
-     and type ctx = Net.ctx
+  with type ctx = Net.ctx
 
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)
 module type Server = sig

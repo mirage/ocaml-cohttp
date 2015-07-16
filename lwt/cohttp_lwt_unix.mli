@@ -35,9 +35,7 @@ module Response : Cohttp_lwt.Response with module IO = Cohttp_lwt_unix_io
   that are exposed in addition to the {!Cohttp_lwt.Client} interface. *)
 module type C = sig
 
-  include Cohttp_lwt.Client
-    with module IO = Cohttp_lwt_unix_io
-     and type ctx = Cohttp_lwt_unix_net.ctx
+  include Cohttp_lwt.Client with type ctx = Cohttp_lwt_unix_net.ctx
 
   (** [custom_ctx ?ctx ?resolver ()] will return a context that is the
      same as the {!default_ctx}, but with either the connection handling

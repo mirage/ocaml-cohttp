@@ -57,7 +57,6 @@ end
 
 module Make_api(X : sig
 
-  module IO : S.IO
   module Request : Cohttp_lwt.Request
   module Response : Cohttp_lwt.Response
 
@@ -69,7 +68,6 @@ module Make_api(X : sig
 
 end) = struct
 
-  module IO = X.IO
   module Request = X.Request
   module Response = X.Response
 

@@ -57,7 +57,6 @@ module Make_response(IO:IO) = struct
 end
 
 module type Client = sig
-  module IO : IO
 
   type ctx with sexp_of
   val default_ctx : ctx
