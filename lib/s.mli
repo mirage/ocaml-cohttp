@@ -97,6 +97,14 @@ module type Request = sig
 
   val uri : t -> Uri.t
 
+  val create : ?headers:Header.t
+    -> ?version:Code.version
+    -> ?encoding:Transfer.encoding
+    -> meth:Code.meth
+    -> path:string
+    -> unit
+    -> t
+
   val make_for_client:
     ?headers:Header.t ->
     ?chunked:bool ->
