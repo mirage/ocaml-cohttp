@@ -42,7 +42,8 @@ let parse_request_uri_ r expected name =
   String_io.M.(
     StringRequest.read (String_io.open_in r)
     >>= fun result -> match result, expected with
-    | `Ok { Request.uri = ruri }, `Ok uri ->
+    | `Ok req, `Ok uri ->
+      let ruri = Request.uri req in
       let msg = Uri.(Printf.sprintf "expected %s %d %s %s\ngot %s %d %s %s"
                        (opt_default "_" (host uri))
                        (opt_default (-1) (port uri))
@@ -50,12 +51,17 @@ let parse_request_uri_ r expected name =
                        (opt_default "_" (host ruri))
                        (opt_default (-1) (port ruri))
                        (path ruri) (encoded_of_query (query ruri))
-                    )
-      in
-      assert_equal ~cmp:Uri.equal ~msg uri ruri
+                    ) in
+      assert_equal ~printer:Uri.to_string ~cmp:Uri.equal ~msg uri ruri
     | `Invalid rmsg, `Invalid msg ->
-      assert_equal rmsg msg
-    | _ -> assert_failure (name^" unexpected request parse result")
+      assert_equal ~printer:(fun x -> x) rmsg msg
+    | `Invalid error, `Ok uri ->
+      assert_failure (
+        Printf.sprintf "Expected uri:'%s'. Received message: '%s'"
+          (Uri.to_string uri) error
+      )
+    | `Ok _, `Invalid _ -> assert_failure "Parsed invalid URI"
+    | _ -> assert_failure (name ^ " unexpected request parse result")
   )
 
 let bad_request = `Invalid "bad request URI"
