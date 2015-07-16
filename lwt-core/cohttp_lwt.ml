@@ -357,67 +357,65 @@ module Make_server(IO:IO) = struct
       |Some uri -> "Not found: " ^ (Uri.to_string uri) in
     respond_string ~status:`Not_found ~body ()
 
-  let callback spec =
-    let daemon_callback io_id ic oc =
-      let conn_id = Connection.create () in
-      let conn_closed () = spec.conn_closed (io_id,conn_id) in
-      let read_m = Lwt_mutex.create () in
-      (* If the request is HTTP version 1.0 then the request stream should be
-         considered closed after the first request/response. *)
-      let early_close = ref false in
-      (* Read the requests *)
-      let req_stream = Lwt_stream.from (
-        fun () ->
-          if !early_close
-          then return_none
-          else
-            Lwt_mutex.lock read_m >>= fun () ->
-            Request.read ic >>= function
-            | `Eof | `Invalid _ -> (* TODO: request logger for invalid req *)
-              Lwt_mutex.unlock read_m;
-              return_none
-            | `Ok req -> begin
-                early_close := not (Request.is_keep_alive req);
-                (* Ensure the input body has been fully read before reading
-                   again *)
-                match Request.has_body req with
-                | `Yes ->
-                  let reader = Request.make_body_reader req ic in
-                  let body_stream = Cohttp_lwt_body.create_stream
-                                      Request.read_body_chunk reader in
-                  Lwt_stream.on_terminate body_stream
-                    (fun () -> Lwt_mutex.unlock read_m);
-                  let body = Cohttp_lwt_body.of_stream body_stream in
-                  (* The read_m remains locked until the caller reads the body
-                  *)
-                  return (Some (req, body))
-                (* TODO for now we are just repeating the old behaviour
-                 * of ignoring the body in the request. Perhaps it should be
-                 * changed it did for responses *)
-                | `No | `Unknown ->
-                  Lwt_mutex.unlock read_m;
-                  return (Some (req, `Empty))
-              end
-      ) in
-      (* Map the requests onto a response stream to serialise out *)
-      let res_stream =
-        Lwt_stream.map_s (fun (req, body) ->
-          Lwt.finalize
-            (fun () ->
-               Lwt.catch
-                 (fun () -> spec.callback (io_id, conn_id) req body)
-                 (fun exn -> respond_error ~body:(Printexc.to_string exn) ()))
-            (fun () -> Cohttp_lwt_body.drain_body body)
-        ) req_stream in
-      (* Clean up resources when the response stream terminates and call
-       * the user callback *)
-      Lwt_stream.on_terminate res_stream conn_closed;
-      (* Transmit the responses *)
-      res_stream |> Lwt_stream.iter_s (fun (res,body) ->
-        let flush = Response.flush res in
-        Response.write ~flush (fun writer ->
-          Cohttp_lwt_body.write_body (Response.write_body writer) body
-        ) res oc
-      )
-    in daemon_callback
+  let callback spec io_id ic oc =
+    let conn_id = Connection.create () in
+    let conn_closed () = spec.conn_closed (io_id,conn_id) in
+    let read_m = Lwt_mutex.create () in
+    (* If the request is HTTP version 1.0 then the request stream should be
+       considered closed after the first request/response. *)
+    let early_close = ref false in
+    (* Read the requests *)
+    let req_stream = Lwt_stream.from (
+      fun () ->
+        if !early_close
+        then return_none
+        else
+          Lwt_mutex.lock read_m >>= fun () ->
+          Request.read ic >>= function
+          | `Eof | `Invalid _ -> (* TODO: request logger for invalid req *)
+            Lwt_mutex.unlock read_m;
+            return_none
+          | `Ok req -> begin
+              early_close := not (Request.is_keep_alive req);
+              (* Ensure the input body has been fully read before reading
+                 again *)
+              match Request.has_body req with
+              | `Yes ->
+                let reader = Request.make_body_reader req ic in
+                let body_stream = Cohttp_lwt_body.create_stream
+                                    Request.read_body_chunk reader in
+                Lwt_stream.on_terminate body_stream
+                  (fun () -> Lwt_mutex.unlock read_m);
+                let body = Cohttp_lwt_body.of_stream body_stream in
+                (* The read_m remains locked until the caller reads the body
+                *)
+                return (Some (req, body))
+              (* TODO for now we are just repeating the old behaviour
+               * of ignoring the body in the request. Perhaps it should be
+               * changed it did for responses *)
+              | `No | `Unknown ->
+                Lwt_mutex.unlock read_m;
+                return (Some (req, `Empty))
+            end
+    ) in
+    (* Map the requests onto a response stream to serialise out *)
+    let res_stream =
+      Lwt_stream.map_s (fun (req, body) ->
+        Lwt.finalize
+          (fun () ->
+             Lwt.catch
+               (fun () -> spec.callback (io_id, conn_id) req body)
+               (fun exn -> respond_error ~body:(Printexc.to_string exn) ()))
+          (fun () -> Cohttp_lwt_body.drain_body body)
+      ) req_stream in
+    (* Clean up resources when the response stream terminates and call
+     * the user callback *)
+    Lwt_stream.on_terminate res_stream conn_closed;
+    (* Transmit the responses *)
+    res_stream |> Lwt_stream.iter_s (fun (res,body) ->
+      let flush = Response.flush res in
+      Response.write ~flush (fun writer ->
+        Cohttp_lwt_body.write_body (Response.write_body writer) body
+      ) res oc
+    )
 end
