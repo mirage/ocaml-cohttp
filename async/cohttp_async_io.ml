@@ -31,9 +31,6 @@ type ic = Reader.t
 type oc = Writer.t
 type conn = unit
 
-let iter fn x =
-  Deferred.List.iter x ~f:fn
-
 let read_line =
   check_debug
     (fun ic ->

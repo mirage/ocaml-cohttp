@@ -41,12 +41,6 @@ module type IO = sig
   (** [conn] represents the underlying network flow *)
   type conn
 
-  (** [iter f l] will perform a blocking iteration using
-      [f] over the [l] list.  The result is determined
-      after all the iterating threads have completed in
-      serial. *)
-  val iter : ('a -> unit t) -> 'a list -> unit t
-
   (** [read_line ic] will read a single line terminated
       by CR or CRLF from the input channel [ic].  It returns
       {!None} if EOF or other error condition is reached. *)

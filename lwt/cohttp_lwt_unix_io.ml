@@ -26,8 +26,6 @@ type ic = Lwt_io.input_channel
 type oc = Lwt_io.output_channel
 type conn = Conduit_lwt_unix.flow
 
-let iter fn x = Lwt_list.iter_s fn x
-
 let read_line ic =
   if !CD.debug_active then
     Lwt_io.read_line_opt ic >>= function

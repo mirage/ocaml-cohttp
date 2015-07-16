@@ -36,7 +36,6 @@ module M = struct
   let return a = a
   type conn = buf
   let (>>=) = (|>)
-  let iter = List.iter
   type ic = buf
 
   (* output channels are just buffers *)
