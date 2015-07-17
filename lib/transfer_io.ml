@@ -23,42 +23,48 @@ module Make(IO : S.IO) = struct
   type writer = string -> unit IO.t
 
   module Chunked = struct
+
+    let remaining_length chunk remaining =
+      let read_len = Int64.of_int (String.length chunk) in
+      Int64.sub remaining read_len
+
+    let read_chunk ic size =
+      let max_read_len = Int64.of_int 0x8000 in
+      let len = min size max_read_len in
+      read ic (Int64.to_int len)
+
+    let parse_chunksize chunk_size_hex =
+      let hex =
+        (* chunk size is optionally delimited by ; *)
+        try String.sub chunk_size_hex 0 (String.rindex chunk_size_hex ';')
+        with _ -> chunk_size_hex in
+      try Some (Int64.of_string ("0x" ^ hex))
+      with _ -> None
+
+    let rec junk_until_empty_line ic =
+      read_line ic >>= function
+      | None | Some "" -> return Done
+      | Some _trailer -> junk_until_empty_line ic
+
     let read ~remaining ic () =
       (* read between 0 and 32Kbytes of a chunk *)
       let read_chunk_fragment () =
-        let max_read_len = Int64.of_int 0x8000 in
-        let len = min !remaining max_read_len in
-        read ic (Int64.to_int len) >>= function
-        | "" -> return ""
-        | buf ->
-          let read_len = Int64.of_int (String.length buf) in
-          remaining := Int64.sub !remaining read_len;
-          (if !remaining = 0L (* End_of_chunk *)
-           then read_line ic (* Junk the CRLF at end of chunk *)
-           else return None) >>= fun _ ->
-          return buf
+        read_chunk ic !remaining >>= fun chunk ->
+        remaining := remaining_length chunk !remaining;
+        (if !remaining = 0L (* End_of_chunk *)
+         then read_line ic (* Junk the CRLF at end of chunk *)
+         else return None) >>= fun _ ->
+        return chunk
       in
       if !remaining = 0L then
         (* Beginning of a chunk: read chunk size, read up to 32K bytes *)
         read_line ic >>= function
         | None -> return Done
         | Some chunk_size_hex -> begin
-            let chunk_size =
-              let hex =
-                (* chunk size is optionally delimited by ; *)
-                try String.sub chunk_size_hex 0 (String.rindex chunk_size_hex ';')
-                with _ -> chunk_size_hex in
-              try Some (Int64.of_string ("0x" ^ hex)) with _ -> None
-            in
-            match chunk_size with
+            match parse_chunksize chunk_size_hex with
             | None -> return Done
             | Some 0L -> (* TODO: Trailer header support *)
-              let rec read_until_empty_line () =
-                read_line ic >>= function
-                | None | Some "" -> return Done
-                | Some _trailer -> read_until_empty_line ()
-              in
-              read_until_empty_line ()
+              junk_until_empty_line ic
             | Some count ->
               remaining := count;
               read_chunk_fragment () >>= function
@@ -94,8 +100,7 @@ module Make(IO : S.IO) = struct
             | _  -> Chunk buf)
 
     (* TODO enforce that the correct length is written? *)
-    let write oc buf =
-      write oc buf
+    let write = write
   end
 
   module Unknown = struct
