@@ -103,11 +103,10 @@ module Make(IO : S.IO) = struct
        the remote party). *)
     let read ic () =
       read ic 4096 >>= fun buf ->
-      if buf = "" then return(Done)
+      if buf = "" then return Done
       else return (Chunk buf)
 
-    let write oc buf =
-      write oc buf
+    let write = write
   end
 
   let write_and_flush fn oc buf =
@@ -147,14 +146,13 @@ module Make(IO : S.IO) = struct
     let buf = Buffer.create 256 in
     let rec loop () =
       read reader >>= function
-      |Chunk c ->
+      | Chunk c ->
         Buffer.add_string buf c;
         loop ()
-      |Final_chunk c ->
+      | Final_chunk c ->
         Buffer.add_string buf c;
         return (Buffer.contents buf)
-      |Done ->
-        return (Buffer.contents buf)
+      | Done -> return (Buffer.contents buf)
     in
     loop ()
 end
