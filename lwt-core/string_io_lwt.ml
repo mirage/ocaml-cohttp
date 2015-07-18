@@ -24,7 +24,6 @@ type ic = Cohttp.String_io.M.ic
 type oc = Cohttp.String_io.M.oc
 type conn = Cohttp.String_io.M.conn
 
-let iter = Lwt_list.iter_s
 let read_line ic = return (Cohttp.String_io.M.read_line ic)
 let read ic n = return (Cohttp.String_io.M.read ic n)
 
