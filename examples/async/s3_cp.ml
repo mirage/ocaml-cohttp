@@ -1,5 +1,4 @@
-(*
- * Copyright (C) 2015 Trevor Smith <trevorsummerssmith@gmail.com>
+(*{{{ Copyright (C) 2015 Trevor Smith <trevorsummerssmith@gmail.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,7 +12,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- *)
+  }}}*)
 
 (**
    This example is here to show how to get and put to s3 using the

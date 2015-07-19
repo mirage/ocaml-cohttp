@@ -1,5 +1,4 @@
-(*
- * Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
+(*{{{ Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
  * Copyright (c) 2013 Thomas Gazagnaire <thomas@gazagnaire.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -14,7 +13,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- *)
+  }}}*)
 
 (** Connection identifiers. *)
 

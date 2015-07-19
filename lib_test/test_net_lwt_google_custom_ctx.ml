@@ -1,5 +1,4 @@
-(*
- * Copyright (c) 2014 Anil Madhavapeddy <anil@recoil.org>
+(*{{{ Copyright (c) 2014 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,7 +12,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- *)
+  }}}*)
 open Lwt
 
 let google_static_ip = Ipaddr.of_string_exn "213.104.143.99"
