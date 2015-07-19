@@ -56,8 +56,8 @@ end
 
 module Make_api(X : sig
 
-  module Request : Cohttp_lwt.Request
-  module Response : Cohttp_lwt.Response
+  module Request : Cohttp_lwt.S.Request
+  module Response : Cohttp_lwt.S.Response
 
   val call :
       ?headers:Cohttp.Header.t ->

@@ -21,33 +21,11 @@ module Body = Cohttp_lwt_body
 
 module type IO = S.IO with type 'a t = 'a Lwt.t
 
-module type Net = sig
-  module IO : IO
-  type ctx with sexp_of
-  val default_ctx : ctx
-  val connect_uri : ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
-  val close_in : IO.ic -> unit
-  val close_out : IO.oc -> unit
-  val close : IO.ic -> IO.oc -> unit
-end
-
-module type Request = sig
-  type t = Cohttp.Request.t with sexp
-  include Cohttp.S.Request with type t := Cohttp.Request.t
-  include Cohttp.S.Http_io with type t := Cohttp.Request.t
-                            and type 'a IO.t = 'a Lwt.t
-end
+module S = Cohttp_lwt_s
 
 module Make_request(IO:IO) = struct
   include Cohttp.Request
   include (Make(IO) : module type of Make(IO) with type t := t)
-end
-
-module type Response = sig
-  type t = Cohttp.Response.t with sexp
-  include Cohttp.S.Response with type t := Cohttp.Response.t
-  include Cohttp.S.Http_io with type t := Cohttp.Response.t
-                            and type 'a IO.t = 'a Lwt.t
 end
 
 module Make_response(IO:IO) = struct
@@ -55,73 +33,9 @@ module Make_response(IO:IO) = struct
   include (Make(IO) : module type of Make(IO) with type t := t)
 end
 
-module type Client = sig
-
-  type ctx with sexp_of
-  val default_ctx : ctx
-
-  val call :
-    ?ctx:ctx ->
-    ?headers:Cohttp.Header.t ->
-    ?body:Body.t ->
-    ?chunked:bool ->
-    Cohttp.Code.meth ->
-    Uri.t -> (Response.t * Body.t) Lwt.t
-
-  val head :
-    ?ctx:ctx ->
-    ?headers:Cohttp.Header.t ->
-    Uri.t -> Response.t Lwt.t
-
-  val get :
-    ?ctx:ctx ->
-    ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t) Lwt.t
-
-  val delete :
-    ?ctx:ctx ->
-    ?body:Body.t ->
-    ?chunked:bool ->
-    ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t) Lwt.t
-
-  val post :
-    ?ctx:ctx ->
-    ?body:Body.t ->
-    ?chunked:bool ->
-    ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t) Lwt.t
-
-  val put :
-    ?ctx:ctx ->
-    ?body:Body.t ->
-    ?chunked:bool ->
-    ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t) Lwt.t
-
-  val patch :
-    ?ctx:ctx ->
-    ?body:Body.t ->
-    ?chunked:bool ->
-    ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Body.t) Lwt.t
-
-  val post_form :
-    ?ctx:ctx ->
-    ?headers:Cohttp.Header.t ->
-    params:(string * string list) list ->
-    Uri.t -> (Response.t * Body.t) Lwt.t
-
-  val callv :
-    ?ctx:ctx ->
-    Uri.t ->
-    (Request.t * Body.t) Lwt_stream.t ->
-    (Response.t * Body.t) Lwt_stream.t Lwt.t
-end
-
 module Make_client
     (IO:IO)
-    (Net:Net with module IO = IO) = struct
+    (Net:Cohttp_lwt_s.Net with module IO = IO) = struct
 
   module IO = IO
   module Response = Make_response(IO)
@@ -240,53 +154,6 @@ module Make_client
     ) meth_stream in
     Lwt_stream.on_terminate resps (fun () -> Net.close ic oc);
     return resps
-end
-
-(** Configuration of servers. *)
-module type Server = sig
-  module IO : IO
-
-  type conn = IO.conn * Cohttp.Connection.t
-
-  type t
-
-  val make : ?conn_closed:(conn -> unit)
-    -> callback:(conn -> Cohttp.Request.t -> Body.t
-                 -> (Cohttp.Response.t * Body.t) Lwt.t)
-    -> unit -> t
-
-  val resolve_local_file : docroot:string -> uri:Uri.t -> string
-
-  val respond :
-    ?headers:Cohttp.Header.t ->
-    ?flush:bool ->
-    status:Cohttp.Code.status_code ->
-    body:Body.t ->
-    unit -> (Cohttp.Response.t * Body.t) Lwt.t
-
-  val respond_string :
-    ?headers:Cohttp.Header.t ->
-    status:Cohttp.Code.status_code ->
-    body:string -> unit -> (Cohttp.Response.t * Body.t) Lwt.t
-
-  val respond_error :
-    ?headers:Header.t ->
-    ?status:Cohttp.Code.status_code ->
-    body:string -> unit -> (Cohttp.Response.t * Body.t) Lwt.t
-
-  val respond_redirect :
-    ?headers:Cohttp.Header.t ->
-    uri:Uri.t -> unit -> (Cohttp.Response.t * Body.t) Lwt.t
-
-  val respond_need_auth :
-    ?headers:Cohttp.Header.t ->
-    auth:Cohttp.Auth.challenge ->
-    unit -> (Cohttp.Response.t * Body.t) Lwt.t
-
-  val respond_not_found :
-    ?uri:Uri.t -> unit -> (Cohttp.Response.t * Body.t) Lwt.t
-
-  val callback: t -> IO.conn -> IO.ic -> IO.oc -> unit Lwt.t
 end
 
 
