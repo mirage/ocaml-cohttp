@@ -1,5 +1,4 @@
-(*
- * Copyright (c) 2014-2015 David Sheets <sheets@alum.mit.edu>
+(*{{{ Copyright (c) 2014-2015 David Sheets <sheets@alum.mit.edu>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,7 +12,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- *)
+  }}}*)
 
 (* This module contains I/O agnostic functions used by
    Cohttp_server_lwt and Cohttp_server_async. *)

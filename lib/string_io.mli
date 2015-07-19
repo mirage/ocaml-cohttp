@@ -1,5 +1,4 @@
-(*
- * Copyright (c) 2014 Andy Ray
+(*{{{ Copyright (c) 2014 Andy Ray
  * Copyright (c) 2014 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -14,7 +13,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
-*)
+  }}}*)
 
 (** IO implementation that uses strings to marshal and unmarshal HTTP *)
 

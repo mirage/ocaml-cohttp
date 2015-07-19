@@ -1,5 +1,4 @@
-(*
- * Copyright (c) 2014 Romain Calascibetta <romain.calascibetta@gmail.com>
+(*{{{ Copyright (c) 2014 Romain Calascibetta <romain.calascibetta@gmail.com>
  * Copyright (c) 2014 Anil Madhavapeddy <anil@recoil.org>
  * Copyright (c) 2014 David Sheets <sheets@alum.mit.edu>
  *
@@ -15,7 +14,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- *)
+  }}}*)
 
 open Printf
 

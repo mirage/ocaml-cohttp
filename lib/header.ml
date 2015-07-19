@@ -1,5 +1,4 @@
-(*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+(*{{{ Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
  * Copyright (c) 2011-2012 Martin Jambon <martin@mjambon.com>
  * Copyright (c) 2010 Mika Illouz
  *
@@ -15,7 +14,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- *)
+  }}}*)
 
 module LString : sig
   type t

@@ -1,5 +1,4 @@
-(*
- * Copyright (C) <2012> Anil Madhavapeddy <anil@recoil.org>
+(*{{{ Copyright (C) <2012> Anil Madhavapeddy <anil@recoil.org>
  * Copyright (C) <2009> David Sheets <sheets@alum.mit.edu>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -14,7 +13,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- *)
+  }}}*)
 
 open Sexplib.Std
 
