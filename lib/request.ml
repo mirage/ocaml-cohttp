@@ -180,7 +180,7 @@ module Make(IO : S.IO) = struct
     let fst_line =
       Printf.sprintf "%s %s %s\r\n"
         (Code.string_of_method req.meth)
-        req.path
+        (if req.path = "" then "/" else req.path)
         (Code.string_of_version req.version) in
     let headers = req.headers in
     let headers =
