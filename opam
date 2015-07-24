@@ -2,7 +2,7 @@ opam-version: "1.2"
 
 name: "cohttp"
 maintainer: "anil@recoil.org"
-version: "0.18.3"
+version: "dev"
 authors: [ "Anil Madhavapeddy"
            "Stefano Zacchiroli"
            "David Sheets"
