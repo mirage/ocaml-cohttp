@@ -48,7 +48,7 @@ module Make_client
   type ctx = Net.ctx with sexp_of
   let default_ctx = Net.default_ctx
 
-  let read_response ?closefn ic oc meth =
+  let read_response ~closefn ic oc meth =
     Response.read ic >>= function
     | `Invalid reason ->
       Lwt.fail (Failure ("Failed to read response: " ^ reason))
@@ -61,19 +61,15 @@ module Make_client
         match has_body with
         | `Yes | `Unknown ->
           let reader = Response.make_body_reader res ic in
-          let stream = Body.create_stream
-                         Response.read_body_chunk reader in
-          (match closefn with
-           |Some fn ->
-             Lwt_stream.on_terminate stream fn;
-             let gcfn st = fn () in
-             Gc.finalise gcfn stream
-           |None -> ()
-          );
+          let stream = Body.create_stream Response.read_body_chunk reader in
+          let closefn = closefn in
+          Lwt_stream.on_terminate stream closefn;
+          let gcfn st = closefn () in
+          Gc.finalise gcfn stream;
           let body = Body.of_stream stream in
           return (res, body)
         | `No ->
-          (match closefn with |Some fn -> fn () |None -> ());
+          closefn ();
           return (res, `Empty)
       end
 
