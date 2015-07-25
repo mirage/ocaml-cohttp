@@ -18,12 +18,6 @@
 module Request = Cohttp_lwt.Make_request(Cohttp_lwt_unix_io)
 module Response = Cohttp_lwt.Make_response(Cohttp_lwt_unix_io)
 
-module type C = sig
-  include Cohttp_lwt.Client with type ctx = Cohttp_lwt_unix_net.ctx
-  val custom_ctx: ?ctx:Conduit_lwt_unix.ctx -> ?resolver:Resolver_lwt.t -> unit -> ctx
-
-end
-
 module Client = struct
   include
     Cohttp_lwt.Make_client
@@ -85,23 +79,4 @@ module Server = struct
   let create ?timeout ?stop ?(ctx=Cohttp_lwt_unix_net.default_ctx) ?(mode=`TCP (`Port 8080)) spec =
     Conduit_lwt_unix.serve ?timeout ?stop ~ctx:ctx.Cohttp_lwt_unix_net.ctx ~mode
       (callback spec)
-end
-
-module type S = sig
-  include Cohttp_lwt.Server with module IO = Cohttp_lwt_unix_io
-
-  val resolve_file :
-    docroot:string -> uri:Uri.t -> string
-
-  val respond_file :
-    ?headers:Cohttp.Header.t ->
-    fname:string -> unit ->
-    (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
-
-  val create :
-    ?timeout:int ->
-    ?stop:unit Lwt.t ->
-    ?ctx:Cohttp_lwt_unix_net.ctx ->
-    ?mode:Conduit_lwt_unix.server -> t -> unit Lwt.t
-
 end
