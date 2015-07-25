@@ -23,6 +23,10 @@ module type IO = S.IO with type 'a t = 'a Lwt.t
 
 module S = Cohttp_lwt_s
 
+module type Client = S.Client
+module type Server = S.Server
+module type Net = S.Net
+
 module Make_request(IO:IO) = struct
   include Cohttp.Request
   include (Make(IO) : module type of Make(IO) with type t := t)

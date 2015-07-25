@@ -26,6 +26,12 @@ module type IO = S.IO with type 'a t = 'a Lwt.t
 
 module S : (module type of Cohttp_lwt_s)
 
+(** Aliases for module types inside S. These are deprecated and are only
+    here for backwards comaptibility *)
+module type Client = S.Client
+module type Server = S.Server
+module type Net = S.Net
+
 open Cohttp_lwt_s
 
 (** Functor to build a concrete {! Request } from an IO implementation *)
