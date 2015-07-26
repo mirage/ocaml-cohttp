@@ -2,9 +2,6 @@ Planned changes for 1.0:
 
 * Make the Lwt response stream bounded (new in lwt-2.4+)
 
-* Should read_form really be in lib/ ? It could just be implemented in the
-  drivers.  But then again, that would be repeated code in all the backends.
-
 Planned changes for 2.0:
 
 * Make the Header.t header parsing more efficient by only lazily parsing them
