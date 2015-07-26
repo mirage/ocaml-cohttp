@@ -156,21 +156,6 @@ let req_parse () =
     return ()
   | _ -> assert false
 
-let post_form_parse () =
-  let open Cohttp_lwt_unix in
-  let ic = ic_of_buffer (Lwt_bytes.of_string post_req) in
-  Req_io.read ic >>= function
-  | `Ok req ->
-    assert_equal true (Req_io.is_form req);
-    Req_io.read_form req ic >>= fun params ->
-    assert_equal ["Cosby"] (List.assoc "home" params);
-    assert_equal ["flies"] (List.assoc "favorite flavor" params);
-    assert_raises Not_found (fun () -> List.assoc "nonexistent" params);
-    (* multiple requests should still work *)
-    assert_equal ["Cosby"] (List.assoc "home" params);
-    return ()
-  | _ -> assert false
-
 let post_data_parse () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
@@ -298,7 +283,6 @@ let test_cases =
   let tests = [
     "basic_req_parse", basic_req_parse;
     "req_parse", req_parse;
-    "post_form_parse", post_form_parse;
     "post_data_parse",  post_data_parse;
     "post_chunked_parse", post_chunked_parse;
     "basic_res_parse 1", (basic_res_parse basic_res);
