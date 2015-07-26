@@ -34,13 +34,15 @@ let ic_of_buffer buf = Reader.of_pipe (Info.of_string "") (Pipe.of_list [buf])
 
 let p_sexp f x = x |> f |> Sexplib.Sexp.to_string
 
+module Req_io = Cohttp.Request.Make(Cohttp_async_io)
+
 let post_form_parse () =
   let open Cohttp_async in
   ic_of_buffer post_req >>= fun ic ->
-  Request.read ic >>= function
+  Req_io.read ic >>= function
   | `Ok req ->
-    assert_equal true (Request.is_form req);
-    Request.read_form req ic >>= fun params ->
+    assert_equal true (Req_io.is_form req);
+    Req_io.read_form req ic >>= fun params ->
     assert_equal ["Cosby"] (List.Assoc.find_exn params "home");
     assert_equal ["flies"] (List.Assoc.find_exn params "favorite flavor");
     assert_raises Not_found (fun () -> List.Assoc.find_exn params "nonexistent");
