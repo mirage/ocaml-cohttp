@@ -16,6 +16,5 @@
 
 module Make(IO : S.IO) : sig
   val parse: IO.ic -> Header.t IO.t
-  val parse_form : Header.t -> IO.ic -> (string * string list) list IO.t
   val write : Header.t -> IO.oc -> unit IO.t
 end
