@@ -35,14 +35,14 @@ let read_line =
     (fun ic ->
        Reader.read_line ic
        >>| function
-       |`Ok s -> Some s
-       |`Eof -> None
+       | `Ok s -> Some s
+       | `Eof -> None
     )
     (fun ic ->
        Reader.read_line ic
        >>| function
-       |`Ok s -> eprintf "<<< %s\n" s; Some s
-       |`Eof -> eprintf "<<<EOF\n"; None
+       | `Ok s -> eprintf "<<< %s\n" s; Some s
+       | `Eof -> eprintf "<<<EOF\n"; None
     )
 
 let read ic len =
@@ -64,14 +64,12 @@ let write =
 let write_line oc buf =
   check_debug
     (fun oc buf ->
-       Writer.write oc buf;
-       Writer.write oc "\r\n";
+       Writer.write_line oc buf;
        return ()
     )
     (fun oc buf ->
        eprintf "\n%4d >>>> %s\n" (Pid.to_int (Unix.getpid())) buf;
-       Writer.write oc buf;
-       Writer.write oc "\r\n";
+       Writer.write_line oc buf;
        return ()
     )
 
