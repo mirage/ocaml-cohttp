@@ -272,7 +272,7 @@ module Make_server(IO:IO) = struct
         (fun () ->
            Lwt.catch
              (fun () -> callback (io_id, conn_id) req body)
-             (fun exn -> respond_error ~body:(Printexc.to_string exn) ()))
+             (fun _exn -> respond_error ~body:"Internal Server Error" ()))
         (fun () -> Body.drain_body body)
     ) req_stream
 

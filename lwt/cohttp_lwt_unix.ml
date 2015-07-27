@@ -74,17 +74,17 @@ module Server = struct
         ignore_result (Lwt_io.close ic));
       let body = Cohttp_lwt_body.of_stream stream in
       let mime_type = Magic_mime.lookup fname in
-      let headers = Cohttp.Header.add_opt_unless_exists headers "content-type" mime_type in
+      let headers = Cohttp.Header.add_opt_unless_exists
+                      headers "content-type" mime_type in
       let res = Cohttp.Response.make ~status:`OK ~encoding ~headers () in
       return (res, body)
     ) (function
       | Unix.Unix_error(Unix.ENOENT,_,_) | Isnt_a_file ->
         respond_not_found ()
-      | exn ->
-        let body = Printexc.to_string exn in
-        respond_error ~status:`Internal_server_error ~body ())
+      | exn -> Lwt.fail exn)
 
-  let create ?timeout ?stop ?(ctx=Cohttp_lwt_unix_net.default_ctx) ?(mode=`TCP (`Port 8080)) spec =
-    Conduit_lwt_unix.serve ?timeout ?stop ~ctx:ctx.Cohttp_lwt_unix_net.ctx ~mode
-      (callback spec)
+  let create ?timeout ?stop ?(ctx=Cohttp_lwt_unix_net.default_ctx)
+        ?(mode=`TCP (`Port 8080)) spec =
+    Conduit_lwt_unix.serve ?timeout ?stop ~ctx:ctx.Cohttp_lwt_unix_net.ctx
+      ~mode (callback spec)
 end
