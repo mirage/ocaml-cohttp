@@ -203,7 +203,4 @@ module Make(IO : S.IO) = struct
     let writer = make_body_writer ?flush req oc in
     write_body writer >>= fun () ->
     write_footer req oc
-
-  let is_form req = Header.is_form req.headers
-  let read_form req ic = Header_IO.parse_form req.headers ic
 end

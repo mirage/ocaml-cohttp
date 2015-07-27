@@ -110,10 +110,13 @@ let pp_diff fmt (a,b) =
 
 let p_sexp f x = x |> f |> Sexplib.Sexp.to_string
 
+module Req_io = Cohttp.Request.Make(Cohttp_lwt_unix_io)
+module Rep_io = Cohttp.Response.Make(Cohttp_lwt_unix_io)
+
 let basic_req_parse () =
   let module CU = Cohttp_lwt_unix in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_req) in
-  CU.Request.read ic >>=
+  Req_io.read ic >>=
   function
   | `Ok req ->
     assert_equal (Cohttp.Request.version req) `HTTP_1_1;
@@ -128,7 +131,7 @@ let basic_res_parse res () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
   let ic = ic_of_buffer (Lwt_bytes.of_string res) in
-  Response.read ic >>=
+  Rep_io.read ic >>=
   function
   | `Ok res ->
      (* Parse first line *)
@@ -145,7 +148,7 @@ let basic_res_parse res () =
 let req_parse () =
   let open Cohttp_lwt_unix in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_req) in
-  Request.read ic >>= function
+  Req_io.read ic >>= function
   | `Ok req ->
     assert_equal `GET (Request.meth req);
     assert_equal "/index.html" ((Uri.path (Request.uri req)));
@@ -153,33 +156,18 @@ let req_parse () =
     return ()
   | _ -> assert false
 
-let post_form_parse () =
-  let open Cohttp_lwt_unix in
-  let ic = ic_of_buffer (Lwt_bytes.of_string post_req) in
-  Request.read ic >>= function
-  | `Ok req ->
-    assert_equal true (Request.is_form req);
-    Request.read_form req ic >>= fun params ->
-    assert_equal ["Cosby"] (List.assoc "home" params);
-    assert_equal ["flies"] (List.assoc "favorite flavor" params);
-    assert_raises Not_found (fun () -> List.assoc "nonexistent" params);
-    (* multiple requests should still work *)
-    assert_equal ["Cosby"] (List.assoc "home" params);
-    return ()
-  | _ -> assert false
-
 let post_data_parse () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_data_req) in
-  Request.read ic >>= function
+  Req_io.read ic >>= function
   | `Ok req ->
     let printer = p_sexp Transfer.sexp_of_chunk in
-    let reader = Request.make_body_reader req ic in
-    Request.read_body_chunk reader >>= fun body ->
+    let reader = Req_io.make_body_reader req ic in
+    Req_io.read_body_chunk reader >>= fun body ->
     assert_equal ~printer (Transfer.Final_chunk "home=Cosby&favorite+flavor=flies") body;
     (* A subsequent request for the body will have consumed it, therefore None *)
-    Request.read_body_chunk reader >>= fun body ->
+    Req_io.read_body_chunk reader >>= fun body ->
     assert_equal ~printer Transfer.Done body;
     return ()
   | _ -> assert false
@@ -188,13 +176,13 @@ let post_chunked_parse () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_chunked_req) in
-  Request.read ic >>= function
+  Req_io.read ic >>= function
   | `Ok req ->
     assert_equal (Transfer.string_of_encoding (Request.encoding req)) "chunked";
-    let reader = Request.make_body_reader req ic in
-    Request.read_body_chunk reader >>= fun chunk ->
+    let reader = Req_io.make_body_reader req ic in
+    Req_io.read_body_chunk reader >>= fun chunk ->
     assert_equal chunk (Transfer.Chunk "abcdefghijklmnopqrstuvwxyz");
-    Request.read_body_chunk reader >>= fun chunk ->
+    Req_io.read_body_chunk reader >>= fun chunk ->
     assert_equal chunk (Transfer.Chunk "1234567890abcdef");
     return ()
   | _ -> assert false
@@ -203,12 +191,12 @@ let res_content_parse () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_res_content) in
-  Response.read ic >>= function
+  Rep_io.read ic >>= function
   | `Ok res ->
      assert_equal `HTTP_1_1 (Response.version res);
      assert_equal `OK (Response.status res);
-     let reader = Response.make_body_reader res ic in
-     Response.read_body_chunk reader >>= fun body ->
+     let reader = Rep_io.make_body_reader res ic in
+     Rep_io.read_body_chunk reader >>= fun body ->
      assert_equal (Transfer.Final_chunk "home=Cosby&favorite+flavor=flies") body;
      return ()
   | _ -> assert false
@@ -217,14 +205,14 @@ let res_chunked_parse () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
   let ic = ic_of_buffer (Lwt_bytes.of_string chunked_res) in
-  Response.read ic >>= function
+  Rep_io.read ic >>= function
   | `Ok res ->
      assert_equal `HTTP_1_1 (Response.version res);
      assert_equal `OK (Response.status res);
-     let reader = Response.make_body_reader res ic in
-     Response.read_body_chunk reader >>= fun chunk ->
+     let reader = Rep_io.make_body_reader res ic in
+     Rep_io.read_body_chunk reader >>= fun chunk ->
      assert_equal chunk (Transfer.Chunk "abcdefghijklmnopqrstuvwxyz");
-     Response.read_body_chunk reader >>= fun chunk ->
+     Rep_io.read_body_chunk reader >>= fun chunk ->
      assert_equal chunk (Transfer.Chunk "1234567890abcdef");
      return ()
   | _ -> assert false
@@ -243,15 +231,15 @@ let write_req expected req =
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
   let body = Cohttp_lwt_body.of_string "foobar" in
-  Request.write (fun writer ->
-    Cohttp_lwt_body.write_body (Request.write_body writer) body
+  Req_io.write (fun writer ->
+    Cohttp_lwt_body.write_body (Req_io.write_body writer) body
   ) req oc >>= fun () ->
   assert_equal ~pp_diff expected (get_substring oc buf);
   (* Use the high-level write API. This also tests that req is immutable
    * by re-using it *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
-  Request.write (fun writer -> Request.write_body writer "foobar") req oc
+  Req_io.write (fun writer -> Req_io.write_body writer "foobar") req oc
   >|= fun () ->
   assert_equal expected (get_substring oc buf)
 
@@ -279,15 +267,15 @@ let make_simple_res () =
   let oc = oc_of_buffer buf in
   let res = Response.make ~headers:(Header.of_list [("foo","bar")]) () in
   let body = Cohttp_lwt_body.of_string "foobar" in
-  Response.write (fun writer ->
-    Cohttp_lwt_body.write_body (Response.write_body writer) body
+  Rep_io.write (fun writer ->
+    Cohttp_lwt_body.write_body (Rep_io.write_body writer) body
   ) res oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
   (* Use the high-level write API. This also tests that req is immutable
    * by re-using it *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
-  Response.write (fun writer -> Response.write_body writer "foobar") res oc >>= fun () ->
+  Rep_io.write (fun writer -> Rep_io.write_body writer "foobar") res oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
   return ()
 
@@ -295,7 +283,6 @@ let test_cases =
   let tests = [
     "basic_req_parse", basic_req_parse;
     "req_parse", req_parse;
-    "post_form_parse", post_form_parse;
     "post_data_parse",  post_data_parse;
     "post_chunked_parse", post_chunked_parse;
     "basic_res_parse 1", (basic_res_parse basic_res);

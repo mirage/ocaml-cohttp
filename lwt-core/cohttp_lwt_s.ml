@@ -20,24 +20,6 @@ module type Net = sig
   val close : IO.ic -> IO.oc -> unit
 end
 
-(** The [Request] module combines the {! Cohttp.Request } module with
-    the IO functions, to have them conveniently in one place. *)
-module type Request = sig
-  type t = Cohttp.Request.t with sexp
-  include Cohttp.S.Request with type t := Cohttp.Request.t
-  include Cohttp.S.Http_io with type t := Cohttp.Request.t
-                            and type 'a IO.t = 'a Lwt.t
-end
-
-(** The [Response] module combines the {! Cohttp.Request } module with
-    the IO functions, to have them conveniently in one place. *)
-module type Response = sig
-  type t = Cohttp.Response.t with sexp
-  include Cohttp.S.Response with type t := Cohttp.Response.t
-  include Cohttp.S.Http_io with type t := Cohttp.Response.t
-                            and type 'a IO.t = 'a Lwt.t
-end
-
 (** The [Client] module implements non-pipelined single HTTP client
     calls.  Each call will open a separate {! Net } connection.  For
     best results, the {! Cohttp_lwt_body } that is returned should be

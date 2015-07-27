@@ -74,9 +74,6 @@ module type Http_io = sig
   val make_body_reader : t -> IO.ic -> reader
   val read_body_chunk : reader -> Transfer.chunk IO.t
 
-  val is_form: t -> bool
-  val read_form : t -> IO.ic -> (string * string list) list IO.t
-
   val write_header : t -> IO.oc -> unit IO.t
   val make_body_writer : ?flush:bool -> t -> IO.oc -> writer
   val write_body : writer -> string -> unit IO.t

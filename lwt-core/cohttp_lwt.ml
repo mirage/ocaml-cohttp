@@ -37,6 +37,9 @@ module Make_response(IO:IO) = struct
   include (Make(IO) : module type of Make(IO) with type t := t)
 end
 
+module Request = Cohttp.Request
+module Response = Cohttp.Response
+
 module Make_client
     (IO:IO)
     (Net:Cohttp_lwt_s.Net with module IO = IO) = struct

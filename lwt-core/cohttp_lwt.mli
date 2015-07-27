@@ -34,11 +34,8 @@ module type Net = S.Net
 
 open Cohttp_lwt_s
 
-(** Functor to build a concrete {! Request } from an IO implementation *)
-module Make_request(IO:IO) : Request with module IO = IO
-
-(** Functor to build a concrete {! Response } from an IO implementation *)
-module Make_response(IO:IO) : Response with module IO = IO
+module Request : (Cohttp.S.Request with type t = Cohttp.Request.t)
+module Response : (Cohttp.S.Response with type t = Cohttp.Response.t)
 
 (** The [Make_client] functor glues together a {! Cohttp.S.IO } implementation
     to send requests down a connection that is established by the  {! Net }

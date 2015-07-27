@@ -18,15 +18,11 @@
 
 (** {2 Request and Response modules} *)
 
-(** The [Request] module holds the information about a HTTP request, and
-    also includes the {! Cohttp_lwt_unix_io} functions to handle large
-    message bodies. *)
-module Request : Cohttp_lwt.S.Request with module IO = Cohttp_lwt_unix_io
+(** The [Request] module holds the information about a HTTP request *)
+module Request : Cohttp.S.Request with type t = Cohttp.Request.t
 
-(** The [Response] module holds the information about a HTTP response, and
-    also includes the {! Cohttp_lwt_unix_io} functions to handle large
-    message bodies. *)
-module Response : Cohttp_lwt.S.Response with module IO = Cohttp_lwt_unix_io
+(** The [Response] module holds the information about a HTTP response. *)
+module Response : Cohttp.S.Response with type t = Cohttp.Response.t
 
 (** {2 Module types for Client and Server} *)
 

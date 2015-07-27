@@ -56,8 +56,8 @@ end
 
 module Make_api(X : sig
 
-  module Request : Cohttp_lwt.S.Request
-  module Response : Cohttp_lwt.S.Response
+  module Request : Cohttp.S.Request
+  module Response : Cohttp.S.Response
 
   val call :
       ?headers:Cohttp.Header.t ->
@@ -102,8 +102,8 @@ end
 module Make_client_async(P : Params) = Make_api(struct
 
   module IO = String_io_lwt
-  module Response = Cohttp_lwt.Make_response(IO)
-  module Request = Cohttp_lwt.Make_request(IO)
+  module Response = Cohttp.Response
+  module Request = Cohttp.Request
   module Header_io = Cohttp.Header_io.Make(IO)
   module Bb = Body_builder(P)
 
@@ -173,8 +173,8 @@ end)
 module Make_client_sync(P : Params) = Make_api(struct
 
   module IO = String_io_lwt
-  module Response = Cohttp_lwt.Make_response(IO)
-  module Request = Cohttp_lwt.Make_request(IO)
+  module Response = Cohttp.Response
+  module Request = Cohttp.Request
   module Header_io = Cohttp.Header_io.Make(IO)
   module Bb = Body_builder(P)
 

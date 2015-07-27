@@ -24,5 +24,4 @@ module Make(IO : S.IO) : sig
 
   val read : reader -> chunk IO.t
   val write : writer -> string -> unit IO.t
-  val to_string : reader -> string IO.t
 end

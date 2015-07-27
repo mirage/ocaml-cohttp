@@ -145,18 +145,4 @@ module Make(IO : S.IO) = struct
 
   let read reader = reader ()
   let write writer buf = writer buf
-
-  let to_string reader =
-    let buf = Buffer.create 256 in
-    let rec loop () =
-      read reader >>= function
-      | Chunk c ->
-        Buffer.add_string buf c;
-        loop ()
-      | Final_chunk c ->
-        Buffer.add_string buf c;
-        return (Buffer.contents buf)
-      | Done -> return (Buffer.contents buf)
-    in
-    loop ()
 end
