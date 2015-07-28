@@ -16,8 +16,8 @@ libraries:
    calls to XMLHTTPRequests.  This is used to compile OCaml libraries like
    the GitHub bindings to JavaScript and still run efficiently.
 
-You can implement other targets using the parser very easily.  Look at the
-`lib/IO.mli` signature and implement that in the desired backend.
+You can implement other targets using the parser very easily. Look at the `IO`
+signature in `lib/s.mli` and implement that in the desired backend.
 
 You can activate some runtime debugging by setting `COHTTP_DEBUG` to any
 value, and all requests and responses will be written to stderr.  Further
