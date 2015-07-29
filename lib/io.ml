@@ -15,7 +15,7 @@ module Make (IO : S.IO) = struct
   let read_until_rnrn ic =
     let rec loop acc max i =
       read_line ic >>= function
-      | None -> err' `Eof
+      | None
       | Some "" -> ok' acc
       | Some s when (String.length s + i) > max -> err' `Too_large
       | Some s -> loop (s :: acc) max (String.length s + i)
