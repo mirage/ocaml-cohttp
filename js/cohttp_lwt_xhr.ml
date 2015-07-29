@@ -107,7 +107,6 @@ module Make_client_async(P : Params) = Make_api(struct
     module IO = String_io_lwt
     module Response = Cohttp.Response
     module Request = Cohttp.Request
-    module Header_io = Cohttp.Header_io.Make(IO)
     module Bb = Body_builder(P)
 
     let call ?headers ?body meth uri =
@@ -141,15 +140,16 @@ module Make_client_async(P : Params) = Make_api(struct
                  (* (re-)construct the response *)
                  let response =
                    let resp_headers = Js.to_string (xml##getAllResponseHeaders()) in
-                   let channel = C.String_io.open_in resp_headers in
-                   Lwt.(Header_io.parse channel >|= fun resp_headers ->
-                        Response.make
-                          ~version:`HTTP_1_1
-                          ~status:(C.Code.status_of_code xml##status)
-                          ~flush:false (* ??? *)
-                          ~encoding:(CLB.transfer_encoding body)
-                          ~headers:resp_headers
-                          ())
+                   match Cohttp.Header.of_string resp_headers with
+                   | None -> assert false
+                   | Some headers ->
+                     Response.make
+                       ~version:`HTTP_1_1
+                       ~status:(C.Code.status_of_code xml##status)
+                       ~flush:false (* ??? *)
+                       ~encoding:(CLB.transfer_encoding body)
+                       ~headers ()
+                     |> Lwt.return
                  in
                  (* Note; a type checker subversion seems to be possible here (4.01.0).
                   * Remove the type constraint on Lwt.task above and return any old
@@ -178,7 +178,6 @@ module Make_client_sync(P : Params) = Make_api(struct
     module IO = String_io_lwt
     module Response = Cohttp.Response
     module Request = Cohttp.Request
-    module Header_io = Cohttp.Header_io.Make(IO)
     module Bb = Body_builder(P)
 
     let call ?headers ?body meth uri =
@@ -212,19 +211,17 @@ module Make_client_sync(P : Params) = Make_api(struct
 
   (* (re-)construct the response *)
   let resp_headers = Js.to_string (xml##getAllResponseHeaders()) in
-  Header_io.parse (C.String_io.open_in resp_headers)
-  >>= fun resp_headers ->
-
-  let response = Response.make
-                   ~version:`HTTP_1_1
-                   ~status:(Cohttp.Code.status_of_code xml##status)
-                   ~flush:false
-                   ~encoding:(CLB.transfer_encoding body)
-                   ~headers:resp_headers
-                   ()
-  in
-
-  Lwt.return (response,body)
+  match Cohttp.Header.of_string resp_headers with
+  | None -> assert false
+  | Some headers ->
+    let response = Response.make
+                     ~version:`HTTP_1_1
+                     ~status:(Cohttp.Code.status_of_code xml##status)
+                     ~flush:false
+                     ~encoding:(CLB.transfer_encoding body)
+                     ~headers
+                     () in
+    Lwt.return (response, body)
 
 end)
 
