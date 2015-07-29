@@ -42,10 +42,10 @@ module Make_client
 
   let read_response ~closefn ic oc meth =
     R.read_rep ic >>= function
-    | `Error `Eof -> Lwt.fail (Failure "Client connection was closed")
+    | `Error `Eof -> Lwt.fail_with "Client connection was closed"
     | `Error (`Invalid reason) ->
-      Lwt.fail (Failure ("Failed to read response: " ^ reason))
-    | `Error e -> Lwt.fail_with "TODO"
+      Lwt.fail_with ("Failed to read response: " ^ reason)
+    | `Error e -> Lwt.fail_with (Cohttp.Io.string_of_read_error e)
     | `Ok res ->
       let has_body = match meth with
         | `HEAD -> `No

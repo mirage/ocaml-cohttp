@@ -1,5 +1,11 @@
 let max_req_rep = 16384 * 8
 
+let string_of_read_error = function
+  | `Eof -> "End of file"
+  | `Too_large -> "Entity is too large"
+  | `Empty -> "Empty"
+  | `Invalid s -> "Invalid: " ^ s
+
 module Make (IO : S.IO) = struct
   open IO
 
