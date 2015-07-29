@@ -14,17 +14,9 @@
  *
   }}}*)
 
-module Request = struct
-  include Cohttp.Request
-  include (Make(Cohttp_lwt_unix_io)
-           : module type of Make(Cohttp_lwt_unix_io) with type t := t)
-end
+module Request = Cohttp.Request
 
-module Response = struct
-  include Cohttp.Response
-  include (Make(Cohttp_lwt_unix_io)
-           : module type of Make(Cohttp_lwt_unix_io) with type t := t)
-end
+module Response = Cohttp.Response
 
 module Client = struct
   include

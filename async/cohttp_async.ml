@@ -49,15 +49,8 @@ module Net = struct
      Conduit_async.connect ?interrupt mode
 end
 
-module Request = struct
-  include Cohttp.Request
-  include (Make(IO) : module type of Make(IO) with type t := t)
-end
-
-module Response = struct
-  include Cohttp.Response
-  include (Make(IO) : module type of Make(IO) with type t := t)
-end
+module Request = Cohttp.Request
+module Response = Cohttp.Response
 
 let pipe_of_body read_chunk ic =
   let open Cohttp.Transfer in
@@ -153,24 +146,26 @@ module Body = struct
   let as_pipe t ~f = `Pipe (t |> to_pipe |> f)
 end
 
+module R = Cohttp.Io.Make(IO)
+
 module Client = struct
 
   let read_request ic =
-    Response.read ic >>| function
-    | `Eof -> failwith "Connection closed by remote host"
-    | `Invalid reason -> failwith reason
+    R.read_rep ic >>| function
+    | `Error `Eof -> failwith "Connection closed by remote host"
+    | `Error _ -> failwith "Bad request"
     | `Ok res ->
       (* Build a response pipe for the body *)
-      let reader = Response.make_body_reader res ic in
+      let reader = R.make_body_reader res.Response.encoding ic in
       let (rd, finished_read) =
-        pipe_of_body (fun ic -> Response.read_body_chunk reader) ic in
+        pipe_of_body (fun ic -> R.read_body_chunk reader) ic in
       (res, `Pipe rd, finished_read)
 
   let request ?interrupt ?(body=`Empty) req =
     (* Connect to the remote side *)
     Net.connect_uri ?interrupt req.Request.uri
     >>= fun (ic,oc) ->
-    Request.write (fun writer -> Body.write Request.write_body body writer) req oc
+    R.write_req (fun writer -> Body.write R.write_body body writer) req oc
     >>= fun () ->
     read_request ic >>| fun (resp, body, body_finished) ->
     don't_wait_for (
@@ -185,8 +180,7 @@ module Client = struct
     reqs
     |> Pipe.iter ~f:(fun (req, body) ->
       incr reqs_c;
-      Request.write (fun writer -> Body.write Request.write_body body writer)
-        req oc)
+      R.write_req (fun writer -> Body.write R.write_body body writer) req oc)
     |> don't_wait_for;
     let last_body = ref None in
     let responses = Reader.read_all ic (fun ic ->
@@ -275,8 +269,8 @@ module Server = struct
     (* TODO maybe attempt to read body *)
     | `No | `Unknown -> `Empty
     | `Yes -> (* Create a Pipe for the body *)
-      let reader = Request.make_body_reader req rd in
-      let (p, _) = pipe_of_body (fun ic -> Request.read_body_chunk reader) rd in
+      let reader = R.make_body_reader req.Request.encoding rd in
+      let (p, _) = pipe_of_body (fun ic -> R.read_body_chunk reader) rd in
       `Pipe p
 
   let handle_client handle_request sock rd wr =
@@ -285,13 +279,13 @@ module Server = struct
     let requests_pipe =
       Reader.read_all rd (fun rd ->
         Ivar.read !last_body_pipe_drained >>= fun () ->
-        Request.read rd >>| function
-        | `Eof | `Invalid _ -> `Eof
+        R.read_req rd >>| function
+        | `Error _ -> `Eof
         | `Ok req ->
           let body = read_body req rd in
           last_body_pipe_drained := Ivar.create ();
-          `Ok (req, body)
-      ) in
+          `Ok (req, body))
+    in
     Pipe.iter requests_pipe ~f:(fun (req, body) ->
       handle_request ~body sock req
       >>= fun (res, res_body) ->
@@ -303,7 +297,7 @@ module Server = struct
                         "connection"
                         (if keep_alive then "keep-alive" else "close") in
         { res with Response.headers } in
-      Response.write ~flush (Body.write Response.write_body res_body) res wr >>= fun () ->
+      R.write_rep ~flush (Body.write R.write_body res_body) res wr >>= fun () ->
       Writer.flushed wr >>= fun () ->
       Body.drain body >>| Ivar.fill !last_body_pipe_drained
     ) >>= fun () ->
