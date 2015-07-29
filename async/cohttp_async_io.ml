@@ -61,16 +61,4 @@ let write =
        Writer.write oc buf;
        return ())
 
-let write_line oc buf =
-  check_debug
-    (fun oc buf ->
-       Writer.write_line oc buf;
-       return ()
-    )
-    (fun oc buf ->
-       eprintf "\n%4d >>>> %s\n" (Pid.to_int (Unix.getpid())) buf;
-       Writer.write_line oc buf;
-       return ()
-    )
-
 let flush = Writer.flushed

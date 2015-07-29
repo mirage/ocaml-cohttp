@@ -49,11 +49,5 @@ let write oc buf =
   else
     (Lwt_io.write oc buf)
 
-let write_line oc buf =
-  if !CD.debug_active then
-    (CD.debug_print ">>> %s\n" buf; Lwt_io.write_line oc buf)
-  else
-    (Lwt_io.write_line oc buf)
-
 let flush oc =
   Lwt_io.flush oc
