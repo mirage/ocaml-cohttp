@@ -1,4 +1,4 @@
-let max_req_rep = 1024
+let max_req_rep = 16384 * 8
 
 module Make (IO : S.IO) = struct
   open IO
