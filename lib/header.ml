@@ -249,6 +249,26 @@ let connection h =
   | Some x -> Some (`Unknown x)
   | x -> None
 
+let split_header str =
+  match Stringext.split ~max:2 ~on:':' str with
+  | x::y::[] -> [x; String.trim y]
+  | x -> x
+
+let rev _k v = List.rev v
+
+let of_lines (lines : string list) =
+  let rec loop (headers : t) = function
+    | ""::_ -> None
+    | [] -> Some (map rev headers)
+    | line::lines ->
+      begin match split_header line with
+      | [hd ; tl] ->
+        let header = String.lowercase hd in
+        loop (add headers header tl) lines
+      | _ -> None
+      end
+  in loop (init ()) lines
+
 open Sexplib
 open Sexplib.Std
 open Sexplib.Conv

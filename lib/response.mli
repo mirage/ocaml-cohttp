@@ -31,7 +31,12 @@ include S.Response
 (** Human-readable output, used by the toplevel printer *)
 val pp_hum : Format.formatter -> t -> unit
 
-(** Functor to construct the IO-specific response handling function *)
-module Make(IO : S.IO) : S.Http_io
-  with type t = t
-   and module IO = IO
+val prepare : t -> t
+
+val to_string_list : t -> string list
+
+val of_lines : string list -> [`Invalid of string | `Ok of t]
+
+val has_body : t -> [ `No | `Unknown | `Yes ]
+
+val allowed_body : t -> bool

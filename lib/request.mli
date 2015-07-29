@@ -29,7 +29,8 @@ include S.Request
 (** Human-readable output, used by the toplevel printer *)
 val pp_hum : Format.formatter -> t -> unit
 
-(** Functor to construct the IO-specific HTTP request handling functions *)
-module Make(IO : S.IO) : S.Http_io
-  with type t = t
-   and module IO = IO
+val prepare : t -> t
+
+val to_string_list : t -> string list
+
+val of_string_list : string list -> [`Ok of t | `Invalid of string]

@@ -27,16 +27,6 @@ module type Client = S.Client
 module type Server = S.Server
 module type Net = S.Net
 
-module Make_request(IO:IO) = struct
-  include Cohttp.Request
-  include (Make(IO) : module type of Make(IO) with type t := t)
-end
-
-module Make_response(IO:IO) = struct
-  include Cohttp.Response
-  include (Make(IO) : module type of Make(IO) with type t := t)
-end
-
 module Request = Cohttp.Request
 module Response = Cohttp.Response
 
@@ -45,26 +35,28 @@ module Make_client
     (Net:Cohttp_lwt_s.Net with module IO = IO) = struct
 
   module IO = IO
-  module Response = Make_response(IO)
-  module Request = Make_request(IO)
+  module R = Cohttp.Io.Make(IO)
 
   type ctx = Net.ctx with sexp_of
   let default_ctx = Net.default_ctx
 
   let read_response ~closefn ic oc meth =
-    Response.read ic >>= function
-    | `Invalid reason ->
-      Lwt.fail (Failure ("Failed to read response: " ^ reason))
-    | `Eof -> Lwt.fail (Failure "Client connection was closed")
-    | `Ok res -> begin
+    R.read_until_rnrn ic >|= function
+    | `Error End_of_file -> Lwt.fail (Failure "Client connection was closed")
+    | `Error exn -> Lwt.fail exn
+    | `Ok lines ->
+      begin match Response.of_lines lines with
+      | `Invalid reason ->
+        Lwt.fail (Failure ("Failed to read response: " ^ reason))
+      | `Ok res ->
         let has_body = match meth with
           | `HEAD -> `No
           | _ -> Response.has_body res
         in
-        match has_body with
+        begin match has_body with
         | `Yes | `Unknown ->
-          let reader = Response.make_body_reader res ic in
-          let stream = Body.create_stream Response.read_body_chunk reader in
+          let reader = R.make_body_reader res.Response.encoding ic in
+          let stream = Body.create_stream R.read_body_chunk reader in
           let closefn = closefn in
           Lwt_stream.on_terminate stream closefn;
           let gcfn st = closefn () in
@@ -74,7 +66,9 @@ module Make_client
         | `No ->
           closefn ();
           return (res, `Empty)
+        end
       end
+  ;;
 
   let is_meth_chunked = function
     | `HEAD -> false
@@ -93,8 +87,8 @@ module Make_client
     let sent = match chunked with
       | true ->
         let req = Request.make_for_client ~headers ~chunked meth uri in
-        Request.write (fun writer ->
-          Body.write_body (Request.write_body writer) body) req oc
+        R.write_req (fun writer ->
+          Body.write_body (R.write_body writer) body) req oc
       | false ->
         (* If chunked is not allowed, then obtain the body length and
            insert header *)
@@ -102,8 +96,8 @@ module Make_client
         let req =
           Request.make_for_client ~headers ~chunked ~body_length meth uri
         in
-        Request.write (fun writer ->
-          Body.write_body (Request.write_body writer) buf) req oc
+        R.write_req (fun writer ->
+          Body.write_body (R.write_body writer) buf) req oc
     in
     sent >>= fun () ->
     read_response ~closefn ic oc meth
