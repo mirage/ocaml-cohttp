@@ -19,7 +19,7 @@ let debug_active = ref false
 let debug_print fmt =
   let open Printf in
   ksprintf (fun s -> eprintf "{%4d} %s%!" (Unix.getpid ()) s) fmt
- 
+
 let () =
   try (
    match Sys.getenv "COHTTP_DEBUG" with
