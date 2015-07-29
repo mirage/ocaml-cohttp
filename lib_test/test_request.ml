@@ -60,11 +60,11 @@ let parse_request_uri_ r expected name =
         Printf.sprintf "Expected uri:'%s'. Received error"
           (Uri.to_string uri)
       )
-    | `Ok _, `Invalid _ -> assert_failure "Parsed invalid URI"
+    | `Ok _, `Error _ -> assert_failure "Parsed invalid URI"
     | _ -> assert_failure (name ^ " unexpected request parse result")
   )
 
-let bad_request = `Invalid "bad request URI"
+let bad_request = `Error (`Invalid "bad request URI")
 
 let parse_request_uri _ =
   let r = "GET / HTTP/1.1\r\n\r\n" in
