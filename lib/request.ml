@@ -102,9 +102,9 @@ let request_line_of_string request_line =
       let m = Code.method_of_string meth_raw in
       match Code.version_of_string http_ver_raw with
       | `HTTP_1_1 | `HTTP_1_0 as v -> (`Ok (m, path, v))
-      | `Other _ -> `Invalid ("Malformed request HTTP version: " ^ http_ver_raw)
+      | `Other _ -> `Error ("Malformed request HTTP version: " ^ http_ver_raw)
     end
-  | _ -> `Invalid ("Malformed request header: " ^ request_line)
+  | _ -> `Error ("Malformed request header: " ^ request_line)
 
 let return_request headers meth uri version =
   let encoding = Header.get_transfer_encoding headers in
@@ -112,13 +112,13 @@ let return_request headers meth uri version =
 
 let of_string_list strs =
   match strs with
-  | [] -> `Invalid "Empty"
+  | [] -> `Error "Empty"
   | fst::headers ->
     begin match request_line_of_string fst with
-    | `Invalid reason as r -> r
+    | `Error reason as r -> r
     | `Ok (m, p, v) ->
       begin match Header.of_lines headers with
-      | None -> `Invalid "Failed to parse headers"
+      | None -> `Error "Failed to parse headers"
       | Some headers ->
         begin match m, p, v with
         | (meth, "*", version) ->
@@ -144,7 +144,7 @@ let of_string_list strs =
           | None ->
             let len = String.length request_uri_s in
             if len > 0 && String.get request_uri_s 0 <> '/'
-            then (`Invalid "bad request URI")
+            then (`Error "bad request URI")
             else
               let empty = Uri.of_string "" in
               let empty_base = Uri.of_string "///" in

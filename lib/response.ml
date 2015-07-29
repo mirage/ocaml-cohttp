@@ -58,19 +58,19 @@ let parse_response_fst_line response_line =
       match version_of_string version_raw with
       | `HTTP_1_0
       | `HTTP_1_1 as v -> `Ok (v, (status_of_code (int_of_string code_raw)))
-      | `Other _ -> `Invalid ("Malformed response version: " ^ version_raw)
+      | `Other _ -> `Error ("Malformed response version: " ^ version_raw)
     end
-  | _ -> `Invalid ("Malformed response first line: " ^ response_line)
+  | _ -> `Error ("Malformed response first line: " ^ response_line)
 
 let of_lines lines =
   match lines with
-  | [] -> `Invalid "Response is empty"
+  | [] -> `Error "Response is empty"
   | fst_line::headers ->
     begin match parse_response_fst_line fst_line with
-    | `Invalid _ as r -> r
+    | `Error _ as r -> r
     | `Ok (version, status) ->
       match Header.of_lines headers with
-      | None -> `Invalid "invalid headers"
+      | None -> `Error "invalid headers"
       | Some headers ->
         let encoding = Header.get_transfer_encoding headers in
         let flush = false in

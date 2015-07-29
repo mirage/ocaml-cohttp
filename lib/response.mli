@@ -35,7 +35,7 @@ val prepare : t -> t
 
 val to_string_list : t -> string list
 
-val of_lines : string list -> [`Invalid of string | `Ok of t]
+val of_lines : string list -> [`Error of string | `Ok of t]
 
 val has_body : t -> [ `No | `Unknown | `Yes ]
 

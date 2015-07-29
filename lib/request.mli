@@ -31,6 +31,8 @@ val pp_hum : Format.formatter -> t -> unit
 
 val prepare : t -> t
 
+val has_body : t -> [`Yes | `No | `Unknown]
+
 val to_string_list : t -> string list
 
-val of_string_list : string list -> [`Ok of t | `Invalid of string]
+val of_string_list : string list -> [`Ok of t | `Error of string]
