@@ -269,6 +269,8 @@ let of_lines (lines : string list) =
       end
   in loop (init ()) lines
 
+let of_string s = None
+
 open Sexplib
 open Sexplib.Std
 open Sexplib.Conv
