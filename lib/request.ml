@@ -83,8 +83,6 @@ module Make(IO : S.IO) = struct
 
   open IO
 
-  let url_decode url = Uri.pct_decode url
-
   let parse_request_fst_line ic =
     let open Code in
     read_line ic >>= function
