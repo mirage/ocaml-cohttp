@@ -42,7 +42,7 @@ let make_server () =
     match Uri.path uri with
     |""|"/" -> Server.respond_string ~status:`OK ~body:"helloworld" ()
     |"/post" -> begin
-       lwt body = Cohttp_lwt_body.to_string body in
+       Cohttp_lwt_body.to_string body >>= fun body ->
        Server.respond_string ~status:`OK ~body ()
     end
     |"/postnodrain" -> begin
@@ -71,7 +71,7 @@ let make_server () =
          Some r
        in
        let _ =
-         try_lwt
+         Lwt.catch (fun () ->
            let rec respond () =
               let pp,time = cur_time () in
               print_endline pp;
@@ -82,7 +82,7 @@ let make_server () =
               Lwt_unix.sleep 3.0
               >>= respond
            in respond ()
-         with exn -> return ()
+         ) (fun exn -> return ())
        in
        Server.respond ~headers ~flush:true ~status:`OK ~body ()
     end

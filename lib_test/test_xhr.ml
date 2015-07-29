@@ -47,6 +47,7 @@ http://localhost:8081/lib_test/index.html
 
 *)
 
+open Lwt
 module Client = Cohttp_lwt_xhr.Client
 
 (* test config
@@ -87,9 +88,8 @@ let main _ =
   (* cohttp query to the JSON github API *)
   let run_query _ =
     Lwt.ignore_result (
-      lwt resp, body = Client.get
-        Uri.(of_string ("https://api.github.com/users/" ^ value "input" ^ "/repos"))
-      in
+      (Client.get Uri.(of_string ("https://api.github.com/users/" ^ value "input" ^ "/repos")))
+      >>= fun (resp, body) ->
       (* show the response data *)
       let b = Buffer.create 1024 in
       let add s = Buffer.add_string b s; Buffer.add_string b "\n" in
@@ -100,7 +100,7 @@ let main _ =
       output_response1##innerHTML <- Js.string (Buffer.contents b);
 
       (* show the body as pretty printed json *)
-      lwt body = Cohttp_lwt_body.to_string body in
+      Cohttp_lwt_body.to_string body >>= fun body ->
       output_response2##innerHTML <- pretty body;
       Lwt.return ());
     Js._false
@@ -126,26 +126,26 @@ let main _ =
    * dont touch the body this also doesn't happen. *)
   let run_download _ =
     Lwt.ignore_result (
-      lwt resp, body = Client.get
+      Client.get
         Uri.(of_string ("http://localhost:8081/" ^ value "input"))
-      in
+      >>= fun (resp, body) ->
 
       let body = Cohttp_lwt_body.to_stream body in
       (* get total length, and 1st bit of data *)
       let rec read_stream length data =
-        match_lwt Lwt_stream.get body with
+        Lwt_stream.get body >>= function
         | None -> Lwt.return (length, data)
         | Some(s) ->
-            let length  = length + String.length s in
-            let data =  (* get 1st 1K *)
-              match data with
-              | None -> Some(try String.sub s 0 1024 with _ -> s)
-              | Some(data) -> Some(data)
-            in
-            lwt () = Lwt_js.yield() in
-            read_stream length data
+          let length  = length + String.length s in
+          let data =  (* get 1st 1K *)
+            match data with
+            | None -> Some(try String.sub s 0 1024 with _ -> s)
+            | Some(data) -> Some(data)
+          in
+          Lwt_js.yield () >>= fun () ->
+          read_stream length data
       in
-      lwt length, data = read_stream 0 None in
+      read_stream 0 None >>= fun (length, data) ->
       let data = match data with None -> "" | Some(data) -> data in
       output_response1##innerHTML <- Js.string (Printf.sprintf "blob size = %i\n" length);
       output_response2##innerHTML <- Js.bytestring data;

@@ -107,7 +107,7 @@ Library cohttp_lwt_xhr
   Path:          js
   Findlibname:   js
   FindlibParent: cohttp
-  BuildDepends:  cohttp.lwt-core, js_of_ocaml, js_of_ocaml.syntax, lwt.syntax
+  BuildDepends:  cohttp.lwt-core, js_of_ocaml, js_of_ocaml.syntax
   XMETARequires: cohttp.lwt-core, js_of_ocaml
   Modules:       Cohttp_lwt_xhr
 
@@ -388,7 +388,7 @@ Executable "test_xhr"
   Custom:             true
   CompiledObject:     byte
   Install:            false
-  BuildDepends:       cohttp, cohttp.js, lwt.syntax, js_of_ocaml.syntax
+  BuildDepends:       cohttp, cohttp.js, js_of_ocaml.syntax
 
 Executable "async-receive-post"
   Path:               examples/async
