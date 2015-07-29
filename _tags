@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 157821268a2c635ce673f84a8e5077b5)
+# DO NOT EDIT (digest: 6cd0646d2278cea5898ace940b519331)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -77,7 +77,6 @@ true: annot, bin_annot
 <js/*.ml{,i,y}>: pkg_js_of_ocaml
 <js/*.ml{,i,y}>: pkg_js_of_ocaml.syntax
 <js/*.ml{,i,y}>: pkg_lwt
-<js/*.ml{,i,y}>: pkg_lwt.syntax
 <js/*.ml{,i,y}>: pkg_re.emacs
 <js/*.ml{,i,y}>: pkg_sexplib
 <js/*.ml{,i,y}>: pkg_sexplib.syntax
@@ -610,7 +609,6 @@ true: annot, bin_annot
 "lib_test/test_xhr.byte": pkg_js_of_ocaml
 "lib_test/test_xhr.byte": pkg_js_of_ocaml.syntax
 "lib_test/test_xhr.byte": pkg_lwt
-"lib_test/test_xhr.byte": pkg_lwt.syntax
 "lib_test/test_xhr.byte": pkg_re.emacs
 "lib_test/test_xhr.byte": pkg_sexplib
 "lib_test/test_xhr.byte": pkg_sexplib.syntax
@@ -622,7 +620,6 @@ true: annot, bin_annot
 "lib_test/test_xhr.byte": use_cohttp_lwt_xhr
 <lib_test/*.ml{,i,y}>: pkg_js_of_ocaml
 <lib_test/*.ml{,i,y}>: pkg_js_of_ocaml.syntax
-<lib_test/*.ml{,i,y}>: pkg_lwt.syntax
 <lib_test/*.ml{,i,y}>: use_cohttp_lwt_xhr
 "lib_test/test_xhr.byte": custom
 # Executable async-receive-post
