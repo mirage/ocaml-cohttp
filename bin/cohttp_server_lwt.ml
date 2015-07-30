@@ -160,7 +160,7 @@ let cmd =
     `S "DESCRIPTION";
     `P "$(tname) sets up a simple http server with lwt as backend";
     `S "BUGS";
-    `P "Report them to via e-mail to <mirageos-devel@lists.xenproject.org>, or
+    `P "Report them via e-mail to <mirageos-devel@lists.xenproject.org>, or
         on the issue tracker at <https://github.com/mirage/ocaml-cohttp/issues>";
   ] in
   Term.(pure lwt_start_server $ doc_root $ port $ host $ index $ verb $ ssl_cert $ ssl_key),
