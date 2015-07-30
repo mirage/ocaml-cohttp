@@ -63,17 +63,6 @@ module type IO = sig
   val flush : oc -> unit t
 end
 
-module type Http_io = sig
-  type t
-  type reader
-  type writer
-  module IO : IO
-
-  val has_body : t -> [ `No | `Unknown | `Yes ]
-  val make_body_reader : t -> IO.ic -> reader
-  val read_body_chunk : reader -> Transfer.chunk IO.t
-end
-
 module type Request = sig
   type t = {
     headers: Header.t;    (** HTTP request headers *)
