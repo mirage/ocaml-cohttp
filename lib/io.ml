@@ -1,10 +1,5 @@
 let max_req_rep = 16384 * 8
 
-type read_error =
-  [ `Empty | `Eof | `Invalid of string | `Too_large ]
-
-type ('ok, 'err) result = [ `Ok of 'ok | `Error of 'err ]
-
 let string_of_read_error = function
   | `Eof -> "End of file"
   | `Too_large -> "Entity is too large"
@@ -14,7 +9,11 @@ let string_of_read_error = function
 module Make (IO : S.IO) = struct
   open IO
 
+  module IO = IO
   module T_io = Transfer_io.Make(IO)
+
+  type reader = T_io.reader
+  type writer = T_io.writer
 
   let (>>|) x f = x >>= (fun x -> return (f x))
 

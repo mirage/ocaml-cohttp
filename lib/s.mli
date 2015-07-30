@@ -63,6 +63,31 @@ module type IO = sig
   val flush : oc -> unit t
 end
 
+type read_error = [ `Empty | `Eof | `Invalid of string | `Too_large ]
+
+type ('ok, 'err) result = [ `Ok of 'ok | `Error of 'err ]
+
+module type Http_io = sig
+  module IO : IO
+  type reader
+  type writer
+
+  val read_req : IO.ic -> (Request.t, read_error) result IO.t
+  val read_rep : IO.ic -> (Response.t, read_error) result IO.t
+
+  val make_body_reader : Transfer.encoding -> IO.ic -> reader
+  val read_body_chunk : reader -> Transfer.chunk IO.t
+
+  val write_req : ?flush:bool -> (writer -> unit IO.t)
+    -> Request.t -> IO.oc -> unit IO.t
+  val write_rep : ?flush:bool -> (writer -> unit IO.t)
+    -> Response.t -> IO.oc -> unit IO.t
+
+  val write_body : writer -> string -> unit IO.t
+
+  val read_chunk : reader -> Transfer.chunk IO.t
+end
+
 module type Body = sig
   type t
   val to_string : t -> string
