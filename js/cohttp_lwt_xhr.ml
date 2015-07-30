@@ -99,7 +99,6 @@ end
 
 module Make_client_async(P : Params) = Make_api(struct
 
-    module IO = String_io_lwt
     module Bb = Body_builder(P)
 
     let call ?headers ?body meth uri =
@@ -168,7 +167,6 @@ module Make_client_async(P : Params) = Make_api(struct
 
 module Make_client_sync(P : Params) = Make_api(struct
 
-    module IO = String_io_lwt
     module Bb = Body_builder(P)
 
     let call ?headers ?body meth uri =
