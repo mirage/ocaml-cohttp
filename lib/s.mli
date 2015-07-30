@@ -63,46 +63,6 @@ module type IO = sig
   val flush : oc -> unit t
 end
 
-module type Request = sig
-  type t = {
-    headers: Header.t;    (** HTTP request headers *)
-    meth: Code.meth;      (** HTTP request method *)
-    uri: Uri.t;           (** Full HTTP request uri *)
-    version: Code.version; (** HTTP version, usually 1.1 *)
-    encoding: Transfer.encoding; (** transfer encoding of this HTTP request *)
-  } with fields, sexp
-
-  val make : ?meth:Code.meth -> ?version:Code.version ->
-    ?encoding:Transfer.encoding -> ?headers:Header.t ->
-    Uri.t -> t
-  (** Return true whether the connection should be reused *)
-  val is_keep_alive : t -> bool
-
-  val make_for_client:
-    ?headers:Header.t ->
-    ?chunked:bool ->
-    ?body_length:int64 ->
-    Code.meth -> Uri.t -> t
-end
-
-module type Response = sig
-  type t = {
-    encoding: Transfer.encoding; (** Transfer encoding of this HTTP response *)
-    headers: Header.t;    (** response HTTP headers *)
-    version: Code.version; (** (** HTTP version, usually 1.1 *) *)
-    status: Code.status_code; (** HTTP status code of the response *)
-    flush: bool;
-  } with fields, sexp
-
-  val make :
-    ?version:Code.version ->
-    ?status:Code.status_code ->
-    ?flush:bool ->
-    ?encoding:Transfer.encoding ->
-    ?headers:Header.t ->
-    unit -> t
-end
-
 module type Body = sig
   type t
   val to_string : t -> string

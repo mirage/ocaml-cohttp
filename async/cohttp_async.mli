@@ -17,8 +17,8 @@
 open Core.Std
 open Async.Std
 
-module Request : Cohttp.S.Request with type t = Cohttp.Request.t
-module Response : Cohttp.S.Response with type t = Cohttp.Response.t
+module Request : (module type of Cohttp.Request with type t = Cohttp.Request.t)
+module Response : (module type of Cohttp.Response with type t = Cohttp.Response.t)
 
 module Body : sig
   type t = [

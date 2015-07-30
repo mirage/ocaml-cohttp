@@ -24,7 +24,26 @@
     The interface exposes a [fieldslib] interface which provides individual
     accessor functions for each of the records below.  It also provides [sexp]
     serializers to convert to-and-from an {!Core.Std.Sexp.t}. *)
-include S.Request
+
+type t = {
+  headers: Header.t;    (** HTTP request headers *)
+  meth: Code.meth;      (** HTTP request method *)
+  uri: Uri.t;           (** Full HTTP request uri *)
+  version: Code.version; (** HTTP version, usually 1.1 *)
+  encoding: Transfer.encoding; (** transfer encoding of this HTTP request *)
+} with fields, sexp
+
+val make : ?meth:Code.meth -> ?version:Code.version ->
+  ?encoding:Transfer.encoding -> ?headers:Header.t ->
+  Uri.t -> t
+(** Return true whether the connection should be reused *)
+val is_keep_alive : t -> bool
+
+val make_for_client:
+  ?headers:Header.t ->
+  ?chunked:bool ->
+  ?body_length:int64 ->
+  Code.meth -> Uri.t -> t
 
 (** Human-readable output, used by the toplevel printer *)
 val pp_hum : Format.formatter -> t -> unit

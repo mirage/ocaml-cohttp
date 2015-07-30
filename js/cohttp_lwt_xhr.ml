@@ -15,6 +15,7 @@
  *
   }}}*)
 
+open Cohttp
 module C = Cohttp
 module CLB = Cohttp_lwt_body
 
@@ -59,9 +60,6 @@ end
 
 module Make_api(X : sig
 
-    module Request : Cohttp.S.Request
-    module Response : Cohttp.S.Response
-
     val call :
       ?headers:Cohttp.Header.t ->
       ?body:Cohttp_lwt_body.t ->
@@ -69,9 +67,6 @@ module Make_api(X : sig
       Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   end) = struct
-
-  module Request = X.Request
-  module Response = X.Response
 
   let default_ctx = ()
   type ctx = unit
@@ -105,8 +100,6 @@ end
 module Make_client_async(P : Params) = Make_api(struct
 
     module IO = String_io_lwt
-    module Response = Cohttp.Response
-    module Request = Cohttp.Request
     module Bb = Body_builder(P)
 
     let call ?headers ?body meth uri =
@@ -176,8 +169,6 @@ module Make_client_async(P : Params) = Make_api(struct
 module Make_client_sync(P : Params) = Make_api(struct
 
     module IO = String_io_lwt
-    module Response = Cohttp.Response
-    module Request = Cohttp.Request
     module Bb = Body_builder(P)
 
     let call ?headers ?body meth uri =
