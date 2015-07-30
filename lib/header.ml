@@ -269,7 +269,14 @@ let of_lines (lines : string list) =
       end
   in loop (init ()) lines
 
-let of_string s = None
+let of_string s = (* TODO sloooow/untested *)
+  Stringext.split s ~on:'\n'
+  |> List.map (fun x ->
+    let len = String.length x in
+    if x.[(len - 1)] = '\r'
+    then String.sub x 1 (len - 1)
+    else x)
+  |> of_lines
 
 open Sexplib
 open Sexplib.Std
