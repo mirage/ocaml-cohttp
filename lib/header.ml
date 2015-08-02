@@ -33,6 +33,8 @@ type t = string list StringMap.t
 
 let user_agent = Conf.user_agent
 
+let compare = StringMap.compare Pervasives.compare
+
 let headers_with_list_values = Array.map LString.of_string [|
   "accept";"accept-charset";"accept-encoding";"accept-language";
   "accept-ranges";"allow";"cache-control";"connection";"content-encoding";

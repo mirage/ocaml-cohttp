@@ -60,6 +60,9 @@ val replace : t -> string -> string -> t
 (** Check if a key exists in the header. *)
 val mem : t -> string -> bool
 
+(** Structural comparison of two [Header] values. *)
+val compare : t -> t -> int
+
 (** Retrieve a key from a header.  If the header is one of the set of
     headers defined to have list values, then all of the values are
     concatenated into a single string separated by commas and returned.
