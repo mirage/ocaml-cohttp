@@ -1,3 +1,9 @@
+0.19.0 (trunk):
+* Remove `IO.write_line` as it was unused in any interfaces.
+* Do not use the `lwt` camlp4 extension. No observable external difference.
+* Do not return a code stacktrace in the default 500 handler.
+* Add `Cohttp.Header.compare`
+
 0.18.3 (2015-07-12):
 * Allow `DELETE` requests to have request bodies (#383).
 * Improve the Lwt client `callv` for HTTP/1.1 pipelined
