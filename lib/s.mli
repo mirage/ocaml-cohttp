@@ -86,6 +86,8 @@ module type Http_io = sig
   val write_body : writer -> string -> unit IO.t
 
   val read_chunk : reader -> Transfer.chunk IO.t
+
+  val write_footer : Transfer.encoding -> IO.oc -> unit IO.t
 end
 
 module type Body = sig
