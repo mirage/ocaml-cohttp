@@ -18,7 +18,7 @@ open OUnit
 open Printf
 
 module StringResponse = Cohttp.Response.Make(Cohttp.String_io.M)
-
+module HIO = Cohttp.Header_io.Make(Cohttp.String_io.M)
 module H = Cohttp.Header
 
 let valid_auth () =
@@ -83,6 +83,41 @@ let list_valued_header () =
       | None -> "None"
       | Some x -> x) (H.get h "accept") (Some "bar,foo")
 
+let large_header () =
+  let sz = 1024 * 1024 * 100 in
+  let h = H.init () in
+  let v1 = String.make sz 'a' in
+  let h = H.add h "x-large" v1 in
+  let h = H.add h v1 "foo" in
+  assert_equal
+    ~printer:(function
+      | None -> "None"
+      | Some x -> x) (H.get h "x-large") (Some v1);
+  let obuf = Buffer.create (sz + 1024) in
+  HIO.write h obuf;
+  let ibuf = Buffer.contents obuf in
+  let sbuf = Cohttp.String_io.open_in ibuf in
+  let header_printer h =
+    Printf.sprintf "[length %d]%s"
+     (List.length (H.to_list h)) 
+     (String.concat "\n" (List.map (fun (k,v) -> Printf.sprintf "%s: %s" k v) (H.to_list h))) in 
+  assert_equal ~cmp:(fun a b -> H.compare a b = 0) ~printer:header_printer (HIO.parse sbuf) h
+
+let many_headers () =
+  let size = 1000000 in
+  let rec add_header num h =
+    match num with 
+    | 0 -> h
+    | n ->
+       let k = sprintf "h%d" n in
+       let v = sprintf "v%d" n in
+       let h = H.add h k v in
+       add_header (num - 1) h
+  in
+  let h = add_header size (H.init ()) in
+  assert_equal ~printer:string_of_int
+    (List.length (H.to_list h)) size
+    
 module Content_range = struct
   let h1 = H.of_list [("Content-Length", "123")]
   let h2 = H.of_list [("Content-Range", "bytes 200-300/1000")]
@@ -446,5 +481,7 @@ Alcotest.run "test_header" [
   "Header", [
     "get list valued", `Quick, list_valued_header;
     "trim whitespace", `Quick, trim_ws;
+    "large header", `Quick, large_header;
+    "many headers", `Quick, many_headers;
   ];
 ]
