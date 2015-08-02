@@ -22,7 +22,7 @@ module Make (IO : S.IO) = struct
   let ok v = `Ok v
   let ok' v = return (`Ok v)
 
-  let read_until_rnrn ic =
+  let read_until_crlf_crlf ic =
     let rec loop acc max i =
       read_line ic >>= function
       | None
@@ -73,7 +73,7 @@ module Make (IO : S.IO) = struct
   let write_body       = T_io.write
 
   let read ic f =
-    read_until_rnrn ic >>| function
+    read_until_crlf_crlf ic >>| function
     | `Ok lines ->
       begin match f lines with
       | `Error (s : string) -> `Error (`Invalid s)
