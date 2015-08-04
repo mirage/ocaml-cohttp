@@ -51,6 +51,8 @@ module Make_client
   type ctx = Net.ctx with sexp_of
   let default_ctx = Net.default_ctx
 
+  type abort = unit -> unit
+
   let read_response ~closefn ic oc meth =
     Response.read ic >>= function
     | `Invalid reason ->
@@ -63,17 +65,25 @@ module Make_client
         in
         match has_body with
         | `Yes | `Unknown ->
+          let aborted = ref false in
+          let read_body_chunk arg =
+            if !aborted then Lwt.return Transfer.Done else
+            Response.read_body_chunk arg
+          in
+          let abort () =
+            aborted := true
+          in
           let reader = Response.make_body_reader res ic in
-          let stream = Body.create_stream Response.read_body_chunk reader in
+          let stream = Body.create_stream read_body_chunk reader in
           let closefn = closefn in
           Lwt_stream.on_terminate stream closefn;
           let gcfn st = closefn () in
           Gc.finalise gcfn stream;
           let body = Body.of_stream stream in
-          return (res, body)
+          return (res, body, abort)
         | `No ->
           closefn ();
-          return (res, `Empty)
+          return (res, `Empty, fun () -> ())
       end
 
   let is_meth_chunked = function
@@ -111,7 +121,7 @@ module Make_client
   (* The HEAD should not have a response body *)
   let head ?ctx ?headers uri =
     call ?headers `HEAD uri
-    >|= fst
+    >|= fun (res, _, _) -> res
 
   let get ?ctx ?headers uri = call ?ctx ?headers `GET uri
   let delete ?ctx ?body ?chunked ?headers uri =
@@ -150,7 +160,7 @@ module Make_client
       | Some body -> Body.drain_body body
       end >>= fun () ->
       Lwt_mutex.with_lock read_m (fun () -> read_response ~closefn ic oc meth)
-      >|= (fun ((_,body) as x) ->
+      >|= (fun ((_,body, _) as x) ->
         last_body := Some body;
         x
       )

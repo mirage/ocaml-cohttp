@@ -31,6 +31,8 @@ module type Client = sig
   type ctx with sexp_of
   val default_ctx : ctx
 
+  type abort = unit -> unit
+
   (** [call ?ctx ?headers ?body ?chunked meth uri] will resolve the
     [uri] to a concrete network endpoint using the resolver initialized
     in [ctx].  It will then issue an HTTP request with method [meth],
@@ -48,7 +50,7 @@ module type Client = sig
     ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     Cohttp.Code.meth ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t * abort) Lwt.t
 
   val head :
     ?ctx:ctx ->
@@ -58,47 +60,47 @@ module type Client = sig
   val get :
     ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t * abort) Lwt.t
 
   val delete :
     ?ctx:ctx ->
     ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t * abort) Lwt.t
 
   val post :
     ?ctx:ctx ->
     ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t * abort) Lwt.t
 
   val put :
     ?ctx:ctx ->
     ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t * abort) Lwt.t
 
   val patch :
     ?ctx:ctx ->
     ?body:Cohttp_lwt_body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t * abort) Lwt.t
 
   val post_form :
     ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     params:(string * string list) list ->
-    Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
+    Uri.t -> (Response.t * Cohttp_lwt_body.t * abort) Lwt.t
 
   val callv :
     ?ctx:ctx ->
     Uri.t ->
     (Request.t * Cohttp_lwt_body.t) Lwt_stream.t ->
-    (Response.t * Cohttp_lwt_body.t) Lwt_stream.t Lwt.t
+    (Response.t * Cohttp_lwt_body.t * abort) Lwt_stream.t Lwt.t
 end
 
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)

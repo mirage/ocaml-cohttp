@@ -26,7 +26,7 @@ let client uri ofile meth' =
   debug (fun d -> d "Client with URI %s\n" (Uri.to_string uri));
   let meth = Cohttp.Code.method_of_string meth' in
   debug (fun d -> d "Client %s issued\n" meth');
-  Client.call meth uri >>= fun (resp, body) ->
+  Client.call meth uri >>= fun (resp, body, _) ->
   let status = Response.status resp in
   debug (fun d ->
     d "Client %s returned: %s\n" meth' (Code.string_of_status status)

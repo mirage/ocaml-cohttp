@@ -40,7 +40,7 @@ let handler ~verbose (ch,conn) req body =
   in
   (* Fetch the remote URI *)
   let meth = Request.meth req in
-  Client.call ~headers ~body meth uri >>= fun (resp, body) ->
+  Client.call ~headers ~body meth uri >>= fun (resp, body, _) ->
   if verbose then
     eprintf "<-- %s %s\n%!"
       (Uri.to_string (Request.uri req))
