@@ -1,3 +1,19 @@
+0.19.0 (2015-08-05):
+Compatibility breaking interface changes:
+* Remove `read_form` from the `Request/Response/Header` interfaces
+  as this should be done in `Body` handling instead (#401).
+
+New features and bug fixes:
+* Remove `IO.write_line` as it was unused in any interfaces.
+* Do not use the `lwt` camlp4 extension. No observable external difference.
+* Do not return a code stacktrace in the default 500 handler.
+* Add `Cohttp.Header.compare` (#411)
+* Fix typos in CLI documentation (#413 via @moonlightdrive)
+* Use the Lwt 2.5.0 buffer API.
+* `Cohttp_lwt.read_response` now has a non-optional `closefn` parameter (#400).
+* Add a `Cohttp_lwt_s` module that contains all the Lwt module types
+  in one convenient place (#397).
+
 0.18.3 (2015-07-12):
 * Allow `DELETE` requests to have request bodies (#383).
 * Improve the Lwt client `callv` for HTTP/1.1 pipelined

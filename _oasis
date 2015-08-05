@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        cohttp
-Version:     0.18.3
+Version:     0.19.0
 Synopsis:    HTTP library for Lwt, Async, JavaScript and Mirage
 Description: CoHTTP is an OCaml library for creating HTTP clients and
   daemons.  It has a portable HTTP parser.  Optional dependencies
@@ -433,7 +433,7 @@ Test test_accept
 
 Test test_header
   Run$:               flag(tests)
-  Command:            $test_header
+  Command:            $test_header -q
   WorkingDirectory:   lib_test
 
 Test test_request
