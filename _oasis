@@ -433,7 +433,7 @@ Test test_accept
 
 Test test_header
   Run$:               flag(tests)
-  Command:            $test_header
+  Command:            $test_header -q
   WorkingDirectory:   lib_test
 
 Test test_request

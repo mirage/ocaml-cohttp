@@ -481,7 +481,7 @@ Alcotest.run "test_header" [
   "Header", [
     "get list valued", `Quick, list_valued_header;
     "trim whitespace", `Quick, trim_ws;
-    "large header", `Quick, large_header;
-    "many headers", `Quick, many_headers;
+    "large header", `Slow, large_header;
+    "many headers", `Slow, many_headers;
   ];
 ]
