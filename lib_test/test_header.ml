@@ -95,15 +95,16 @@ let large_header () =
   let header_printer h =
     Printf.sprintf "[length %d]%s"
       (List.length (H.to_list h))
-      (String.concat "\n" (List.map (fun (k,v) -> Printf.sprintf "%s: %s" k v)
-                             (H.to_list h))) in
+      (h
+       |> H.to_list
+       |> List.map (fun (k,v) -> Printf.sprintf "%s: %s" k v)
+       |> String.concat "\n") in
   let header_str = H.to_string h in
-  let header_lines =
-    header_str
-    |> Stringext.split ~on:'\n'
-    |> List.map (fun x -> x ^ "\n") in
+  let value_exn = function
+    | None -> assert_failure "Failed to parse large header"
+    | Some h -> h in
   assert_equal ~cmp:(fun a b -> H.compare a b = 0)
-    ~printer:header_printer (H.of_lines header_lines) h
+    ~printer:header_printer (value_exn (H.of_string header_str)) h
 
 let many_headers () =
   let size = 1000000 in
@@ -111,14 +112,13 @@ let many_headers () =
     match num with
     | 0 -> h
     | n ->
-       let k = sprintf "h%d" n in
-       let v = sprintf "v%d" n in
-       let h = H.add h k v in
-       add_header (num - 1) h
+      let k = sprintf "h%d" n in
+      let v = sprintf "v%d" n in
+      let h = H.add h k v in
+      add_header (num - 1) h
   in
   let h = add_header size (H.init ()) in
-  assert_equal ~printer:string_of_int
-    (List.length (H.to_list h)) size
+  assert_equal ~printer:string_of_int (List.length (H.to_list h)) size
 
 module Content_range = struct
   let h1 = H.of_list [("Content-Length", "123")]
