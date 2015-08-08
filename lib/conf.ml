@@ -15,5 +15,5 @@
  *
  *)
 
-let user_agent = "ocaml-cohttp/0.19.0"
-let version = "0.19.0"
+let user_agent = "ocaml-cohttp/0.19.1"
+let version = "0.19.1"
