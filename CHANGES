@@ -1,3 +1,8 @@
+0.19.1 (2015-08-08)
+
+* Bring make_body_writer and write_header in Cohttp.S.Http_io. Needed by
+  ocaml-git
+
 0.19.0 (2015-08-05):
 Compatibility breaking interface changes:
 * Remove `read_form` from the `Request/Response/Header` interfaces
