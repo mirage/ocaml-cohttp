@@ -66,8 +66,8 @@ let add_multi h k l =
 
 let add_opt h k v =
   match h with
-  |None -> init_with k v
-  |Some h -> add h k v
+  | None -> init_with k v
+  | Some h -> add h k v
 
 let remove h k =
   let k = LString.of_string k in
@@ -256,9 +256,9 @@ let split_header str =
 
 let rev _k v = List.rev v
 
-let of_lines (lines : string list) =
+let of_lines lines =
   let rec loop (headers : t) = function
-    | ""::_ -> None
+    | ""::[]
     | [] -> Some (map rev headers)
     | line::lines ->
       begin match split_header line with
@@ -269,14 +269,9 @@ let of_lines (lines : string list) =
       end
   in loop (init ()) lines
 
-let of_string s = (* TODO sloooow/untested *)
-  Stringext.split s ~on:'\n'
-  |> List.map (fun x ->
-    let len = String.length x in
-    if x.[(len - 1)] = '\r'
-    then String.sub x 1 (len - 1)
-    else x)
-  |> of_lines
+let of_string =
+  let re = Re.("\r\n" |> str |> compile) in
+  fun s -> of_lines (Re.split re s)
 
 open Sexplib
 open Sexplib.Std
