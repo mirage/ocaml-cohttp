@@ -66,8 +66,8 @@ let add_multi h k l =
 
 let add_opt h k v =
   match h with
-  |None -> init_with k v
-  |Some h -> add h k v
+  | None -> init_with k v
+  | Some h -> add h k v
 
 let remove h k =
   let k = LString.of_string k in
@@ -248,6 +248,30 @@ let connection h =
   | Some v when v = "close" -> Some `Close
   | Some x -> Some (`Unknown x)
   | x -> None
+
+let split_header str =
+  match Stringext.split ~max:2 ~on:':' str with
+  | x::y::[] -> [x; String.trim y]
+  | x -> x
+
+let rev _k v = List.rev v
+
+let of_lines lines =
+  let rec loop (headers : t) = function
+    | ""::[]
+    | [] -> Some (map rev headers)
+    | line::lines ->
+      begin match split_header line with
+      | [hd ; tl] ->
+        let header = String.lowercase hd in
+        loop (add headers header tl) lines
+      | _ -> None
+      end
+  in loop (init ()) lines
+
+let of_string =
+  let re = Re.("\r\n" |> str |> compile) in
+  fun s -> of_lines (Re.split re s)
 
 open Sexplib
 open Sexplib.Std

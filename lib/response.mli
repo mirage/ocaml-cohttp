@@ -26,12 +26,32 @@
     The interface exposes a [fieldslib] interface which provides individual
     accessor functions for each of the records below.  It also provides [sexp]
     serializers to convert to-and-from an {!Core.Std.Sexp.t}. *)
-include S.Response
+
+type t = {
+  encoding: Transfer.encoding; (** Transfer encoding of this HTTP response *)
+  headers: Header.t;    (** response HTTP headers *)
+  version: Code.version; (** (** HTTP version, usually 1.1 *) *)
+  status: Code.status_code; (** HTTP status code of the response *)
+  flush: bool;
+} with fields, sexp
+
+val make : ?version:Code.version
+  -> ?status:Code.status_code
+  -> ?flush:bool
+  -> ?encoding:Transfer.encoding
+  -> ?headers:Header.t
+  -> unit
+  -> t
 
 (** Human-readable output, used by the toplevel printer *)
 val pp_hum : Format.formatter -> t -> unit
 
-(** Functor to construct the IO-specific response handling function *)
-module Make(IO : S.IO) : S.Http_io
-  with type t = t
-   and module IO = IO
+val prepare : t -> t
+
+val to_string_list : t -> string list
+
+val of_lines : string list -> [`Error of string | `Ok of t]
+
+val has_body : t -> [ `No | `Unknown | `Yes ]
+
+val allowed_body : t -> bool

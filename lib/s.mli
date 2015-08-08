@@ -63,59 +63,31 @@ module type IO = sig
   val flush : oc -> unit t
 end
 
+type read_error = [ `Empty | `Eof | `Invalid of string | `Too_large ]
+
+type ('ok, 'err) result = [ `Ok of 'ok | `Error of 'err ]
+
 module type Http_io = sig
-  type t
+  module IO : IO
   type reader
   type writer
-  module IO : IO
 
-  val read : IO.ic -> [ `Eof | `Invalid of string | `Ok of t ] IO.t
-  val has_body : t -> [ `No | `Unknown | `Yes ]
-  val make_body_reader : t -> IO.ic -> reader
+  val read_req : IO.ic -> (Request.t, read_error) result IO.t
+  val read_rep : IO.ic -> (Response.t, read_error) result IO.t
+
+  val make_body_reader : Transfer.encoding -> IO.ic -> reader
   val read_body_chunk : reader -> Transfer.chunk IO.t
 
+  val write_req : ?flush:bool -> (writer -> unit IO.t)
+    -> Request.t -> IO.oc -> unit IO.t
+  val write_rep : ?flush:bool -> (writer -> unit IO.t)
+    -> Response.t -> IO.oc -> unit IO.t
+
   val write_body : writer -> string -> unit IO.t
-  val write : ?flush:bool -> (writer -> unit IO.t) -> t -> IO.oc -> unit IO.t
-end
 
-module type Request = sig
-  type t = {
-    headers: Header.t;    (** HTTP request headers *)
-    meth: Code.meth;      (** HTTP request method *)
-    uri: Uri.t;           (** Full HTTP request uri *)
-    version: Code.version; (** HTTP version, usually 1.1 *)
-    encoding: Transfer.encoding; (** transfer encoding of this HTTP request *)
-  } with fields, sexp
+  val read_chunk : reader -> Transfer.chunk IO.t
 
-  val make : ?meth:Code.meth -> ?version:Code.version ->
-    ?encoding:Transfer.encoding -> ?headers:Header.t ->
-    Uri.t -> t
-  (** Return true whether the connection should be reused *)
-  val is_keep_alive : t -> bool
-
-  val make_for_client:
-    ?headers:Header.t ->
-    ?chunked:bool ->
-    ?body_length:int64 ->
-    Code.meth -> Uri.t -> t
-end
-
-module type Response = sig
-  type t = {
-    encoding: Transfer.encoding; (** Transfer encoding of this HTTP response *)
-    headers: Header.t;    (** response HTTP headers *)
-    version: Code.version; (** (** HTTP version, usually 1.1 *) *)
-    status: Code.status_code; (** HTTP status code of the response *)
-    flush: bool;
-  } with fields, sexp
-
-  val make :
-    ?version:Code.version ->
-    ?status:Code.status_code ->
-    ?flush:bool ->
-    ?encoding:Transfer.encoding ->
-    ?headers:Header.t ->
-    unit -> t
+  val write_footer : Transfer.encoding -> IO.oc -> unit IO.t
 end
 
 module type Body = sig

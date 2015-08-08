@@ -2,7 +2,7 @@ open OUnit
 open Printf
 open Cohttp
 
-module StringRequest = Request.Make(String_io.M)
+module R = Cohttp.Io.Make(Cohttp.String_io.M)
 
 let uri_userinfo = Uri.of_string "http://foo:bar%2525@ocaml.org"
 
@@ -40,7 +40,7 @@ let opt_default default = function
 
 let parse_request_uri_ r expected name =
   String_io.M.(
-    StringRequest.read (String_io.open_in r)
+    R.read_req (String_io.open_in r)
     >>= fun result -> match result, expected with
     | `Ok req, `Ok uri ->
       let ruri = Request.uri req in
@@ -53,18 +53,18 @@ let parse_request_uri_ r expected name =
                        (path ruri) (encoded_of_query (query ruri))
                     ) in
       assert_equal ~printer:Uri.to_string ~cmp:Uri.equal ~msg uri ruri
-    | `Invalid rmsg, `Invalid msg ->
-      assert_equal ~printer:(fun x -> x) rmsg msg
-    | `Invalid error, `Ok uri ->
+    | `Error rmsg, `Error msg ->
+      assert_equal rmsg msg
+    | `Error error, `Ok uri ->
       assert_failure (
-        Printf.sprintf "Expected uri:'%s'. Received message: '%s'"
-          (Uri.to_string uri) error
+        Printf.sprintf "Expected uri:'%s'. Received error"
+          (Uri.to_string uri)
       )
-    | `Ok _, `Invalid _ -> assert_failure "Parsed invalid URI"
+    | `Ok _, `Error _ -> assert_failure "Parsed invalid URI"
     | _ -> assert_failure (name ^ " unexpected request parse result")
   )
 
-let bad_request = `Invalid "bad request URI"
+let bad_request = `Error (`Invalid "bad request URI")
 
 let parse_request_uri _ =
   let r = "GET / HTTP/1.1\r\n\r\n" in

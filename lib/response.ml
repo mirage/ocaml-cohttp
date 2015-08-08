@@ -31,78 +31,58 @@ let make ?(version=`HTTP_1_1) ?(status=`OK) ?(flush=false) ?(encoding=Transfer.C
 let pp_hum ppf r =
   Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib.Sexp.to_string_hum)
 
-type tt = t
-module Make(IO : S.IO) = struct
-  type t = tt
-  module IO = IO
-  module Header_IO = Header_io.Make(IO)
-  module Transfer_IO = Transfer_io.Make(IO)
-  type reader = Transfer_IO.reader
-  type writer = Transfer_IO.writer
+let allowed_body response = (* rfc7230#section-5.7.1 *)
+  match status response with
+  | #Code.informational_status | `No_content | `Not_modified -> false
+  | #Code.status_code -> true
 
-  open IO
+let prepare rep =
+  let headers =
+    if allowed_body rep
+    then Header.add_transfer_encoding rep.headers rep.encoding
+    else rep.headers in
+  { rep with headers }
 
-  let parse_response_fst_line ic =
-    let open Code in
-    read_line ic >>= function
-    | Some response_line -> begin
-      match Stringext.split response_line ~on:' ' with
-      | version_raw :: code_raw :: _ -> begin
-         match version_of_string version_raw with
-         | `HTTP_1_0 | `HTTP_1_1 as v -> return (`Ok (v, (status_of_code (int_of_string code_raw))))
-         | `Other _ -> return (`Invalid ("Malformed response version: " ^ version_raw))
-      end
-      | _ -> return (`Invalid ("Malformed response first line: " ^ response_line))
+let to_string_list rep =
+  let first_line = Printf.sprintf "%s %s\r\n"
+                     (Code.string_of_version rep.version)
+                     (Code.string_of_status rep.status) in
+  let headers = Header.to_string rep.headers in
+  [ first_line ; headers ]
+
+
+let parse_response_fst_line response_line =
+  let open Code in
+  match Stringext.split response_line ~on:' ' with
+  | version_raw :: code_raw :: _ -> begin
+      match version_of_string version_raw with
+      | `HTTP_1_0
+      | `HTTP_1_1 as v -> `Ok (v, (status_of_code (int_of_string code_raw)))
+      | `Other _ -> `Error ("Malformed response version: " ^ version_raw)
     end
-    | None -> return `Eof
+  | _ -> `Error ("Malformed response first line: " ^ response_line)
 
-  let read ic =
-    parse_response_fst_line ic >>= function
-    | `Eof -> return `Eof
-    | `Invalid reason as r -> return r
+let of_lines lines =
+  match lines with
+  | [] -> `Error "Response is empty"
+  | fst_line::headers ->
+    begin match parse_response_fst_line fst_line with
+    | `Error _ as r -> r
     | `Ok (version, status) ->
-       Header_IO.parse ic >>= fun headers ->
-       let encoding = Header.get_transfer_encoding headers in
-       let flush = false in
-       return (`Ok { encoding; headers; version; status; flush })
+      match Header.of_lines headers with
+      | None -> `Error "invalid headers"
+      | Some headers ->
+        let encoding = Header.get_transfer_encoding headers in
+        let flush = false in
+        `Ok { encoding; headers; version; status; flush }
+    end
 
-  let allowed_body response = (* rfc7230#section-5.7.1 *)
-    match status response with
-    | #Code.informational_status | `No_content | `Not_modified -> false
-    | #Code.status_code -> true
+let has_body response =
+  if allowed_body response
+  then Transfer.has_body (encoding response)
+  else `No
 
-  let has_body response =
-    if allowed_body response
-    then Transfer.has_body (encoding response)
-    else `No
-
-  let make_body_reader {encoding} ic = Transfer_IO.make_reader encoding ic
-  let read_body_chunk = Transfer_IO.read
-
-  let write_header res oc =
-    write oc (Printf.sprintf "%s %s\r\n" (Code.string_of_version res.version)
-      (Code.string_of_status res.status)) >>= fun () ->
-    let headers =
-      if allowed_body res
-      then Header.add_transfer_encoding res.headers res.encoding
-      else res.headers in
-    Header_IO.write headers oc
-
-  let make_body_writer ?flush {encoding} oc =
-    Transfer_IO.make_writer ?flush encoding oc
-
-  let write_body = Transfer_IO.write
-
-  let write_footer {encoding} oc =
-    match encoding with
-    |Transfer.Chunked ->
-       (* TODO Trailer header support *)
-       IO.write oc "0\r\n\r\n"
-    |Transfer.Fixed _ | Transfer.Unknown -> return ()
-
-  let write ?flush fn req oc =
-    write_header req oc >>= fun () ->
-    let writer = make_body_writer ?flush req oc in
-    fn writer >>= fun () ->
-    write_footer req oc
-end
+let allowed_body response = (* rfc7230#section-5.7.1 *)
+  match status response with
+  | #Code.informational_status | `No_content | `Not_modified -> false
+  | #Code.status_code -> true

@@ -110,3 +110,7 @@ val connection : t -> [`Keep_alive | `Close | `Unknown of string] option
 
 (** Human-readable output, used by the toplevel printer *)
 val pp_hum : Format.formatter -> t -> unit
+
+val of_lines : string list -> t option
+
+val of_string : string -> t option
