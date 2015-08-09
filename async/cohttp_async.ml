@@ -61,26 +61,21 @@ end
 
 let pipe_of_body read_chunk ic =
   let open Cohttp.Transfer in
-  let (rd, wr) = Pipe.create () in
-  let finished =
-    Deferred.repeat_until_finished ()
-      (fun () ->
-         read_chunk ic
-         >>= function
-         | Chunk buf ->
-           begin
-             Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
-             >>| function
-             | `Closed -> `Finished ()
-             | `Ok _ -> `Repeat ()
-           end
-         | Final_chunk buf ->
-           Pipe.write_when_ready wr ~f:(fun wrfn -> wrfn buf)
-           >>| fun _ -> `Finished ()
-         | Done -> return (`Finished ())
-      ) in
-  don't_wait_for (finished >>| fun () -> Pipe.close wr);
-  (rd, finished)
+  Pipe.init (fun writer ->
+    Deferred.repeat_until_finished () (fun () ->
+      read_chunk ic
+      >>= function
+        | Chunk buf ->
+          begin Pipe.write_when_ready writer ~f:(fun write -> write buf)
+          >>| function
+            | `Closed -> `Finished ()
+            | `Ok ()  -> `Repeat ()
+          end
+        | Final_chunk buf ->
+          Pipe.write_when_ready writer ~f:(fun write -> write buf)
+          >>| fun _ -> Pipe.close writer; `Finished ()
+        | Done ->
+          Pipe.close writer; return (`Finished ())))
 
 module Body = struct
   module B = Cohttp.Body
@@ -162,9 +157,8 @@ module Client = struct
     | `Ok res ->
       (* Build a response pipe for the body *)
       let reader = Response.make_body_reader res ic in
-      let (rd, finished_read) =
-        pipe_of_body (fun ic -> Response.read_body_chunk reader) ic in
-      (res, `Pipe rd, finished_read)
+      let pipe = pipe_of_body (fun _ -> Response.read_body_chunk reader) ic in
+      (res, pipe)
 
   let request ?interrupt ?(body=`Empty) req =
     (* Connect to the remote side *)
@@ -172,11 +166,11 @@ module Client = struct
     >>= fun (ic,oc) ->
     Request.write (fun writer -> Body.write Request.write_body body writer) req oc
     >>= fun () ->
-    read_request ic >>| fun (resp, body, body_finished) ->
+    read_request ic >>| fun (resp, body) ->
     don't_wait_for (
-      body_finished >>= fun () ->
-      Deferred.all_ignore [Reader.close ic; Writer.close oc]);
-    (resp, body)
+      Pipe.closed body >>= fun () ->
+        Deferred.all_ignore [Reader.close ic; Writer.close oc]);
+    (resp, `Pipe body)
 
   let callv ?interrupt uri reqs =
     let reqs_c = ref 0 in
@@ -188,20 +182,16 @@ module Client = struct
       Request.write (fun writer -> Body.write Request.write_body body writer)
         req oc)
     |> don't_wait_for;
-    let last_body = ref None in
+    let last_body_drained = ref Deferred.unit in
     let responses = Reader.read_all ic (fun ic ->
-      let last_body_drained =
-        match !last_body with
-        | None -> Deferred.unit
-        | Some b -> b in
-      last_body_drained >>= fun () ->
-      if Pipe.is_closed reqs && (!resp_c >= !reqs_c)
-      then return `Eof
+      !last_body_drained >>= fun () ->
+      if Pipe.is_closed reqs && (!resp_c >= !reqs_c) then
+        return `Eof
       else
-        ic |> read_request >>| fun (resp, body, body_finished) ->
+        ic |> read_request >>| fun (resp, body) ->
         incr resp_c;
-        last_body := Some body_finished;
-        `Ok (resp, body)
+        last_body_drained := Pipe.closed body;
+        `Ok (resp, `Pipe body)
     ) in
     don't_wait_for (
       Pipe.closed reqs >>= fun () ->
@@ -273,23 +263,22 @@ module Server = struct
   let read_body req rd =
     match Request.has_body req with
     (* TODO maybe attempt to read body *)
-    | `No | `Unknown -> `Empty
+    | `No | `Unknown -> (`Empty, Deferred.unit)
     | `Yes -> (* Create a Pipe for the body *)
       let reader = Request.make_body_reader req rd in
-      let (p, _) = pipe_of_body (fun ic -> Request.read_body_chunk reader) rd in
-      `Pipe p
+      let pipe = pipe_of_body (fun ic -> Request.read_body_chunk reader) rd in
+      (`Pipe pipe, Pipe.closed pipe)
 
   let handle_client handle_request sock rd wr =
-    let last_body_pipe_drained = ref (Ivar.create ()) in
-    Ivar.fill !last_body_pipe_drained ();
+    let last_body_pipe_drained = ref Deferred.unit in
     let requests_pipe =
       Reader.read_all rd (fun rd ->
-        Ivar.read !last_body_pipe_drained >>= fun () ->
+        !last_body_pipe_drained >>= fun () ->
         Request.read rd >>| function
         | `Eof | `Invalid _ -> `Eof
         | `Ok req ->
-          let body = read_body req rd in
-          last_body_pipe_drained := Ivar.create ();
+          let body, finished = read_body req rd in
+          last_body_pipe_drained := finished;
           `Ok (req, body)
       ) in
     Pipe.iter requests_pipe ~f:(fun (req, body) ->
@@ -305,7 +294,7 @@ module Server = struct
         { res with Response.headers } in
       Response.write ~flush (Body.write Response.write_body res_body) res wr >>= fun () ->
       Writer.flushed wr >>= fun () ->
-      Body.drain body >>| Ivar.fill !last_body_pipe_drained
+      Body.drain body
     ) >>= fun () ->
     Writer.close wr >>= fun () ->
     Reader.close rd
