@@ -157,7 +157,7 @@ module Client = struct
     | `Ok res ->
       (* Build a response pipe for the body *)
       let reader = Response.make_body_reader res ic in
-      let pipe = pipe_of_body (fun _ -> Response.read_body_chunk reader) ic in
+      let pipe = pipe_of_body Response.read_body_chunk reader in
       (res, pipe)
 
   let request ?interrupt ?(body=`Empty) req =
@@ -266,7 +266,7 @@ module Server = struct
     | `No | `Unknown -> (`Empty, Deferred.unit)
     | `Yes -> (* Create a Pipe for the body *)
       let reader = Request.make_body_reader req rd in
-      let pipe = pipe_of_body (fun ic -> Request.read_body_chunk reader) rd in
+      let pipe = pipe_of_body Request.read_body_chunk reader in
       (`Pipe pipe, Pipe.closed pipe)
 
   let handle_client handle_request sock rd wr =
