@@ -16,16 +16,30 @@
  *
   }}}*)
 
+exception Found_int of int
+
+let compare_caseless x y =
+  if String.(length x <> length y)
+  then String.compare x y
+  else
+    try
+      for i = 0 to String.length x - 1 do
+        if Char.(lowercase x.[i] <> lowercase y.[i]) then
+          raise (Found_int (Char.compare x.[i] y.[i]))
+      done;
+      0
+    with Found_int i -> i
+
 module LString : sig
-  type t
+  type t = string
   val of_string: string -> t
   val to_string: t -> string
   val compare: t -> t -> int
 end = struct
   type t = string
-  let of_string x = String.lowercase x
+  let of_string x = x
   let to_string x = x
-  let compare a b = String.compare a b
+  let compare a b = compare_caseless a b
 end
 
 module StringMap = Map.Make(LString)
@@ -45,7 +59,7 @@ let headers_with_list_values = Array.map LString.of_string [|
 let is_header_with_list_value =
   let tbl = Hashtbl.create (Array.length headers_with_list_values) in
   headers_with_list_values |> Array.iter (fun h -> Hashtbl.add tbl h ());
-  fun h -> Hashtbl.mem tbl h
+  fun h -> Hashtbl.mem tbl (String.lowercase h)
 
 let init () =
   StringMap.empty

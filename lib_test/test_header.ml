@@ -99,14 +99,14 @@ let large_header () =
   let sbuf = Cohttp.String_io.open_in ibuf in
   let header_printer h =
     Printf.sprintf "[length %d]%s"
-     (List.length (H.to_list h)) 
-     (String.concat "\n" (List.map (fun (k,v) -> Printf.sprintf "%s: %s" k v) (H.to_list h))) in 
+     (List.length (H.to_list h))
+     (String.concat "\n" (List.map (fun (k,v) -> Printf.sprintf "%s: %s" k v) (H.to_list h))) in
   assert_equal ~cmp:(fun a b -> H.compare a b = 0) ~printer:header_printer (HIO.parse sbuf) h
 
 let many_headers () =
   let size = 1000000 in
   let rec add_header num h =
-    match num with 
+    match num with
     | 0 -> h
     | n ->
        let k = sprintf "h%d" n in
@@ -117,7 +117,7 @@ let many_headers () =
   let h = add_header size (H.init ()) in
   assert_equal ~printer:string_of_int
     (List.length (H.to_list h)) size
-    
+
 module Content_range = struct
   let h1 = H.of_list [("Content-Length", "123")]
   let h2 = H.of_list [("Content-Range", "bytes 200-300/1000")]
