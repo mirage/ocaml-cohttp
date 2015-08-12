@@ -40,13 +40,13 @@ module Net = struct
     lookup uri
     |> Deferred.Or_error.ok_exn
     >>= fun (host, addr, port) ->
-     let mode =
-       match Uri.scheme uri with
-       | Some "https" -> `OpenSSL (host, addr, port)
-       | Some "httpunix" -> `Unix_domain_socket host
-       | _ -> `TCP (addr, port)
-     in
-     Conduit_async.connect ?interrupt mode
+    let mode =
+      match Uri.scheme uri with
+      | Some "https" -> `OpenSSL (host, addr, port)
+      | Some "httpunix" -> `Unix_domain_socket host
+      | _ -> `TCP (addr, port)
+    in
+    Conduit_async.connect ?interrupt mode
 end
 
 module Request = struct
@@ -63,25 +63,23 @@ let pipe_of_body read_chunk ic =
   let open Cohttp.Transfer in
   Pipe.init (fun writer ->
     Deferred.repeat_until_finished () (fun () ->
-      read_chunk ic
-      >>= function
-        | Chunk buf ->
-          (* Even if [writer] has been closed, the loop must continue reading
-           * from the input channel to ensure that it is left in a proper state
-           * for the next request to be processed (in the case of keep-alive).
-           *
-           * The only case where [writer] will be closed is when
-           * [Pipe.close_read] has been called on its read end. This could be
-           * done by a request handler to signal that it does not need to
-           * inspect the remainder of the body to fulfill the request.
-           *)
-          Pipe.write_when_ready writer ~f:(fun write -> write buf)
-          >>| fun _ -> `Repeat ()
-        | Final_chunk buf ->
-          Pipe.write_when_ready writer ~f:(fun write -> write buf)
-          >>| fun _ -> `Finished ()
-        | Done ->
-          return (`Finished ())))
+      read_chunk ic >>= function
+      | Chunk buf ->
+        (* Even if [writer] has been closed, the loop must continue reading
+         * from the input channel to ensure that it is left in a proper state
+         * for the next request to be processed (in the case of keep-alive).
+         *
+         * The only case where [writer] will be closed is when
+         * [Pipe.close_read] has been called on its read end. This could be
+         * done by a request handler to signal that it does not need to
+         * inspect the remainder of the body to fulfill the request.
+        *)
+        Pipe.write_when_ready writer ~f:(fun write -> write buf)
+        >>| fun _ -> `Repeat ()
+      | Final_chunk buf ->
+        Pipe.write_when_ready writer ~f:(fun write -> write buf)
+        >>| fun _ -> `Finished ()
+      | Done -> return (`Finished ())))
 
 module Body = struct
   module B = Cohttp.Body
@@ -111,13 +109,13 @@ module Body = struct
     match body with
     | #B.t as body -> return (B.is_empty body)
     | `Pipe s ->
-        Pipe.values_available s
-        >>| function
-        |`Eof -> false
-        |`Ok ->
-           match Pipe.peek s with
-           | Some "" -> true
-           | Some _ | None -> false
+      Pipe.values_available s
+      >>| function
+      |`Eof -> false
+      |`Ok ->
+        match Pipe.peek s with
+        | Some "" -> true
+        | Some _ | None -> false
 
   let to_pipe = function
     | `Empty -> Pipe.of_list []
@@ -175,7 +173,7 @@ module Client = struct
     read_request ic >>| fun (resp, body) ->
     don't_wait_for (
       Pipe.closed body >>= fun () ->
-        Deferred.all_ignore [Reader.close ic; Writer.close oc]);
+      Deferred.all_ignore [Reader.close ic; Writer.close oc]);
     (resp, `Pipe body)
 
   let callv ?interrupt uri reqs =
@@ -212,8 +210,7 @@ module Client = struct
     let req =
       match chunked with
       | false ->
-        Body.disable_chunked_encoding body
-        >>| fun (body, body_length) ->
+        Body.disable_chunked_encoding body >>| fun (body, body_length) ->
         Request.make_for_client ?headers ~chunked ~body_length meth uri
       | true -> begin
           Body.is_empty body >>| function
@@ -306,7 +303,7 @@ module Server = struct
     Reader.close rd
 
   let respond ?(flush=true) ?(headers=Cohttp.Header.init ())
-      ?(body=`Empty) status : response Deferred.t =
+        ?(body=`Empty) status : response Deferred.t =
     let encoding = Body.transfer_encoding body in
     let resp = Response.make ~status ~flush ~encoding ~headers () in
     return (resp, body)
@@ -344,7 +341,7 @@ module Server = struct
     |Error exn -> respond_with_string ~code:`Not_found error_body
 
   let create ?max_connections ?max_pending_connections
-      ?buffer_age_limit ?on_handler_error ?(mode=`TCP) where_to_listen handle_request =
+        ?buffer_age_limit ?on_handler_error ?(mode=`TCP) where_to_listen handle_request =
     Conduit_async.serve ?max_connections ?max_pending_connections
       ?buffer_age_limit ?on_handler_error mode
       where_to_listen (handle_client handle_request)
