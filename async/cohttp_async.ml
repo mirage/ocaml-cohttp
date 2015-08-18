@@ -272,35 +272,44 @@ module Server = struct
       let pipe = pipe_of_body Request.read_body_chunk reader in
       (`Pipe pipe, Pipe.closed pipe)
 
+  let read_requests rd =
+    let pipe_r, pipe_w = Pipe.create () in
+    let finished =
+      Deferred.repeat_until_finished Deferred.unit (fun last_body_finished ->
+        last_body_finished >>= fun () ->
+        Request.read rd >>= function
+        | `Eof | `Invalid _ -> return (`Finished Deferred.unit)
+        | `Ok request ->
+          let body, finished = read_body request rd in
+          if Pipe.is_closed pipe_w
+          then return (`Finished finished)
+          else Pipe.write pipe_w (request, body) >>| fun () -> `Repeat finished)
+    in
+    upon finished (fun last_body_finished ->
+      Pipe.close pipe_w;
+      upon last_body_finished (fun () ->
+        Reader.close rd));
+    pipe_r
+
   let handle_client handle_request sock rd wr =
-    let last_body_pipe_drained = ref Deferred.unit in
-    let requests_pipe =
-      Reader.read_all rd (fun rd ->
-        !last_body_pipe_drained >>= fun () ->
-        Request.read rd >>| function
-        | `Eof | `Invalid _ -> `Eof
-        | `Ok req ->
-          let body, finished = read_body req rd in
-          last_body_pipe_drained := finished;
-          `Ok (req, body)
-      ) in
-    Pipe.iter requests_pipe ~f:(fun (req, body) ->
-      handle_request ~body sock req
-      >>= fun (res, res_body) ->
-      let keep_alive = Request.is_keep_alive req in
-      let flush = Response.flush res in
-      let res =
-        let headers = Cohttp.Header.add_unless_exists
-                        (Cohttp.Response.headers res)
-                        "connection"
-                        (if keep_alive then "keep-alive" else "close") in
-        { res with Response.headers } in
-      Response.write ~flush (Body.write Response.write_body res_body) res wr >>= fun () ->
-      Writer.flushed wr >>= fun () ->
-      Body.drain body
-    ) >>= fun () ->
-    Writer.close wr >>= fun () ->
-    Reader.close rd
+    let requests = read_requests rd in
+    Writer.transfer' ~max_num_values_per_read:1 wr requests (fun q ->
+      assert (Queue.length q = 1);
+      let request, body = Queue.dequeue_exn q in
+      handle_request ~body sock request
+      >>= fun (response, response_body) ->
+      let keep_alive = Request.is_keep_alive request in
+      let response =
+        { response with Response.headers =
+          Header.add_unless_exists (Response.headers response)
+            "connection" (if keep_alive then "keep-alive" else "close") }
+      in
+      let flush = response.Response.flush in
+      Response.write ~flush (Body.write Response.write_body response_body) response wr >>= fun () ->
+      Response.flushed wr >>= fun () ->
+      Body.drain body)
+    >>= fun () -> Pipe.closed requests
+    >>= fun () -> Deferred.all_unit [Writer.close wr; Reader.close rd]
 
   let respond ?(flush=true) ?(headers=Cohttp.Header.init ())
         ?(body=`Empty) status : response Deferred.t =
@@ -347,5 +356,4 @@ module Server = struct
       where_to_listen (handle_client handle_request)
     >>| fun server ->
     { server }
-
 end
