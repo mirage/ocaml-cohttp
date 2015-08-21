@@ -1,4 +1,9 @@
-0.19.1 (2015-08-08)
+0.19.2 (2015-08-20):
+
+* Improve Cohttp_async.Client error handling. When a Uri.t fails to resolve it is
+  now included in the error. (#420)
+
+0.19.1 (2015-08-08):
 
 * Bring make_body_writer and write_header in Cohttp.S.Http_io. Needed by
   ocaml-git
