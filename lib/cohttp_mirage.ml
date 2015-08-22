@@ -73,3 +73,13 @@ module Server (Flow: V1_LWT.FLOW) = struct
     callback spec flow ch ch
 
 end
+
+module Server_with_conduit = struct
+
+  include Server(Conduit_mirage.Flow)
+
+  let connect t =
+    let listen s f = Conduit_mirage.listen t s (listen f) in
+    Lwt.return (`Ok listen)
+
+end
