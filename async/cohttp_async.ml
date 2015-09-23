@@ -237,7 +237,8 @@ module Client = struct
     call ?interrupt ?headers ~chunked ?body `POST uri
 
   let post_form ?interrupt ?headers ~params uri =
-    let headers = Cohttp.Header.add_opt_unless_exists headers "content" "application/x-www-form-urlencoded" in
+    let headers = Cohttp.Header.add_opt_unless_exists headers
+        "content-type" "application/x-www-form-urlencoded" in
     let body = Body.of_string (Uri.encoded_of_query params) in
     post ?interrupt ~headers ~chunked:false ~body uri
 
