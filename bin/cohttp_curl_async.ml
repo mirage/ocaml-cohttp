@@ -19,7 +19,7 @@ open Async.Std
 open Cohttp_async
 
 let show_headers h =
-  Cohttp.Header.iter (fun k v -> List.iter v ~f:(Printf.eprintf "%s: %s\n%!" k)) h
+  Cohttp.Header.iter (fun k v -> List.iter v ~f:(Core.Std.Printf.eprintf "%s: %s\n%!" k)) h
 
 let make_net_req uri meth' body () =
   let meth = Cohttp.Code.method_of_string meth' in
