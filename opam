@@ -1,33 +1,28 @@
 opam-version: "1.2"
-
-name: "cohttp"
 maintainer: "anil@recoil.org"
-authors: [ "Anil Madhavapeddy"
-           "Stefano Zacchiroli"
-           "David Sheets"
-           "Thomas Gazagnaire"
-           "David Scott"
-           "Rudi Grinberg"
-           "Andy Ray" ]
-
-license: "ISC"
+authors: [
+  "Anil Madhavapeddy"
+  "Stefano Zacchiroli"
+  "David Sheets"
+  "Thomas Gazagnaire"
+  "David Scott"
+  "Rudi Grinberg"
+  "Andy Ray"
+]
 homepage: "https://github.com/mirage/ocaml-cohttp"
-dev-repo: "https://github.com/mirage/ocaml-cohttp.git"
 bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
-
-tags: [
-  "org:mirage"
-  "org:xapi-project"
-]
-
-build: [
-  [make "PREFIX=%{prefix}%"]
-]
-
+license: "ISC"
+tags: ["org:mirage" "org:xapi-project"]
+dev-repo: "https://github.com/mirage/ocaml-cohttp.git"
+build: [make "PREFIX=%{prefix}%"]
 install: [make "PREFIX=%{prefix}%" "install"]
-
-remove: [["ocamlfind" "remove" "cohttp"]]
-
+build-test: [
+  ["ocaml" "setup.ml" "-configure" "--enable-tests"]
+  ["ocaml" "setup.ml" "-build"]
+  ["ocaml" "setup.ml" "-test"]
+]
+build-doc: ["ocaml" "setup.ml" "-doc"]
+remove: ["ocamlfind" "remove" "cohttp"]
 depends: [
   "base-bytes"
   "ocamlfind" {build}
@@ -38,28 +33,14 @@ depends: [
   "sexplib" {>= "109.53.00"}
   "conduit" {>= "0.7.0"}
   "stringext"
-  "base64" {>="2.0.0"}
+  "base64" {>= "2.0.0"}
   "magic-mime"
   "ounit" {test}
   "alcotest" {test}
 ]
-build-doc: ["ocaml" "setup.ml" "-doc"]
-
-build-test: [
-  ["ocaml" "setup.ml" "-configure" "--enable-tests"]
-  ["ocaml" "setup.ml" "-build"]
-  ["ocaml" "setup.ml" "-test"]
-]
-
-depopts: [
-  "async"
-  "lwt"
-  "js_of_ocaml"
-]
-
+depopts: ["async" "lwt" "js_of_ocaml"]
 conflicts: [
-  "async" {<"111.25.00"}
-  "lwt" {<"2.5.0"}
+  "async" {< "111.25.00"}
+  "lwt" {< "2.5.0"}
 ]
-
 available: [ocaml-version >= "4.01.0"]
