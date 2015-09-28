@@ -1,3 +1,7 @@
+0.19.3 (2015-09-28):
+* Support Async 113.00 by explicitly using the blocking Core `printf` (#431)
+* cohttp_curl_async: add `-data-binary` to send POST data. (#425)
+
 0.19.2 (2015-08-20):
 
 * Improve Cohttp_async.Client error handling. When a Uri.t fails to resolve it is

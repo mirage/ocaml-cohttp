@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: 9b81ac477cd97b8a4db3d4902b8077c2)
-version = "0.19.2"
+# DO NOT EDIT (digest: 3a9d5b2865afe5cd786e29e6d719402f)
+version = "0.19.3"
 description = "HTTP library for Lwt, Async, JavaScript and Mirage"
 requires =
 "re.emacs stringext uri uri.services fieldslib sexplib bytes base64"
@@ -10,7 +10,7 @@ archive(native) = "cohttp.cmxa"
 archive(native, plugin) = "cohttp.cmxs"
 exists_if = "cohttp.cma"
 package "top" (
- version = "0.19.2"
+ version = "0.19.3"
  description = "HTTP library for Lwt, Async, JavaScript and Mirage"
  requires = "cohttp"
  archive(byte) = "cohttp_top.cma"
@@ -21,7 +21,7 @@ package "top" (
 )
 
 package "test" (
- version = "0.19.2"
+ version = "0.19.3"
  description = "HTTP library for Lwt, Async, JavaScript and Mirage"
  requires = "cohttp oUnit"
  archive(byte) = "cohttp_test.cma"
@@ -32,7 +32,7 @@ package "test" (
 )
 
 package "lwt-unix-test" (
- version = "0.19.2"
+ version = "0.19.3"
  description = "HTTP library for Lwt, Async, JavaScript and Mirage"
  requires = "cohttp.test cohttp.lwt unix lwt.unix oUnit"
  archive(byte) = "cohttp_lwt_unix_test.cma"
@@ -43,7 +43,7 @@ package "lwt-unix-test" (
 )
 
 package "lwt-core" (
- version = "0.19.2"
+ version = "0.19.3"
  description = "HTTP library for Lwt, Async, JavaScript and Mirage"
  requires = "lwt uri cohttp"
  archive(byte) = "cohttp_lwt.cma"
@@ -54,7 +54,7 @@ package "lwt-core" (
 )
 
 package "lwt" (
- version = "0.19.2"
+ version = "0.19.3"
  description = "HTTP library for Lwt, Async, JavaScript and Mirage"
  requires = "cohttp.lwt-core unix lwt.unix conduit.lwt-unix magic-mime"
  archive(byte) = "cohttp_lwt_unix.cma"
@@ -65,7 +65,7 @@ package "lwt" (
 )
 
 package "js" (
- version = "0.19.2"
+ version = "0.19.3"
  description = "HTTP library for Lwt, Async, JavaScript and Mirage"
  requires = "cohttp.lwt-core js_of_ocaml"
  archive(byte) = "cohttp_lwt_xhr.cma"
@@ -76,7 +76,7 @@ package "js" (
 )
 
 package "async-test" (
- version = "0.19.2"
+ version = "0.19.3"
  description = "HTTP library for Lwt, Async, JavaScript and Mirage"
  requires = "cohttp.test cohttp.async oUnit"
  archive(byte) = "cohttp_async_test.cma"
@@ -87,7 +87,7 @@ package "async-test" (
 )
 
 package "async" (
- version = "0.19.2"
+ version = "0.19.3"
  description = "HTTP library for Lwt, Async, JavaScript and Mirage"
  requires = "uri cohttp threads async conduit.async magic-mime"
  archive(byte) = "cohttp_async.cma"
