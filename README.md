@@ -87,7 +87,7 @@ There's a few things to notice:
 
 Consult the following modules for reference:
 
-* [Cohttp_lwt.Client](https://github.com/mirage/ocaml-cohttp/blob/master/lwt/cohttp_lwt.mli)
+* [Cohttp_lwt.Client](https://github.com/mirage/ocaml-cohttp/blob/master/lwt-core/cohttp_lwt.mli)
 * [Cohttp_async.Client](https://github.com/mirage/ocaml-cohttp/blob/master/async/cohttp_async.mli)
 
 ## Basic Server Tutorial
