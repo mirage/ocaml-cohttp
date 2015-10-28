@@ -117,13 +117,15 @@ let start_server docroot port host index verbose cert_file key_file () =
   Unix.Inet_addr.of_string_or_getbyname host
   >>= fun host ->
   let listen_on = Tcp.Where_to_listen.create
-      ~socket_type:Socket.Type.tcp
-      ~address:(`Inet (host,port))
-      ~listening_on:(fun _ -> port)
+                    ~socket_type:Socket.Type.tcp
+                    ~address:(`Inet (host, port))
+                    ~listening_on:(fun _ -> port)
   in
   Server.create
-    ~on_handler_error:`Ignore
-    ~mode:(determine_mode cert_file key_file)
+    ~on_handler_error:(`Call (fun addr exn ->
+      Log.Global.error "Error from %s" (Socket.Address.to_string addr);
+      Log.Global.sexp ~level:`Error exn Exn.sexp_of_t))
+    ~mode
     listen_on
     (handler ~info ~docroot ~index ~verbose)
   >>= fun _ -> never ()
