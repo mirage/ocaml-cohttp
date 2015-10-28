@@ -39,6 +39,17 @@ You can also obtain the development release:
 $ opam pin add cohttp --dev-repo
 ```
 
+### Findlib (Ocamlfind)
+
+Cohttp ships with 6 findlib libraries:
+
+* cohttp - Base `Cohttp` module. No platform specific functionality.
+* cohttp.async - Async backend `Cohttp_async`
+* cohttp.js - Jsoo (XHR) client
+* cohttp.lwt - Unix based lwt backend
+* cohttp.lwt-core - Lwt backend without unix specifics.
+* cohttp.top - Print cohttp types in the toplevel (`#require "cohttp.top"`)
+
 ## Client Tutorial
 
 Cohttp provides clients for Async, Lwt, and jsoo (Lwt based). In this tutorial,
