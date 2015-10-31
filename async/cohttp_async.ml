@@ -150,6 +150,9 @@ module Body = struct
     | `Pipe p -> `Pipe (Pipe.map p ~f)
 
   let as_pipe t ~f = `Pipe (t |> to_pipe |> f)
+
+  let parse_form t =
+    to_string t >>| Uri.query_of_encoded
 end
 
 module Client = struct

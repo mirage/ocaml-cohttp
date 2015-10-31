@@ -60,4 +60,7 @@ let map f t =
   | `String s -> `String (f s)
   | `Strings sl -> `Strings (List.map f sl)
 
+let parse_form t =
+  Uri.query_of_encoded (to_string t)
+
 (* TODO: maybe add a functor here that uses IO.S *)
