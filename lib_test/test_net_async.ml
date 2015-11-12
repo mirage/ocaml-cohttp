@@ -18,7 +18,8 @@ open Async.Std
 open Cohttp_async
 
 let show_headers h =
-  Cohttp.Header.iter (fun k v -> List.iter v ~f:(Printf.eprintf "%s: %s\n%!" k)) h
+  Cohttp.Header.iter (fun k v ->
+    List.iter v ~f:(Log.Global.info "%s: %s\n%!" k)) h
 
 let make_net_req () =
   let headers = Cohttp.Header.of_list [ "connection", "close" ] in
