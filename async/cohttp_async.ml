@@ -296,8 +296,10 @@ module Server = struct
                         "connection"
                         (if keep_alive then "keep-alive" else "close") in
         { res with Response.headers } in
-      Response.write ~flush (Body.write Response.write_body res_body) res wr >>= fun () ->
-      Writer.flushed wr >>= fun () ->
+      Response.write ~flush (Body.write Response.write_body res_body) res wr
+      >>= fun () ->
+      Writer.(if keep_alive then flushed else close ?force_close:None) wr
+      >>= fun () ->
       Body.drain body
     ) >>= fun () ->
     Writer.close wr >>= fun () ->
