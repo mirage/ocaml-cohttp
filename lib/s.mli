@@ -130,5 +130,5 @@ module type Body = sig
   val of_string_list : string list -> t
   val map : (string -> string) -> t -> t
   val transfer_encoding : t -> Transfer.encoding
-  val parse_form : t -> (string * string list) list
+  val to_form : t -> (string * string list) list
 end

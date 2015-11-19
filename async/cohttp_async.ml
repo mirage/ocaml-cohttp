@@ -151,7 +151,7 @@ module Body = struct
 
   let as_pipe t ~f = `Pipe (t |> to_pipe |> f)
 
-  let parse_form t =
+  let to_form t =
     to_string t >>| Uri.query_of_encoded
 end
 

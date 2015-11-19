@@ -36,4 +36,4 @@ val length : t -> (int64 * t) Lwt.t
 val write_body : (string -> unit Lwt.t) -> t -> unit Lwt.t
 
 val drain_body : t -> unit Lwt.t
-val parse_form : t -> (string * string list) list Lwt.t
+val to_form : t -> (string * string list) list Lwt.t
