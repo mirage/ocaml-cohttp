@@ -75,6 +75,10 @@ module Make_client
           closefn ();
           return (res, `Empty)
       end
+  let read_response ~closefn ic oc meth =
+    let t = read_response ~closefn ic oc meth in
+    Lwt.on_termination t closefn;
+    t
 
   let is_meth_chunked = function
     | `HEAD -> false
