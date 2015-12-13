@@ -5,6 +5,7 @@ S lib
 S lib_test
 S examples/async
 S lwt
+S lwt-core
 S bin
 S js
 
