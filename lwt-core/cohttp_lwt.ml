@@ -52,7 +52,7 @@ module Make_client
   let default_ctx = Net.default_ctx
 
   let read_response ~closefn ic oc meth =
-    Response.read ic >>= function
+    Response.read ic >>= begin function
     | `Invalid reason ->
       Lwt.fail (Failure ("Failed to read response: " ^ reason))
     | `Eof -> Lwt.fail (Failure "Client connection was closed")
@@ -71,10 +71,12 @@ module Make_client
           Gc.finalise gcfn stream;
           let body = Body.of_stream stream in
           return (res, body)
-        | `No ->
-          closefn ();
-          return (res, `Empty)
+        | `No -> return (res, `Empty)
       end
+    end
+    |> fun t ->
+    Lwt.on_termination t closefn;
+    t
 
   let is_meth_chunked = function
     | `HEAD -> false
