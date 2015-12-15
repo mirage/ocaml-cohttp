@@ -75,7 +75,8 @@ module Make_client
       end
     end
     |> fun t ->
-    Lwt.on_termination t closefn;
+    Lwt.on_cancel t closefn;
+    Lwt.on_failure t (fun _exn -> closefn ());
     t
 
   let is_meth_chunked = function
