@@ -25,6 +25,16 @@ let server =
     Server.respond_string ~status:`OK ~body:"one" ();
     Server.respond_string ~status:`OK ~body:"two" ();
     Server.respond_string ~status:`OK ~body:"three" ();
+    (* Massive chunked *)
+    Server.respond ~status:`OK ~body:begin
+      let count = ref 0 in
+      let chunk = String.make 64 '0' in
+      `Stream (Lwt_stream.from_direct (fun () ->
+        if !count < 1000
+        then (incr count; Some chunk)
+        else None
+      ))
+    end()
   ]
   |> List.map const
   |> (fun tests ->
@@ -98,6 +108,10 @@ let ts =
       ) resps 0 >|= fun l ->
       assert_equal l 3
     in
+    let massive_chunked () =
+      Client.get uri >>= fun (resp, body) ->
+      Body.to_string body >|= fun body ->
+      assert_equal ~printer:string_of_int (1000 * 64) (String.length body) in
     let unreadable_file_500 () =
       let fname = "unreadable500" in
       Lwt.finalize (fun () ->
@@ -120,6 +134,7 @@ let ts =
     ; "pipelined chunk test", pipelined_chunk
     ; "no body when response is not modified", not_modified_has_no_body
     ; "pipelined with interleaving requests", pipelined_interleave
+    ; "massive chunked", massive_chunked
     ; "unreadable file returns 500", unreadable_file_500
     ]
   end
