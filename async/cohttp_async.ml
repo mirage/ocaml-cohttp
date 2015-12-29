@@ -36,14 +36,15 @@ module Net = struct
         Or_error.return (host, Ipaddr_unix.of_inet_addr addr, port)
       | _ -> Or_error.error "Failed to resolve Uri" uri Uri.sexp_of_t
 
-  let connect_uri ?interrupt uri =
+  let connect_uri ?interrupt ?ssl_config uri =
     lookup uri
     |> Deferred.Or_error.ok_exn
     >>= fun (host, addr, port) ->
     let mode =
-      match Uri.scheme uri with
-      | Some "https" -> `OpenSSL (host, addr, port)
-      | Some "httpunix" -> `Unix_domain_socket host
+      match (Uri.scheme uri, ssl_config) with
+      | Some "https", Some config -> `OpenSSL_with_config (host, addr, port, config)
+      | Some "https", None -> `OpenSSL (host, addr, port)
+      | Some "httpunix", _ -> `Unix_domain_socket host
       | _ -> `TCP (addr, port)
     in
     Conduit_async.connect ?interrupt mode
@@ -164,9 +165,9 @@ module Client = struct
       let pipe = pipe_of_body Response.read_body_chunk reader in
       (res, pipe)
 
-  let request ?interrupt ?(body=`Empty) req =
+  let request ?interrupt ?ssl_config ?(body=`Empty) req =
     (* Connect to the remote side *)
-    Net.connect_uri ?interrupt req.Request.uri
+    Net.connect_uri ?interrupt ?ssl_config req.Request.uri
     >>= fun (ic,oc) ->
     Request.write (fun writer -> Body.write Request.write_body body writer) req oc
     >>= fun () ->
@@ -176,10 +177,10 @@ module Client = struct
       Deferred.all_ignore [Reader.close ic; Writer.close oc]);
     (resp, `Pipe body)
 
-  let callv ?interrupt uri reqs =
+  let callv ?interrupt ?ssl_config uri reqs =
     let reqs_c = ref 0 in
     let resp_c = ref 0 in
-    Net.connect_uri ?interrupt uri >>| fun (ic, oc) ->
+    Net.connect_uri ?interrupt ?ssl_config uri >>| fun (ic, oc) ->
     reqs
     |> Pipe.iter ~f:(fun (req, body) ->
       incr reqs_c;
@@ -204,7 +205,7 @@ module Client = struct
     );
     responses
 
-  let call ?interrupt ?headers ?(chunked=false) ?(body=`Empty) meth uri =
+  let call ?interrupt ?ssl_config ?headers ?(chunked=false) ?(body=`Empty) meth uri =
     (* Create a request, then make the request. Figure out an appropriate
        transfer encoding *)
     let req =
@@ -220,36 +221,36 @@ module Client = struct
             Request.make_for_client ?headers ~chunked:true meth uri
         end
     in
-    req >>= request ?interrupt ~body
+    req >>= request ?interrupt ?ssl_config ~body
 
-  let get ?interrupt ?headers uri =
-    call ?interrupt ?headers ~chunked:false `GET uri
+  let get ?interrupt ?ssl_config ?headers uri =
+    call ?interrupt ?ssl_config ?headers ~chunked:false `GET uri
 
-  let head ?interrupt ?headers uri =
-    call ?interrupt ?headers ~chunked:false `HEAD uri
+  let head ?interrupt ?ssl_config ?headers uri =
+    call ?interrupt ?ssl_config ?headers ~chunked:false `HEAD uri
     >>| fun (res, body) ->
     (match body with
      | `Pipe p -> Pipe.close_read p;
      | _ -> ());
     res
 
-  let post ?interrupt ?headers ?(chunked=false) ?body uri =
-    call ?interrupt ?headers ~chunked ?body `POST uri
+  let post ?interrupt ?ssl_config ?headers ?(chunked=false) ?body uri =
+    call ?interrupt ?ssl_config ?headers ~chunked ?body `POST uri
 
-  let post_form ?interrupt ?headers ~params uri =
+  let post_form ?interrupt ?ssl_config ?headers ~params uri =
     let headers = Cohttp.Header.add_opt_unless_exists headers
         "content-type" "application/x-www-form-urlencoded" in
     let body = Body.of_string (Uri.encoded_of_query params) in
-    post ?interrupt ~headers ~chunked:false ~body uri
+    post ?interrupt ?ssl_config ~headers ~chunked:false ~body uri
 
-  let put ?interrupt ?headers ?(chunked=false) ?body uri =
-    call ?interrupt ?headers ~chunked ?body `PUT uri
+  let put ?interrupt ?ssl_config ?headers ?(chunked=false) ?body uri =
+    call ?interrupt ?ssl_config ?headers ~chunked ?body `PUT uri
 
-  let patch ?interrupt ?headers ?(chunked=false) ?body uri =
-    call ?interrupt ?headers ~chunked ?body `PATCH uri
+  let patch ?interrupt ?ssl_config ?headers ?(chunked=false) ?body uri =
+    call ?interrupt ?ssl_config ?headers ~chunked ?body `PATCH uri
 
-  let delete ?interrupt ?headers ?(chunked=false) ?body uri =
-    call ?interrupt ?headers ~chunked ?body `DELETE uri
+  let delete ?interrupt ?ssl_config ?headers ?(chunked=false) ?body uri =
+    call ?interrupt ?ssl_config ?headers ~chunked ?body `DELETE uri
 end
 
 module Server = struct
