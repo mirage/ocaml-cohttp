@@ -15,7 +15,9 @@
   }}}*)
 
 module CD = Cohttp_lwt_unix_debug
-let () = Sys.(set_signal sigpipe Signal_ignore)
+let () =
+  if Sys.os_type <> "Win32" then
+    Sys.(set_signal sigpipe Signal_ignore);
 
 type 'a t = 'a Lwt.t
 let (>>=) = Lwt.bind
