@@ -131,7 +131,7 @@ type region = [
   | `Us_east_1      (* US East (N. Virginia) *)
   | `Us_west_1      (* US West (N. California) *)
   | `Us_west_2      (* US West (Oregon) *)
-] with sexp
+] [@@deriving sexp]
 
 let region_of_string = function
   | "ap-northeast-1" -> `Ap_northeast_1
@@ -169,7 +169,7 @@ let region_host_string = function
 
 type service = [
   `S3
-] with sexp
+] [@@deriving sexp]
 
 let string_of_service = function
   | `S3 -> "s3"
@@ -284,7 +284,7 @@ module S3 = struct
     region : region;
     aws_access_key : string;
     aws_secret_key : string;
-  } with sexp
+  } [@@deriving sexp]
 
   let make_request ?body conf ~meth ~bucket ~objekt =
     let host_str = region_host_string conf.region in

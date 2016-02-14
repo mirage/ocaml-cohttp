@@ -17,7 +17,7 @@
 type t = [
   | Cohttp.Body.t
   | `Stream of string Lwt_stream.t
-] with sexp
+] [@@deriving sexp]
 
 include Cohttp.S.Body with type t := t
 

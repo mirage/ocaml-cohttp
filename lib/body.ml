@@ -20,7 +20,7 @@ type t = [
   | `Empty
   | `String of string
   | `Strings of string list
-] with sexp
+] [@@deriving sexp]
 
 let empty = `Empty
 

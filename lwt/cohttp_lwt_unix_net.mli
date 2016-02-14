@@ -25,7 +25,7 @@ module IO : Cohttp.S.IO
 type ctx = {
   ctx : Conduit_lwt_unix.ctx;
   resolver : Resolver_lwt.t;
-} with sexp_of
+} [@@deriving sexp_of]
 
 val init : ?ctx:Conduit_lwt_unix.ctx -> ?resolver:Resolver_lwt.t -> unit -> ctx
 

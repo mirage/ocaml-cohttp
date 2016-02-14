@@ -61,13 +61,13 @@ end) *)
 let get_element e =
     let d = Dom_html.document in
     Js.Opt.get
-        (d##getElementById (Js.string e))
+        (d##(getElementById (Js.string e)))
         (fun () -> assert false)
 let get_input n =
     match Dom_html.tagged (get_element n) with
     | Dom_html.Input(x) -> x
     | _ -> failwith ("couldn't find text element" ^ n)
-let value n = Js.to_string (get_input n)##value
+let value n = Js.to_string (get_input n)##.value
 
 (* JSON object used for pretty printing result *)
 type json_object
@@ -76,7 +76,7 @@ class type json = object
     method stringify : json_object Js.t -> unit Js.opt -> int -> Js.js_string Js.t Js.meth
 end
 let json : json Js.t = Js.Unsafe.variable "JSON"
-let pretty str = json##stringify(json##parse(Js.string str), Js.null, 2)
+let pretty str = json##(stringify (json##(parse (Js.string str))) (Js.null) (2))
 
 let main _ =
   let counter = get_element "counter" in
@@ -97,15 +97,15 @@ let main _ =
       add Cohttp.(Code.(string_of_status resp.Response.status));
       Cohttp.Header.iter (fun k v -> List.iter (fun v -> add (k ^ ": " ^ v)) v)
         resp.Cohttp.Response.headers;
-      output_response1##innerHTML <- Js.string (Buffer.contents b);
+      output_response1##.innerHTML := Js.string (Buffer.contents b);
 
       (* show the body as pretty printed json *)
       Cohttp_lwt_body.to_string body >>= fun body ->
-      output_response2##innerHTML <- pretty body;
+      output_response2##.innerHTML := pretty body;
       Lwt.return ());
     Js._false
   in
-  list_repos##onclick <- Dom_html.handler run_query;
+  list_repos##.onclick := Dom_html.handler run_query;
 
   (* Download a file from test_net_lwt_server.native
    * There is an issue here with _build/lib_test/test_xhr.byte
@@ -147,25 +147,25 @@ let main _ =
       in
       read_stream 0 None >>= fun (length, data) ->
       let data = match data with None -> "" | Some(data) -> data in
-      output_response1##innerHTML <- Js.string (Printf.sprintf "blob size = %i\n" length);
-      output_response2##innerHTML <- Js.bytestring data;
+      output_response1##.innerHTML := Js.string (Printf.sprintf "blob size = %i\n" length);
+      output_response2##.innerHTML := Js.bytestring data;
       Lwt.return ());
     Js._false
   in
 
-  download_blob##onclick <- Dom_html.handler run_download;
+  download_blob##.onclick := Dom_html.handler run_download;
 
   (* run a quickly updating counter -
    * we want to avoid long pauses and this helps up see them *)
   let set_counter =
     let r = ref 0 in
     (fun () ->
-      incr r; counter##innerHTML <- Js.string (string_of_int !r))
+      incr r; counter##.innerHTML := Js.string (string_of_int !r))
   in
   let rec f() = set_counter (); Lwt.( Lwt_js.sleep 0.1 >>= f ) in
   let _ = f() in
   Js._false
 
 
-let _ = Dom_html.window##onload <- Dom_html.handler main
+let _ = Dom_html.window##.onload := Dom_html.handler main
 

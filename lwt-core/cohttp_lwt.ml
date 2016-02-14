@@ -48,7 +48,7 @@ module Make_client
   module Response = Make_response(IO)
   module Request = Make_request(IO)
 
-  type ctx = Net.ctx with sexp_of
+  type ctx = Net.ctx [@@deriving sexp_of]
   let default_ctx = Net.default_ctx
 
   let read_response ~closefn ic oc meth =

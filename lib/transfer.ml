@@ -19,12 +19,12 @@ open Sexplib.Std
 type encoding =
   | Chunked
   | Fixed of int64
-  | Unknown with sexp
+  | Unknown [@@deriving sexp]
 
 type chunk =
   | Chunk of string
   | Final_chunk of string
-  | Done with sexp
+  | Done [@@deriving sexp]
 
 let string_of_encoding =
   function

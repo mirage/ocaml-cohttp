@@ -19,12 +19,12 @@ open Printf
 
 type challenge = [
  | `Basic of string (* realm *)
-] with sexp
+] [@@deriving sexp]
 
 type credential = [
  | `Basic of string * string (* username, password *)
  | `Other of string
-]  with sexp
+]  [@@deriving sexp]
 
 let string_of_credential (cred:credential) =
   match cred with

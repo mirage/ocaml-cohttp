@@ -87,7 +87,7 @@ module type Request = sig
     uri: Uri.t;           (** Full HTTP request uri *)
     version: Code.version; (** HTTP version, usually 1.1 *)
     encoding: Transfer.encoding; (** transfer encoding of this HTTP request *)
-  } with fields, sexp
+  } [@@deriving fields, sexp]
 
   val make : ?meth:Code.meth -> ?version:Code.version ->
     ?encoding:Transfer.encoding -> ?headers:Header.t ->
@@ -109,7 +109,7 @@ module type Response = sig
     version: Code.version; (** (** HTTP version, usually 1.1 *) *)
     status: Code.status_code; (** HTTP status code of the response *)
     flush: bool;
-  } with fields, sexp
+  } [@@deriving fields, sexp]
 
   val make :
     ?version:Code.version ->

@@ -16,7 +16,7 @@
   }}}*)
 open Sexplib.Std
 
-type t = int with sexp
+type t = int [@@deriving sexp]
 
 let to_string = string_of_int
 

@@ -29,7 +29,7 @@ type expiration = [
   | `Max_age of int64 (** The value of the Max-Age attribute is delta-seconds,
                            the lifetime of the cookie in seconds, a decimal
                            non-negative integer. *)
-] with sexp
+] [@@deriving sexp]
 type cookie = string * string
 (** A cookie is simply a key/value pair send from the client to the server *)
 
@@ -41,7 +41,7 @@ module Set_cookie_hdr : sig
     domain : string option;
     path : string option;
     secure : bool;
-    http_only : bool } with fields, sexp
+    http_only : bool } [@@deriving fields, sexp]
   (** A header which a server sends to a client to request that the client
     returns the cookie in future requests, under certain conditions. *)
 

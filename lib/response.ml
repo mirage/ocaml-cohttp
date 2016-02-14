@@ -22,7 +22,7 @@ type t = {
   version: Code.version;
   status: Code.status_code;
   flush: bool;
-} with fields, sexp
+} [@@deriving fields, sexp]
 
 let make ?(version=`HTTP_1_1) ?(status=`OK) ?(flush=false) ?(encoding=Transfer.Chunked) ?headers () =
   let headers = match headers with None -> Header.init () |Some h -> h in

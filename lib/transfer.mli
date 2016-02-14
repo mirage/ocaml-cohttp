@@ -24,14 +24,14 @@ type encoding =
   | Chunked             (** dynamic chunked encoding *)
   | Fixed of int64      (** fixed size content *)
   | Unknown             (** unknown body size, which leads to best-effort *)
-with sexp
+[@@deriving sexp]
 
 (** A chunk of body that also signals if there to more to arrive *)
 type chunk =
   | Chunk of string (** chunk of data and not the end of stream *)
   | Final_chunk of string (** the last chunk of data, so no more should be read *)
   | Done (** no more body data is present *)
-with sexp
+[@@deriving sexp]
 
 (** Convert the encoding format to a human-readable string *)
 val string_of_encoding : encoding -> string

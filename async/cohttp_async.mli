@@ -24,7 +24,7 @@ module Body : sig
   type t = [
     | Cohttp.Body.t
     | `Pipe of string Pipe.Reader.t
-  ] with sexp_of
+  ] [@@deriving sexp_of]
   include Cohttp.S.Body with type t := t
   val drain : t -> unit Deferred.t
   val is_empty : t -> bool Deferred.t
@@ -140,13 +140,13 @@ end
 
 module Server : sig
   type ('address, 'listening_on) t constraint 'address = [< Socket.Address.t ]
-  with sexp_of
+  [@@deriving sexp_of]
 
   val close          : (_, _) t -> unit Deferred.t
   val close_finished : (_, _) t -> unit Deferred.t
   val is_closed      : (_, _) t -> bool
 
-  type response = Response.t * Body.t with sexp_of
+  type response = Response.t * Body.t [@@deriving sexp_of]
 
   val respond :
     ?flush:bool ->

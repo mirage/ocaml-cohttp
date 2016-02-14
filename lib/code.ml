@@ -5,7 +5,7 @@ type version = [
   | `HTTP_1_0
   | `HTTP_1_1
   | `Other of string
-] with sexp
+] [@@deriving sexp]
 
 type meth = [
   | `GET
@@ -18,14 +18,14 @@ type meth = [
   | `TRACE
   | `CONNECT
   | `Other of string
-] with sexp
+] [@@deriving sexp]
 
 type informational_status =
   [ `Continue
   | `Switching_protocols
   | `Processing
   | `Checkpoint
-  ] with sexp
+  ] [@@deriving sexp]
 
 type success_status =
   [ `OK
@@ -38,7 +38,7 @@ type success_status =
   | `Multi_status
   | `Already_reported
   | `Im_used
-  ] with sexp
+  ] [@@deriving sexp]
 
 type redirection_status =
   [ `Multiple_choices
@@ -50,7 +50,7 @@ type redirection_status =
   | `Switch_proxy
   | `Temporary_redirect
   | `Resume_incomplete
-  ] with sexp
+  ] [@@deriving sexp]
 
 type client_error_status =
   [ `Bad_request
@@ -85,7 +85,7 @@ type client_error_status =
   | `Blocked_by_windows_parental_controls
   | `Wrong_exchange_server
   | `Client_closed_request
-  ] with sexp
+  ] [@@deriving sexp]
 
 type server_error_status =
   [ `Internal_server_error
@@ -102,7 +102,7 @@ type server_error_status =
   | `Network_authentication_required
   | `Network_read_timeout_error
   | `Network_connect_timeout_error
-  ] with sexp
+  ] [@@deriving sexp]
 
 type status = [
   | informational_status
@@ -110,9 +110,9 @@ type status = [
   | redirection_status
   | client_error_status
   | server_error_status
-] with sexp
+] [@@deriving sexp]
 
-type status_code = [`Code of int | status ] with sexp
+type status_code = [`Code of int | status ] [@@deriving sexp]
 
 let string_of_version: version -> string = function
   | `HTTP_1_0 -> "HTTP/1.0"

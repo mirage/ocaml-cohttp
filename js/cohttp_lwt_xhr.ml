@@ -31,18 +31,18 @@ module Body_builder(P : Params) = struct
 
   (* perform the body transfer in chunks. *)
   let chunked_body text =
-    let body_len = text##length in
+    let body_len = text##.length in
     let pos = ref 0 in
     let chunkerizer () =
       if !pos = body_len then
         Lwt.return C.Transfer.Done
       else
       if !pos + P.chunk_size >= body_len then begin
-        let str = text##substring_toEnd(!pos) in
+        let str = text##(substring_toEnd (!pos)) in
         pos := body_len;
         Lwt.return (C.Transfer.Final_chunk (P.convert_body_string str))
       end else begin
-        let str = text##substring(!pos, !pos+P.chunk_size) in
+        let str = text##(substring (!pos) (!pos+P.chunk_size)) in
         pos := !pos + P.chunk_size;
         Lwt.return (C.Transfer.Chunk (P.convert_body_string str))
       end
@@ -113,9 +113,9 @@ module Make_client_async(P : Params) = Make_api(struct
     let call ?headers ?body meth uri =
       let xml = XmlHttpRequest.create () in
       let (res : (Response.t Lwt.t * CLB.t) Lwt.t), wake = Lwt.task () in
-      let () = xml##_open(Js.string (C.Code.string_of_method meth),
-                          Js.string (Uri.to_string uri),
-                          Js._true) (* asynchronous call *)
+      let () = xml##(_open (Js.string (C.Code.string_of_method meth))
+                          (Js.string (Uri.to_string uri))
+                          (Js._true)) (* asynchronous call *)
       in
       (* set request headers *)
       let () =
@@ -127,25 +127,25 @@ module Make_client_async(P : Params) = Make_api(struct
                (* some headers lead to errors in the javascript console, should
                   we filter then out here? *)
                List.iter
-                 (fun v -> xml##setRequestHeader(Js.string k, Js.string v)) v)
+                 (fun v -> xml##(setRequestHeader (Js.string k) (Js.string v))) v)
             headers
       in
 
-      xml##onreadystatechange <-
+      xml##.onreadystatechange :=
         Js.wrap_callback
           (fun _ ->
-             match xml##readyState with
+             match xml##.readyState with
              | XmlHttpRequest.DONE -> begin
                  (* construct body *)
-                 let body = Bb.get xml##responseText in
+                 let body = Bb.get xml##.responseText in
                  (* (re-)construct the response *)
                  let response =
-                   let resp_headers = Js.to_string (xml##getAllResponseHeaders()) in
+                   let resp_headers = Js.to_string (xml##getAllResponseHeaders) in
                    let channel = C.String_io.open_in resp_headers in
                    Lwt.(Header_io.parse channel >|= fun resp_headers ->
                         Response.make
                           ~version:`HTTP_1_1
-                          ~status:(C.Code.status_of_code xml##status)
+                          ~status:(C.Code.status_of_code xml##.status)
                           ~flush:false (* ??? *)
                           ~encoding:(CLB.transfer_encoding body)
                           ~headers:resp_headers
@@ -161,12 +161,12 @@ module Make_client_async(P : Params) = Make_api(struct
 
       (* perform call *)
       (match body with
-       | None -> Lwt.return (xml##send(Js.null))
+       | None -> Lwt.return (xml##(send (Js.null)))
        | Some(body) ->
          CLB.to_string body >>= fun body ->
-         Lwt.return (xml##send(Js.Opt.return (Js.string body))))
+         Lwt.return (xml##(send (Js.Opt.return (Js.string body)))))
       >>= fun () ->
-      Lwt.on_cancel res (fun () -> xml##abort ());
+      Lwt.on_cancel res (fun () -> xml##abort);
 
       (* unwrap the response *)
       Lwt.(res >>= fun (r, b) -> r >>= fun r -> Lwt.return (r,b))
@@ -183,9 +183,9 @@ module Make_client_sync(P : Params) = Make_api(struct
 
     let call ?headers ?body meth uri =
       let xml = XmlHttpRequest.create () in
-      let () = xml##_open(Js.string (C.Code.string_of_method meth),
-                          Js.string (Uri.to_string uri),
-                          Js._false)  (* synchronous call *)
+      let () = xml##(_open (Js.string (C.Code.string_of_method meth))
+                          (Js.string (Uri.to_string uri))
+                          (Js._false))  (* synchronous call *)
       in
       (* set request headers *)
       let () =
@@ -197,27 +197,27 @@ module Make_client_sync(P : Params) = Make_api(struct
                           (* some headers lead to errors in the javascript console, should
                              we filter then out here? *)
                           (fun v ->
-                             xml##setRequestHeader(Js.string k, Js.string v)) v)
+                             xml##(setRequestHeader (Js.string k) (Js.string v))) v)
             headers
       in
       (* perform call *)
       (match body with
-       | None -> Lwt.return (xml##send(Js.null))
+       | None -> Lwt.return (xml##(send (Js.null)))
        | Some(body) ->
          CLB.to_string body >|= fun body ->
-         (xml##send(Js.Opt.return (Js.string body)))) >>= fun body ->
+         (xml##(send (Js.Opt.return (Js.string body))))) >>= fun body ->
 
   (* construct body *)
-  let body = Bb.get xml##responseText in
+  let body = Bb.get xml##.responseText in
 
   (* (re-)construct the response *)
-  let resp_headers = Js.to_string (xml##getAllResponseHeaders()) in
+  let resp_headers = Js.to_string (xml##getAllResponseHeaders) in
   Header_io.parse (C.String_io.open_in resp_headers)
   >>= fun resp_headers ->
 
   let response = Response.make
                    ~version:`HTTP_1_1
-                   ~status:(Cohttp.Code.status_of_code xml##status)
+                   ~status:(Cohttp.Code.status_of_code xml##.status)
                    ~flush:false
                    ~encoding:(CLB.transfer_encoding body)
                    ~headers:resp_headers
