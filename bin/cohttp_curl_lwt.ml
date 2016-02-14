@@ -76,16 +76,16 @@ let verb =
 let ofile =
   let doc = "Output filename to store the URI into." in
   Arg.(value & opt (some string) None & info ["o"] ~docv:"FILE" ~doc)
- 
+
 let cmd =
   let doc = "retrieve a remote URI contents" in
   let man = [
     `S "DESCRIPTION";
-    `P "$(tname) fetches the remote $(i,URI) and prints it to standard output.
-        The output file can also be specified with the $(b,-o) option, and more
-        verbose debugging out obtained via the $(b,-v) option.";
+    `P "$(tname) fetches the remote $(i,URI) and prints it to standard output. \
+        The output file can also be specified with the $(b,-o) option, and \
+        more verbose debugging out obtained via the $(b,-v) option.";
     `S "BUGS";
-    `P "Report them via e-mail to <mirageos-devel@lists.xenproject.org>, or
+    `P "Report them via e-mail to <mirageos-devel@lists.xenproject.org>, or \
         on the issue tracker at <https://github.com/mirage/ocaml-cohttp/issues>";
     `S "SEE ALSO";
     `P "$(b,curl)(1), $(b,wget)(1)" ]
