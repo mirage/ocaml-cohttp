@@ -126,7 +126,7 @@ let lwt_start_server docroot port host index verbose cert key =
 
 open Cmdliner
 
-let host = 
+let host =
   let doc = "IP address to listen on." in
   Arg.(value & opt string "0.0.0.0" & info ["s"] ~docv:"HOST" ~doc)
 
@@ -150,7 +150,7 @@ let ssl_key =
   let doc = "SSL key file." in
   Arg.(value & opt (some string) None & info ["k"] ~docv:"SSL_KEY" ~doc)
 
-let doc_root = 
+let doc_root =
   let doc = "Serving directory." in
   Arg.(value & pos 0 dir "." & info [] ~docv:"DOCROOT" ~doc)
 
@@ -160,7 +160,7 @@ let cmd =
     `S "DESCRIPTION";
     `P "$(tname) sets up a simple http server with lwt as backend";
     `S "BUGS";
-    `P "Report them via e-mail to <mirageos-devel@lists.xenproject.org>, or
+    `P "Report them via e-mail to <mirageos-devel@lists.xenproject.org>, or \
         on the issue tracker at <https://github.com/mirage/ocaml-cohttp/issues>";
   ] in
   Term.(pure lwt_start_server $ doc_root $ port $ host $ index $ verb $ ssl_cert $ ssl_key),
