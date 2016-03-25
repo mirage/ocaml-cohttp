@@ -124,14 +124,14 @@ let start_server docroot port host index verbose cert_file key_file () =
   Server.create
     ~on_handler_error:(`Call (fun addr exn ->
       Log.Global.error "Error from %s" (Socket.Address.to_string addr);
-      Log.Global.sexp ~level:`Error exn Exn.sexp_of_t))
+      Log.Global.sexp ~level:`Error (Exn.sexp_of_t exn)))
     ~mode
     listen_on
     (handler ~info ~docroot ~index ~verbose)
   >>= fun _ -> never ()
 
 let _ =
-  Command.async_basic
+  Command.async
     ~summary:"Serve the local directory contents via HTTP or HTTPS"
     Command.Spec.(
       empty

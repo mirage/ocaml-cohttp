@@ -20,7 +20,7 @@ let start_server port () =
   >>= fun _ -> Deferred.never ()
 
 let () =
-  Command.async_basic
+  Command.async
     ~summary:"Simple http server that outputs body of POST's"
     Command.Spec.(empty +>
                   flag "-p" (optional_with_default 8080 int)

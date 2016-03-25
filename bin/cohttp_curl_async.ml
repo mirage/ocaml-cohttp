@@ -34,7 +34,7 @@ let make_net_req uri meth' body () =
 
 let _ =
   let open Command.Spec in
-  Command.async_basic ~summary:"Fetch URL and print it"
+  Command.async ~summary:"Fetch URL and print it"
     (empty
      +> anon ("url" %: string)
      +> flag "-X" (optional_with_default "GET" string)

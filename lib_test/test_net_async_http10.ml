@@ -12,6 +12,6 @@ let test () =
   >>| print_endline
 
 let _ =
-  Command.async_basic ~summary:"Test HTTP/1.0 response"
+  Command.async ~summary:"Test HTTP/1.0 response"
     Command.Spec.empty test
   |> Command.run
