@@ -1,3 +1,6 @@
+0.19.4 (2016-03-25)
+* Switch to pa_fields_conv and pa_sexp_conv for camlp4 extensions
+
 0.19.3 (2015-09-28):
 * Support Async 113.00 by explicitly using the blocking Core `printf` (#431)
 * cohttp_curl_async: add `-data-binary` to send POST data. (#425)
