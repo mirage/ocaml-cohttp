@@ -29,8 +29,8 @@ Library cohttp
                  Accept, Accept_parser, Accept_lexer, Accept_types, Link,
                  Auth, Header_io, Transfer_io, Connection, Body, String_io, Conf
   BuildDepends:  re.emacs, stringext, uri (>= 1.5.0), uri.services,
-                 fieldslib (>= 109.20.00), fieldslib.syntax,
-                 sexplib (>= 109.53.00), sexplib.syntax,
+                 fieldslib (>= 109.20.00), pa_fields_conv.syntax,
+                 sexplib (>= 109.53.00), pa_sexp_conv.syntax,
                  bytes, base64 (>= 2.0.0)
   XMETARequires: re.emacs, stringext, uri, uri.services, fieldslib,
                  sexplib, bytes, base64
