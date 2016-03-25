@@ -337,7 +337,9 @@ module MyOCamlbuildFindlib = struct
     "camlp4.mapgenerator";
     "camlp4.metagenerator";
     "camlp4.profiler";
-    "camlp4.tracer"
+    "camlp4.tracer";
+    "pa_sexp_conv";
+    "pa_fields_conv"
   ]
 
 
