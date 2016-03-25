@@ -75,6 +75,6 @@ let run () =
 
 let test_cases =
   let open Command.Spec in
-  Command.async_basic ~summary:"Run HTTP Async client tests"
+  Command.async ~summary:"Run HTTP Async client tests"
     empty run
   |> Command.run

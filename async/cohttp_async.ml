@@ -344,9 +344,9 @@ module Server = struct
     |Ok res -> return res
     |Error exn -> respond_with_string ~code:`Not_found error_body
 
-  let create ?max_connections ?max_pending_connections
-        ?buffer_age_limit ?on_handler_error ?(mode=`TCP) where_to_listen handle_request =
-    Conduit_async.serve ?max_connections ?max_pending_connections
+  let create ?max_connections ?buffer_age_limit ?on_handler_error
+        ?(mode=`TCP) where_to_listen handle_request =
+    Conduit_async.serve ?max_connections
       ?buffer_age_limit ?on_handler_error mode
       where_to_listen (handle_client handle_request)
     >>| fun server ->

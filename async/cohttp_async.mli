@@ -186,7 +186,6 @@ module Server : sig
   (** Build a HTTP server, based on the [Tcp.Server] interface *)
   val create :
     ?max_connections:int ->
-    ?max_pending_connections:int ->
     ?buffer_age_limit: Writer.buffer_age_limit ->
     ?on_handler_error:[ `Call of 'address -> exn  -> unit
                       | `Ignore

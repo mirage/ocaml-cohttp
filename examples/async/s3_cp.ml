@@ -373,7 +373,7 @@ let run region_str aws_access_key aws_secret_key src dst () =
     end
 
 let () =
-  Command.async_basic
+  Command.async
     ~summary:"Simple command line client that copies files to/from S3"
     Command.Spec.(empty
                   +> flag "-r" (optional_with_default "us-east-1" string)

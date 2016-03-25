@@ -27,7 +27,7 @@ let start_server port () =
   >>= fun _ -> Deferred.never ()
 
 let () =
-  Command.async_basic
+  Command.async
     ~summary:"Start a hello world Async server"
     Command.Spec.(empty +>
       flag "-p" (optional_with_default 8080 int)
