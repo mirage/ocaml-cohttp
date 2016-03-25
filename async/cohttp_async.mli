@@ -42,6 +42,7 @@ module Client : sig
       The request is sent as-is. *)
   val request :
     ?interrupt:unit Deferred.t ->
+    ?ssl_config:Conduit_async.Ssl.config ->
     ?body:Body.t ->
     Request.t ->
     (Response.t * Body.t) Deferred.t
@@ -50,6 +51,7 @@ module Client : sig
       Infers the transfer encoding *)
   val call :
     ?interrupt:unit Deferred.t ->
+    ?ssl_config:Conduit_async.Ssl.config ->
     ?headers:Cohttp.Header.t ->
     ?chunked:bool ->
     ?body:Body.t ->
@@ -59,6 +61,7 @@ module Client : sig
 
   val callv :
     ?interrupt:unit Deferred.t ->
+    ?ssl_config:Conduit_async.Ssl.config ->
     Uri.t ->
     (Request.t * Body.t) Pipe.Reader.t ->
     (Response.t * Body.t) Pipe.Reader.t Deferred.t
@@ -66,6 +69,7 @@ module Client : sig
   (** Send an HTTP GET request *)
   val get :
     ?interrupt:unit Deferred.t ->
+    ?ssl_config:Conduit_async.Ssl.config ->
     ?headers:Cohttp.Header.t ->
     Uri.t ->
     (Response.t * Body.t) Deferred.t
@@ -73,6 +77,7 @@ module Client : sig
   (** Send an HTTP HEAD request *)
   val head :
     ?interrupt:unit Deferred.t ->
+    ?ssl_config:Conduit_async.Ssl.config ->
     ?headers:Cohttp.Header.t ->
     Uri.t ->
     Response.t Deferred.t
@@ -80,6 +85,7 @@ module Client : sig
   (** Send an HTTP DELETE request *)
   val delete :
     ?interrupt:unit Deferred.t ->
+    ?ssl_config:Conduit_async.Ssl.config ->
     ?headers:Cohttp.Header.t ->
     ?chunked:bool ->
     ?body:Body.t ->
@@ -91,6 +97,7 @@ module Client : sig
   *)
   val post :
     ?interrupt:unit Deferred.t ->
+    ?ssl_config:Conduit_async.Ssl.config ->
     ?headers:Cohttp.Header.t ->
     ?chunked:bool ->
     ?body:Body.t ->
@@ -102,6 +109,7 @@ module Client : sig
   *)
   val put :
     ?interrupt:unit Deferred.t ->
+    ?ssl_config:Conduit_async.Ssl.config ->
     ?headers:Cohttp.Header.t ->
     ?chunked:bool ->
     ?body:Body.t ->
@@ -113,6 +121,7 @@ module Client : sig
   *)
   val patch :
     ?interrupt:unit Deferred.t ->
+    ?ssl_config:Conduit_async.Ssl.config ->
     ?headers:Cohttp.Header.t ->
     ?chunked:bool ->
     ?body:Body.t ->
@@ -122,6 +131,7 @@ module Client : sig
   (** Send an HTTP POST request in form format *)
   val post_form:
     ?interrupt:unit Deferred.t ->
+    ?ssl_config:Conduit_async.Ssl.config ->
     ?headers:Cohttp.Header.t ->
     params:(string * string list) list ->
     Uri.t ->
