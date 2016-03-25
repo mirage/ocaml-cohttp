@@ -40,7 +40,7 @@ depends: [
 ]
 depopts: ["async" "lwt" "js_of_ocaml"]
 conflicts: [
-  "async" {< "111.25.00"}
+  "async" {< "113.24.00"}
   "lwt" {< "2.5.0"}
 ]
 available: [ocaml-version >= "4.01.0"]
