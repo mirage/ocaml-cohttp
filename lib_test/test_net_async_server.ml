@@ -33,11 +33,11 @@ let handler ~body sock req =
     (* Get a list of current files and map to HTML *)
     List.map ls_dir ~f:(fun f -> sprintf "<li><a href='/%s'>/%s</a></li>" f f)
     |> String.concat ~sep:"\n"
-    |> sprintf "<html><body><ul>
-      <li><a href='/hello'>/hello</a></li>
-      <li><a href='/hellopipe'>/hellopipe</a></li>
-      <li><a href='/timer'>timer</a></li>
-      <li><i>Files</i></li>
+    |> sprintf "<html><body><ul>\r\n\
+      <li><a href='/hello'>/hello</a></li>\r\n\
+      <li><a href='/hellopipe'>/hellopipe</a></li>\r\n\
+      <li><a href='/timer'>timer</a></li>\r\n\
+      <li><i>Files</i></li>\r\n\
       %s</ul></body></html>"
     |> Server.respond_with_string
   | "/post" ->
