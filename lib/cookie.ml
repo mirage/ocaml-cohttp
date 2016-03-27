@@ -20,9 +20,9 @@ open Sexplib.Std
 type expiration = [
   | `Session
   | `Max_age of int64
-] with sexp
+] [@@deriving sexp]
 
-type cookie = string * string with sexp
+type cookie = string * string [@@deriving sexp]
 
 module Set_cookie_hdr = struct
   type t = {
@@ -31,7 +31,7 @@ module Set_cookie_hdr = struct
     domain : string option;
     path : string option;
     secure : bool;
-    http_only: bool } with fields, sexp
+    http_only: bool } [@@deriving fields, sexp]
 
   (* Does not check the contents of name or value for ';', ',', '\s', or name[0]='$' *)
   let make ?(expiration=`Session) ?path ?domain ?(secure=false) ?(http_only=false) cookie =

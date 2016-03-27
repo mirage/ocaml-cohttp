@@ -88,7 +88,7 @@ module Body = struct
     | B.t
     | `Pipe of string Pipe.Reader.t
   ]
-  with sexp_of
+  [@@deriving sexp_of]
 
   let empty = `Empty
   let of_string s = ((B.of_string s) :> t)
@@ -257,9 +257,9 @@ module Server = struct
 
   type ('address, 'listening_on) t = {
     server: ('address, 'listening_on) Tcp.Server.t sexp_opaque;
-  } with sexp_of
+  } [@@deriving sexp_of]
 
-  type response = Response.t * Body.t with sexp_of
+  type response = Response.t * Body.t [@@deriving sexp_of]
 
   let close t = Tcp.Server.close t.server
   let close_finished t = Tcp.Server.close_finished t.server

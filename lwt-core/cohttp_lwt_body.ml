@@ -22,7 +22,7 @@ open Sexplib.Conv
 type t = [
   | Body.t
   | `Stream of string Lwt_stream.t sexp_opaque
-] with sexp
+] [@@deriving sexp]
 
 let empty = (Body.empty :> t)
 

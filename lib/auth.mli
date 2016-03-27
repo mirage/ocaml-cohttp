@@ -19,7 +19,7 @@
 (** HTTP authentication challenge types *)
 type challenge = [
  | `Basic of string (** Basic authentication within a realm *)
-] with sexp
+] [@@deriving sexp]
 
 (** HTTP authorization credential types *)
 type credential = [
@@ -28,7 +28,7 @@ type credential = [
   | `Other of string
   (** An unknown credential type that will be passed straight through
       to the application layer *)
-] with sexp
+] [@@deriving sexp]
 
 (** [string_of_credential] converts the {!credential} to a string compatible
     with the HTTP/1.1 wire format for authorization credentials ("responses") *)

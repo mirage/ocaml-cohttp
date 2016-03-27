@@ -12,7 +12,7 @@ module type IO = S.IO with type 'a t = 'a Lwt.t
     and close the resulting channels to clean up. *)
 module type Net = sig
   module IO : IO
-  type ctx with sexp_of
+  type ctx [@@deriving sexp_of]
   val default_ctx: ctx
   val connect_uri : ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
   val close_in : IO.ic -> unit
@@ -28,7 +28,7 @@ end
     up, but this can take some additional time to happen. *)
 module type Client = sig
 
-  type ctx with sexp_of
+  type ctx [@@deriving sexp_of]
   val default_ctx : ctx
 
   (** [call ?ctx ?headers ?body ?chunked meth uri] will resolve the

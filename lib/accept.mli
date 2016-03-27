@@ -20,10 +20,10 @@
 (** Qualities are integers between 0 and 1000.
     A header with ["q=0.7"] corresponds to a quality of [700].
 *)
-type q = int with sexp
+type q = int [@@deriving sexp]
 
 (** Lists, annotated with qualities. *)
-type 'a qlist = (q * 'a) list with sexp
+type 'a qlist = (q * 'a) list [@@deriving sexp]
 
 (** Sort by quality, biggest first.
     Respect the initial ordering.
@@ -32,19 +32,19 @@ val qsort : 'a qlist -> 'a qlist
 
 type pv = Accept_types.pv =
     T of string
-  | S of string with sexp
+  | S of string [@@deriving sexp]
 
-type p = string * pv with sexp
+type p = string * pv [@@deriving sexp]
 
 type media_range =
   Accept_types.media_range =
     MediaType of string * string
   | AnyMediaSubtype of string
-  | AnyMedia with sexp
+  | AnyMedia [@@deriving sexp]
 
 type charset = Accept_types.charset =
     Charset of string
-  | AnyCharset with sexp
+  | AnyCharset [@@deriving sexp]
 
 type encoding =
   Accept_types.encoding =
@@ -53,7 +53,7 @@ type encoding =
   | Compress
   | Deflate
   | Identity
-  | AnyEncoding with sexp
+  | AnyEncoding [@@deriving sexp]
 
 (** Basic language range tag.
     ["en-gb"] is represented as [Language ["en"; "gb"]].
@@ -61,7 +61,7 @@ type encoding =
 *)
 type language = Accept_types.language =
     Language of string list
-  | AnyLanguage with sexp
+  | AnyLanguage [@@deriving sexp]
 
 
 val media_ranges :

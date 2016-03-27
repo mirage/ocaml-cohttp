@@ -22,7 +22,7 @@ type t = [
   | `Empty
   | `String of string
   | `Strings of string list
-] with sexp
+] [@@deriving sexp]
 
 (** Signature for the core of HTTP body handling.  Implementations
     will extend this signature to add more functions for streaming

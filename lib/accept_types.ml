@@ -19,24 +19,24 @@
 
 open Sexplib.Std
 
-type pv = T of string | S of string with sexp
-type p = string * pv with sexp
+type pv = T of string | S of string [@@deriving sexp]
+type p = string * pv [@@deriving sexp]
 type media_range =
   | MediaType of string * string
   | AnyMediaSubtype of string
-  | AnyMedia with sexp
+  | AnyMedia [@@deriving sexp]
 type charset =
   | Charset of string
-  | AnyCharset with sexp
+  | AnyCharset [@@deriving sexp]
 type encoding =
   | Encoding of string
   | Gzip
   | Compress
   | Deflate
   | Identity
-  | AnyEncoding with sexp
+  | AnyEncoding [@@deriving sexp]
 type language =
   | Language of string list
-  | AnyLanguage with sexp
-type q = int with sexp
-type 'a qlist = (q * 'a) list with sexp
+  | AnyLanguage [@@deriving sexp]
+type q = int [@@deriving sexp]
+type 'a qlist = (q * 'a) list [@@deriving sexp]

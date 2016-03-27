@@ -59,7 +59,7 @@ module Rel = struct
     | Via
     | Working_copy
     | Working_copy_of
-  with sexp
+  [@@deriving sexp]
 
   let extension uri = Extension uri
   let alternate = Alternate
@@ -105,7 +105,7 @@ end
 
 module Language = struct
   type t = string
-  with sexp
+  [@@deriving sexp]
 
   let to_string x = x
   let of_string x = x
@@ -113,7 +113,7 @@ end
 
 module Charset = struct
   type t = string
-  with sexp
+  [@@deriving sexp]
 
   let to_string x = x
   let of_string x = x
@@ -124,7 +124,7 @@ module Ext = struct
     charset : Charset.t;
     language : Language.t;
     value : 'a;
-  } with sexp, fields
+  } [@@deriving sexp, fields]
 
   let make ?(charset="") ?(language="") value = { charset; language; value }
 
@@ -142,7 +142,7 @@ module Arc = struct
     media_type : (string * string) option;
     extensions : (string * string) list;
     extension_exts : (string * string Ext.t) list;
-  } with sexp
+  } [@@deriving sexp]
 
   let empty = {
     reverse = false;
@@ -163,7 +163,7 @@ type t = {
   arc : Arc.t;
   target : Uri.t;
 }
-with sexp
+[@@deriving sexp]
 
 (* TODO: this could be replaced with empty t/arc fupdate *)
 type param =

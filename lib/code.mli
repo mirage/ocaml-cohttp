@@ -5,7 +5,7 @@ type version = [
   | `HTTP_1_0
   | `HTTP_1_1
   | `Other of string
-] with sexp
+] [@@deriving sexp]
 
 type meth = [
   | `GET
@@ -18,14 +18,14 @@ type meth = [
   | `TRACE
   | `CONNECT
   | `Other of string
-] with sexp
+] [@@deriving sexp]
 
 type informational_status =
   [ `Continue (** Client should continue with request *)
   | `Switching_protocols (** Server is switching protocols *)
   | `Processing (** Server has received and is processing the request *)
   | `Checkpoint (** resume aborted PUT or POST requests *)
-  ] with sexp
+  ] [@@deriving sexp]
 (** Informational *)
 
 type success_status =
@@ -39,7 +39,7 @@ type success_status =
   | `Multi_status (** XML, can contain multiple separate responses *)
   | `Already_reported (** results previously returned  *)
   | `Im_used (** request fulfilled, reponse is instance-manipulations *)
-  ] with sexp
+  ] [@@deriving sexp]
 (** Success *)
 
 type redirection_status =
@@ -52,7 +52,7 @@ type redirection_status =
   | `Switch_proxy (** subsequent requests should use the specified proxy *)
   | `Temporary_redirect (** connect again to different URI as provided *)
   | `Resume_incomplete (** resumable HTTP requests *)
-  ] with sexp
+  ] [@@deriving sexp]
 (** Redirection *)
 
 type client_error_status =
@@ -88,7 +88,7 @@ type client_error_status =
   | `Blocked_by_windows_parental_controls (** Windows Parental Controls blocking access to webpage *)
   | `Wrong_exchange_server (** The server cannot reach the client's mailbox. *)
   | `Client_closed_request (** connection closed by client while HTTP server is processing *)
-  ] with sexp
+  ] [@@deriving sexp]
 (** Client_error *)
 
 type server_error_status =
@@ -106,7 +106,7 @@ type server_error_status =
   | `Network_authentication_required (** client needs to authenticate to gain network access *)
   | `Network_read_timeout_error (** network read timeout behind the proxy  *)
   | `Network_connect_timeout_error (** network connect timeout behind the proxy *)
-  ] with sexp
+  ] [@@deriving sexp]
 (** Server_error *)
 
 type status = [
@@ -115,9 +115,9 @@ type status = [
   | redirection_status
   | client_error_status
   | server_error_status
-] with sexp
+] [@@deriving sexp]
 
-type status_code = [`Code of int | status ] with sexp
+type status_code = [`Code of int | status ] [@@deriving sexp]
 
 val string_of_version: version -> string
 (** Convert a version to a string. *)

@@ -22,7 +22,7 @@ type t = {
   uri: Uri.t;
   version: Code.version;
   encoding: Transfer.encoding;
-} with fields, sexp
+} [@@deriving fields, sexp]
 
 let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
   let headers =

@@ -24,7 +24,7 @@ module IO = Cohttp_lwt_unix_io
 type ctx = {
   ctx: Conduit_lwt_unix.ctx;
   resolver: Resolver_lwt.t;
-} with sexp_of
+} [@@deriving sexp_of]
 
 let init ?(ctx=Conduit_lwt_unix.default_ctx)
          ?(resolver=Resolver_lwt_unix.system) () =

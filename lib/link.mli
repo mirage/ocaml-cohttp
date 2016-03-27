@@ -18,7 +18,7 @@
     Encoding for Hypertext Transfer Protocol (HTTP) Header Field Parameters") *)
 
 module Rel : sig
-  type t with sexp
+  type t [@@deriving sexp]
 
   val extension : Uri.t -> t
   val alternate : t
@@ -63,21 +63,21 @@ module Rel : sig
 end
 
 module Language : sig
-  type t = private string with sexp
+  type t = private string [@@deriving sexp]
 
   val to_string : t -> string
   val of_string : string -> t
 end
 
 module Charset : sig
-  type t = private string with sexp
+  type t = private string [@@deriving sexp]
 
   val to_string : t -> string
   val of_string : string -> t
 end
 
 module Ext : sig
-  type 'a t with sexp
+  type 'a t [@@deriving sexp]
 
   val charset : 'a t -> Charset.t
   val language : 'a t -> Language.t
@@ -108,7 +108,7 @@ type t = {
   context : Uri.t;
   arc : Arc.t;
   target : Uri.t;
-} with sexp
+} [@@deriving sexp]
 
 val empty : t
 

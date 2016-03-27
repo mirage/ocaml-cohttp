@@ -21,76 +21,76 @@ let basic_req =
 "GET /index.html HTTP/1.1\r\nHost: www.example.com\r\n\r\n"
 
 let basic_res =
-"HTTP/1.1 200 OK
-Date: Mon, 23 May 2005 22:38:34 GMT
-Server: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)
-Last-Modified: Wed, 08 Jan 2003 23:11:55 GMT
-Etag: \"3f80f-1b6-3e1cb03b\"
-Accept-Ranges:  none
-Content-Length: 0
-Connection: close
+"HTTP/1.1 200 OK\r\n\
+Date: Mon, 23 May 2005 22:38:34 GMT\r\n\
+Server: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)\r\n\
+Last-Modified: Wed, 08 Jan 2003 23:11:55 GMT\r\n\
+Etag: \"3f80f-1b6-3e1cb03b\"\r\n\
+Accept-Ranges:  none\r\n\
+Content-Length: 0\r\n\
+Connection: close\r\n\
 Content-Type: text/html; charset=UTF-8"
 
 let basic_res_content =
-"HTTP/1.1 200 OK
-Date: Mon, 23 May 2005 22:38:34 GMT
-Server: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)
-Last-Modified: Wed, 08 Jan 2003 23:11:55 GMT
-Etag: \"3f80f-1b6-3e1cb03b\"
-Accept-Ranges:  none
-Content-Length: 32
-Connection: close
-Content-Type: text/html; charset=UTF-8
-
+"HTTP/1.1 200 OK\r\n\
+Date: Mon, 23 May 2005 22:38:34 GMT\r\n\
+Server: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)\r\n\
+Last-Modified: Wed, 08 Jan 2003 23:11:55 GMT\r\n\
+Etag: \"3f80f-1b6-3e1cb03b\"\r\n\
+Accept-Ranges:  none\r\n\
+Content-Length: 32\r\n\
+Connection: close\r\n\
+Content-Type: text/html; charset=UTF-8\r\n\
+\r\n\
 home=Cosby&favorite+flavor=flies"
 
 let post_req =
-"POST /path/script.cgi HTTP/1.0
-From: frog@jmarshall.com
-User-Agent: HTTPTool/1.0
-Content-Type: application/x-www-form-urlencoded
-Content-Length: 32
-
+"POST /path/script.cgi HTTP/1.0\r\n\
+From: frog@jmarshall.com\r\n\
+User-Agent: HTTPTool/1.0\r\n\
+Content-Type: application/x-www-form-urlencoded\r\n\
+Content-Length: 32\r\n\
+\r\n\
 home=Cosby&favorite+flavor=flies"
 
 let post_data_req =
-"POST /path/script.cgi HTTP/1.0
-From: frog@jmarshall.com
-User-Agent: HTTPTool/1.0
-Content-Length: 32
-
+"POST /path/script.cgi HTTP/1.0\r\n\
+From: frog@jmarshall.com\r\n\
+User-Agent: HTTPTool/1.0\r\n\
+Content-Length: 32\r\n\
+\r\n\
 home=Cosby&favorite+flavor=flies"
 
 let post_chunked_req =
-"POST /foo HTTP/1.1
-Date: Fri, 31 Dec 1999 23:59:59 GMT
-Content-Type: text/plain
-Transfer-Encoding: chunked
-
-1a; ignore-stuff-here
-abcdefghijklmnopqrstuvwxyz
-10
-1234567890abcdef
-0
-some-footer: some-value
-another-footer: another-value
-
+"POST /foo HTTP/1.1\r\n\
+Date: Fri, 31 Dec 1999 23:59:59 GMT\r\n\
+Content-Type: text/plain\r\n\
+Transfer-Encoding: chunked\r\n\
+\r\n\
+1a; ignore-stuff-here\r\n\
+abcdefghijklmnopqrstuvwxyz\r\n\
+10\r\n\
+1234567890abcdef\r\n\
+0\r\n\
+some-footer: some-value\r\n\
+another-footer: another-value\r\n\
+\r\n\
 "
 
 let chunked_res =
-"HTTP/1.1 200 OK
-Date: Fri, 31 Dec 1999 23:59:59 GMT
-Content-Type: text/plain
-Transfer-Encoding: chunked
-
-1a; ignore-stuff-here
-abcdefghijklmnopqrstuvwxyz
-10
-1234567890abcdef
-0
-some-footer: some-value
-another-footer: another-value
-
+"HTTP/1.1 200 OK\r\n\
+Date: Fri, 31 Dec 1999 23:59:59 GMT\r\n\
+Content-Type: text/plain\r\n\
+Transfer-Encoding: chunked\r\n\
+\r\n\
+1a; ignore-stuff-here\r\n\
+abcdefghijklmnopqrstuvwxyz\r\n\
+10\r\n\
+1234567890abcdef\r\n\
+0\r\n\
+some-footer: some-value\r\n\
+another-footer: another-value\r\n\
+\r\n\
 "
 
 let basic_res_plus_crlf = basic_res ^ "\r\n\r\n"
