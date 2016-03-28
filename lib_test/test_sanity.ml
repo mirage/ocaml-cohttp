@@ -10,6 +10,8 @@ let message = "Hello sanity!"
 
 let chunk_body = ["one"; ""; " "; "bar"; ""]
 
+let leak_repeat = 1024
+
 let server =
   [ (* t *)
     Server.respond_string ~status:`OK ~body:message ();
@@ -41,7 +43,10 @@ let server =
     tests @ [
       (fun _ body -> (* Returns 500 on bad file *)
          Cohttp_lwt_body.to_string body >>= fun fname ->
-         Server.respond_file ~fname ())])
+         Server.respond_file ~fname ())] @
+    (Array.init (leak_repeat * 2) (fun _ _ _ ->
+         (* no leaks *)
+         Server.respond_string ~status:`OK ~body:"no leak" ()) |> Array.to_list))
   |> response_sequence
 
 let ts =
@@ -129,6 +134,15 @@ let ts =
           body "Error: Internal Server Error"
       ) (fun () -> Lwt_unix.unlink fname)
     in
+    let test_no_leak () =
+      let stream = Array.init leak_repeat (fun _ -> uri) |> Lwt_stream.of_array in
+      Lwt_stream.fold_s (fun uri () ->
+          Client.head uri >>= fun resp_head ->
+          assert_equal (Response.status resp_head) `OK;
+          Client.get uri >>= fun (resp_get, body) ->
+          assert_equal (Response.status resp_get) `OK;
+          Cohttp_lwt_body.drain_body body) stream ()
+    in
     [ "sanity test", t
     ; "empty chunk test", empty_chunk
     ; "pipelined chunk test", pipelined_chunk
@@ -136,6 +150,7 @@ let ts =
     ; "pipelined with interleaving requests", pipelined_interleave
     ; "massive chunked", massive_chunked
     ; "unreadable file returns 500", unreadable_file_500
+    ; "no leaks on requests", test_no_leak
     ]
   end
 

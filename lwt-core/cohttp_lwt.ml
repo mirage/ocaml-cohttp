@@ -71,7 +71,7 @@ module Make_client
           Gc.finalise gcfn stream;
           let body = Body.of_stream stream in
           return (res, body)
-        | `No -> return (res, `Empty)
+        | `No -> closefn (); return (res, `Empty)
       end
     end
     |> fun t ->
