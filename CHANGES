@@ -1,3 +1,7 @@
+0.20.1 (2016-04-01)
+* Switch cohttp to use ppx (#457)
+* Lwt: Fix leak on HEAD client requests (#467)
+
 0.20.0 (2016-03-25)
 * Switch to pa_fields_conv and pa_sexp_conv for camlp4 extensions (#465)
 * Compatibility with latest async (#468)
