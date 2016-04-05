@@ -26,6 +26,7 @@ remove: ["ocamlfind" "remove" "cohttp"]
 depends: [
   "base-bytes"
   "ocamlfind" {build}
+  "ocamlbuild" {build}
   "cmdliner" {build & >= "0.9.4"}
   "re"
   "uri" {>= "1.9.0"}
