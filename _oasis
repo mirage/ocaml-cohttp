@@ -1,6 +1,6 @@
 OASISFormat: 0.4
 Name:        cohttp
-Version:     0.20.1
+Version:     0.20.2
 Synopsis:    HTTP library for Lwt, Async, JavaScript and Mirage
 Description: CoHTTP is an OCaml library for creating HTTP clients and
   daemons.  It has a portable HTTP parser.  Optional dependencies
@@ -28,7 +28,7 @@ Library cohttp
   Modules:       S, Code, Header, Cookie, Request, Response, Transfer,
                  Accept, Accept_parser, Accept_lexer, Accept_types, Link,
                  Auth, Header_io, Transfer_io, Connection, Body, String_io, Conf
-  BuildDepends:  re.emacs, stringext, uri (>= 1.5.0), uri.services, fieldslib,
+  BuildDepends:  re.emacs, stringext, uri (>= 1.5.0), fieldslib,
                  sexplib, ppx_fields_conv, ppx_sexp_conv,
                  bytes, base64 (>= 2.0.0)
   XMETARequires: re.emacs, stringext, uri, uri.services, fieldslib,
@@ -116,7 +116,8 @@ Library cohttp_async
   Path:          async
   Findlibname:   async
   FindlibParent: cohttp
-  BuildDepends:  uri, cohttp, threads, async, conduit.async (>= 0.7.0), magic-mime
+  BuildDepends:  uri, uri.services, cohttp, threads, async,
+                 conduit.async (>= 0.7.0), magic-mime
   Modules:       Cohttp_async_io, Cohttp_async
 
 Library cohttp_lwt_unix_test
