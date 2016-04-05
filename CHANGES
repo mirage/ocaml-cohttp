@@ -1,3 +1,7 @@
+0.20.2 (2016-04-04)
+* Update META version (#473)
+* uri.services is only required by cohttp.async
+
 0.20.1 (2016-04-01)
 * Switch cohttp to use ppx (#457)
 * Lwt: Fix leak on HEAD client requests (#467)
