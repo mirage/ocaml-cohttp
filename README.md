@@ -6,6 +6,6 @@ Unix implementation of the Mirage HTTP client and server.  Based on the
 
 This implementation currently only works using the Mirage TCP/IP stack
 in userspace, but will eventually also work with normal kernel sockets
-(and potentially even invoke `curl`).  
+(and potentially even invoke `curl`).
 
 E-mail: <mirageos-devel@lists.xenproject.org>
