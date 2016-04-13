@@ -1,3 +1,7 @@
+* 2.5.2 (13-04-2016)
+* Fix memory leak by closing channel when callback is executed
+  (#23 via @hannesm)
+
 * 2.5.1 (15-09-2015)
 * Add a preapplied server with conduit (#20, by @Drup)
 
