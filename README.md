@@ -143,7 +143,7 @@ let () = ignore (Lwt_main.run server)
 
 The following modules are useful references:
 
-* [Cohttp_lwt.Server](https://github.com/mirage/ocaml-cohttp/blob/master/lwt/cohttp_lwt.mli) - Common to mirage and Unix
+* [Cohttp_lwt.Server](https://github.com/mirage/ocaml-cohttp/blob/master/lwt-core/cohttp_lwt_s.ml) - Common to mirage and Unix
 * [Cohttp_lwt_unix.Server](https://github.com/mirage/ocaml-cohttp/blob/master/lwt/cohttp_lwt_unix.mli) - Unix specific.
 * [Cohttp_async.Server](https://github.com/mirage/ocaml-cohttp/blob/master/async/cohttp_async.mli)
 
