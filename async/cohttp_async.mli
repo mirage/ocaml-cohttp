@@ -43,8 +43,8 @@ module Client : sig
   val request :
     ?interrupt:unit Deferred.t ->
     ?ssl_config:Conduit_async.Ssl.config ->
+    ?target:Uri.t ->
     ?body:Body.t ->
-    target:Uri.t ->
     Request.t ->
     (Response.t * Body.t) Deferred.t
 

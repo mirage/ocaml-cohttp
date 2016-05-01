@@ -165,8 +165,12 @@ module Client = struct
       let pipe = pipe_of_body Response.read_body_chunk reader in
       (res, pipe)
 
-  let request ?interrupt ?ssl_config ?(body=`Empty) ~target req =
+  let request ?interrupt ?ssl_config ?target ?(body=`Empty) req =
     (* Connect to the remote side *)
+    let target =
+      match target with
+      | Some t -> t
+      | None -> Request.uri req in
     Net.connect_uri ?interrupt target
     >>= fun (ic,oc) ->
     Request.write (fun writer -> Body.write Request.write_body body writer) req oc
