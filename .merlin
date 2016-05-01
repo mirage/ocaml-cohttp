@@ -20,9 +20,7 @@ PKG re
 PKG re.emacs
 PKG stringext
 PKG fieldslib
-PKG pa_fields_conv
 PKG sexplib
-PKG pa_sexp_conv
 PKG ipaddr
 PKG ipaddr.unix
 PKG conduit
