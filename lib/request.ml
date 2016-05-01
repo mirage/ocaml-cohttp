@@ -53,13 +53,6 @@ let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
   let encoding = guess_encoding ?encoding headers in
   { meth; version; headers; path=(Uri.path_and_query uri); encoding }
 
-let create ?headers ?(version=`HTTP_1_1) ?(encoding=fixed_zero) ~meth ~path () =
-  { headers = (match headers with | None -> Header.init () | Some h -> h)
-  ; encoding
-  ; version
-  ; meth
-  ; path }
-
 let is_keep_alive { version; headers; _ } =
   not (version = `HTTP_1_0 ||
        (match Header.connection headers with
