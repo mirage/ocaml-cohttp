@@ -19,7 +19,7 @@ open Sexplib.Std
 type t = {
   headers: Header.t;
   meth: Code.meth;
-  path: string;
+  resource: string;
   version: Code.version;
   encoding: Transfer.encoding;
 } [@@deriving fields, sexp]
@@ -51,7 +51,7 @@ let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
       Header.add_authorization headers auth
     | _, _, _ -> headers in
   let encoding = guess_encoding ?encoding headers in
-  { meth; version; headers; path=(Uri.path_and_query uri); encoding }
+  { meth; version; headers; resource=(Uri.path_and_query uri); encoding }
 
 let is_keep_alive { version; headers; _ } =
   not (version = `HTTP_1_0 ||
@@ -82,8 +82,8 @@ let is_valid_uri path meth =
    | Some _ -> true
    | None -> not (String.length path > 0 && path.[0] <> '/'))
 
-let uri { path ; headers ; meth ; _ } =
-  match path with
+let uri { resource ; headers ; meth ; _ } =
+  match resource with
   | "*" ->
     begin match Header.get headers "host" with
     | None -> Uri.of_string ""
@@ -151,11 +151,11 @@ module Make(IO : S.IO) = struct
     parse_request_fst_line ic >>= function
     | `Eof -> return `Eof
     | `Invalid reason as r -> return r
-    | `Ok (meth, path, version) ->
-      if is_valid_uri path meth then
+    | `Ok (meth, resource, version) ->
+      if is_valid_uri resource meth then
         Header_IO.parse ic >>= fun headers ->
         let encoding = Header.get_transfer_encoding headers in
-        return (`Ok { headers; meth; path; version; encoding })
+        return (`Ok { headers; meth; resource; version; encoding })
       else
         return (`Invalid "bad request URI")
 
@@ -173,7 +173,7 @@ module Make(IO : S.IO) = struct
     let fst_line =
       Printf.sprintf "%s %s %s\r\n"
         (Code.string_of_method req.meth)
-        (if req.path = "" then "/" else req.path)
+        (if req.resource = "" then "/" else req.resource)
         (Code.string_of_version req.version) in
     let headers = req.headers in
     let headers =
