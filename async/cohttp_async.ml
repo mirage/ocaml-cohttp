@@ -165,13 +165,13 @@ module Client = struct
       let pipe = pipe_of_body Response.read_body_chunk reader in
       (res, pipe)
 
-  let request ?interrupt ?ssl_config ?host ?(body=`Empty) req =
+  let request ?interrupt ?ssl_config ?uri ?(body=`Empty) req =
     (* Connect to the remote side *)
-    let host =
-      match host with
+    let uri =
+      match uri with
       | Some t -> t
       | None -> Request.uri req in
-    Net.connect_uri ?interrupt host
+    Net.connect_uri ?interrupt uri
     >>= fun (ic,oc) ->
     Request.write (fun writer -> Body.write Request.write_body body writer) req oc
     >>= fun () ->
@@ -225,7 +225,7 @@ module Client = struct
             Request.make_for_client ?headers ~chunked:true meth uri
         end
     in
-    req >>= request ?interrupt ?ssl_config ~body ~host:uri
+    req >>= request ?interrupt ?ssl_config ~body ~uri
 
   let get ?interrupt ?ssl_config ?headers uri =
     call ?interrupt ?ssl_config ?headers ~chunked:false `GET uri
