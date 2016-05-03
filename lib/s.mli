@@ -84,7 +84,7 @@ module type Request = sig
   type t = {
     headers: Header.t;    (** HTTP request headers *)
     meth: Code.meth;      (** HTTP request method *)
-    path: string;         (** Request path and query *)
+    resource: string;         (** Request path and query *)
     version: Code.version; (** HTTP version, usually 1.1 *)
     encoding: Transfer.encoding; (** transfer encoding of this HTTP request *)
   } [@@deriving fields, sexp]
