@@ -25,6 +25,7 @@ module type Params = sig
   val chunked_response : bool
   val chunk_size : int
   val convert_body_string : Js.js_string Js.t -> string
+  val with_credentials : bool
 end
 
 module Body_builder(P : Params) = struct
@@ -112,6 +113,7 @@ module Make_client_async(P : Params) = Make_api(struct
 
     let call ?headers ?body meth uri =
       let xml = XmlHttpRequest.create () in
+      xml ##. withCredentials := (Js.bool P.with_credentials) ;
       let (res : (Response.t Lwt.t * CLB.t) Lwt.t), wake = Lwt.task () in
       let () = xml##(_open (Js.string (C.Code.string_of_method meth))
                           (Js.string (Uri.to_string uri))
@@ -232,12 +234,14 @@ module Client = Make_client_async(struct
     let chunked_response = true
     let chunk_size = 128 * 1024
     let convert_body_string = Js.to_bytestring
+    let with_credentials = false
   end)
 
 module Client_sync = Make_client_sync(struct
     let chunked_response = false
     let chunk_size = 0
     let convert_body_string = Js.to_bytestring
+    let with_credentials = false
   end)
 
 
