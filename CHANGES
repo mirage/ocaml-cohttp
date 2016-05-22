@@ -1,3 +1,6 @@
+0.21.0 (2016-05-22)
+* Allow to request paths as strings (#470, #478)
+
 0.20.2 (2016-04-04)
 * Update META version (#473)
 * uri.services is only required by cohttp.async
