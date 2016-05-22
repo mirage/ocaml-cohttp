@@ -62,6 +62,7 @@ To create a simple request, use one of the methods in `Cohttp_lwt_unix.Client`.
 For example downloading the reddit frontpage:
 
 ```ocaml
+(* client_example.ml *)
 open Lwt
 open Cohttp
 open Cohttp_lwt_unix
@@ -78,6 +79,12 @@ let body =
 let () =
   let body = Lwt_main.run body in
   print_endline ("Received body\n" ^ body)
+```
+
+Build with:
+
+```
+ocamlbuild -pkg cohttp.lwt client_example.native
 ```
 
 There's a few things to notice:
@@ -122,6 +129,7 @@ Here's an example of a simple cohttp server that outputs back request
 information.
 
 ```ocaml
+(* server_example.ml *)
 open Lwt
 open Cohttp
 open Cohttp_lwt_unix
@@ -139,6 +147,12 @@ let server =
   Server.create ~mode:(`TCP (`Port 8000)) (Server.make ~callback ())
 
 let () = ignore (Lwt_main.run server)
+```
+
+Build with:
+
+```
+ocamlbuild -pkg cohttp.lwt server_example.native
 ```
 
 The following modules are useful references:
