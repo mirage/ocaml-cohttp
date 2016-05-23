@@ -17,8 +17,5 @@
 
 (** Compile-time configuration variables *)
 
-val user_agent : string
-(** User-Agent, including the version of this library. *)
-
 val version: string
 (** The version number of this library. *)

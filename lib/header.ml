@@ -31,7 +31,7 @@ end
 module StringMap = Map.Make(LString)
 type t = string list StringMap.t
 
-let user_agent = Conf.user_agent
+let user_agent = Printf.sprintf "ocaml-cohttp/%s" Conf.version
 
 let compare = StringMap.compare Pervasives.compare
 

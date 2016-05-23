@@ -15,5 +15,4 @@
  *
  *)
 
-let user_agent = "ocaml-cohttp/${pkg_version}"
 let version = "${pkg_version}"
