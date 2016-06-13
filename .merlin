@@ -1,3 +1,4 @@
+PKG bytes cohttp.lwt-core channel conduit.mirage
+S src
+S test
 B _build/**
-S lib/**
-PKG cohttp.lwt-core channel conduit.mirage sexplib

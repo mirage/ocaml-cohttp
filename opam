@@ -4,17 +4,18 @@ authors:      ["Anil Madhavapeddy" "Thomas Gazagnaire"]
 homepage:     "https://github.com/mirage/mirage-http"
 bug-reports:  "https://github.com/mirage/mirage-http/issues/"
 dev-repo:     "https://github.com/mirage/mirage-http.git"
+doc:          "https://mirage.github.io/mirage-http/"
 
-build:    [make]
-install: [make "install"]
-remove:  ["ocamlfind" "remove" "mirage-http"]
+build: ["ocaml" "pkg/pkg.ml" "build" "--pinned" "%{pinned}%"]
+
 depends: [
-  "ocamlfind" {build}
+  "ocamlfind"  {build}
+  "ocamlbuild" {build}
+  "topkg"      {build}
   "mirage-types-lwt" {>= "2.0.0"}
   "mirage-conduit" {>= "2.2.0"}
   "lwt" {>= "2.4.3"}
   "cohttp" {>= "0.18.0"}
-  "sexplib"
   "channel"
 ]
 available: [ocaml-version >= "4.00.0"]

@@ -1,24 +1,8 @@
-# OASIS_START
-# DO NOT EDIT (digest: 4a67c68bbdbf58f0d9f8d329d06741b3)
-# Ignore VCS directories, you can use the same kind of rule outside
-# OASIS_START/STOP if you want to exclude directories that contains
-# useless stuff for the build process
-true: annot, bin_annot
-<**/.svn>: -traverse
-<**/.svn>: not_hygienic
-".bzr": -traverse
-".bzr": not_hygienic
-".hg": -traverse
-".hg": not_hygienic
-".git": -traverse
-".git": not_hygienic
-"_darcs": -traverse
-"_darcs": not_hygienic
-# Library mirage-http
-"lib/mirage-http.cmxs": use_mirage-http
-<lib/*.ml{,i,y}>: pkg_channel
-<lib/*.ml{,i,y}>: pkg_cohttp.lwt-core
-<lib/*.ml{,i,y}>: pkg_conduit.mirage
-<lib/*.ml{,i,y}>: pkg_sexplib
-# OASIS_STOP
-true: annot, bin_annot, debug, principal
+true : bin_annot, safe_string, package(bytes)
+true: warn_error(+1..49), warn(A-4-41-44)
+
+<src> : include
+<test> : include
+
+<src/**>: package(lwt), package(channel), package(cohttp.lwt-core)
+<src/**>: package(conduit.mirage), package(mirage-types.lwt)

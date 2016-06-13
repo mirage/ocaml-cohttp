@@ -14,10 +14,27 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
+ * %%NAME%% %%VERSION%%
  *)
 
-module Make(Channel:V1_LWT.CHANNEL) : Cohttp.S.IO
-  with type 'a t = 'a Lwt.t
-   and type ic = Channel.t
-   and type oc = Channel.t
-   and type conn = Channel.flow
+(** Cohttp implementation for mirage *)
+
+(** HTTP client. *)
+module Client: sig
+  include Cohttp_lwt.Client
+  val ctx: Resolver_lwt.t -> Conduit_mirage.t -> ctx
+end
+
+(** HTTP server. *)
+module Server (Flow: V1_LWT.FLOW): sig
+  include Cohttp_lwt.Server with type IO.conn = Flow.flow
+  val listen: t -> IO.conn -> unit Lwt.t
+end
+
+(** HTTP server with conduit. *)
+module Server_with_conduit : sig
+  include Cohttp_lwt.Server with type IO.conn = Conduit_mirage.Flow.flow
+  val connect:
+    Conduit_mirage.t ->
+    [> `Ok of Conduit_mirage.server -> t -> unit Lwt.t ] Lwt.t
+end

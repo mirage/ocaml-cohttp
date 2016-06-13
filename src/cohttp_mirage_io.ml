@@ -14,41 +14,39 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
+ * %%NAME%% %%VERSION%%
  *)
+
+open Lwt.Infix
 
 module Make(Channel:V1_LWT.CHANNEL) = struct
 
   type 'a t = 'a Lwt.t
-  let (>>=) = Lwt.bind
-  let return = Lwt.return
-
   type ic = Channel.t
   type oc = Channel.t
   type conn = Channel.flow
 
-  let iter fn x = Lwt_list.iter_s fn x
-
   let read_line ic =
     Channel.read_line ic >>= function
-    | [] -> return None
-    | bufs -> return (Some (Cstruct.copyv bufs))
+    | []   -> Lwt.return_none
+    | bufs -> Lwt.return (Some (Cstruct.copyv bufs))
 
   let read ic len =
     Lwt.catch
       (fun () ->
          Channel.read_some ~len ic >>= fun iop ->
-         return (Cstruct.to_string iop))
-      (function End_of_file -> return "" | e -> Lwt.fail e)
+         Lwt.return (Cstruct.to_string iop))
+      (function End_of_file -> Lwt.return "" | e -> Lwt.fail e)
 
   let write oc buf =
     Channel.write_string oc buf 0 (String.length buf);
     Channel.flush oc
 
-  let write_line oc buf =
-    Channel.write_line oc buf;
-    Channel.flush oc
-
-  let flush oc =
+  let flush _ =
     (* NOOP since we flush in the normal writer functions above *)
-    return ()
+    Lwt.return_unit
+
+  let  (>>= ) = Lwt.( >>= )
+  let return = Lwt.return
+
 end

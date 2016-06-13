@@ -1,0 +1,7 @@
+description = "Cohttp implementation suitable to run in a MirageOS unikernel"
+version = "%%VERSION%%"
+requires = "cohttp.lwt-core channel conduit.mirage sexplib"
+archive(byte) = "mirage-http.cma"
+archive(native) = "mirage-http.cmxa"
+plugin(byte) = "mirage-http.cma"
+plugin(native) = "mirage-http.cmxs"
