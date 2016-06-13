@@ -4,6 +4,7 @@ authors:      ["Anil Madhavapeddy" "Thomas Gazagnaire"]
 homepage:     "https://github.com/mirage/mirage-http"
 bug-reports:  "https://github.com/mirage/mirage-http/issues/"
 dev-repo:     "https://github.com/mirage/mirage-http.git"
+doc:          "https://mirage.github.io/mirage-http/"
 
 build: ["ocaml" "pkg/pkg.ml" "build" "--pinned" "%{pinned}%"]
 
