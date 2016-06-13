@@ -16,8 +16,7 @@
  *
  *)
 
-open Lwt
-open Sexplib.Conv
+open Lwt.Infix
 
 module Client = struct
 
@@ -27,11 +26,6 @@ module Client = struct
   module Net_IO = struct
 
     module IO = HTTP_IO
-
-    type 'a io = 'a Lwt.t
-    type ic = Channel.t
-    type oc = Channel.t
-    type flow = Conduit_mirage.Flow.flow
 
     type ctx = {
       resolver: Resolver_lwt.t;
@@ -48,11 +42,11 @@ module Client = struct
       Conduit_mirage.client endp >>= fun client ->
       Conduit_mirage.connect ctx.conduit client >>= fun flow ->
       let ch = Channel.create flow in
-      return (flow, ch, ch)
+      Lwt.return (flow, ch, ch)
 
-    let close_in ic = ()
-    let close_out ic = ()
-    let close ic oc = ignore_result (Channel.close ic)
+    let close_in _ = ()
+    let close_out _ = ()
+    let close ic _oc = Lwt.ignore_result (Channel.close ic)
 
   end
   let ctx resolver conduit = { Net_IO.resolver; conduit }
@@ -70,7 +64,8 @@ module Server (Flow: V1_LWT.FLOW) = struct
 
   let listen spec flow =
     let ch = Channel.create flow in
-    Lwt.finalize (fun () -> callback spec flow ch ch)
+    Lwt.finalize
+      (fun () -> callback spec flow ch ch)
       (fun () -> Channel.close ch)
 
 end
