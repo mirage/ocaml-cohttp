@@ -3,3 +3,6 @@ true: warn_error(+1..49), warn(A-4-41-44)
 
 <src> : include
 <test> : include
+
+<src/**>: package(lwt), package(channel), package(cohttp.lwt-core)
+<src/**>: package(conduit.mirage), package(mirage-types.lwt)
