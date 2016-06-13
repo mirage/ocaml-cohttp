@@ -1,1 +1,2 @@
-true: package(channel), package(cohttp.lwt-core), package(conduit.mirage)
+true: package(lwt), package(channel), package(cohttp.lwt-core)
+true: package(conduit.mirage), package(mirage-types.lwt)
