@@ -1,5 +1,6 @@
 ### 2.5.3 (13-06-2016)
 
+* Switch to topkg (#25, @samoht)
 * Fix memory leak in the callback when an exception is raised (#24, @hannesm)
 
 ### 2.5.2 (13-04-2016)
