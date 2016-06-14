@@ -1,3 +1,1 @@
-### mirage-http
-
-MirageOS-compatible implementation of the Cohttp interfaces.
+### mirage-http -- MirageOS-compatible implementation of the Cohttp interfaces
