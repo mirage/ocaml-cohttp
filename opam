@@ -12,7 +12,9 @@ depends: [
   "ocamlfind"  {build}
   "ocamlbuild" {build}
   "topkg"      {build}
-  "mirage-types-lwt" {>= "2.0.0"}
+  "mirage-types" {>= "2.0.0"}
+  "mirage-types-lwt"
+  "conduit"
   "mirage-conduit" {>= "2.2.0"}
   "lwt" {>= "2.4.3"}
   "cohttp" {>= "0.18.0"}

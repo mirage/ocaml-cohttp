@@ -4,5 +4,10 @@
 open Topkg
 
 let () =
-  Pkg.describe ~licenses:[Pkg.std_file "LICENSE"] "mirage-http" @@ fun c ->
+  let opams =
+    let lint_deps_excluding = Some ["mirage-types-lwt"; "mirage-conduit"] in
+    [Pkg.opam_file ~lint_deps_excluding "opam"]
+  in
+  let licenses = [Pkg.std_file "LICENSE"] in
+  Pkg.describe ~opams ~licenses "mirage-http" @@ fun c ->
   Ok [ Pkg.mllib "src/mirage-http.mllib" ]
