@@ -28,6 +28,9 @@ module type Params = sig
   (** JavaScript string to OCaml conversion.  [Js.to_bytestring] or
       [Js.to_string] *)
   val convert_body_string : Js.js_string Js.t -> string
+
+  (** Whether withCredentials property of XHR is set. *)
+  val with_credentials : bool
 end
 
 (** Build an asynchronous engine with chunked/unchucked response data
@@ -40,11 +43,13 @@ module Make_client_sync(P : Params) : Cohttp_lwt.S.Client
 
 (** The [Client] module implements an HTTP client interface
     using asynchronous XmlHttpRequests. The response body is returned
-    in chucked form with 128Kb / chunk.  Body data is treated as raw bytes *)
+    in chucked form with 128Kb / chunk.  Body data is treated as raw bytes.
+    withCredentials property of XHR is set to false.  *)
 module Client : Cohttp_lwt.S.Client
 
 (** The [Client_sync] module implements an HTTP client interface
     using synchronous XmlHttpRequests.  The response is not chunked
-  and treated as raw bytes. *)
+    and treated as raw bytes.
+    withCredentials property of XHR is set to false.  *)
 module Client_sync : Cohttp_lwt.S.Client
 
