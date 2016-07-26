@@ -21,16 +21,16 @@ Description:
 (1) Enter a username and click the button to query github and get a JSON
 description of the users public repositories.
 
-(2) Download the given file and show it's size and the first 1K of date.
+(2) Download the given file and show its size and the first 1K of date.
 
 Build instructions:
 
-$ ocamlfind c -syntax camlp4o -package lwt.syntax -package js_of_ocaml.syntax \
+$ ocamlfind c -package lwt.ppx -package js_of_ocaml.ppx \
     -package cohttp.js -linkpkg -o test_xhr.byte test_xhr.ml
 
 This is done through oasis with --enable-tests
 
-The next step is to convert to javscript.  I'm not sure how to automate this step
+The next step is to convert to javascript.  I'm not sure how to automate this step
 with oasis.
 
 $ js_of_ocaml +weak.js test_xhr.byte -o lib_test/test_xhr.js
