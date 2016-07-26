@@ -2,6 +2,7 @@
 * Remove -principal from type checking temporarily, to workaround
   a bug in the OCaml 4.03 type checker that causes compilation
   hangs (http://caml.inria.fr/mantis/view.php?id=7305).
+* Improve documentation in the `test_xhr.ml` js_of_ocaml test.
 
 0.21.0 (2016-05-22)
 * Allow to request paths as strings (#470, #478)
