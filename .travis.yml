@@ -1,6 +1,9 @@
 language: c
 install: wget https://raw.githubusercontent.com/ocaml/ocaml-travisci-skeleton/master/.travis-opam.sh
 script: bash -ex .travis-opam.sh
+service:
+ - docker
+sudo: false
 env:
   - PACKAGE="cohttp" OCAML_VERSION=latest DEPOPTS="async lwt js_of_ocaml" POST_INSTALL_HOOK="opam install github cowabloga opium slacko"
   - PACKAGE="cohttp" OCAML_VERSION=latest DEPOPTS="async_ssl" POST_INSTALL_HOOK="opam install github cowabloga"
