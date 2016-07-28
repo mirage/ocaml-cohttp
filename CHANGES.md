@@ -201,18 +201,15 @@ Compatibility breaking interface changes:
 * Simplify the Lwt server signature, so that manual construction of
   a `callback` is no longer required (#210).
   Code that previous looked like:
-
-```
-   let conn_closed (_,conn_id) () = <...>
-   let config = { Server.callback; conn_closed } in
-```
-
-should now be:
-
-```
-   let conn_closed (_,conn_id) = <...>
-   let config = Server.make ~callback ~conn_closed () in
-```
+    ```
+    let conn_closed (_,conn_id) () = <...>
+    let config = { Server.callback; conn_closed } in
+    ```
+  should now be:
+    ```
+    let conn_closed (_,conn_id) = <...>
+    let config = Server.make ~callback ~conn_closed () in
+    ```
 
 * Remove the `Cohttp.Base64` module in favour of the external `base64`
   library (which is now a new dependency).
