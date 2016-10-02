@@ -77,6 +77,6 @@ module Server_with_conduit = struct
 
   let connect t =
     let listen s f = Conduit_mirage.listen t s (listen f) in
-    Lwt.return (`Ok listen)
+    Lwt.return listen
 
 end
