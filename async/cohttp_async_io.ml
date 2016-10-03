@@ -30,8 +30,12 @@ type ic = Reader.t
 type oc = Writer.t
 type conn = unit
 
-let read_line =
-  check_debug
+let mutex = Mvar.create ()
+let mutex_ro = Mvar.read_only mutex
+
+let read_line ic =
+  let read_line =
+    check_debug
     (fun ic ->
        Reader.read_line ic
        >>| function
@@ -44,12 +48,29 @@ let read_line =
        | `Ok s -> eprintf "<<< %s\n" s; Some s
        | `Eof -> eprintf "<<<EOF\n"; None
     )
+  in
+  Mvar.put mutex () >>= fun () ->
+  Monitor.protect (fun () -> read_line ic) ~finally:(fun () -> Mvar.take mutex_ro)
+
+let bufsize = 0x8000
+let bs = Bigstring.create bufsize
 
 let read ic len =
-  let buf = String.create len in
-  Reader.read ic ~len buf >>| function
-  | `Ok len' -> String.sub buf 0 len'
-  | `Eof -> ""
+  let buf = Bigbuffer.create bufsize in
+  let rec inner len =
+    if len <= 0 then
+      return @@ Bigbuffer.contents buf
+    else
+      let bss = Bigsubstring.create bs ~pos:0 ~len:(Int.min len bufsize) in
+      Reader.read_bigsubstring ic bss >>= function
+      | `Ok len' ->
+        Bigbuffer.add_bigstring buf (Bigstring.sub_shared bs ~pos:0 ~len:len');
+        inner (len - len')
+      | `Eof ->
+        return @@ Bigbuffer.contents buf
+  in
+  Mvar.put mutex () >>= fun () ->
+  Monitor.protect (fun () -> inner len) ~finally:(fun () -> Mvar.take mutex_ro)
 
 let write =
   check_debug
