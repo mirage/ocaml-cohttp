@@ -171,7 +171,7 @@ module Client = struct
       match uri with
       | Some t -> t
       | None -> Request.uri req in
-    Net.connect_uri ?interrupt uri
+    Net.connect_uri ?interrupt ?ssl_config uri
     >>= fun (ic,oc) ->
     Request.write (fun writer -> Body.write Request.write_body body writer) req oc
     >>= fun () ->
