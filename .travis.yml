@@ -1,9 +1,25 @@
 language: c
-install: wget https://raw.githubusercontent.com/ocaml/ocaml-travisci-skeleton/master/.travis-opam.sh
-script: bash -ex .travis-opam.sh
+install: wget https://raw.githubusercontent.com/ocaml/ocaml-travisci-skeleton/master/.travis-docker.sh
+script: bash -ex .travis-docker.sh
+services:
+  - docker
+sudo: false
 env:
-  - PACKAGE="cohttp" OCAML_VERSION=latest DEPOPTS="async lwt js_of_ocaml" POST_INSTALL_HOOK="opam install github cowabloga opium slacko"
-  - PACKAGE="cohttp" OCAML_VERSION=latest DEPOPTS="async_ssl" POST_INSTALL_HOOK="opam install github cowabloga"
+ global:
+   - PACKAGE="cohttp"
+   - DEPOPTS="async_ssl ssl lwt js_of_ocaml"
+   - PRE_INSTALL_HOOK="cd /home/opam/opam-repository && git pull origin master && opam update -u -y"
+   - POST_INSTALL_HOOK="opam depext -ui github cowabloga opium slacko"
+ matrix:
+   - DISTRO=debian-stable OCAML_VERSION=4.02.3
+   - DISTRO=debian-testing OCAML_VERSION=4.02.3
+   - DISTRO=debian-unstable OCAML_VERSION=4.02.3
+   - DISTRO=ubuntu-12.04 OCAML_VERSION=4.02.3
+   - DISTRO=ubuntu-16.04 OCAML_VERSION=4.03.0
+   - DISTRO=centos-6 OCAML_VERSION=4.02.3
+   - DISTRO=centos-7 OCAML_VERSION=4.03.0
+   - DISTRO=fedora-24 OCAML_VERSION=4.02.3
+   - DISTRO=alpine OCAML_VERSION=4.03.0
 notifications:
   webhooks:
     urls:

@@ -1,3 +1,12 @@
+0.21.1
+* Remove -principal from type checking temporarily, to workaround
+  a bug in the OCaml 4.03 type checker that causes compilation
+  hangs (http://caml.inria.fr/mantis/view.php?id=7305).
+* Improve documentation in the `test_xhr.ml` js_of_ocaml test.
+
+0.21.0 (2016-05-22)
+* Allow to request paths as strings (#470, #478)
+
 0.20.2 (2016-04-04)
 * Update META version (#473)
 * uri.services is only required by cohttp.async
