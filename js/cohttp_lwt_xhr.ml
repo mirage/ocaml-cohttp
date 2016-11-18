@@ -185,6 +185,7 @@ module Make_client_sync(P : Params) = Make_api(struct
 
     let call ?headers ?body meth uri =
       let xml = XmlHttpRequest.create () in
+      xml ##. withCredentials := (Js.bool P.with_credentials) ;
       let () = xml##(_open (Js.string (C.Code.string_of_method meth))
                           (Js.string (Uri.to_string uri))
                           (Js._false))  (* synchronous call *)
