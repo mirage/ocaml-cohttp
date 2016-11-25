@@ -67,7 +67,7 @@ module Server (Flow: V1_LWT.FLOW) = struct
     let ch = Channel.create flow in
     Lwt.finalize
       (fun () -> callback spec flow ch ch)
-      (fun () -> Channel.close ch)
+      (fun () -> Channel.close ch >|= fun _ -> ())
 
 end
 

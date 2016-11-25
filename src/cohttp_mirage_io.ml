@@ -28,19 +28,23 @@ module Make(Channel:V1_LWT.CHANNEL) = struct
 
   let read_line ic =
     Channel.read_line ic >>= function
-    | []   -> Lwt.return_none
-    | bufs -> Lwt.return (Some (Cstruct.copyv bufs))
+    | Ok (`Data []) -> Lwt.return_none
+    | Ok `Eof -> Lwt.return_none
+    | Ok (`Data bufs) -> Lwt.return (Some (Cstruct.copyv bufs))
+    | Error (`Msg m) -> Lwt.fail_with ("Flow error: " ^ m)
 
   let read ic len =
-    Lwt.catch
-      (fun () ->
-         Channel.read_some ~len ic >>= fun iop ->
-         Lwt.return (Cstruct.to_string iop))
-      (function End_of_file -> Lwt.return "" | e -> Lwt.fail e)
+    Channel.read_some ~len ic >>= function
+    | Ok (`Data buf) -> Lwt.return (Cstruct.to_string buf)
+    | Ok `Eof -> Lwt.return ""
+    | Error (`Msg m) -> Lwt.fail_with ("Flow error: " ^ m)
 
   let write oc buf =
     Channel.write_string oc buf 0 (String.length buf);
-    Channel.flush oc
+    Channel.flush oc >>= function
+    | Ok () -> Lwt.return_unit
+    | Error `Closed -> Lwt.fail_with "Trying to write on closed channel"
+    | Error (`Msg m) -> Lwt.fail_with ("Flow error: " ^ m)
 
   let flush _ =
     (* NOOP since we flush in the normal writer functions above *)

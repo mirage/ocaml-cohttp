@@ -1,3 +1,8 @@
+### 3.0.0 
+
+* Port to MirageOS 3 CHANNEL interface.
+* Use Travis Docker for more multidistro testing.
+
 ### 2.5.3 (13-06-2016)
 
 * Switch to topkg (#25, @samoht)
