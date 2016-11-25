@@ -8,7 +8,6 @@ env:
  global:
    - PACKAGE="mirage-http"
    - EXTRA_REMOTES="https://github.com/mirage/mirage-dev.git"
-   - PINS="mirage-types:https://github.com/avsm/mirage.git#channel-result mirage-channel:https://github.com/avsm/mirage-channel.git#channel-result"
    - PRE_INSTALL_HOOK="cd /home/opam/opam-repository && git pull origin master && opam update -u -y"
  matrix:
    - DISTRO=debian-stable OCAML_VERSION=4.03.0
