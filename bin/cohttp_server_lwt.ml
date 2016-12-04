@@ -16,17 +16,15 @@
  *
   }}}*)
 
-open Printf
-
-open Lwt
+open Lwt.Infix
 open Cohttp
 open Cohttp_lwt_unix
 
 open Cohttp_server
 
 let method_filter meth (res,body) = match meth with
-  | `HEAD -> return (res,`Empty)
-  | _ -> return (res,body)
+  | `HEAD -> Lwt.return (res,`Empty)
+  | _ -> Lwt.return (res,body)
 
 let serve_file ~docroot ~uri =
   let fname = Server.resolve_local_file ~docroot ~uri in
@@ -39,7 +37,7 @@ let ls_dir dir =
 
 let serve ~info ~docroot ~index uri path =
   let file_name = Server.resolve_local_file ~docroot ~uri in
-  catch (fun () ->
+  Lwt.catch (fun () ->
     Lwt_unix.stat file_name
     >>= fun stat ->
     match kind_of_unix_kind stat.Unix.st_kind with
@@ -57,10 +55,10 @@ let serve ~info ~docroot ~index uri path =
           Lwt.try_bind
             (fun () -> Lwt_unix.LargeFile.stat file_name)
             (fun stat ->
-              return (Some (kind_of_unix_kind stat.Unix.LargeFile.st_kind),
+               Lwt.return (Some (kind_of_unix_kind stat.Unix.LargeFile.st_kind),
                       stat.Unix.LargeFile.st_size,
                       f))
-            (fun exn -> return (None, 0L, f)))
+            (fun exn -> Lwt.return (None, 0L, f)))
         >>= fun listing ->
         let body = html_of_listing uri path (sort listing) info in
         Server.respond_string ~status:`OK ~body ()
@@ -76,22 +74,18 @@ let serve ~info ~docroot ~index uri path =
     then Server.respond_string ~status:`Not_found
       ~body:(html_of_not_found path info)
       ()
-    else fail e
-  | e -> fail e
+    else Lwt.fail e
+  | e -> Lwt.fail e
   )
 
-let handler ~info ~docroot ~verbose ~index (ch,conn) req body =
+let handler ~info ~docroot ~index (ch,conn) req body =
   let uri = Cohttp.Request.uri req in
   let path = Uri.path uri in
   (* Log the request to the console *)
-  printf "%s %s %s %s\n%!"
+  Lwt_log.debug_f "%s %s %s"
     (Cohttp.(Code.string_of_method (Request.meth req)))
     path
-    (match verbose with
-    | true -> ""
-    | false -> ""
-    )
-    (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch));
+    (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)) >>= fun () ->
   (* Get a canonical filename from the URL and docroot *)
   match Request.meth req with
   | (`GET | `HEAD) as meth ->
@@ -99,36 +93,40 @@ let handler ~info ~docroot ~verbose ~index (ch,conn) req body =
     >>= method_filter meth
   | meth ->
     let meth = Cohttp.Code.string_of_method meth in
-    let allowed = "GET, HEAD" in
-    let headers = Cohttp.Header.of_list ["allow", allowed] in
+    let allowed = ["GET"; "HEAD"] in
+    let headers = Cohttp.Header.(add_multi (init ()) "allow" allowed) in
     Server.respond_string ~headers ~status:`Method_not_allowed
-      ~body:(html_of_method_not_allowed meth allowed path info) ()
+      ~body:(html_of_method_not_allowed meth (String.concat "," allowed) path info) ()
 
-let start_server docroot port host index verbose cert key () =
-  printf "Listening for HTTP request on: %s %d\n" host port;
-  let info = sprintf "Served by Cohttp/Lwt listening on %s:%d" host port in
-  let conn_closed (ch,conn) =
-    printf "connection %s closed\n%!"
+let start_server docroot port host index tls () =
+  Lwt_log.info_f "Listening for HTTP request on: %s %d" host port >>= fun () ->
+  let info = Printf.sprintf "Served by Cohttp/Lwt listening on %s:%d" host port in
+  let conn_closed (ch,_conn) =
+    Lwt_log.ign_debug_f "connection %s closed"
       (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)) in
-  let callback = handler ~info ~docroot ~verbose ~index in
+  let callback = handler ~info ~docroot ~index in
   let config = Server.make ~callback ~conn_closed () in
-  let mode = match cert, key with
-    | Some c, Some k -> `TLS (`Crt_file_path c, `Key_file_path k, `No_password, `Port port)
-    | _ -> `TCP (`Port port)
+  let mode = match tls with
+    | Some (c, k) -> `TLS (`Crt_file_path c, `Key_file_path k, `No_password, `Port port)
+    | None -> `TCP (`Port port)
   in
   Conduit_lwt_unix.init ~src:host ()
   >>= fun ctx ->
   let ctx = Cohttp_lwt_unix_net.init ~ctx () in
   Server.create ~ctx ~mode config
 
-let lwt_start_server docroot port host index verbose cert key =
-  Lwt_main.run (start_server docroot port host index verbose cert key ())
+let lwt_start_server docroot port host index verbose tls =
+  (match List.length verbose with
+  | 0 -> ()
+  | 1 -> Lwt_log_core.(add_rule "*" Info)
+  | _ -> Lwt_log_core.(add_rule "*" Debug));
+  Lwt_main.run (start_server docroot port host index tls ())
 
 open Cmdliner
 
 let host =
   let doc = "IP address to listen on." in
-  Arg.(value & opt string "0.0.0.0" & info ["s"] ~docv:"HOST" ~doc)
+  Arg.(value & opt string "::" & info ["s"] ~docv:"HOST" ~doc)
 
 let port =
   let doc = "TCP port to listen on." in
@@ -140,15 +138,11 @@ let index =
 
 let verb =
   let doc = "Logging output to console." in
-  Arg.(value & flag & info ["v"; "verbose"] ~doc)
+  Arg.(value & flag_all & info ["v"; "verbose"] ~doc)
 
-let ssl_cert =
-  let doc = "SSL certificate file." in
-  Arg.(value & opt (some string) None & info ["c"] ~docv:"SSL_CERT" ~doc)
-
-let ssl_key =
-  let doc = "SSL key file." in
-  Arg.(value & opt (some string) None & info ["k"] ~docv:"SSL_KEY" ~doc)
+let tls =
+  let doc = "TLS certificate files." in
+  Arg.(value & opt (some (pair string string)) None & info ["tls"] ~docv:"CERT,KEY" ~doc)
 
 let doc_root =
   let doc = "Serving directory." in
@@ -163,7 +157,7 @@ let cmd =
     `P "Report them via e-mail to <mirageos-devel@lists.xenproject.org>, or \
         on the issue tracker at <https://github.com/mirage/ocaml-cohttp/issues>";
   ] in
-  Term.(pure lwt_start_server $ doc_root $ port $ host $ index $ verb $ ssl_cert $ ssl_key),
+  Term.(pure lwt_start_server $ doc_root $ port $ host $ index $ verb $ tls),
   Term.info "cohttp-server" ~version:Cohttp.Conf.version ~doc ~man
 
 let () =
