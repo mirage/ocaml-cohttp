@@ -12,8 +12,8 @@ depends: [
   "ocamlfind"  {build}
   "ocamlbuild" {build}
   "topkg"      {build}
-  "mirage-types" {>= "2.0.0"}
-  "mirage-types-lwt"
+  "mirage-types" {>= "3.0.0"}
+  "mirage-types-lwt" {>= "3.0.0"}
   "conduit"
   "mirage-conduit" {>= "2.2.0"}
   "lwt" {>= "2.4.3"}
