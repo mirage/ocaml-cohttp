@@ -26,25 +26,27 @@ module Make(Channel:V1_LWT.CHANNEL) = struct
   type oc = Channel.t
   type conn = Channel.flow
 
+  let failf fmt = Fmt.kstrf Lwt.fail_with fmt
+
   let read_line ic =
     Channel.read_line ic >>= function
-    | Ok (`Data []) -> Lwt.return_none
-    | Ok `Eof -> Lwt.return_none
+    | Ok (`Data [])   -> Lwt.return_none
+    | Ok `Eof         -> Lwt.return_none
     | Ok (`Data bufs) -> Lwt.return (Some (Cstruct.copyv bufs))
-    | Error (`Msg m) -> Lwt.fail_with ("Flow error: " ^ m)
+    | Error e         -> failf "Flow error: %a" Channel.pp_error e
 
   let read ic len =
     Channel.read_some ~len ic >>= function
     | Ok (`Data buf) -> Lwt.return (Cstruct.to_string buf)
-    | Ok `Eof -> Lwt.return ""
-    | Error (`Msg m) -> Lwt.fail_with ("Flow error: " ^ m)
+    | Ok `Eof        -> Lwt.return ""
+    | Error e        -> failf "Flow error: %a" Channel.pp_error e
 
   let write oc buf =
     Channel.write_string oc buf 0 (String.length buf);
     Channel.flush oc >>= function
-    | Ok () -> Lwt.return_unit
+    | Ok ()         -> Lwt.return_unit
     | Error `Closed -> Lwt.fail_with "Trying to write on closed channel"
-    | Error (`Msg m) -> Lwt.fail_with ("Flow error: " ^ m)
+    | Error e       -> failf "Flow error: %a" Channel.pp_write_error e
 
   let flush _ =
     (* NOOP since we flush in the normal writer functions above *)
