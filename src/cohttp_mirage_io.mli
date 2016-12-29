@@ -17,7 +17,7 @@
  * %%NAME%% %%VERSION%%
  *)
 
-module Make(Channel:V1_LWT.CHANNEL) : Cohttp.S.IO
+module Make (Channel: Mirage_channel_lwt.S) : Cohttp.S.IO
   with type 'a t = 'a Lwt.t
    and type ic = Channel.t
    and type oc = Channel.t

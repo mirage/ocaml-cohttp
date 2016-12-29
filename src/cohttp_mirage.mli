@@ -26,7 +26,7 @@ module Client: sig
 end
 
 (** HTTP server. *)
-module Server (Flow: V1_LWT.FLOW): sig
+module Server (Flow: Mirage_flow_lwt.S): sig
   include Cohttp_lwt.Server with type IO.conn = Flow.flow
   val listen: t -> IO.conn -> unit Lwt.t
 end

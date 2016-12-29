@@ -13,7 +13,7 @@ depends: [
   "ocamlbuild" {build}
   "topkg"      {build}
   "mirage-flow-lwt"
-  "mirage-channel"
+  "mirage-channel-lwt"
   "conduit"
   "mirage-conduit" {>= "2.2.0"}
   "lwt" {>= "2.4.3"}
