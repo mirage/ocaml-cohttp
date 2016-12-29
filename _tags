@@ -1,8 +1,8 @@
 true : annot, bin_annot, safe_string, package(bytes)
-true: warn_error(+1..49), warn(A-4-41-44)
+true: warn_error(+1..49+60), warn(A-4-41-44)
 
 <src> : include
 <test> : include
 
-<src/**>: package(lwt channel cohttp.lwt-core)
-<src/**>: package(conduit.mirage mirage-types mirage-types-lwt)
+<src/**>: package(lwt cohttp.lwt-core)
+<src/**>: package(conduit.mirage mirage-flow-lwt mirage-channel-lwt)
