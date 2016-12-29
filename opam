@@ -12,12 +12,11 @@ depends: [
   "ocamlfind"  {build}
   "ocamlbuild" {build}
   "topkg"      {build}
-  "mirage-types" {>= "3.0.0"}
-  "mirage-types-lwt" {>= "3.0.0"}
+  "mirage-flow-lwt"
+  "mirage-channel"
   "conduit"
   "mirage-conduit" {>= "2.2.0"}
   "lwt" {>= "2.4.3"}
   "cohttp" {>= "0.18.0"}
-  "channel"
 ]
 available: [ocaml-version >= "4.00.0"]
