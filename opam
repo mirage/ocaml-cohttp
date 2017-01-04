@@ -12,6 +12,7 @@ depends: [
   "ocamlfind"  {build}
   "ocamlbuild" {build}
   "topkg"      {build}
+  "result"
   "mirage-flow-lwt"
   "mirage-channel-lwt"
   "conduit"
