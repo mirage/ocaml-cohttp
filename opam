@@ -13,11 +13,12 @@ depends: [
   "ocamlbuild" {build}
   "topkg"      {build}
   "result"
-  "mirage-flow-lwt"
-  "mirage-channel-lwt"
-  "conduit"
+  "mirage-flow-lwt" {>= "1.2.0"}
+  "mirage-channel-lwt" {>= "3.0.0"}
+  "conduit" {>= "0.15.0"}
   "mirage-conduit" {>= "2.2.0"}
   "lwt" {>= "2.4.3"}
   "cohttp" {>= "0.18.0"}
 ]
 available: [ocaml-version >= "4.00.0"]
+tags: "org:mirage"
