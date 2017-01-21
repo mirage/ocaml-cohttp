@@ -172,14 +172,21 @@ module Client = struct
       | Some t -> t
       | None -> Request.uri req in
     Net.connect_uri ?interrupt ?ssl_config uri
-    >>= fun (ic,oc) ->
-    Request.write (fun writer -> Body.write Request.write_body body writer) req oc
-    >>= fun () ->
-    read_request ic >>| fun (resp, body) ->
-    don't_wait_for (
-      Pipe.closed body >>= fun () ->
-      Deferred.all_ignore [Reader.close ic; Writer.close oc]);
-    (resp, `Pipe body)
+    >>= fun (ic, oc) ->
+    try_with (fun () ->
+        Request.write (fun writer -> Body.write Request.write_body body writer) req oc
+        >>= fun () ->
+        read_request ic >>| fun (resp, body) ->
+        don't_wait_for (
+          Pipe.closed body >>= fun () ->
+          Deferred.all_ignore [Reader.close ic; Writer.close oc]);
+        (resp, `Pipe body)) >>= begin function
+    | Ok res -> return res
+    | Error e ->
+      don't_wait_for (Reader.close ic);
+      don't_wait_for (Writer.close oc);
+      raise e
+    end
 
   let callv ?interrupt ?ssl_config uri reqs =
     let reqs_c = ref 0 in
