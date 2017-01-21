@@ -191,30 +191,38 @@ module Client = struct
   let callv ?interrupt ?ssl_config uri reqs =
     let reqs_c = ref 0 in
     let resp_c = ref 0 in
-    Net.connect_uri ?interrupt ?ssl_config uri >>| fun (ic, oc) ->
-    reqs
-    |> Pipe.iter ~f:(fun (req, body) ->
-      incr reqs_c;
-      Request.write (fun writer -> Body.write Request.write_body body writer)
-        req oc)
-    |> don't_wait_for;
-    let last_body_drained = ref Deferred.unit in
-    let responses = Reader.read_all ic (fun ic ->
-      !last_body_drained >>= fun () ->
-      if Pipe.is_closed reqs && (!resp_c >= !reqs_c) then
-        return `Eof
-      else
-        ic |> read_request >>| fun (resp, body) ->
-        incr resp_c;
-        last_body_drained := Pipe.closed body;
-        `Ok (resp, `Pipe body)
-    ) in
-    don't_wait_for (
-      Pipe.closed reqs >>= fun () ->
-      Pipe.closed responses >>= fun () ->
-      Writer.close oc
-    );
-    responses
+    Net.connect_uri ?interrupt ?ssl_config uri >>= fun (ic, oc) ->
+    try_with (fun () ->
+        reqs
+        |> Pipe.iter ~f:(fun (req, body) ->
+            incr reqs_c;
+            Request.write (fun w -> Body.write Request.write_body body w)
+              req oc)
+        |> don't_wait_for;
+        let last_body_drained = ref Deferred.unit in
+        let responses = Reader.read_all ic (fun ic ->
+            !last_body_drained >>= fun () ->
+            if Pipe.is_closed reqs && (!resp_c >= !reqs_c) then
+              return `Eof
+            else
+              ic |> read_request >>| fun (resp, body) ->
+              incr resp_c;
+              last_body_drained := Pipe.closed body;
+              `Ok (resp, `Pipe body)
+          ) in
+        don't_wait_for (
+          Pipe.closed reqs >>= fun () ->
+          Pipe.closed responses >>= fun () ->
+          Writer.close oc
+        );
+        return responses)
+    >>= begin function
+      | Ok x -> return x
+      | Error e ->
+        don't_wait_for (Reader.close ic);
+        don't_wait_for (Writer.close oc);
+        raise e
+    end
 
   let call ?interrupt ?ssl_config ?headers ?(chunked=false) ?(body=`Empty) meth uri =
     (* Create a request, then make the request. Figure out an appropriate
