@@ -60,12 +60,13 @@ module Response = struct
   include (Make(IO) : module type of Make(IO) with type t := t)
 end
 
-let pipe_of_body read_chunk ic =
+let pipe_of_body read_chunk reader response_reader =
   let open Cohttp.Transfer in
-  Pipe.init (fun writer ->
-    Deferred.repeat_until_finished () (fun () ->
-      read_chunk ic >>= function
-      | Chunk buf ->
+  Pipe.create_reader ~close_on_exception:false begin fun writer ->
+    Deferred.repeat_until_finished () begin fun () ->
+      Monitor.try_with ~extract_exn:true
+        (fun () -> read_chunk response_reader) >>= function
+      | Ok (Chunk buf) ->
         (* Even if [writer] has been closed, the loop must continue reading
          * from the input channel to ensure that it is left in a proper state
          * for the next request to be processed (in the case of keep-alive).
@@ -75,12 +76,21 @@ let pipe_of_body read_chunk ic =
          * done by a request handler to signal that it does not need to
          * inspect the remainder of the body to fulfill the request.
         *)
-        Pipe.write_when_ready writer ~f:(fun write -> write buf)
-        >>| fun _ -> `Repeat ()
-      | Final_chunk buf ->
-        Pipe.write_when_ready writer ~f:(fun write -> write buf)
-        >>| fun _ -> `Finished ()
-      | Done -> return (`Finished ())))
+        Pipe.write_when_ready writer
+          ~f:(fun write -> write buf) >>| fun _ ->
+        `Repeat ()
+      | Ok (Final_chunk buf) ->
+        Pipe.write_when_ready writer
+          ~f:(fun write -> write buf) >>| fun _ ->
+        `Finished ()
+      | Ok Done ->
+        return (`Finished ())
+      | Error exn ->
+        Reader.close reader >>| fun () ->
+        Pipe.close writer ;
+        (`Finished ())
+    end
+  end
 
 module Body = struct
   module B = Cohttp.Body
@@ -162,67 +172,58 @@ module Client = struct
     | `Ok res ->
       (* Build a response pipe for the body *)
       let reader = Response.make_body_reader res ic in
-      let pipe = pipe_of_body Response.read_body_chunk reader in
+      let pipe = pipe_of_body Response.read_body_chunk ic reader in
       (res, pipe)
 
   let request ?interrupt ?ssl_config ?uri ?(body=`Empty) req =
-    (* Connect to the remote side *)
+    let run ic oc () =
+      Request.write
+        (fun writer -> Body.write Request.write_body body writer)
+        req oc >>= fun () ->
+      read_request ic >>| fun (resp, body) ->
+      don't_wait_for (
+        Pipe.closed body >>= fun () ->
+        Deferred.all_unit [Reader.close ic; Writer.close oc]);
+      (resp, `Pipe body) in
     let uri =
       match uri with
       | Some t -> t
       | None -> Request.uri req in
-    Net.connect_uri ?interrupt ?ssl_config uri
-    >>= fun (ic, oc) ->
-    try_with (fun () ->
-        Request.write (fun writer -> Body.write Request.write_body body writer) req oc
-        >>= fun () ->
-        read_request ic >>| fun (resp, body) ->
-        don't_wait_for (
-          Pipe.closed body >>= fun () ->
-          Deferred.all_ignore [Reader.close ic; Writer.close oc]);
-        (resp, `Pipe body)) >>= begin function
-    | Ok res -> return res
-    | Error e ->
-      don't_wait_for (Reader.close ic);
-      don't_wait_for (Writer.close oc);
-      raise e
-    end
+    Net.connect_uri ?interrupt ?ssl_config uri >>= fun (ic, oc) ->
+    Monitor.try_with ~extract_exn:true (run ic oc) >>= function
+    | Ok ret -> Deferred.return ret
+    | Error exn ->
+      Deferred.all_unit [Reader.close ic ; Writer.close oc] >>= fun () ->
+      raise exn
 
   let callv ?interrupt ?ssl_config uri reqs =
     let reqs_c = ref 0 in
     let resp_c = ref 0 in
-    Net.connect_uri ?interrupt ?ssl_config uri >>= fun (ic, oc) ->
-    try_with (fun () ->
-        reqs
-        |> Pipe.iter ~f:(fun (req, body) ->
-            incr reqs_c;
-            Request.write (fun w -> Body.write Request.write_body body w)
-              req oc)
-        |> don't_wait_for;
-        let last_body_drained = ref Deferred.unit in
-        let responses = Reader.read_all ic (fun ic ->
-            !last_body_drained >>= fun () ->
-            if Pipe.is_closed reqs && (!resp_c >= !reqs_c) then
-              return `Eof
-            else
-              ic |> read_request >>| fun (resp, body) ->
-              incr resp_c;
-              last_body_drained := Pipe.closed body;
-              `Ok (resp, `Pipe body)
-          ) in
-        don't_wait_for (
-          Pipe.closed reqs >>= fun () ->
-          Pipe.closed responses >>= fun () ->
-          Writer.close oc
-        );
-        return responses)
-    >>= begin function
-      | Ok x -> return x
-      | Error e ->
-        don't_wait_for (Reader.close ic);
-        don't_wait_for (Writer.close oc);
-        raise e
-    end
+    let run ic oc () =
+      don't_wait_for @@ Pipe.iter reqs ~f:begin fun (req, body) ->
+        incr reqs_c;
+        Request.write (fun writer -> Body.write Request.write_body body writer)
+          req oc
+      end ;
+      let last_body_drained = ref Deferred.unit in
+      let responses = Reader.read_all ic begin fun ic ->
+          !last_body_drained >>= fun () ->
+          if Pipe.is_closed reqs && (!resp_c >= !reqs_c) then
+            return `Eof
+          else
+            read_request ic >>| fun (resp, body) ->
+            incr resp_c;
+            last_body_drained := Pipe.closed body;
+            `Ok (resp, `Pipe body)
+        end in
+      don't_wait_for begin
+        Pipe.closed reqs >>= fun () ->
+        Pipe.closed responses >>= fun () ->
+        Writer.close oc
+      end;
+      responses in
+    Net.connect_uri ?interrupt ?ssl_config uri >>| fun (ic, oc) ->
+    run ic oc ()
 
   let call ?interrupt ?ssl_config ?headers ?(chunked=false) ?(body=`Empty) meth uri =
     (* Create a request, then make the request. Figure out an appropriate
@@ -290,7 +291,7 @@ module Server = struct
     | `No | `Unknown -> (`Empty, Deferred.unit)
     | `Yes -> (* Create a Pipe for the body *)
       let reader = Request.make_body_reader req rd in
-      let pipe = pipe_of_body Request.read_body_chunk reader in
+      let pipe = pipe_of_body Request.read_body_chunk rd reader in
       (`Pipe pipe, Pipe.closed pipe)
 
   let handle_client handle_request sock rd wr =
