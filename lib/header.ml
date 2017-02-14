@@ -112,6 +112,11 @@ let of_list l = List.fold_left (fun h (k,v) -> add h k v) (init ()) l
 let to_list h = List.rev (fold (fun k v acc -> (k,v)::acc) h [])
 let header_line k v = Printf.sprintf "%s: %s\r\n" k v
 let to_lines h = List.rev (fold (fun k v acc -> (header_line k v)::acc) h [])
+
+let to_frames =
+  let to_frame k v acc = (Printf.sprintf "%s: %s" k v) :: acc in
+  fun h -> List.rev (fold to_frame h [])
+
 let to_string h =
   let b = Buffer.create 128 in
   h |> iter (fun k v ->
