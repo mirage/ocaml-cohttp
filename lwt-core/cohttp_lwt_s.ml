@@ -120,7 +120,7 @@ module type Server = sig
   (** [respond ?headers ?flush ~status ~body] will respond to an HTTP
     request with the given [status] code and response [body].  If
     [flush] is true, then every response chunk will be flushed to
-    the network rather than being buffered. [flush] is true by default. 
+    the network rather than being buffered. [flush] is true by default.
     The transfer encoding will be detected from the [body] value and
     set to chunked encoding if it cannot be determined immediately.
     You can override the encoding by supplying an appropriate [Content-length]
@@ -132,6 +132,7 @@ module type Server = sig
     body:Cohttp_lwt_body.t -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t
 
   val respond_string :
+    ?flush:bool ->
     ?headers:Cohttp.Header.t ->
     status:Cohttp.Code.status_code ->
     body:string -> unit -> (Response.t * Cohttp_lwt_body.t) Lwt.t

@@ -170,6 +170,12 @@ module Server : sig
   val respond_with_string :
     ?flush:bool ->
     ?headers:Cohttp.Header.t -> ?code:Cohttp.Code.status_code ->
+    string -> response Deferred.t [@@deprecated "please use respond_string instead"]
+
+  val respond_string :
+    ?flush:bool ->
+    ?headers:Cohttp.Header.t ->
+    ?status:Cohttp.Code.status_code ->
     string -> response Deferred.t
 
   (** Respond with a redirect to an absolute [uri]

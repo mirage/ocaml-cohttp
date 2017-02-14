@@ -22,11 +22,11 @@ let server =
   [ (* empty_chunk *)
     const @@ Server.respond `OK ~body:(Body.of_string_list chunk_body);
     (* large response *)
-    const @@ Server.respond_with_string large_string;
+    const @@ Server.respond_string large_string;
     (* large request *)
     (fun _ body ->
        body |> Body.to_string >>| String.length >>= fun len ->
-       Server.respond_with_string (Int.to_string len));
+       Server.respond_string (Int.to_string len));
   ] @ (* pipelined_chunk *)
   (response_bodies |> List.map ~f:(Fn.compose const ok))
   @ [ (* large response chunked *)
