@@ -337,6 +337,9 @@ module Server = struct
   let respond_with_string ?flush ?headers ?(code=`OK) body =
     respond ?flush ?headers ~body:(`String body) code
 
+  let respond_string ?flush ?headers ?(status=`OK) body =
+    respond ?flush ?headers ~body:(`String body) status
+
   let respond_with_redirect ?headers uri =
     let headers = Cohttp.Header.add_opt_unless_exists headers "location" (Uri.to_string uri) in
     respond ~flush:false ~headers `Found
@@ -361,7 +364,7 @@ module Server = struct
       )
     >>= function
     |Ok res -> return res
-    |Error exn -> respond_with_string ~code:`Not_found error_body
+    |Error exn -> respond_string ~status:`Not_found error_body
 
   let create ?max_connections ?buffer_age_limit ?on_handler_error
         ?(mode=`TCP) where_to_listen handle_request =

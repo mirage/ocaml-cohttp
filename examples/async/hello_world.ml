@@ -15,9 +15,9 @@ let handler ~body:_ _sock req =
        Uri.get_query_param uri "hello"
     |> Option.map ~f:(fun v -> "hello: " ^ v)
     |> Option.value ~default:"No param hello supplied"
-    |> Server.respond_with_string
+    |> Server.respond_string
   | _ ->
-    Server.respond_with_string ~code:`Not_found "Route not found"
+    Server.respond_string ~status:`Not_found "Route not found"
 
 let start_server port () =
   eprintf "Listening for HTTP on port %d\n" port;

@@ -39,14 +39,14 @@ let handler ~body sock req =
       <li><a href='/timer'>timer</a></li>\r\n\
       <li><i>Files</i></li>\r\n\
       %s</ul></body></html>"
-    |> Server.respond_with_string
+    |> Server.respond_string
   | "/post" ->
     Body.to_string body >>= fun body ->
-    Server.respond_with_string body
+    Server.respond_string body
   | "/postnodrain" ->
-    Server.respond_with_string "nodrain"
+    Server.respond_string "nodrain"
   | "/hello" ->
-    Server.respond_with_string "hello world"
+    Server.respond_string "hello world"
   | "/hellopipe" ->
     let body = Pipe.of_list ["hello";"world"] in
     Server.respond_with_pipe body

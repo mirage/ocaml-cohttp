@@ -59,13 +59,13 @@ let serve ~info ~docroot ~index uri path =
           ) >>| function Ok v -> v | Error _ -> (None, 0L, f))
         >>= fun listing ->
         html_of_listing uri path (sort ((Some `Directory,0L,"..")::listing)) info
-      |> Server.respond_with_string
+      |> Server.respond_string
     end
     (* Serve the local file contents *)
     | `File -> serve_file ~docroot ~uri
     (* Any other file type is simply forbidden *)
     | `Socket | `Block | `Fifo | `Char | `Link ->
-      Server.respond_with_string ~code:`Forbidden
+      Server.respond_string ~status:`Forbidden
         (html_of_forbidden_unnormal path info)
   )
   >>= (function
@@ -74,7 +74,7 @@ let serve ~info ~docroot ~index uri path =
     begin match Monitor.extract_exn exn with
     | Unix.Unix_error (Unix.ENOENT, "stat", p) ->
       if p = ("((filename "^file_name^"))") (* Really? *)
-      then Server.respond_with_string ~code:`Not_found
+      then Server.respond_string ~status:`Not_found
         (html_of_not_found path info)
       else raise exn
     | _ -> raise exn
@@ -97,7 +97,7 @@ let rec handler ~info ~docroot ~index ~body sock req =
     let meth = Cohttp.Code.string_of_method meth in
     let allowed = "GET, HEAD" in
     let headers = Cohttp.Header.of_list ["allow", allowed] in
-    Server.respond_with_string ~headers ~code:`Method_not_allowed
+    Server.respond_string ~headers ~status:`Method_not_allowed
       (html_of_method_not_allowed meth allowed path info)
 
 let determine_mode cert_file_path key_file_path =

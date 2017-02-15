@@ -201,8 +201,8 @@ module Make_server(IO:IO) = struct
     let res = Response.make ~status ~flush ~encoding ?headers () in
     return (res, body)
 
-  let respond_string ?headers ~status ~body () =
-    let res = Response.make ~status
+  let respond_string ?(flush=true) ?headers ~status ~body () =
+    let res = Response.make ~status ~flush
                 ~encoding:(Transfer.Fixed (Int64.of_int (String.length body)))
                 ?headers () in
     let body = Body.of_string body in
@@ -300,4 +300,3 @@ module Make_server(IO:IO) = struct
       ) res oc
     )
 end
-
