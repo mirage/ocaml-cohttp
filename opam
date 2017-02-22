@@ -19,6 +19,8 @@ depends: [
   "mirage-conduit" {>= "2.2.0"}
   "lwt" {>= "2.4.3"}
   "cohttp" {>= "0.18.0"}
+  "astring"
+  "magic-mime"
 ]
-available: [ocaml-version >= "4.00.0"]
+available: [ocaml-version >= "4.03.0"]
 tags: "org:mirage"

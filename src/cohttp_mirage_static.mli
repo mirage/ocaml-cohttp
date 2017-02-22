@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012-2015 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012-2017 Anil Madhavapeddy <anil@recoil.org>
  * Copyright (c) 2013-2015 Thomas Gazagnaire <thomas@gazazagnaire.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -17,10 +17,20 @@
  * %%NAME%% %%VERSION%%
  *)
 
-(** Cohttp IO implementation using Mirage channels. *)
+(** Serve static HTTP sites from a Mirage key-value store. *)
 
-module Make (Channel: Mirage_channel_lwt.S) : Cohttp.S.IO
-  with type 'a t = 'a Lwt.t
-   and type ic = Channel.t
-   and type oc = Channel.t
-   and type conn = Channel.flow
+(** Plain HTTP file serving from a read-only key-value store. *)
+module HTTP(FS: Mirage_kv_lwt.RO)(S:Cohttp_lwt.Server) : sig
+
+  (** [start http_port ?request_fn fs http] will start a static
+    HTTP server listening on [http_port].  The files to serve will
+    be looked up from the [fs] key-value store.
+
+    If [request_fn] is supplied, the URI and default header set
+    (including the MIME content-type header) will be passed to it
+    and the response used as the response header set instead. *)
+  
+  val start: http_port:int ->
+    ?request_fn:(Uri.t -> Cohttp.Header.t -> Cohttp.Header.t) ->
+    FS.t -> ([> `TCP of int ] -> S.t -> 'a) -> 'a
+end

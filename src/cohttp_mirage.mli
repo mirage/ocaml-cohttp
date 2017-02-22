@@ -17,7 +17,7 @@
  * %%NAME%% %%VERSION%%
  *)
 
-(** Cohttp implementation for mirage *)
+(** Cohttp client and server implementations for Mirage *)
 
 (** HTTP client. *)
 module Client: sig

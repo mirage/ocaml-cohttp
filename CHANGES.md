@@ -1,3 +1,10 @@
+### 3.1.0
+
+* Add `Cohttp_mirage_static` module for serving static files from a
+  read-only key-value store.  Includes magic mime detection.
+* Improve the ocamldoc strings for the modules.
+* Constrain supported OCaml version to 4.03.0+ or higher, as with Mirage 3.0.
+
 ### 3.0.0 
 
 * Port to MirageOS 3 CHANNEL interface.
