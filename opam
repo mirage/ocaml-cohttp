@@ -22,5 +22,5 @@ depends: [
   "astring"
   "magic-mime"
 ]
-available: [ocaml-version >= "4.00.0"]
+available: [ocaml-version >= "4.03.0"]
 tags: "org:mirage"
