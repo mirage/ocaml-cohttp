@@ -2,6 +2,7 @@
 
 * Add `Cohttp_mirage_static` module for serving static files from a
   read-only key-value store.  Includes magic mime detection.
+* Improve the ocamldoc strings for the modules.
 
 ### 3.0.0 
 

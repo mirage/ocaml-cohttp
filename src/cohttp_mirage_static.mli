@@ -17,7 +17,7 @@
  * %%NAME%% %%VERSION%%
  *)
 
-(** Serve static HTTP sites from a Mirage KV store *)
+(** Serve static HTTP sites from a Mirage key-value store. *)
 
 (** Plain HTTP file serving from a read-only key-value store. *)
 module HTTP(FS: Mirage_kv_lwt.RO)(S:Cohttp_lwt.Server) : sig
