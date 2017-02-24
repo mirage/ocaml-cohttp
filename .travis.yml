@@ -7,7 +7,6 @@ sudo: false
 env:
  global:
    - PACKAGE="mirage-http"
-   - EXTRA_REMOTES="https://github.com/mirage/mirage-dev.git"
    - PRE_INSTALL_HOOK="cd /home/opam/opam-repository && git pull origin master && opam update -u -y"
  matrix:
    - DISTRO=debian-stable OCAML_VERSION=4.03.0
