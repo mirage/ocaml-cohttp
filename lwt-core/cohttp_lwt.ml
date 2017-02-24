@@ -289,14 +289,19 @@ module Make_server(IO:IO) = struct
        responses are then sent over the wire *)
     let req_stream = request_stream ic in
     let res_stream = response_stream spec.callback io_id conn_id req_stream in
-    (* Clean up resources when the response stream terminates and call
-     * the user callback *)
-    Lwt_stream.on_terminate res_stream conn_closed;
-    (* Transmit the responses *)
-    res_stream |> Lwt_stream.iter_s (fun (res,body) ->
-      let flush = Response.flush res in
-      Response.write ~flush (fun writer ->
-        Body.write_body (Response.write_body writer) body
-      ) res oc
-    )
+    Lwt.finalize
+      (fun () ->
+         (* Transmit the responses *)
+         res_stream |> Lwt_stream.iter_s (fun (res,body) ->
+             let flush = Response.flush res in
+             Response.write ~flush (fun writer ->
+                 Body.write_body (Response.write_body writer) body
+               ) res oc
+           )
+      )
+      (fun () ->
+         (* Clean up resources when the response stream terminates and call
+          * the user callback *)
+         conn_closed () |> Lwt.return
+      )
 end
