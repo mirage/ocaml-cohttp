@@ -31,13 +31,12 @@ Library cohttp
   BuildDepends:  re.emacs, stringext, uri (>= 1.5.0), fieldslib,
                  sexplib, ppx_fields_conv, ppx_sexp_conv,
                  bytes, base64 (>= 2.0.0)
-  XMETARequires: re.emacs, stringext, uri, uri.services, fieldslib,
-                 sexplib, bytes, base64
+  XMETARequires: re.emacs, stringext, uri, fieldslib, sexplib, bytes, base64
 
 Library cohttp_test
   Build$:        flag(tests)
   Install:       false
-  Path:          lib
+  Path:          cohttp_test
   Findlibname:   test
   FindlibParent: cohttp
   Modules:       Cohttp_test
@@ -123,7 +122,7 @@ Library cohttp_async
 Library cohttp_lwt_unix_test
   Build$:        flag(lwt_unix) && flag(tests)
   Install:       false
-  Path:          lwt
+  Path:          cohttp_lwt_unix_test
   Findlibname:   lwt-unix-test
   FindlibParent: cohttp
   BuildDepends:  cohttp.test, cohttp.lwt, unix, lwt.unix, oUnit
@@ -132,7 +131,7 @@ Library cohttp_lwt_unix_test
 Library cohttp_async_test
   Build$:        flag(async) && flag(tests)
   Install:       false
-  Path:          async
+  Path:          cohttp_async_test
   Findlibname:   async-test
   FindlibParent: cohttp
   BuildDepends:  cohttp.test, cohttp.async, oUnit
