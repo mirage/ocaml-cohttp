@@ -9,3 +9,5 @@ setup.bin
 *.native
 *.byte
 _tests/
+.merlin
+*.install

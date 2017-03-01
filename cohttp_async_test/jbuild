@@ -1,0 +1,4 @@
+(library
+ ((name cohttp_async_test)
+  (wrapped false)
+  (libraries (uri.services cohttp_test cohttp-async))))

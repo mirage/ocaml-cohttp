@@ -1,0 +1,5 @@
+(library
+ ((name cohttp_async)
+  (wrapped false)
+  (public_name cohttp-async)
+  (libraries (async uri conduit.async magic-mime cohttp))))

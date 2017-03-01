@@ -1,0 +1,5 @@
+(library
+ ((name cohttp_lwt)
+  (public_name cohttp-lwt)
+  (wrapped false)
+  (libraries (lwt uri cohttp))))

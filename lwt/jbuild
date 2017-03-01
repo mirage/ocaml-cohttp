@@ -1,0 +1,5 @@
+(library
+ ((name cohttp_lwt_unix)
+  (public_name cohttp-lwt-unix)
+  (wrapped false)
+  (libraries (conduit.lwt-unix magic-mime lwt.unix cohttp cohttp-lwt))))

@@ -1,0 +1,18 @@
+(library
+ ((name cohttp)
+  (public_name cohttp)
+  (preprocess (pps (ppx_fields_conv ppx_sexp_conv)))
+  (libraries (re.emacs
+              stringext
+              uri
+              fieldslib
+              sexplib
+              ppx_fields_conv
+              ppx_sexp_conv
+              bytes
+              base64))))
+
+
+
+(ocamllex (accept_lexer))
+(ocamlyacc (accept_parser))
