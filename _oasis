@@ -416,6 +416,15 @@ Executable server_lwt_doc_example
   Install:            false
   BuildDepends:       cohttp.lwt
 
+Executable server_lwt_custom_stream_doc_example
+  Path:               examples/doc
+  MainIs:             server_lwt_custom_stream.ml
+  Build$:             flag(lwt_unix)
+  Custom:             true
+  CompiledObject:     best
+  Install:            false
+  BuildDepends:       cohttp.lwt
+
 Executable "test_sanity"
   Path:               lib_test
   MainIs:             test_sanity.ml

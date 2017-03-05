@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 1e782f367b2077f2dfb7321e37a787f8)
+# DO NOT EDIT (digest: aefd8e9fefcc218eb7a51adbe9299899)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -715,6 +715,25 @@ true: annot, bin_annot
 <examples/doc/server_lwt.{native,byte}>: use_cohttp
 <examples/doc/server_lwt.{native,byte}>: use_cohttp_lwt
 <examples/doc/server_lwt.{native,byte}>: use_cohttp_lwt_unix
+<examples/doc/server_lwt.{native,byte}>: custom
+# Executable server_lwt_custom_stream_doc_example
+<examples/doc/server_lwt_custom_stream.{native,byte}>: pkg_base64
+<examples/doc/server_lwt_custom_stream.{native,byte}>: pkg_bytes
+<examples/doc/server_lwt_custom_stream.{native,byte}>: pkg_conduit.lwt-unix
+<examples/doc/server_lwt_custom_stream.{native,byte}>: pkg_fieldslib
+<examples/doc/server_lwt_custom_stream.{native,byte}>: pkg_lwt
+<examples/doc/server_lwt_custom_stream.{native,byte}>: pkg_lwt.unix
+<examples/doc/server_lwt_custom_stream.{native,byte}>: pkg_magic-mime
+<examples/doc/server_lwt_custom_stream.{native,byte}>: pkg_ppx_fields_conv
+<examples/doc/server_lwt_custom_stream.{native,byte}>: pkg_ppx_sexp_conv
+<examples/doc/server_lwt_custom_stream.{native,byte}>: pkg_re.emacs
+<examples/doc/server_lwt_custom_stream.{native,byte}>: pkg_sexplib
+<examples/doc/server_lwt_custom_stream.{native,byte}>: pkg_stringext
+<examples/doc/server_lwt_custom_stream.{native,byte}>: pkg_unix
+<examples/doc/server_lwt_custom_stream.{native,byte}>: pkg_uri
+<examples/doc/server_lwt_custom_stream.{native,byte}>: use_cohttp
+<examples/doc/server_lwt_custom_stream.{native,byte}>: use_cohttp_lwt
+<examples/doc/server_lwt_custom_stream.{native,byte}>: use_cohttp_lwt_unix
 <examples/doc/*.ml{,i,y}>: pkg_base64
 <examples/doc/*.ml{,i,y}>: pkg_bytes
 <examples/doc/*.ml{,i,y}>: pkg_conduit.lwt-unix
@@ -732,7 +751,7 @@ true: annot, bin_annot
 <examples/doc/*.ml{,i,y}>: use_cohttp
 <examples/doc/*.ml{,i,y}>: use_cohttp_lwt
 <examples/doc/*.ml{,i,y}>: use_cohttp_lwt_unix
-<examples/doc/server_lwt.{native,byte}>: custom
+<examples/doc/server_lwt_custom_stream.{native,byte}>: custom
 # Executable test_sanity
 <lib_test/test_sanity.{native,byte}>: pkg_base64
 <lib_test/test_sanity.{native,byte}>: pkg_bytes
