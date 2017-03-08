@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 1e782f367b2077f2dfb7321e37a787f8)
+# DO NOT EDIT (digest: 7433ee5a81db584e38c1bec464162954)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -79,6 +79,9 @@ true: annot, bin_annot
 <lwt/*.ml{,i,y}>: pkg_bytes
 <lwt/*.ml{,i,y}>: pkg_conduit.lwt-unix
 <lwt/*.ml{,i,y}>: pkg_fieldslib
+<lwt/*.ml{,i,y}>: pkg_logs
+<lwt/*.ml{,i,y}>: pkg_logs.fmt
+<lwt/*.ml{,i,y}>: pkg_logs.lwt
 <lwt/*.ml{,i,y}>: pkg_lwt
 <lwt/*.ml{,i,y}>: pkg_lwt.unix
 <lwt/*.ml{,i,y}>: pkg_magic-mime
@@ -114,6 +117,9 @@ true: annot, bin_annot
 <async/*.ml{,i,y}>: pkg_bytes
 <async/*.ml{,i,y}>: pkg_conduit.async
 <async/*.ml{,i,y}>: pkg_fieldslib
+<async/*.ml{,i,y}>: pkg_fmt.tty
+<async/*.ml{,i,y}>: pkg_logs
+<async/*.ml{,i,y}>: pkg_logs.fmt
 <async/*.ml{,i,y}>: pkg_magic-mime
 <async/*.ml{,i,y}>: pkg_ppx_fields_conv
 <async/*.ml{,i,y}>: pkg_ppx_sexp_conv
@@ -130,6 +136,9 @@ true: annot, bin_annot
 <cohttp_lwt_unix_test/*.ml{,i,y}>: pkg_bytes
 <cohttp_lwt_unix_test/*.ml{,i,y}>: pkg_conduit.lwt-unix
 <cohttp_lwt_unix_test/*.ml{,i,y}>: pkg_fieldslib
+<cohttp_lwt_unix_test/*.ml{,i,y}>: pkg_logs
+<cohttp_lwt_unix_test/*.ml{,i,y}>: pkg_logs.fmt
+<cohttp_lwt_unix_test/*.ml{,i,y}>: pkg_logs.lwt
 <cohttp_lwt_unix_test/*.ml{,i,y}>: pkg_lwt
 <cohttp_lwt_unix_test/*.ml{,i,y}>: pkg_lwt.unix
 <cohttp_lwt_unix_test/*.ml{,i,y}>: pkg_magic-mime
@@ -152,6 +161,9 @@ true: annot, bin_annot
 <cohttp_async_test/*.ml{,i,y}>: pkg_bytes
 <cohttp_async_test/*.ml{,i,y}>: pkg_conduit.async
 <cohttp_async_test/*.ml{,i,y}>: pkg_fieldslib
+<cohttp_async_test/*.ml{,i,y}>: pkg_fmt.tty
+<cohttp_async_test/*.ml{,i,y}>: pkg_logs
+<cohttp_async_test/*.ml{,i,y}>: pkg_logs.fmt
 <cohttp_async_test/*.ml{,i,y}>: pkg_magic-mime
 <cohttp_async_test/*.ml{,i,y}>: pkg_oUnit
 <cohttp_async_test/*.ml{,i,y}>: pkg_ppx_fields_conv
@@ -170,6 +182,9 @@ true: annot, bin_annot
 <lib_test/test_parser.{native,byte}>: pkg_bytes
 <lib_test/test_parser.{native,byte}>: pkg_conduit.lwt-unix
 <lib_test/test_parser.{native,byte}>: pkg_fieldslib
+<lib_test/test_parser.{native,byte}>: pkg_logs
+<lib_test/test_parser.{native,byte}>: pkg_logs.fmt
+<lib_test/test_parser.{native,byte}>: pkg_logs.lwt
 <lib_test/test_parser.{native,byte}>: pkg_lwt
 <lib_test/test_parser.{native,byte}>: pkg_lwt.unix
 <lib_test/test_parser.{native,byte}>: pkg_magic-mime
@@ -232,6 +247,9 @@ true: annot, bin_annot
 <lib_test/test_net_lwt.{native,byte}>: pkg_bytes
 <lib_test/test_net_lwt.{native,byte}>: pkg_conduit.lwt-unix
 <lib_test/test_net_lwt.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_lwt.{native,byte}>: pkg_logs
+<lib_test/test_net_lwt.{native,byte}>: pkg_logs.fmt
+<lib_test/test_net_lwt.{native,byte}>: pkg_logs.lwt
 <lib_test/test_net_lwt.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt.{native,byte}>: pkg_lwt.unix
 <lib_test/test_net_lwt.{native,byte}>: pkg_magic-mime
@@ -253,6 +271,9 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_bytes
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_conduit.lwt-unix
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_lwt_google.{native,byte}>: pkg_logs
+<lib_test/test_net_lwt_google.{native,byte}>: pkg_logs.fmt
+<lib_test/test_net_lwt_google.{native,byte}>: pkg_logs.lwt
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_lwt.unix
 <lib_test/test_net_lwt_google.{native,byte}>: pkg_magic-mime
@@ -272,6 +293,9 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_bytes
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_conduit.lwt-unix
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_logs
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_logs.fmt
+<lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_logs.lwt
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_lwt.unix
 <lib_test/test_net_lwt_google_custom_ctx.{native,byte}>: pkg_magic-mime
@@ -291,6 +315,9 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_bytes
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_conduit.lwt-unix
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_logs
+<lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_logs.fmt
+<lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_logs.lwt
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_lwt.unix
 <lib_test/test_net_lwt_lastminute.{native,byte}>: pkg_magic-mime
@@ -310,6 +337,9 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_bytes
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_conduit.lwt-unix
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_lwt_server.{native,byte}>: pkg_logs
+<lib_test/test_net_lwt_server.{native,byte}>: pkg_logs.fmt
+<lib_test/test_net_lwt_server.{native,byte}>: pkg_logs.lwt
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_lwt.unix
 <lib_test/test_net_lwt_server.{native,byte}>: pkg_magic-mime
@@ -329,6 +359,9 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_bytes
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_conduit.lwt-unix
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_logs
+<lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_logs.fmt
+<lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_logs.lwt
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_lwt.unix
 <lib_test/test_net_lwt_multi_get.{native,byte}>: pkg_magic-mime
@@ -348,6 +381,9 @@ true: annot, bin_annot
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_bytes
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_conduit.lwt-unix
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_logs
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_logs.fmt
+<lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_logs.lwt
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_lwt.unix
 <lib_test/test_net_lwt_client_and_server.{native,byte}>: pkg_magic-mime
@@ -368,6 +404,9 @@ true: annot, bin_annot
 <lib_test/test_net_async.{native,byte}>: pkg_bytes
 <lib_test/test_net_async.{native,byte}>: pkg_conduit.async
 <lib_test/test_net_async.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_async.{native,byte}>: pkg_fmt.tty
+<lib_test/test_net_async.{native,byte}>: pkg_logs
+<lib_test/test_net_async.{native,byte}>: pkg_logs.fmt
 <lib_test/test_net_async.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_async.{native,byte}>: pkg_oUnit
 <lib_test/test_net_async.{native,byte}>: pkg_ppx_fields_conv
@@ -387,6 +426,9 @@ true: annot, bin_annot
 <lib_test/test_net_async_http10.{native,byte}>: pkg_bytes
 <lib_test/test_net_async_http10.{native,byte}>: pkg_conduit.async
 <lib_test/test_net_async_http10.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_async_http10.{native,byte}>: pkg_fmt.tty
+<lib_test/test_net_async_http10.{native,byte}>: pkg_logs
+<lib_test/test_net_async_http10.{native,byte}>: pkg_logs.fmt
 <lib_test/test_net_async_http10.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_async_http10.{native,byte}>: pkg_oUnit
 <lib_test/test_net_async_http10.{native,byte}>: pkg_ppx_fields_conv
@@ -406,6 +448,9 @@ true: annot, bin_annot
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_bytes
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_conduit.async
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_async_multi_get.{native,byte}>: pkg_fmt.tty
+<lib_test/test_net_async_multi_get.{native,byte}>: pkg_logs
+<lib_test/test_net_async_multi_get.{native,byte}>: pkg_logs.fmt
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_oUnit
 <lib_test/test_net_async_multi_get.{native,byte}>: pkg_ppx_fields_conv
@@ -425,6 +470,9 @@ true: annot, bin_annot
 <lib_test/test_net_async_server.{native,byte}>: pkg_bytes
 <lib_test/test_net_async_server.{native,byte}>: pkg_conduit.async
 <lib_test/test_net_async_server.{native,byte}>: pkg_fieldslib
+<lib_test/test_net_async_server.{native,byte}>: pkg_fmt.tty
+<lib_test/test_net_async_server.{native,byte}>: pkg_logs
+<lib_test/test_net_async_server.{native,byte}>: pkg_logs.fmt
 <lib_test/test_net_async_server.{native,byte}>: pkg_magic-mime
 <lib_test/test_net_async_server.{native,byte}>: pkg_oUnit
 <lib_test/test_net_async_server.{native,byte}>: pkg_ppx_fields_conv
@@ -444,6 +492,9 @@ true: annot, bin_annot
 <lib_test/test_async_integration.{native,byte}>: pkg_bytes
 <lib_test/test_async_integration.{native,byte}>: pkg_conduit.async
 <lib_test/test_async_integration.{native,byte}>: pkg_fieldslib
+<lib_test/test_async_integration.{native,byte}>: pkg_fmt.tty
+<lib_test/test_async_integration.{native,byte}>: pkg_logs
+<lib_test/test_async_integration.{native,byte}>: pkg_logs.fmt
 <lib_test/test_async_integration.{native,byte}>: pkg_magic-mime
 <lib_test/test_async_integration.{native,byte}>: pkg_oUnit
 <lib_test/test_async_integration.{native,byte}>: pkg_ppx_fields_conv
@@ -460,6 +511,7 @@ true: annot, bin_annot
 <lib_test/test_async_integration.{native,byte}>: use_cohttp_test
 <lib_test/*.ml{,i,y}>: pkg_async
 <lib_test/*.ml{,i,y}>: pkg_conduit.async
+<lib_test/*.ml{,i,y}>: pkg_fmt.tty
 <lib_test/*.ml{,i,y}>: pkg_threads
 <lib_test/*.ml{,i,y}>: pkg_uri.services
 <lib_test/*.ml{,i,y}>: use_cohttp_async
@@ -471,6 +523,9 @@ true: annot, bin_annot
 <bin/cohttp_server_async.{native,byte}>: pkg_bytes
 <bin/cohttp_server_async.{native,byte}>: pkg_conduit.async
 <bin/cohttp_server_async.{native,byte}>: pkg_fieldslib
+<bin/cohttp_server_async.{native,byte}>: pkg_fmt.tty
+<bin/cohttp_server_async.{native,byte}>: pkg_logs
+<bin/cohttp_server_async.{native,byte}>: pkg_logs.fmt
 <bin/cohttp_server_async.{native,byte}>: pkg_magic-mime
 <bin/cohttp_server_async.{native,byte}>: pkg_ppx_fields_conv
 <bin/cohttp_server_async.{native,byte}>: pkg_ppx_sexp_conv
@@ -489,6 +544,9 @@ true: annot, bin_annot
 <bin/cohttp_curl_async.{native,byte}>: pkg_bytes
 <bin/cohttp_curl_async.{native,byte}>: pkg_conduit.async
 <bin/cohttp_curl_async.{native,byte}>: pkg_fieldslib
+<bin/cohttp_curl_async.{native,byte}>: pkg_fmt.tty
+<bin/cohttp_curl_async.{native,byte}>: pkg_logs
+<bin/cohttp_curl_async.{native,byte}>: pkg_logs.fmt
 <bin/cohttp_curl_async.{native,byte}>: pkg_magic-mime
 <bin/cohttp_curl_async.{native,byte}>: pkg_ppx_fields_conv
 <bin/cohttp_curl_async.{native,byte}>: pkg_ppx_sexp_conv
@@ -502,6 +560,7 @@ true: annot, bin_annot
 <bin/cohttp_curl_async.{native,byte}>: use_cohttp_async
 <bin/*.ml{,i,y}>: pkg_async
 <bin/*.ml{,i,y}>: pkg_conduit.async
+<bin/*.ml{,i,y}>: pkg_fmt.tty
 <bin/*.ml{,i,y}>: pkg_threads
 <bin/*.ml{,i,y}>: pkg_uri.services
 <bin/*.ml{,i,y}>: use_cohttp_async
@@ -512,6 +571,9 @@ true: annot, bin_annot
 <bin/cohttp_server_lwt.{native,byte}>: pkg_cmdliner
 <bin/cohttp_server_lwt.{native,byte}>: pkg_conduit.lwt-unix
 <bin/cohttp_server_lwt.{native,byte}>: pkg_fieldslib
+<bin/cohttp_server_lwt.{native,byte}>: pkg_logs
+<bin/cohttp_server_lwt.{native,byte}>: pkg_logs.fmt
+<bin/cohttp_server_lwt.{native,byte}>: pkg_logs.lwt
 <bin/cohttp_server_lwt.{native,byte}>: pkg_lwt
 <bin/cohttp_server_lwt.{native,byte}>: pkg_lwt.unix
 <bin/cohttp_server_lwt.{native,byte}>: pkg_magic-mime
@@ -532,6 +594,9 @@ true: annot, bin_annot
 <bin/cohttp_proxy_lwt.{native,byte}>: pkg_cmdliner
 <bin/cohttp_proxy_lwt.{native,byte}>: pkg_conduit.lwt-unix
 <bin/cohttp_proxy_lwt.{native,byte}>: pkg_fieldslib
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_logs
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_logs.fmt
+<bin/cohttp_proxy_lwt.{native,byte}>: pkg_logs.lwt
 <bin/cohttp_proxy_lwt.{native,byte}>: pkg_lwt
 <bin/cohttp_proxy_lwt.{native,byte}>: pkg_lwt.unix
 <bin/cohttp_proxy_lwt.{native,byte}>: pkg_magic-mime
@@ -552,6 +617,9 @@ true: annot, bin_annot
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_cmdliner
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_conduit.lwt-unix
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_fieldslib
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_logs
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_logs.fmt
+<bin/cohttp_curl_lwt.{native,byte}>: pkg_logs.lwt
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_lwt
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_lwt.unix
 <bin/cohttp_curl_lwt.{native,byte}>: pkg_magic-mime
@@ -570,6 +638,9 @@ true: annot, bin_annot
 <bin/*.ml{,i,y}>: pkg_cmdliner
 <bin/*.ml{,i,y}>: pkg_conduit.lwt-unix
 <bin/*.ml{,i,y}>: pkg_fieldslib
+<bin/*.ml{,i,y}>: pkg_logs
+<bin/*.ml{,i,y}>: pkg_logs.fmt
+<bin/*.ml{,i,y}>: pkg_logs.lwt
 <bin/*.ml{,i,y}>: pkg_lwt
 <bin/*.ml{,i,y}>: pkg_lwt.unix
 <bin/*.ml{,i,y}>: pkg_magic-mime
@@ -590,6 +661,9 @@ true: annot, bin_annot
 <examples/async/hello_world.{native,byte}>: pkg_bytes
 <examples/async/hello_world.{native,byte}>: pkg_conduit.async
 <examples/async/hello_world.{native,byte}>: pkg_fieldslib
+<examples/async/hello_world.{native,byte}>: pkg_fmt.tty
+<examples/async/hello_world.{native,byte}>: pkg_logs
+<examples/async/hello_world.{native,byte}>: pkg_logs.fmt
 <examples/async/hello_world.{native,byte}>: pkg_magic-mime
 <examples/async/hello_world.{native,byte}>: pkg_ppx_fields_conv
 <examples/async/hello_world.{native,byte}>: pkg_ppx_sexp_conv
@@ -609,6 +683,9 @@ true: annot, bin_annot
 <examples/async/s3_cp.{native,byte}>: pkg_conduit.async
 <examples/async/s3_cp.{native,byte}>: pkg_cstruct
 <examples/async/s3_cp.{native,byte}>: pkg_fieldslib
+<examples/async/s3_cp.{native,byte}>: pkg_fmt.tty
+<examples/async/s3_cp.{native,byte}>: pkg_logs
+<examples/async/s3_cp.{native,byte}>: pkg_logs.fmt
 <examples/async/s3_cp.{native,byte}>: pkg_magic-mime
 <examples/async/s3_cp.{native,byte}>: pkg_nocrypto
 <examples/async/s3_cp.{native,byte}>: pkg_ppx_fields_conv
@@ -650,6 +727,9 @@ true: annot, bin_annot
 <examples/async/receive_post.{native,byte}>: pkg_bytes
 <examples/async/receive_post.{native,byte}>: pkg_conduit.async
 <examples/async/receive_post.{native,byte}>: pkg_fieldslib
+<examples/async/receive_post.{native,byte}>: pkg_fmt.tty
+<examples/async/receive_post.{native,byte}>: pkg_logs
+<examples/async/receive_post.{native,byte}>: pkg_logs.fmt
 <examples/async/receive_post.{native,byte}>: pkg_magic-mime
 <examples/async/receive_post.{native,byte}>: pkg_ppx_fields_conv
 <examples/async/receive_post.{native,byte}>: pkg_ppx_sexp_conv
@@ -666,6 +746,9 @@ true: annot, bin_annot
 <examples/async/*.ml{,i,y}>: pkg_bytes
 <examples/async/*.ml{,i,y}>: pkg_conduit.async
 <examples/async/*.ml{,i,y}>: pkg_fieldslib
+<examples/async/*.ml{,i,y}>: pkg_fmt.tty
+<examples/async/*.ml{,i,y}>: pkg_logs
+<examples/async/*.ml{,i,y}>: pkg_logs.fmt
 <examples/async/*.ml{,i,y}>: pkg_magic-mime
 <examples/async/*.ml{,i,y}>: pkg_ppx_fields_conv
 <examples/async/*.ml{,i,y}>: pkg_ppx_sexp_conv
@@ -683,6 +766,9 @@ true: annot, bin_annot
 <examples/doc/client_lwt.{native,byte}>: pkg_bytes
 <examples/doc/client_lwt.{native,byte}>: pkg_conduit.lwt-unix
 <examples/doc/client_lwt.{native,byte}>: pkg_fieldslib
+<examples/doc/client_lwt.{native,byte}>: pkg_logs
+<examples/doc/client_lwt.{native,byte}>: pkg_logs.fmt
+<examples/doc/client_lwt.{native,byte}>: pkg_logs.lwt
 <examples/doc/client_lwt.{native,byte}>: pkg_lwt
 <examples/doc/client_lwt.{native,byte}>: pkg_lwt.unix
 <examples/doc/client_lwt.{native,byte}>: pkg_magic-mime
@@ -702,6 +788,9 @@ true: annot, bin_annot
 <examples/doc/server_lwt.{native,byte}>: pkg_bytes
 <examples/doc/server_lwt.{native,byte}>: pkg_conduit.lwt-unix
 <examples/doc/server_lwt.{native,byte}>: pkg_fieldslib
+<examples/doc/server_lwt.{native,byte}>: pkg_logs
+<examples/doc/server_lwt.{native,byte}>: pkg_logs.fmt
+<examples/doc/server_lwt.{native,byte}>: pkg_logs.lwt
 <examples/doc/server_lwt.{native,byte}>: pkg_lwt
 <examples/doc/server_lwt.{native,byte}>: pkg_lwt.unix
 <examples/doc/server_lwt.{native,byte}>: pkg_magic-mime
@@ -719,6 +808,9 @@ true: annot, bin_annot
 <examples/doc/*.ml{,i,y}>: pkg_bytes
 <examples/doc/*.ml{,i,y}>: pkg_conduit.lwt-unix
 <examples/doc/*.ml{,i,y}>: pkg_fieldslib
+<examples/doc/*.ml{,i,y}>: pkg_logs
+<examples/doc/*.ml{,i,y}>: pkg_logs.fmt
+<examples/doc/*.ml{,i,y}>: pkg_logs.lwt
 <examples/doc/*.ml{,i,y}>: pkg_lwt
 <examples/doc/*.ml{,i,y}>: pkg_lwt.unix
 <examples/doc/*.ml{,i,y}>: pkg_magic-mime
@@ -738,6 +830,9 @@ true: annot, bin_annot
 <lib_test/test_sanity.{native,byte}>: pkg_bytes
 <lib_test/test_sanity.{native,byte}>: pkg_conduit.lwt-unix
 <lib_test/test_sanity.{native,byte}>: pkg_fieldslib
+<lib_test/test_sanity.{native,byte}>: pkg_logs
+<lib_test/test_sanity.{native,byte}>: pkg_logs.fmt
+<lib_test/test_sanity.{native,byte}>: pkg_logs.lwt
 <lib_test/test_sanity.{native,byte}>: pkg_lwt
 <lib_test/test_sanity.{native,byte}>: pkg_lwt.unix
 <lib_test/test_sanity.{native,byte}>: pkg_magic-mime
@@ -758,6 +853,9 @@ true: annot, bin_annot
 <lib_test/*.ml{,i,y}>: pkg_bytes
 <lib_test/*.ml{,i,y}>: pkg_conduit.lwt-unix
 <lib_test/*.ml{,i,y}>: pkg_fieldslib
+<lib_test/*.ml{,i,y}>: pkg_logs
+<lib_test/*.ml{,i,y}>: pkg_logs.fmt
+<lib_test/*.ml{,i,y}>: pkg_logs.lwt
 <lib_test/*.ml{,i,y}>: pkg_lwt
 <lib_test/*.ml{,i,y}>: pkg_lwt.unix
 <lib_test/*.ml{,i,y}>: pkg_magic-mime

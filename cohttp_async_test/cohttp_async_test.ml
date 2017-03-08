@@ -25,12 +25,12 @@ let temp_server ?port spec callback =
 
 let test_server_s ?port ?(name="Cohttp Server Test") spec f =
   temp_server ?port spec begin fun uri ->
-    Log.Global.info "Test %s running on %s" name (Uri.to_string uri);
+    Logs.info (fun m -> m "Test %s running on %s" name (Uri.to_string uri));
     let tests = f uri in
     let results =
       tests
       |> Deferred.List.map ~how:`Sequential ~f:(fun (name, test) ->
-        Log.Global.debug "Running %s" name;
+        Logs.debug (fun m -> m "Running %s" name);
         let res =
           try_with test >>| function
           | Ok () -> `Ok
@@ -48,4 +48,8 @@ let test_server_s ?port ?(name="Cohttp Server Test") spec f =
   end
 
 let run_async_tests test =
+  (* enable logging to stdout *)
+  Fmt_tty.setup_std_outputs ();
+  Logs.set_level @@ Some Logs.Debug;
+  Logs.set_reporter (Logs_fmt.reporter ());
   test >>| (fun a -> a |> OUnit.run_test_tt_main)

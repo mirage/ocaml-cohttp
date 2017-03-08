@@ -27,29 +27,39 @@ type ic = Lwt_io.input_channel
 type oc = Lwt_io.output_channel
 type conn = Conduit_lwt_unix.flow
 
+let src = Logs.Src.create "cohttp.lwt" ~doc:"Cohttp Lwt IO module"
+module Log = (val Logs_lwt.src_log src : Logs_lwt.LOG)
+
 let read_line ic =
-  if !CD.debug_active then
+  if CD.debug_active () then
     Lwt_io.read_line_opt ic >>= function
-    | None -> CD.debug_print "<<< EOF\n"; Lwt.return_none
-    | Some l as x -> CD.debug_print "<<< %s\n" l; Lwt.return x
+    | None ->
+      Log.debug (fun f -> f  "<<< EOF")
+      >>= fun () ->  Lwt.return_none
+    | Some l as x ->
+      Log.debug (fun f -> f  "<<< %s" l)
+      >>= fun () ->  Lwt.return x
   else
     Lwt_io.read_line_opt ic
 
 let read ic count =
   let count = min count Sys.max_string_length in
-  if !CD.debug_active then
+  if CD.debug_active () then
     Lwt_io.read ~count ic
     >>= fun buf ->
-    CD.debug_print "<<<[%d] %s" count buf;
-    return buf
+    Log.debug (fun f -> f  "<<<[%d] %s" count buf)
+    >>= fun () -> return buf
   else
     Lwt_io.read ~count ic
 
 let write oc buf =
-  if !CD.debug_active then
-    (CD.debug_print ">>> %s" buf; Lwt_io.write oc buf)
-  else
-    (Lwt_io.write oc buf)
+  if CD.debug_active () then (
+    Log.debug (fun f -> f  ">>> %s" (String.trim buf)) >>= fun () ->
+    Lwt_io.write oc buf
+  )
+  else (
+    ( Lwt_io.write oc buf )
+  )
 
 let flush oc =
   Lwt_io.flush oc

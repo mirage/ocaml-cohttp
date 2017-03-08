@@ -17,9 +17,44 @@
 open Core.Std
 open Async.Std
 
+let log_src_name = "cohttp.async.io"
+let src = Logs.Src.create log_src_name ~doc:"Cohttp Async IO module"
+module Log = (val Logs.src_log src : Logs.LOG)
+
+let default_reporter () =
+  let fmtr, fmtr_flush =
+    let b = Buffer.create 512 in
+    ( Fmt.with_buffer ~like:Fmt.stderr b
+    , fun () ->
+      let m = Buffer.contents b in
+      Buffer.reset b;
+      m ) in
+  let report src level ~over k msgf =
+    let k _ =
+      if Logs.Src.name src = log_src_name then (
+        Writer.write (Lazy.force Writer.stderr) (fmtr_flush ())
+      );
+      over ();
+      k () in
+    msgf @@ fun ?header ?tags fmt ->
+    Format.kfprintf k fmtr ("@[" ^^ fmt ^^ "@]@.")
+  in
+  { Logs.report }
+
+let set_log = lazy (
+  (* If no reporter has been set by the application, set default one
+     that prints to stderr. This way a user will see logs when the debug
+     flag is set without adding a reporter. *)
+  if phys_equal (Logs.reporter ()) Logs.nop_reporter
+  then
+    Logs.set_level @@ Some Logs.Debug;
+    Logs.set_reporter (default_reporter ());
+)
+
 let check_debug norm_fn debug_fn =
   match Sys.getenv "COHTTP_DEBUG" with
-  | Some _ -> debug_fn
+  | Some _ ->
+    Lazy.force set_log; debug_fn
   | None -> norm_fn
 
 type 'a t = 'a Deferred.t
@@ -41,8 +76,8 @@ let read_line =
     (fun ic ->
        Reader.read_line ic
        >>| function
-       | `Ok s -> eprintf "<<< %s\n" s; Some s
-       | `Eof -> eprintf "<<<EOF\n"; None
+       | `Ok s -> Log.debug (fun fmt -> fmt "<<< %s" s); Some s
+       | `Eof -> Log.debug (fun fmt -> fmt "<<<EOF"); None
     )
 
 let read ic len =
@@ -57,7 +92,8 @@ let write =
        Writer.write oc buf;
        return ())
     (fun oc buf ->
-       eprintf "\n%4d >>> %s" (Pid.to_int (Unix.getpid ())) buf;
+       Log.debug
+         (fun fmt -> fmt "%4d >>> %s" (Pid.to_int (Unix.getpid ())) buf);
        Writer.write oc buf;
        return ())
 

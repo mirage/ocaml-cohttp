@@ -17,7 +17,6 @@
 
 open Core.Std
 open Async.Std
-open Log.Global
 
 open Cohttp_async
 open Cohttp_server
@@ -36,7 +35,7 @@ let serve ~info ~docroot ~index uri path =
   try_with (fun () ->
     Unix.stat file_name
     >>= fun stat ->
-    debug "%s" (Sexp.to_string_hum (Unix.Stats.sexp_of_t stat));
+    Logs.debug (fun f -> f "%s" (Sexp.to_string_hum (Unix.Stats.sexp_of_t stat)));
     match stat.Unix.Stats.kind with
     (* Get a list of current files and map to HTML *)
     | `Directory -> begin
@@ -108,15 +107,18 @@ let determine_mode cert_file_path key_file_path =
   | _ -> failwith "Error: must specify both certificate and key for HTTPS"
 
 let start_server docroot port index cert_file key_file verbose () =
-  if verbose then set_level `Debug;
+  (* enable logging to stdout *)
+  Fmt_tty.setup_std_outputs ();
+  Logs.set_level @@ if verbose then (Some Logs.Debug) else (Some Logs.Info);
+  Logs.set_reporter (Logs_fmt.reporter ());
   let mode = determine_mode cert_file key_file in
   let mode_str = (match mode with `OpenSSL _ -> "HTTPS" | `TCP -> "HTTP") in
-  info "Listening for %s requests on %d" mode_str port;
+  Logs.info (fun f -> f "Listening for %s requests on %d" mode_str port);
   let info = sprintf "Served by Cohttp/Async listening on %d" port in
   Server.create
     ~on_handler_error:(`Call (fun addr exn ->
-        error "Error from %s" (Socket.Address.to_string addr);
-        sexp ~level:`Error (Exn.sexp_of_t exn)))
+        Logs.err (fun f -> f "Error from %s" (Socket.Address.to_string addr));
+        Logs.err (fun f -> f "%s" @@ Exn.to_string exn)))
     ~mode
     (Tcp.on_port port)
     (handler ~info ~docroot ~index) >>= fun _serv ->
