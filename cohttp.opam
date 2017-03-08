@@ -38,6 +38,8 @@ depends: [
   "stringext"
   "base64" {>= "2.0.0"}
   "magic-mime"
+  "fmt"
+  "logs"
   "ounit" {test}
   "alcotest" {test}
 ]

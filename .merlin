@@ -32,5 +32,9 @@ PKG magic-mime
 PKG oUnit
 PKG alcotest
 PKG compiler-libs.toplevel
+PKG fmt.tty
+PKG logs
+PKG logs.fmt
+PKG logs.lwt
 
 B _build/**
