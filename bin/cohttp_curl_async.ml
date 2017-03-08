@@ -19,7 +19,8 @@ open Async.Std
 open Cohttp_async
 
 let show_headers h =
-  Cohttp.Header.iter (fun k v -> List.iter v ~f:(Core.Std.Printf.eprintf "%s: %s\n%!" k)) h
+  Cohttp.Header.iter (fun k v ->
+      List.iter v ~f:(fun v_i -> Logs.info (fun m -> m "%s: %s%!" k v_i))) h
 
 let make_net_req uri meth' body () =
   let meth = Cohttp.Code.method_of_string meth' in
@@ -33,6 +34,10 @@ let make_net_req uri meth' body () =
   |> Pipe.iter ~f:(fun b -> print_string b; return ())
 
 let _ =
+  (* enable logging to stdout *)
+  Fmt_tty.setup_std_outputs ();
+  Logs.set_level @@ Some Logs.Debug;
+  Logs.set_reporter (Logs_fmt.reporter ());
   let open Command.Spec in
   Command.async ~summary:"Fetch URL and print it"
     (empty
@@ -44,4 +49,3 @@ let _ =
     )
     make_net_req
   |> Command.run
-

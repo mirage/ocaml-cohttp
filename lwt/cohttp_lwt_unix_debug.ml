@@ -14,17 +14,45 @@
  *
   }}}*)
 
-let debug_active = ref false
+let _debug_active = ref false
+let debug_active () = !_debug_active
 
-let debug_print fmt =
-  let open Printf in
-  ksprintf (fun s -> eprintf "{%4d} %s%!" (Unix.getpid ()) s) fmt
+let default_reporter () =
+  let fmtr, fmtr_flush =
+    let b = Buffer.create 512 in
+    ( Fmt.with_buffer ~like:Fmt.stdout b
+    , fun () ->
+      let m = Buffer.contents b in Buffer.reset b;
+      m ) in
+  let report src level ~over k msgf =
+    let k _ =
+      let write () = Lwt_io.write Lwt_io.stderr (fmtr_flush ()) in
+      let unblock () = over (); Lwt.return_unit in
+      Lwt.finalize write unblock |> Lwt.ignore_result;
+      k ()
+    in
+    msgf @@ fun ?header ?tags fmt ->
+    Format.kfprintf k fmtr ("@[" ^^ fmt ^^ "@]@.")
+  in
+  { Logs.report = report }
+
+let set_log = lazy (
+  (* If no reporter has been set by the application, set default one
+     that prints to stderr *)
+  if (Logs.reporter ()) == Logs.nop_reporter
+  then
+    Logs.set_level @@ Some Logs.Debug;
+    Logs.set_reporter (default_reporter ());
+)
+
+let activate_debug () =
+  Lazy.force set_log;
+  _debug_active := true;
+  Logs.debug (fun f -> f "Cohttp debugging output is active")
 
 let () =
   try (
    match Sys.getenv "COHTTP_DEBUG" with
    | "false" | "0" -> ()
-   | _ ->
-     debug_print "Cohttp debugging output is active\n";
-     debug_active := true
+   | _ -> activate_debug ()
   ) with Not_found -> ()

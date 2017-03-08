@@ -20,17 +20,17 @@ open Cohttp
 open Cohttp_lwt_unix
 module D = Cohttp_lwt_unix_debug
 
-let debug f = if !D.debug_active then f D.debug_print else ()
+let debug f = if D.debug_active () then Logs_lwt.debug f else return ()
 
 let client uri ofile meth' =
-  debug (fun d -> d "Client with URI %s\n" (Uri.to_string uri));
+  debug (fun d -> d "Client with URI %s" (Uri.to_string uri)) >>= fun () ->
   let meth = Cohttp.Code.method_of_string meth' in
-  debug (fun d -> d "Client %s issued\n" meth');
+  debug (fun d -> d "Client %s issued" meth') >>= fun () ->
   Client.call meth uri >>= fun (resp, body) ->
   let status = Response.status resp in
   debug (fun d ->
-    d "Client %s returned: %s\n" meth' (Code.string_of_status status)
-  );
+    d "Client %s returned: %s" meth' (Code.string_of_status status)
+  ) >>= fun () ->
   (* TODO follow redirects *)
   match Code.is_success (Code.code_of_status status) with
   | false ->
@@ -38,7 +38,7 @@ let client uri ofile meth' =
     exit 1
   | true ->
     Cohttp_lwt_body.length body >>= fun (len, body) ->
-    debug (fun d -> d "Client body length: %Ld\n" len);
+    debug (fun d -> d "Client body length: %Ld" len) >>= fun () ->
     Cohttp_lwt_body.to_string body >>= fun s ->
     let output_body c =
       Lwt_stream.iter_s (Lwt_io.fprint c) (Cohttp_lwt_body.to_stream body) in
@@ -47,11 +47,15 @@ let client uri ofile meth' =
     | Some fname -> Lwt_io.with_file ~mode:Lwt_io.output fname output_body
 
 let run_client verbose ofile uri meth =
-  if verbose then (
-    Cohttp_lwt_unix_debug.debug_active := true;
-    debug (fun d -> d ">>> Debug active");
-  );
-  Lwt_main.run (client uri ofile meth)
+  Lwt_main.run (
+    (if verbose
+    then (
+      Cohttp_lwt_unix_debug.activate_debug ();
+      debug (fun d -> d ">>> Debug active") >>= fun () -> return ())
+    else return ())
+    >>= fun () ->
+    client uri ofile meth
+  )
 
 open Cmdliner
 

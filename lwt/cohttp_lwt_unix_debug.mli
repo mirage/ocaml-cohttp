@@ -16,10 +16,11 @@
 
 (** Debugging output for Cohttp Unix *)
 
-(** Set [debug_active] to true to activate debugging output that will
-    be sent to the standard error. Defaults to [false]. *)
-val debug_active : bool ref
 
-(** [debug_print fmt] will print the given [fmt] format string and
-    arguments to the standard error, prepended by the process id. *)
-val debug_print : ('a, unit, string, unit) format4 -> 'a
+val activate_debug : unit -> unit
+(** [activate_debug] enables debugging output that will be sent to
+    standard error. *)
+
+val debug_active : unit -> bool
+(** [debug_active] returns true if [activate_debug] has been called and
+    false otherwise *)
