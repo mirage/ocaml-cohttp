@@ -1,3 +1,8 @@
+0.22.0 (2017-09-09)
+
+* Lwt: ensure conn_closed is cosed once client goes away (#528)
+* Use the Logs library for logging. (#532)
+
 0.21.1 (2017-02-18)
 * Remove -principal from type checking temporarily, to workaround
   a bug in the OCaml 4.03 type checker that causes compilation
