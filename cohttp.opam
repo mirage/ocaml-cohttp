@@ -32,7 +32,7 @@ depends: [
   "uri" {>= "1.9.0"}
   "fieldslib"
   "sexplib"
-  "conduit" {>= "0.11.0"}
+  "conduit" {>= "0.14.0"}
   "ppx_fields_conv"
   "ppx_sexp_conv"
   "stringext"
