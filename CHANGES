@@ -1,4 +1,4 @@
-0.22.0 (2017-09-09)
+0.22.0 (2017-03-09)
 
 * Lwt: ensure conn_closed is cosed once client goes away (#528)
 * Use the Logs library for logging. (#532)
