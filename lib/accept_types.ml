@@ -19,8 +19,7 @@
 
 open Sexplib.Std
 
-type pv = T of string | S of string [@@deriving sexp]
-type p = string * pv [@@deriving sexp]
+type p = string * string [@@deriving sexp]
 type media_range =
   | MediaType of string * string
   | AnyMediaSubtype of string

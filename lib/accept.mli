@@ -30,11 +30,7 @@ type 'a qlist = (q * 'a) list [@@deriving sexp]
 *)
 val qsort : 'a qlist -> 'a qlist
 
-type pv = Accept_types.pv =
-    T of string
-  | S of string [@@deriving sexp]
-
-type p = string * pv [@@deriving sexp]
+type p = string * string [@@deriving sexp]
 
 type media_range =
   Accept_types.media_range =
@@ -73,7 +69,7 @@ val encodings : string option -> encoding qlist
 
 val languages : string option -> language qlist
 
-val string_of_media_range : media_range * (string * pv) list -> q -> string
+val string_of_media_range : media_range * p list -> q -> string
 val string_of_charset : charset -> q -> string
 val string_of_encoding : encoding -> q -> string
 val string_of_language : language -> q -> string
