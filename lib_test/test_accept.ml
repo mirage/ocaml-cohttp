@@ -40,12 +40,12 @@ let valid_media_ranges = [
     1000,(A.AnyMediaSubtype "text",[]);
   ];
   "text/plain; q=0.8; charset=utf-8,text/HTML;charset=utf-8;q=0.9", [
-    800,(A.MediaType ("text","plain"),["charset",A.T"utf-8"]);
-    900,(A.MediaType ("text","html"),["charset",A.T"utf-8"]);
+    800,(A.MediaType ("text","plain"),["charset","utf-8"]);
+    900,(A.MediaType ("text","html"),["charset","utf-8"]);
   ];
-  "text/*;foo=\"bar\"", [1000,(A.AnyMediaSubtype "text",["foo",A.S"bar"])];
-  "*/*;qu=\"\\\"\"", [1000,(A.AnyMedia,["qu",A.S"\""])];
-  "*/*;f=\";q=0,text/plain\"", [1000,(A.AnyMedia,["f",A.S";q=0,text/plain"])];
+  "text/*;foo=\"bar\"", [1000,(A.AnyMediaSubtype "text",["foo","bar"])];
+  "*/*;qu=\"\\\"\"", [1000,(A.AnyMedia,["qu","\""])];
+  "*/*;f=\";q=0,text/plain\"", [1000,(A.AnyMedia,["f",";q=0,text/plain"])];
 ]
 
 let valid_media_ranges_suite =
