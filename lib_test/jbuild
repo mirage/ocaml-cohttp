@@ -1,3 +1,5 @@
+(jbuild_version 1)
+
 (executables
  ((libraries (cohttp oUnit))
   (modules (test_accept))
