@@ -88,8 +88,8 @@ module Make(IO : S.IO) = struct
       match !remaining with
       | 0L -> return Done
       | len ->
-        let len' = Int64.to_int len in
-        let read_len = min len' 0x8000 in
+        let max_read_len = Int64.of_int 0x8000 in
+        let read_len = Int64.to_int (min len max_read_len) in
         read ic read_len >>= function
         | "" -> return Done
         | buf ->
