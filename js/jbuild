@@ -4,5 +4,5 @@
  ((name cohttp_lwt_jsoo)
   (public_name cohttp-lwt-jsoo)
   (wrapped false)
-  (preprocess (pps (js_of_ocaml.syntax)))
+  (preprocess (pps (js_of_ocaml-ppx)))
   (libraries (js_of_ocaml cohttp-lwt))))
