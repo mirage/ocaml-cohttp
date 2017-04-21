@@ -1,0 +1,21 @@
+# JBUILDER_GEN
+
+package "top" (
+  requires = "cohttp-top"
+)
+
+package "lwt-core" (
+  requires = "cohttp-lwt"
+)
+
+package "lwt" (
+  requires = "cohttp-lwt-unix"
+)
+
+package "async" (
+  requires = "cohttp-async"
+)
+
+package "js" (
+  requires = "cohttp-js"
+)
