@@ -28,6 +28,8 @@ depends: [
   "cohttp-lwt"
   "lwt"
   "js_of_ocaml"
+  "js_of_ocaml-ppx"
+  "js_of_ocaml-lwt"
 ]
 conflicts: [
   "lwt" {< "2.5.0"}
