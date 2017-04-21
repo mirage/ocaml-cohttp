@@ -25,6 +25,7 @@ build-test: [
 ]
 build-doc: ["ocaml" "setup.ml" "-doc"]
 depends: [
+  "jbuilder" {build}
   "cohttp-lwt"
   "lwt"
   "js_of_ocaml"
