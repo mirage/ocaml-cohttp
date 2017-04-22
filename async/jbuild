@@ -2,6 +2,7 @@
 
 (library
  ((name cohttp_async)
+  (synopsis "Async backend")
   (wrapped false)
   (public_name cohttp-async)
   (libraries (async uri conduit.async magic-mime cohttp))))

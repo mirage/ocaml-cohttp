@@ -3,6 +3,7 @@
 (library
  ((name cohttp_lwt)
   (public_name cohttp-lwt)
+  (synopsis "Lwt backend")
   (preprocess (pps (ppx_sexp_conv)))
   (wrapped false)
   (libraries (lwt uri cohttp))))
