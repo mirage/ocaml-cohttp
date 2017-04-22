@@ -17,5 +17,5 @@ package "async" (
 )
 
 package "js" (
-  requires = "cohttp-js"
+  requires = "cohttp-lwt-js"
 )
