@@ -18,12 +18,6 @@ build: [
   ["jbuilder" "build" "--only-packages" "cohttp-lwt-unix" "--root" "."
    "-j" jobs "@install"]
 ]
-build-test: [
-  ["ocaml" "setup.ml" "-configure" "--enable-tests"]
-  ["ocaml" "setup.ml" "-build"]
-  ["ocaml" "setup.ml" "-test"]
-]
-build-doc: ["ocaml" "setup.ml" "-doc"]
 depends: [
   "jbuilder" {build}
   "conduit" {>= "0.11.0"}
