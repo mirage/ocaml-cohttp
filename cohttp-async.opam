@@ -20,7 +20,7 @@ build: [
 depends: [
   "jbuilder" {build}
   "cohttp"
-  "conduit" {>= "0.11.0"}
+  "conduit" {>= "0.14.0"}
   "async"
   "magic-mime"
 ]

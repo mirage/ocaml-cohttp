@@ -19,7 +19,7 @@ build: [
 ]
 depends: [
   "jbuilder" {build}
-  "conduit" {>= "0.11.0"}
+  "conduit" {>= "0.14.0"}
   "cohttp"
   "lwt"
 ]
