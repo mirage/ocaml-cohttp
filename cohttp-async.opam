@@ -27,6 +27,7 @@ build-doc: ["ocaml" "setup.ml" "-doc"]
 depends: [
   "jbuilder" {build}
   "cohttp"
+  "conduit" {>= "0.11.0"}
   "async"
   "magic-mime"
 ]
