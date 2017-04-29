@@ -20,6 +20,8 @@ build: [
 depends: [
   "jbuilder" {build}
   "conduit" {>= "0.14.0"}
+  "logs"
+  "fmt"
   "cohttp"
   "lwt"
   "base-unix"

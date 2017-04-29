@@ -5,4 +5,4 @@
   (synopsis "Async backend")
   (wrapped false)
   (public_name cohttp-async)
-  (libraries (async uri conduit.async magic-mime cohttp))))
+  (libraries (fmt async uri uri.services conduit.async magic-mime cohttp))))

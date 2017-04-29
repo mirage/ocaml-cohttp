@@ -23,6 +23,7 @@ depends: [
   "conduit" {>= "0.14.0"}
   "async"
   "magic-mime"
+  "fmt"
 ]
 conflicts: [
   "async" {< "113.24.00"}
