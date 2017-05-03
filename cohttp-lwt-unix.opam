@@ -22,7 +22,7 @@ depends: [
   "conduit" {>= "0.14.0"}
   "logs"
   "fmt"
-  "cohttp"
+  "cohttp-lwt"
   "lwt"
   "base-unix"
 ]
