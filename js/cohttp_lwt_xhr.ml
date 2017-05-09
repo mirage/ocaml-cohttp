@@ -28,10 +28,30 @@ module type Params = sig
   val with_credentials : bool
 end
 
+let xhr_response_supported =
+  (* from http://stackoverflow.com/questions/8926505/how-to-feature-detect-if-xmlhttprequest-supports-responsetype-arraybuffer *)
+  let xhr = XmlHttpRequest.create () in
+  let rt = xhr ##. responseType in
+  Js.to_string (Js.typeof rt) = "string"
+
+
+let binary_string str =
+  let len = String.length str in
+  let a = new%js Typed_array.uint8Array len in
+  for i = 0 to len - 1 do
+    Typed_array.set a i (Char.code (String.get str i))
+  done;
+  a
+
+let string_of_uint8array u8a offset len =
+  String.init
+    len
+    (fun i -> Char.chr (Typed_array.unsafe_get u8a (offset + i)))
+
 module Body_builder(P : Params) = struct
 
-  (* perform the body transfer in chunks. *)
-  let chunked_body text =
+  (* perform the body transfer in chunks from string. *)
+  let chunked_body_str text =
     let body_len = text##.length in
     let pos = ref 0 in
     let chunkerizer () =
@@ -51,11 +71,38 @@ module Body_builder(P : Params) = struct
     if body_len=0 then CLB.empty
     else CLB.of_stream (CLB.create_stream chunkerizer ())
 
-  (* choose between chunked and direct transfer *)
-  let get text =
-    if P.chunked_response then chunked_body text
-    else CLB.of_string (P.convert_body_string text)
+  (* perform the body transfer in chunks from arrayBuffer. *)
+  let chunked_body_binary (ab : Typed_array.arrayBuffer Js.t) =
+    let body_len = ab##.byteLength in
+    let u8a = new%js Typed_array.uint8Array_fromBuffer(ab) in
+    let pos = ref 0 in
+    let chunkerizer () =
+      if !pos = body_len then
+        Lwt.return C.Transfer.Done
+      else
+      if !pos + P.chunk_size >= body_len then begin
+        let str = string_of_uint8array u8a !pos (body_len - !pos) in
+        pos := body_len;
+        Lwt.return (C.Transfer.Final_chunk str)
+      end else begin
+        let str = string_of_uint8array u8a !pos P.chunk_size in
+        pos := !pos + P.chunk_size;
+        Lwt.return (C.Transfer.Chunk str)
+      end
+    in
+    if body_len=0 then CLB.empty
+    else CLB.of_stream (CLB.create_stream chunkerizer ())
 
+  (* choose between chunked and direct transfer *)
+  let get = function
+    | `String js_str ->
+        if P.chunked_response then chunked_body_str js_str
+        else CLB.of_string (P.convert_body_string js_str)
+    | `ArrayBuffer ab ->
+        if P.chunked_response then chunked_body_binary ab
+        else
+          let u8a = new%js Typed_array.uint8Array_fromBuffer(ab) in
+          CLB.of_string (string_of_uint8array u8a 0 (ab##.byteLength))
 end
 
 module Make_api(X : sig
@@ -114,6 +161,8 @@ module Make_client_async(P : Params) = Make_api(struct
     let call ?headers ?body meth uri =
       let xml = XmlHttpRequest.create () in
       xml ##. withCredentials := (Js.bool P.with_credentials) ;
+      if xhr_response_supported then
+        xml ##. responseType := Js.string "arraybuffer" ;
       let (res : (Response.t Lwt.t * CLB.t) Lwt.t), wake = Lwt.task () in
       let () = xml##(_open (Js.string (C.Code.string_of_method meth))
                           (Js.string (Uri.to_string uri))
@@ -139,7 +188,21 @@ module Make_client_async(P : Params) = Make_api(struct
              match xml##.readyState with
              | XmlHttpRequest.DONE -> begin
                  (* construct body *)
-                 let body = Bb.get xml##.responseText in
+                 let body =
+                   let b =
+                     if xhr_response_supported then
+                       Js.Opt.case
+                          (File.CoerceTo.arrayBuffer xml##.response)
+                          (fun () -> Firebug.console##log
+                             (Js.string "XHR Response is not an arrayBuffer; using responseText");
+                             `String xml##.responseText
+                          )
+                          (fun ab -> `ArrayBuffer ab)
+                      else
+                        `String xml##.responseText
+                    in
+                    Bb.get b
+                 in
                  (* (re-)construct the response *)
                  let response =
                    let resp_headers = Js.to_string (xml##getAllResponseHeaders) in
@@ -166,7 +229,13 @@ module Make_client_async(P : Params) = Make_api(struct
        | None -> Lwt.return (xml##(send (Js.null)))
        | Some(body) ->
          CLB.to_string body >>= fun body ->
-         Lwt.return (xml##(send (Js.Opt.return (Js.string body)))))
+         let bs = binary_string body in
+         (*Js.Opt.case (File.CoerceTo.blob (Obj.magic blob))
+           (fun () -> Lwt.fail_with "could not coerce to blob")
+           (fun blob -> Lwt.return (xml##(send_blob blob)))*)
+           (*Lwt.return (xml##send (Js.Opt.return bs)) *)
+           Lwt.return (xml##send (Js.Opt.return (Obj.magic bs)))
+       )
       >>= fun () ->
       Lwt.on_cancel res (fun () -> xml##abort);
 
@@ -186,6 +255,8 @@ module Make_client_sync(P : Params) = Make_api(struct
     let call ?headers ?body meth uri =
       let xml = XmlHttpRequest.create () in
       xml ##. withCredentials := (Js.bool P.with_credentials) ;
+      if xhr_response_supported then
+        xml ##. responseType := Js.string "arraybuffer" ;
       let () = xml##(_open (Js.string (C.Code.string_of_method meth))
                           (Js.string (Uri.to_string uri))
                           (Js._false))  (* synchronous call *)
@@ -208,10 +279,25 @@ module Make_client_sync(P : Params) = Make_api(struct
        | None -> Lwt.return (xml##(send (Js.null)))
        | Some(body) ->
          CLB.to_string body >|= fun body ->
-         (xml##(send (Js.Opt.return (Js.string body))))) >>= fun body ->
+         let bs = binary_string body in
+         (xml##(send (Js.Opt.return (Obj.magic bs))))) >>= fun body ->
 
   (* construct body *)
-  let body = Bb.get xml##.responseText in
+  let body =
+     let b =
+       if xhr_response_supported then
+         Js.Opt.case
+           (File.CoerceTo.arrayBuffer xml##.response)
+           (fun () -> Firebug.console##log
+              (Js.string "XHR Response is not an arrayBuffer; using responseText");
+              `String xml##.responseText
+                          )
+           (fun ab -> `ArrayBuffer ab)
+       else
+         `String xml##.responseText
+     in
+     Bb.get b
+  in
 
   (* (re-)construct the response *)
   let resp_headers = Js.to_string (xml##getAllResponseHeaders) in
