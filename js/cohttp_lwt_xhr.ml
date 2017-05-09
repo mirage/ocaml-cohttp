@@ -230,9 +230,6 @@ module Make_client_async(P : Params) = Make_api(struct
        | Some(body) ->
          CLB.to_string body >>= fun body ->
          let bs = binary_string body in
-         Firebug.console ## log
-           (Js.string (Printf.sprintf "length(body)=%d, length(bs)=%d"
-             (String.length body) (bs ##. length)));
          (*Js.Opt.case (File.CoerceTo.blob (Obj.magic blob))
            (fun () -> Lwt.fail_with "could not coerce to blob")
            (fun blob -> Lwt.return (xml##(send_blob blob)))*)
