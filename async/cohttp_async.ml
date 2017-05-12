@@ -27,25 +27,18 @@ module Net = struct
     match Uri_services.tcp_port_of_uri ~default:"http" uri with
     | None -> Deferred.Or_error.error_string
                 "Net.lookup: failed to get TCP port form Uri"
-    | Some port ->
-      let open Unix in
-      Addr_info.get ~host [ Addr_info.AI_FAMILY PF_INET
-                          ; Addr_info.AI_SOCKTYPE SOCK_STREAM]
-      >>| function
-      | { Addr_info.ai_addr=ADDR_INET (addr,_) }::_ ->
-        Or_error.return (host, Ipaddr_unix.of_inet_addr addr, port)
-      | _ -> Or_error.error "Failed to resolve Uri" uri Uri.sexp_of_t
+    | Some port -> Deferred.Or_error.return (host, port)
 
   let connect_uri ?interrupt ?ssl_config uri =
     lookup uri
     |> Deferred.Or_error.ok_exn
-    >>= fun (host, addr, port) ->
+    >>= fun (host, port) ->
     let mode =
       match (Uri.scheme uri, ssl_config) with
-      | Some "https", Some config -> `OpenSSL_with_config (host, addr, port, config)
-      | Some "https", None -> `OpenSSL (host, addr, port)
+      | Some "https", Some config -> `OpenSSL_with_config (host, port, config)
+      | Some "https", None -> `OpenSSL (host, port)
       | Some "httpunix", _ -> `Unix_domain_socket host
-      | _ -> `TCP (addr, port)
+      | _ -> `TCP (host, port)
     in
     Conduit_async.connect ?interrupt mode
 end
