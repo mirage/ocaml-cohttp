@@ -1,0 +1,16 @@
+(jbuild_version 1)
+
+(library
+ ((name cohttp_async)
+  (synopsis "Async backend")
+  (wrapped false)
+  (public_name cohttp-async)
+  (libraries
+   (logs.fmt
+    fmt
+    async
+    uri
+    uri.services
+    conduit.async
+    magic-mime
+    cohttp))))

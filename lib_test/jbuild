@@ -1,0 +1,61 @@
+(jbuild_version 1)
+
+(executables
+ ((libraries (cohttp oUnit))
+  (modules (test_accept))
+  (names (test_accept))))
+
+(executables
+ ((libraries (cohttp-lwt-unix oUnit lwt.unix))
+  (modules (test_parser))
+  (names (test_parser))))
+
+(executables
+ ((libraries (cohttp alcotest oUnit))
+  (modules (test_header))
+  (names (test_header))))
+
+(executables
+ ((libraries (cohttp alcotest oUnit))
+  (modules (test_request))
+  (names (test_request))))
+
+(executables
+ ((libraries (cohttp_lwt_unix_test cohttp-lwt-unix))
+  (modules (test_sanity))
+  (names (test_sanity))))
+
+(executables
+ ((libraries (cohttp_async_test cohttp-async))
+  (modules (test_async_integration))
+  (names (test_async_integration))))
+
+(alias
+ ((name   runtest)
+  (deps   (test_accept.exe))
+  (action (run ${<}))))
+
+(alias
+ ((name   runtest)
+  (deps   (test_parser.exe))
+  (action (run ${<}))))
+
+(alias
+ ((name   runtest)
+  (deps   (test_request.exe))
+  (action (run ${<}))))
+
+(alias
+ ((name   runtest)
+  (deps   (test_header.exe))
+  (action (run ${<}))))
+
+(alias
+ ((name   runtest)
+  (deps   (test_sanity.exe))
+  (action (run ${<}))))
+
+(alias
+ ((name   runtest)
+  (deps   (test_async_integration.exe))
+  (action (run ${<}))))

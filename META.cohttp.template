@@ -1,0 +1,26 @@
+# JBUILDER_GEN
+
+package "top" (
+  description = "Deprecated. Use cohttp-top directly"
+  requires = "cohttp-top"
+)
+
+package "lwt-core" (
+  description = "Deprecated. Use cohttp-lwt directly"
+  requires = "cohttp-lwt"
+)
+
+package "lwt" (
+  description = "Deprecated. Use cohttp-lwt-uinx directly"
+  requires = "cohttp-lwt-unix"
+)
+
+package "async" (
+  description = "Deprecated. Use cohttp-async directly"
+  requires = "cohttp-async"
+)
+
+package "js" (
+  description = "Deprecated. Use cohttp-lwt-js directly"
+  requires = "cohttp-lwt-js"
+)

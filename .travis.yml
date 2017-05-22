@@ -1,29 +1,28 @@
 language: c
-install: wget https://raw.githubusercontent.com/ocaml/ocaml-travisci-skeleton/master/.travis-docker.sh
-script: bash -ex .travis-docker.sh
+sudo: false
 services:
   - docker
-sudo: false
+install: wget https://raw.githubusercontent.com/ocaml/ocaml-travisci-skeleton/master/.travis-docker.sh
+script: bash -ex ./.travis-docker.sh
 env:
- global:
-   - PACKAGE="cohttp"
-   - DEPOPTS="async_ssl ssl lwt js_of_ocaml"
-   - PRE_INSTALL_HOOK="cd /home/opam/opam-repository && git pull origin master && opam update -u -y"
-   - POST_INSTALL_HOOK="opam depext -ui github cowabloga opium slacko"
- matrix:
-   - DISTRO=debian-stable OCAML_VERSION=4.02.3
-   - DISTRO=debian-testing OCAML_VERSION=4.02.3
-   - DISTRO=debian-unstable OCAML_VERSION=4.02.3
-   - DISTRO=ubuntu-12.04 OCAML_VERSION=4.02.3
-   - DISTRO=ubuntu-16.04 OCAML_VERSION=4.03.0
-   - DISTRO=centos-6 OCAML_VERSION=4.02.3
-   - DISTRO=centos-7 OCAML_VERSION=4.03.0
-   - DISTRO=fedora-24 OCAML_VERSION=4.02.3
-   - DISTRO=alpine OCAML_VERSION=4.03.0
-   - DISTRO=ubuntu-16.04 OCAML_VERSION=4.04.0
-   - DISTRO=debian-unstable OCAML_VERSION=4.04.0
-   - DISTRO=centos-7 OCAML_VERSION=4.04.0
-   - DISTRO=alpine OCAML_VERSION=4.04.0
+  global:
+  - PINS="cohttp-async:. cohttp-lwt-unix:. cohttp-lwt-jsoo:. cohttp-lwt:. cohttp:."
+  matrix:
+  - PACKAGE="cohttp" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.1"
+  - PACKAGE="cohttp-async" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.1"
+  - PACKAGE="cohttp-lwt-unix" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.1"
+  - PACKAGE="cohttp-lwt-jsoo" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.1"
+  - PACKAGE="cohttp-lwt" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.1"
+  - PACKAGE="cohttp" DISTRO="alpine-3.5" OCAML_VERSION="4.03.0"
+  - PACKAGE="cohttp-async" DISTRO="alpine-3.5" OCAML_VERSION="4.03.0"
+  - PACKAGE="cohttp-lwt-unix" DISTRO="alpine-3.5" OCAML_VERSION="4.03.0"
+  - PACKAGE="cohttp-lwt-jsoo" DISTRO="alpine-3.5" OCAML_VERSION="4.03.0"
+  - PACKAGE="cohttp-lwt" DISTRO="alpine-3.5" OCAML_VERSION="4.03.0"
+  - PACKAGE="cohttp" DISTRO="debian-unstable" OCAML_VERSION="4.03.0"
+  - PACKAGE="cohttp-async" DISTRO="debian-unstable" OCAML_VERSION="4.03.0"
+  - PACKAGE="cohttp-lwt-unix" DISTRO="debian-unstable" OCAML_VERSION="4.03.0"
+  - PACKAGE="cohttp-lwt-jsoo" DISTRO="debian-unstable" OCAML_VERSION="4.03.0"
+  - PACKAGE="cohttp-lwt" DISTRO="debian-unstable" OCAML_VERSION="4.03.0"
 notifications:
   webhooks:
     urls:

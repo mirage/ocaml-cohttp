@@ -1,0 +1,6 @@
+(jbuild_version 1)
+
+(library
+ ((name cohttp_test)
+  (wrapped false)
+  (libraries (cohttp oUnit))))

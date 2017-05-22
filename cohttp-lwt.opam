@@ -13,24 +13,16 @@ homepage: "https://github.com/mirage/ocaml-cohttp"
 bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
 license: "ISC"
 tags: ["org:mirage" "org:xapi-project"]
-dev-repo: "git://github.com/mirage/ocaml-cohttp.git"
+dev-repo: "https://github.com/mirage/ocaml-cohttp.git"
 build: [["jbuilder" "build" "-p" name "-j" jobs]]
 build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
 depends: [
-  "base-bytes"
   "jbuilder" {build}
-  "re"
-  "uri" {>= "1.9.0"}
-  "fieldslib"
-  "sexplib"
-  "ppx_fields_conv"
-  "ppx_sexp_conv"
-  "stringext"
-  "base64" {>= "2.0.0"}
-  "magic-mime"
-  "fmt"
-  "logs"
-  "ounit" {test}
-  "alcotest" {test}
+  "conduit" {>= "0.14.0"}
+  "cohttp"
+  "lwt"
+]
+conflicts: [
+  "lwt" {< "2.5.0"}
 ]
 available: [ocaml-version >= "4.03.0"]

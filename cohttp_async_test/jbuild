@@ -1,0 +1,6 @@
+(jbuild_version 1)
+
+(library
+ ((name cohttp_async_test)
+  (wrapped false)
+  (libraries (fmt.tty uri.services cohttp_test cohttp-async))))
