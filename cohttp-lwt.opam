@@ -14,9 +14,8 @@ bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
 license: "ISC"
 tags: ["org:mirage" "org:xapi-project"]
 dev-repo: "https://github.com/mirage/ocaml-cohttp.git"
-build: [
-  ["jbuilder" "build" "-p" name "-j" jobs]
-]
+build: [["jbuilder" "build" "-p" name "-j" jobs]]
+build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
 depends: [
   "jbuilder" {build}
   "conduit" {>= "0.14.0"}
