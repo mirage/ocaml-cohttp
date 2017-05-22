@@ -18,11 +18,11 @@ env:
   - PACKAGE="cohttp-lwt-unix" DISTRO="alpine-3.5" OCAML_VERSION="4.03.0"
   - PACKAGE="cohttp-lwt-jsoo" DISTRO="alpine-3.5" OCAML_VERSION="4.03.0"
   - PACKAGE="cohttp-lwt" DISTRO="alpine-3.5" OCAML_VERSION="4.03.0"
-  - PACKAGE="cohttp" DISTRO="debian-unstable" OCAML_VERSION="4.02.3"
-  - PACKAGE="cohttp-async" DISTRO="debian-unstable" OCAML_VERSION="4.02.3"
-  - PACKAGE="cohttp-lwt-unix" DISTRO="debian-unstable" OCAML_VERSION="4.02.3"
-  - PACKAGE="cohttp-lwt-jsoo" DISTRO="debian-unstable" OCAML_VERSION="4.02.3"
-  - PACKAGE="cohttp-lwt" DISTRO="debian-unstable" OCAML_VERSION="4.02.3"
+  - PACKAGE="cohttp" DISTRO="debian-unstable" OCAML_VERSION="4.03.0"
+  - PACKAGE="cohttp-async" DISTRO="debian-unstable" OCAML_VERSION="4.03.0"
+  - PACKAGE="cohttp-lwt-unix" DISTRO="debian-unstable" OCAML_VERSION="4.03.0"
+  - PACKAGE="cohttp-lwt-jsoo" DISTRO="debian-unstable" OCAML_VERSION="4.03.0"
+  - PACKAGE="cohttp-lwt" DISTRO="debian-unstable" OCAML_VERSION="4.03.0"
 notifications:
   webhooks:
     urls:
