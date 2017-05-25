@@ -1,4 +1,0 @@
-PKG bytes cohttp.lwt-core mirage-channel-lwt mirage-flow-lwt conduit.mirage
-S src
-S test
-B _build/**
