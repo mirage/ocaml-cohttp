@@ -1,0 +1,26 @@
+opam-version: "1.2"
+maintainer:   "anil@recoil.org"
+authors:      ["Anil Madhavapeddy" "Thomas Gazagnaire"]
+homepage:     "https://github.com/mirage/mirage-http"
+bug-reports:  "https://github.com/mirage/mirage-http/issues/"
+dev-repo:     "https://github.com/mirage/mirage-http.git"
+doc:          "https://mirage.github.io/mirage-http/"
+
+build: ["ocaml" "pkg/pkg.ml" "build" "--pinned" "%{pinned}%"]
+
+depends: [
+  "ocamlfind"  {build}
+  "ocamlbuild" {build}
+  "topkg"      {build}
+  "result"
+  "mirage-flow-lwt" {>= "1.2.0"}
+  "mirage-channel-lwt" {>= "3.0.0"}
+  "conduit" {>= "0.15.0"}
+  "mirage-conduit" {>= "2.2.0"}
+  "lwt" {>= "2.4.3"}
+  "cohttp" {>= "0.18.0"}
+  "astring"
+  "magic-mime"
+]
+available: [ocaml-version >= "4.03.0"]
+tags: "org:mirage"
