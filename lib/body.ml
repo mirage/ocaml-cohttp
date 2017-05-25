@@ -52,10 +52,12 @@ let transfer_encoding = function
 let length = function
   | `Empty -> 0L
   | `String s -> Int64.of_int (String.length s)
-  | `Strings sl -> sl |> List.fold_left (fun a b -> b |> String.length |> Int64.of_int |> Int64.add a) 0L
+  | `Strings sl ->
+    sl
+    |> List.fold_left (fun a b ->
+        b |> String.length |> Int64.of_int |> Int64.add a) 0L
 
-let map f t =
-  match t with
+let map f = function
   | `Empty -> `Empty
   | `String s -> `String (f s)
   | `Strings sl -> `Strings (List.map f sl)
