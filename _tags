@@ -1,8 +1,0 @@
-true : annot, bin_annot, safe_string, package(bytes)
-true: warn_error(+1..49+60), warn(A-4-41-44)
-
-<src> : include
-<test> : include
-
-<src/**>: package(lwt cohttp.lwt-core result)
-<src/**>: package(conduit.mirage mirage-flow-lwt mirage-channel-lwt astring magic-mime)
