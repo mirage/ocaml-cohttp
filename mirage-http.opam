@@ -9,9 +9,7 @@ doc:          "https://mirage.github.io/mirage-http/"
 build: ["ocaml" "pkg/pkg.ml" "build" "--pinned" "%{pinned}%"]
 
 depends: [
-  "ocamlfind"  {build}
-  "ocamlbuild" {build}
-  "topkg"      {build}
+  "jbuilder"  {build}
   "result"
   "mirage-flow-lwt" {>= "1.2.0"}
   "mirage-channel-lwt" {>= "3.0.0"}
