@@ -1,5 +1,5 @@
-open Core.Std
-open Async.Std
+open Core
+open Async
 module B = Cohttp.Body
 
 type t = [
@@ -71,7 +71,7 @@ let write_body write_body (body : t) writer =
 
 let pipe_of_body read_chunk ic =
   let open Cohttp.Transfer in
-  Pipe.init (fun writer ->
+  Pipe.create_reader ~close_on_exception:false (fun writer ->
       Deferred.repeat_until_finished () (fun () ->
           read_chunk ic >>= function
           | Chunk buf ->

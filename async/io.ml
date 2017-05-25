@@ -14,8 +14,8 @@
  *
   }}}*)
 
-open Core.Std
-open Async.Std
+open Core
+open Async
 
 let log_src_name = "cohttp.async.io"
 let src = Logs.Src.create log_src_name ~doc:"Cohttp Async IO module"

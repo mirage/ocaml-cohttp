@@ -13,7 +13,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
   }}}*)
 
-open Async.Std
+open Async
 
 include Cohttp.S.IO
   with type 'a t = 'a Deferred.t
