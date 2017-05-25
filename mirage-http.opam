@@ -1,0 +1,28 @@
+opam-version: "1.2"
+maintainer: "anil@recoil.org"
+authors: [
+  "Anil Madhavapeddy"
+  "Thomas Gazagnaire"
+]
+homepage: "https://github.com/mirage/ocaml-cohttp"
+bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
+license: "ISC"
+tags: ["org:mirage" "org:xapi-project"]
+dev-repo: "git://github.com/mirage/ocaml-cohttp.git"
+build: [["jbuilder" "build" "-p" name "-j" jobs]]
+build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
+
+depends: [
+  "jbuilder"  {build}
+  "result"
+  "mirage-flow-lwt" {>= "1.2.0"}
+  "mirage-channel-lwt" {>= "3.0.0"}
+  "conduit" {>= "0.15.0"}
+  "mirage-conduit" {>= "2.2.0"}
+  "lwt" {>= "2.4.3"}
+  "cohttp" {>= "0.18.0"}
+  "astring"
+  "magic-mime"
+]
+available: [ocaml-version >= "4.03.0"]
+tags: "org:mirage"

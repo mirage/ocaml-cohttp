@@ -1,0 +1,15 @@
+(jbuild_version 1)
+
+(library
+ ((name cohttp_mirage)
+  (public_name mirage-http)
+  (synopsis "Mirage backend for cohttp")
+  (wrapped false)
+  (libraries
+   (cohttp-lwt
+    mirage-channel-lwt
+    conduit.mirage
+    sexplib
+    mirage-flow-lwt
+    magic-mime
+    astring))))
