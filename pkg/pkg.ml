@@ -4,4 +4,8 @@
 open Topkg
 
 let () =
-  Topkg_jbuilder.describe ~name:"cohttp" ()
+  Topkg_jbuilder.describe
+    ~name:"cohttp"
+    ~change_logs:[ Pkg.std_file "CHANGES.md"
+                 ; Pkg.std_file "mirage-http-CHANGES.md" ]
+    ()
