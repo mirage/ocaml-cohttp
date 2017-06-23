@@ -3,5 +3,5 @@
 (executables
  ((names (cohttp_curl_lwt cohttp_proxy_lwt cohttp_server_lwt))
   (libraries (cohttp-lwt-unix cohttp_server cmdliner))
-  (package cohttp-lwt-unix-bin)
+  (package cohttp-lwt-unix)
   (public_names (cohttp_curl_lwt cohttp_proxy_lwt cohttp_server_lwt))))
