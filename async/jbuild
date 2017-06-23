@@ -8,8 +8,9 @@
    (logs.fmt
     fmt
     async
+    ipaddr.unix
     uri
     uri.services
-    conduit.async
+    conduit-async
     magic-mime
     cohttp))))
