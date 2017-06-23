@@ -15,7 +15,7 @@ build: [
 ]
 build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
 depends: [
-  "jbuilder"  {build}
+  "jbuilder" {build & >= "1.0+beta10"}
   "result"
   "mirage-flow-lwt" {>= "1.2.0"}
   "mirage-channel-lwt" {>= "3.0.0"}
