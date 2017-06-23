@@ -14,8 +14,8 @@
  *
   }}}*)
 
-open Core.Std
-open Async.Std
+open Core
+open Async
 open Cohttp_async
 
 let show_headers h =

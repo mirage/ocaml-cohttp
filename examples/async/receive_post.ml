@@ -1,6 +1,6 @@
 (* This file is in the public domain *)
-open Core.Std
-open Async.Std
+open Core
+open Async
 open Cohttp_async
 
 (* compile with: $ corebuild receive_post.native -pkg cohttp.async *)

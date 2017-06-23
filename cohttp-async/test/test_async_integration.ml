@@ -1,5 +1,5 @@
-open Core.Std
-open Async.Std
+open Core
+open Async
 open OUnit
 open Cohttp
 open Cohttp_async

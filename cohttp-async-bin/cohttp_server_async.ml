@@ -15,8 +15,8 @@
  *
   }}}*)
 
-open Core.Std
-open Async.Std
+open Core
+open Async
 
 open Cohttp_async
 open Cohttp_server
