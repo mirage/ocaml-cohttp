@@ -17,15 +17,18 @@
 
 (alias
  ((name   runtest)
+  (package cohttp)
   (deps   (test_accept.exe))
   (action (run ${<}))))
 
 (alias
  ((name   runtest)
+  (package cohttp)
   (deps   (test_header.exe))
   (action (run ${<}))))
 
 (alias
  ((name   runtest)
+  (package cohttp)
   (deps   (test_request.exe))
   (action (run ${<}))))

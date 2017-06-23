@@ -12,10 +12,12 @@
 
 (alias
  ((name   runtest)
+  (package cohttp-lwt-unix)
   (deps   (test_parser.exe))
   (action (run ${<}))))
 
 (alias
  ((name   runtest)
+  (package cohttp-lwt-unix)
   (deps   (test_sanity.exe))
   (action (run ${<}))))

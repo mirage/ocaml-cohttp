@@ -7,5 +7,6 @@
 
 (alias
  ((name   runtest)
+  (package cohttp-async)
   (deps   (test_async_integration.exe))
   (action (run ${<}))))
