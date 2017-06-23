@@ -20,7 +20,7 @@ build: [
 ]
 build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
 depends: [
-  "jbuilder" {build}
+  "jbuilder" {build & >= "1.0+beta10"}
   "conduit" {>= "0.14.0"}
   "logs"
   "fmt"
