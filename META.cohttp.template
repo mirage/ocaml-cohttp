@@ -11,7 +11,7 @@ package "lwt-core" (
 )
 
 package "lwt" (
-  description = "Deprecated. Use cohttp-lwt-uinx directly"
+  description = "Deprecated. Use cohttp-lwt-unix directly"
   requires = "cohttp-lwt-unix"
 )
 
