@@ -23,11 +23,8 @@ depends: [
   "jbuilder" {build}
   "cohttp"
   "conduit" {>= "0.14.0"}
-  "async"
+  "async" {>= "v0.9"}
   "magic-mime"
   "fmt"
-]
-conflicts: [
-  "async" {< "113.24.00"}
 ]
 available: [ocaml-version >= "4.03.0"]

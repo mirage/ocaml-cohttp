@@ -1,5 +1,5 @@
-open Core.Std
-open Async.Std
+open Core
+open Async
 
 type ('address, 'listening_on) t constraint 'address = [< Socket.Address.t ]
   [@@deriving sexp_of]

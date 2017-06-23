@@ -1,5 +1,5 @@
-open Core.Std
-open Async.Std
+open Core
+open Async
 
 (** Send an HTTP request with an arbitrary body
     The request is sent as-is. *)
