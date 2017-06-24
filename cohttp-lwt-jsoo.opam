@@ -21,7 +21,8 @@ build: [
 build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
 depends: [
   "jbuilder" {build & >= "1.0+beta10"}
-  "cohttp-lwt" {> "0.22.0"}
+  "cohttp"
+  "cohttp-lwt"
   "lwt"
   "js_of_ocaml"
   "js_of_ocaml-ppx"

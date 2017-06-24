@@ -22,8 +22,8 @@ depends: [
   "conduit" {>= "0.15.0"}
   "mirage-conduit" {>= "2.2.0"}
   "lwt" {>= "2.4.3"}
-  "cohttp" {>= "0.22.0"}
-  "cohttp-lwt" {>= "0.22.0"}
+  "cohttp"
+  "cohttp-lwt"
   "astring"
   "magic-mime"
 ]

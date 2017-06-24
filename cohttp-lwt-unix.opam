@@ -25,7 +25,7 @@ depends: [
   "cmdliner"
   "logs"
   "fmt"
-  "cohttp-lwt" {> "0.22.0"}
+  "cohttp-lwt"
   "lwt"
   "base-unix"
 ]
