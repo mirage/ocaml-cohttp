@@ -1,7 +1,7 @@
 (* This file is in the public domain *)
 
-open Core.Std
-open Async.Std
+open Core
+open Async
 open Cohttp_async
 
 (* given filename: hello_world.ml compile with:

@@ -22,14 +22,5 @@ build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
 depends: [
   "jbuilder" {build & >= "1.0+beta10"}
   "cohttp"
-  "cohttp-lwt"
-  "lwt"
-  "js_of_ocaml"
-  "js_of_ocaml-ppx"
-  "js_of_ocaml-lwt"
-]
-conflicts: [
-  "lwt" {< "2.5.0"}
-  "js_of_ocaml" {< "2.8"}
 ]
 available: [ocaml-version >= "4.03.0"]

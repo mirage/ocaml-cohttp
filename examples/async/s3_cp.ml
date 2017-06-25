@@ -43,8 +43,8 @@
    example of abstraction, interface design or error handling.
 *)
 
-open Core.Std
-open Async.Std
+open Core
+open Async
 open Cohttp
 open Cohttp_async
 

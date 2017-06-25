@@ -1,0 +1,7 @@
+(jbuild_version 1)
+
+(executables
+ ((names (cohttp_curl_async cohttp_server_async))
+  (package cohttp-async)
+  (libraries (cohttp-async cohttp_server fmt.tty))
+  (public_names (cohttp_curl_async cohttp_server_async))))

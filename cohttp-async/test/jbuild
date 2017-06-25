@@ -1,0 +1,12 @@
+(jbuild_version 1)
+
+(executables
+ ((libraries (cohttp_async_test cohttp-async))
+  (modules (test_async_integration))
+  (names (test_async_integration))))
+
+(alias
+ ((name   runtest)
+  (package cohttp-async)
+  (deps   (test_async_integration.exe))
+  (action (run ${<}))))
