@@ -24,7 +24,7 @@ depends: [
   "cohttp"
   "cohttp-lwt"
   "lwt" {>="3.0.0"}
-  "js_of_ocaml" {>="3.0.0"}
+  "js_of_ocaml" {>="3.0"}
   "js_of_ocaml-ppx" {>="3.0"}
   "js_of_ocaml-lwt"
 ]
