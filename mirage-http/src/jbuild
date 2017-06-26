@@ -8,7 +8,7 @@
   (libraries
    (cohttp-lwt
     mirage-channel-lwt
-    conduit.mirage
+    mirage-conduit
     sexplib
     mirage-flow-lwt
     magic-mime
