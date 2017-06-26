@@ -22,8 +22,7 @@ build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
 depends: [
   "jbuilder" {build & >= "1.0+beta10"}
   "cohttp"
-  "conduit" {>= "0.99"}
-  "async" {>= "v0.9"}
+  "conduit-async"
   "magic-mime"
   "fmt"
 ]
