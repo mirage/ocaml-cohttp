@@ -6,14 +6,15 @@ install: wget https://raw.githubusercontent.com/ocaml/ocaml-travisci-skeleton/ma
 script: bash -ex ./.travis-docker.sh
 env:
   global:
+  - EXTRA_REMOTES="https://github.com/mirage/mirage-dev.git"
   - PINS="cohttp-top:. cohttp-async:. cohttp-lwt-unix:. cohttp-lwt-jsoo:. cohttp-lwt:. mirage-http:. cohttp:."
   matrix:
-  - PACKAGE="cohttp" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.1"
-  - PACKAGE="cohttp-async" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.1"
-  - PACKAGE="cohttp-lwt-unix" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.1"
-  - PACKAGE="cohttp-lwt-jsoo" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.1"
-  - PACKAGE="cohttp-lwt" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.1"
-  - PACKAGE="mirage-http" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.1"
+  - PACKAGE="cohttp" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.2"
+  - PACKAGE="cohttp-async" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.2"
+  - PACKAGE="cohttp-lwt-unix" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.2"
+  - PACKAGE="cohttp-lwt-jsoo" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.2"
+  - PACKAGE="cohttp-lwt" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.2"
+  - PACKAGE="mirage-http" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.2"
   - PACKAGE="cohttp" DISTRO="alpine-3.5" OCAML_VERSION="4.03.0"
   - PACKAGE="cohttp-async" DISTRO="alpine-3.5" OCAML_VERSION="4.03.0"
   - PACKAGE="cohttp-lwt-unix" DISTRO="alpine-3.5" OCAML_VERSION="4.03.0"
