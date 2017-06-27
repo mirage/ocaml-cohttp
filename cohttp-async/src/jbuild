@@ -10,6 +10,7 @@
     async
     uri
     uri.services
-    conduit.async
+    ipaddr.unix
+    conduit-async
     magic-mime
     cohttp))))
