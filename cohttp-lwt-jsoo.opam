@@ -23,9 +23,9 @@ depends: [
   "jbuilder" {build & >= "1.0+beta10"}
   "cohttp"
   "cohttp-lwt"
-  "lwt"
-  "js_of_ocaml"
-  "js_of_ocaml-ppx"
+  "lwt" {>="3.0.0"}
+  "js_of_ocaml" {>="3.0"}
+  "js_of_ocaml-ppx" {>="3.0"}
   "js_of_ocaml-lwt"
 ]
 conflicts: [

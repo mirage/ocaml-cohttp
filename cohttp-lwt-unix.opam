@@ -21,12 +21,12 @@ build: [
 build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
 depends: [
   "jbuilder" {build & >= "1.0+beta10"}
-  "conduit" {>= "0.14.0"}
+  "conduit-lwt-unix"
   "cmdliner"
   "logs"
   "fmt"
   "cohttp-lwt"
-  "lwt"
+  "lwt" {>="3.0.0"}
   "base-unix"
 ]
 conflicts: [
