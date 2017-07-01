@@ -1,3 +1,5 @@
+## ocaml-cohttp -- an OCaml library for HTTP clients and servers
+
 [![Join the chat at https://gitter.im/mirage/ocaml-cohttp](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/mirage/ocaml-cohttp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Cohttp is an OCaml library for creating HTTP daemons. It has a portable
@@ -44,11 +46,11 @@ $ opam pin add cohttp --dev-repo
 Cohttp ships with 6 findlib libraries:
 
 * cohttp - Base `Cohttp` module. No platform specific functionality.
-* cohttp.async - Async backend `Cohttp_async`
-* cohttp.js - Jsoo (XHR) client
-* cohttp.lwt - Unix based lwt backend
-* cohttp.lwt-core - Lwt backend without unix specifics.
-* cohttp.top - Print cohttp types in the toplevel (`#require "cohttp.top"`)
+* cohttp-async - Async backend `Cohttp_async`
+* cohttp-js - Jsoo (XHR) client
+* cohttp-lwt - Lwt backend without unix specifics.
+* cohttp-lwt-unix - Unix based lwt backend
+* cohttp-top - Print cohttp types in the toplevel (`#require "cohttp.top"`)
 
 ## Client Tutorial
 
