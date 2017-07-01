@@ -1,12 +1,32 @@
-all:
-	jbuilder build @install -j 3
 
-tests:
+.PHONY: build clean test
+
+build:
+	jbuilder build @install
+
+test:
 	jbuilder runtest
 
-check: tests
+install:
+	jbuilder install
+
+uninstall:
+	jbuilder uninstall
 
 clean:
-	rm -rf _build
+	rm -rf _build *.install
 
-.PHONY: all tests doc clean check
+REPO=../../mirage/mirage-dev
+PACKAGES=$(REPO)/packages
+# until we have https://github.com/ocaml/opam-publish/issues/38
+pkg-%:
+	topkg opam pkg -n $*
+	mkdir -p $(PACKAGES)/$*
+	cp -r _build/$*.* $(PACKAGES)/$*/
+	cd $(PACKAGES) && git add $*
+
+PKGS=$(basename $(wildcard *.opam))
+opam-pkg:
+	$(MAKE) $(PKGS:%=pkg-%)
+
+
