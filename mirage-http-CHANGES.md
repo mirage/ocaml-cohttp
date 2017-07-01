@@ -1,3 +1,7 @@
+### 3.2.0
+
+* Port to jbuilder
+
 ### 3.1.0
 
 * Add `Cohttp_mirage_static` module for serving static files from a
