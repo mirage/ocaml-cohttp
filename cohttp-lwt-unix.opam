@@ -28,6 +28,7 @@ depends: [
   "cohttp-lwt"
   "lwt" {>="3.0.0"}
   "base-unix"
+  "ounit" {test}
 ]
 conflicts: [
   "lwt" {< "2.5.0"}
