@@ -25,5 +25,6 @@ depends: [
   "conduit-async"
   "magic-mime"
   "fmt"
+  "ounit" {test}
 ]
 available: [ocaml-version >= "4.03.0"]
