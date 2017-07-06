@@ -4,7 +4,7 @@ open Cohttp
 open Cohttp_lwt_unix
 open Cohttp_lwt_unix_test
 
-module Body = Cohttp_lwt_body
+module Body = Cohttp_lwt.Body
 
 let message = "Hello sanity!"
 
@@ -42,7 +42,7 @@ let server =
   |> (fun tests ->
     tests @ [
       (fun _ body -> (* Returns 500 on bad file *)
-         Cohttp_lwt_body.to_string body >>= fun fname ->
+         Body.to_string body >>= fun fname ->
          Server.respond_file ~fname ())] @
     (Array.init (leak_repeat * 2) (fun _ _ _ ->
          (* no leaks *)
@@ -141,7 +141,7 @@ let ts =
           assert_equal (Response.status resp_head) `OK;
           Client.get uri >>= fun (resp_get, body) ->
           assert_equal (Response.status resp_get) `OK;
-          Cohttp_lwt_body.drain_body body) stream ()
+          Body.drain_body body) stream ()
     in
     [ "sanity test", t
     ; "empty chunk test", empty_chunk

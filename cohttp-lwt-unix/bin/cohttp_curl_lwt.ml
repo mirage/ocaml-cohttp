@@ -37,11 +37,11 @@ let client uri ofile meth' =
     prerr_endline (Code.string_of_status status);
     exit 1
   | true ->
-    Cohttp_lwt_body.length body >>= fun (len, body) ->
+    Cohttp_lwt.Body.length body >>= fun (len, body) ->
     debug (fun d -> d "Client body length: %Ld" len) >>= fun () ->
-    Cohttp_lwt_body.to_string body >>= fun s ->
+    Cohttp_lwt.Body.to_string body >>= fun s ->
     let output_body c =
-      Lwt_stream.iter_s (Lwt_io.fprint c) (Cohttp_lwt_body.to_stream body) in
+      Lwt_stream.iter_s (Lwt_io.fprint c) (Cohttp_lwt.Body.to_stream body) in
     match ofile with
     | None -> output_body Lwt_io.stdout
     | Some fname -> Lwt_io.with_file ~mode:Lwt_io.output fname output_body

@@ -230,9 +230,9 @@ let write_req expected req =
   (* Use the low-level write_header/footer API *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
-  let body = Cohttp_lwt_body.of_string "foobar" in
+  let body = Cohttp_lwt.Body.of_string "foobar" in
   Req_io.write (fun writer ->
-    Cohttp_lwt_body.write_body (Req_io.write_body writer) body
+    Cohttp_lwt.Body.write_body (Req_io.write_body writer) body
   ) req oc >>= fun () ->
   assert_equal ~pp_diff expected (get_substring oc buf);
   (* Use the high-level write API. This also tests that req is immutable
@@ -266,9 +266,9 @@ let make_simple_res () =
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in
   let res = Response.make ~headers:(Header.of_list [("foo","bar")]) () in
-  let body = Cohttp_lwt_body.of_string "foobar" in
+  let body = Cohttp_lwt.Body.of_string "foobar" in
   Rep_io.write (fun writer ->
-    Cohttp_lwt_body.write_body (Rep_io.write_body writer) body
+    Cohttp_lwt.Body.write_body (Rep_io.write_body writer) body
   ) res oc >>= fun () ->
   assert_equal expected (get_substring oc buf);
   (* Use the high-level write API. This also tests that req is immutable

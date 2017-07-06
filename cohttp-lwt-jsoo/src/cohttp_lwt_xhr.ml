@@ -16,7 +16,7 @@
   }}}*)
 
 module C = Cohttp
-module CLB = Cohttp_lwt_body
+module CLB = Cohttp_lwt.Body
 
 let (>>=) = Lwt.(>>=)
 let (>|=) = Lwt.(>|=)
@@ -112,9 +112,9 @@ module Make_api(X : sig
 
     val call :
       ?headers:Cohttp.Header.t ->
-      ?body:Cohttp_lwt_body.t ->
+      ?body:Cohttp_lwt.Body.t ->
       Cohttp.Code.meth ->
-      Uri.t -> (Response.t * Cohttp_lwt_body.t) Lwt.t
+      Uri.t -> (Response.t * Cohttp_lwt.Body.t) Lwt.t
 
   end) = struct
 
@@ -141,7 +141,7 @@ module Make_api(X : sig
 
   let post_form ?ctx ?headers ~params uri =
     let headers = C.Header.add_opt headers "content-type" "application/x-www-form-urlencoded" in
-    let body = Cohttp_lwt_body.of_string (Uri.encoded_of_query params) in
+    let body = Cohttp_lwt.Body.of_string (Uri.encoded_of_query params) in
     post ?ctx ~chunked:false ~headers ~body uri
 
   (* No implementation (can it be done?).  What should the failure exception be? *)

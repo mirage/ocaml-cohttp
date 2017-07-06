@@ -63,7 +63,7 @@ module Server : sig
 
   val respond_file :
     ?headers:Cohttp.Header.t ->
-    fname:string -> unit -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+    fname:string -> unit -> (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
 
   val create :
     ?timeout:int ->
