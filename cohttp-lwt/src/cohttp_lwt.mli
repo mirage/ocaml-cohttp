@@ -27,11 +27,9 @@ module type IO = S.IO with type 'a t = 'a Lwt.t
 module S : (module type of Cohttp_lwt_s)
 module Body : (module type of Cohttp_lwt_body)
 
-(** Aliases for module types inside S. These are deprecated and are only
-    here for backwards comaptibility *)
-module type Client = S.Client
-module type Server = S.Server
-module type Net = S.Net
+module type Client = S.Client [@@deprecated "Use Cohttp_lwt.S.Client"]
+module type Server = S.Server [@@deprecated "Use Cohttp_lwt.S.Server"]
+module type Net = S.Net [@@deprecated "Use Cohttp_lwt.S.Net"]
 
 open Cohttp_lwt_s
 
