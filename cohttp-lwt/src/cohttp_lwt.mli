@@ -25,6 +25,7 @@ module type IO = S.IO with type 'a t = 'a Lwt.t
 (** The IO module is specialized for the [Lwt] monad. *)
 
 module S : (module type of Cohttp_lwt_s)
+module Body : (module type of Cohttp_lwt_body)
 
 (** Aliases for module types inside S. These are deprecated and are only
     here for backwards comaptibility *)
