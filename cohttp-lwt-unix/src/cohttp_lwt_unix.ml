@@ -72,7 +72,7 @@ module Server = struct
       ) in
       Lwt_stream.on_terminate stream (fun () ->
         ignore_result (Lwt_io.close ic));
-      let body = Cohttp_lwt_body.of_stream stream in
+      let body = Cohttp_lwt.Body.of_stream stream in
       let mime_type = Magic_mime.lookup fname in
       let headers = Cohttp.Header.add_opt_unless_exists
                       headers "content-type" mime_type in

@@ -74,7 +74,7 @@ let body =
   let code = resp |> Response.status |> Code.code_of_status in
   Printf.printf "Response code: %d\n" code;
   Printf.printf "Headers: %s\n" (resp |> Response.headers |> Header.to_string);
-  body |> Cohttp_lwt_body.to_string >|= fun body ->
+  body |> Cohttp_lwt.Body.to_string >|= fun body ->
   Printf.printf "Body of length: %d\n" (String.length body);
   body
 
@@ -100,7 +100,7 @@ There's a few things to notice:
   contains the response's status code, headers, http version, etc. The second
   element contains the body.
 * The body is then converted to a string and is returned (after the length is
-  printed). Note that `Cohttp_lwt_body.to_string` hence it's up to us to keep
+  printed). Note that `Cohttp_lwt.Body.to_string` hence it's up to us to keep
   a reference to the result.
 * We must trigger lwt's event loop for the request to run. `Lwt_main.run` will
   run the event loop and return with final value of `body` which we then print.
@@ -116,14 +116,14 @@ Implementing a server in cohttp is mostly equivalent to implementing a function
 of type:
 
 ```ocaml
-conn -> Cohttp.Request.t -> Cohttp_lwt_body.t -> (Cohttp.Response.t * Cohttp_lwt_body.t) Lwt.t
+conn -> Cohttp.Request.t -> Cohttp_lwt.Body.t -> (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
 ```
 
 The parameters are self explanatory but we'll summarize them quickly here:
 
 * `conn` - contains connection information
 * `Cohttp.Request.t` - Request information such as method, uri, headers, etc.
-* `Cohttp_lwt_body.t` - Contains the request body. You must manually decode the
+* `Cohttp_lwt.Body.t` - Contains the request body. You must manually decode the
   request body into json, form encoded pairs, etc. For cohttp, the body is
   simply binary data.
 
@@ -141,7 +141,7 @@ let server =
     let uri = req |> Request.uri |> Uri.to_string in
     let meth = req |> Request.meth |> Code.string_of_method in
     let headers = req |> Request.headers |> Header.to_string in
-    body |> Cohttp_lwt_body.to_string >|= (fun body ->
+    body |> Cohttp_lwt.Body.to_string >|= (fun body ->
       (Printf.sprintf "Uri: %s\nMethod: %s\nHeaders\nHeaders: %s\nBody: %s"
          uri meth headers body))
     >>= (fun body -> Server.respond_string ~status:`OK ~body ())
