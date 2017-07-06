@@ -47,10 +47,10 @@ Cohttp ships with 6 findlib libraries:
 
 * cohttp - Base `Cohttp` module. No platform specific functionality.
 * cohttp-async - Async backend `Cohttp_async`
-* cohttp-js - Jsoo (XHR) client
+* cohttp-lwt-jsoo - Jsoo (XHR) client
 * cohttp-lwt - Lwt backend without unix specifics.
 * cohttp-lwt-unix - Unix based lwt backend
-* cohttp-top - Print cohttp types in the toplevel (`#require "cohttp.top"`)
+* cohttp-top - Print cohttp types in the toplevel (`#require "cohttp-top"`)
 
 ## Client Tutorial
 
@@ -86,7 +86,7 @@ let () =
 Build with:
 
 ```
-ocamlbuild -pkg cohttp.lwt client_example.native
+ocamlbuild -pkg cohttp-lwt-unix client_example.native
 ```
 
 There's a few things to notice:
@@ -154,7 +154,7 @@ let () = ignore (Lwt_main.run server)
 Build with:
 
 ```
-ocamlbuild -pkg cohttp.lwt server_example.native
+ocamlbuild -pkg cohttp-lwt-unix server_example.native
 ```
 
 The following modules are useful references:
