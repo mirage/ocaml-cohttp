@@ -24,6 +24,8 @@ module Request : Cohttp.S.Request with type t = Cohttp.Request.t
 (** The [Response] module holds the information about a HTTP response. *)
 module Response : Cohttp.S.Response with type t = Cohttp.Response.t
 
+module Net : module type of struct include Cohttp_lwt_unix_net end
+
 (** {2 Module types for Client and Server} *)
 
 (** The [Client] module type defines the additional UNIX-specific functions

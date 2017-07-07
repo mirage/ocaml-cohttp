@@ -26,6 +26,8 @@ module Response = struct
            : module type of Make(Cohttp_lwt_unix_io) with type t := t)
 end
 
+module Net = Cohttp_lwt_unix_net
+
 module Client = struct
   include
     Cohttp_lwt.Make_client

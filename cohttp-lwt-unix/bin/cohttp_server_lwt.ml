@@ -112,7 +112,7 @@ let start_server docroot port host index tls () =
   in
   Conduit_lwt_unix.init ~src:host ()
   >>= fun ctx ->
-  let ctx = Cohttp_lwt_unix_net.init ~ctx () in
+  let ctx = Cohttp_lwt_unix.Net.init ~ctx () in
   Server.create ~ctx ~mode config
 
 let lwt_start_server docroot port host index verbose tls =
