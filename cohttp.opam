@@ -33,6 +33,7 @@ depends: [
   "magic-mime"
   "fmt"
   "logs"
+  "jsonm" {build}
   "ounit" {test}
   "alcotest" {test}
 ]

@@ -29,14 +29,14 @@ let default_reporter () =
       let m = Buffer.contents b in
       Buffer.reset b;
       m ) in
-  let report src level ~over k msgf =
+  let report src _level ~over k msgf =
     let k _ =
       if Logs.Src.name src = log_src_name then (
         Writer.write (Lazy.force Writer.stderr) (fmtr_flush ())
       );
       over ();
       k () in
-    msgf @@ fun ?header ?tags fmt ->
+    msgf @@ fun ?header:_ ?tags:_ fmt ->
     Format.kfprintf k fmtr ("@[" ^^ fmt ^^ "@]@.")
   in
   { Logs.report }
@@ -83,7 +83,7 @@ let read_line =
 let read ic len =
   let buf = String.create len in
   Reader.read ic ~len buf >>| function
-  | `Ok len' -> String.sub buf 0 len'
+  | `Ok len' -> String.sub buf ~pos:0 ~len:len'
   | `Eof -> ""
 
 let write =

@@ -1,6 +1,6 @@
-open Core
-open Async
-open Cohttp
+open! Core
+open! Async
+open! Cohttp
 
 type t = [
   | Cohttp.Body.t

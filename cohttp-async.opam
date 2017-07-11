@@ -26,5 +26,7 @@ depends: [
   "magic-mime"
   "fmt"
   "ounit" {test}
+  "nocrypto" {test}
+  "cstruct" {test}
 ]
 available: [ocaml-version >= "4.03.0"]

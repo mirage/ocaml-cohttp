@@ -150,7 +150,7 @@ module Make(IO : S.IO) = struct
   let read ic =
     parse_request_fst_line ic >>= function
     | `Eof -> return `Eof
-    | `Invalid reason as r -> return r
+    | `Invalid _reason as r -> return r
     | `Ok (meth, resource, version) ->
       if is_valid_uri resource meth then
         Header_IO.parse ic >>= fun headers ->

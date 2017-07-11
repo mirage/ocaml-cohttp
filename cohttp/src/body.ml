@@ -47,7 +47,7 @@ let of_string_list s = `Strings s
 let transfer_encoding = function
   | `Empty -> Transfer.Fixed 0L
   | `String s -> Transfer.Fixed (Int64.of_int (String.length s))
-  | `Strings s -> Transfer.Chunked
+  | `Strings _ -> Transfer.Chunked
 
 let length = function
   | `Empty -> 0L

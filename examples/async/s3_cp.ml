@@ -115,7 +115,7 @@ module Compat = struct
   let format_time t =
     (* Core.Std.Time doesn't have a format function that takes a timezone *)
     let d, s = Time.to_date_ofday ~zone:Time.Zone.utc t in
-    let open Core.Span.Parts in
+    let open Time.Span.Parts in
     let {hr; min; sec; _} = Time.Ofday.to_parts s in
     Printf.sprintf "%sT%.2d%.2d%.2dZ"
       (Date.to_string_iso8601_basic d) hr min sec
@@ -206,9 +206,10 @@ module Auth = struct
     let open Cohttp.Request in
     let http_method = Code.string_of_method request.meth in
     (* Nb the path will be url encoded as per spec *)
-    let canoncical_uri = Compat.encode_string(Uri.path request.uri) in
+    let uri = Cohttp.Request.uri request in
+    let canoncical_uri = Compat.encode_string (Uri.path uri) in
     (* Sort query string in alphabetical order by key *)
-    let canonical_query = Compat.encode_query_string request.uri in
+    let canonical_query = Compat.encode_query_string uri in
     let sorted_headers = Header.to_list request.headers
                          |> List.sort ~cmp:ksrt in
     let canonical_headers = sorted_headers
@@ -357,8 +358,8 @@ let run region_str aws_access_key aws_secret_key src dst () =
         Out_channel.with_file
           ~f:(fun oc -> Out_channel.output_string oc s)
           dst;
-        Printf.printf "Wrote s3://%s to %s\n" (src.bucket ^ src.objekt) dst
-      | _ -> Printf.printf "Error: %s\n" (Sexp.to_string (Response.sexp_of_t resp));
+        Core.Printf.printf "Wrote s3://%s to %s\n" (src.bucket ^ src.objekt) dst
+      | _ -> Core.Printf.printf "Error: %s\n" (Sexp.to_string (Response.sexp_of_t resp));
         return ()
     end
   | LocaltoS3 (src, dst) ->
@@ -367,9 +368,10 @@ let run region_str aws_access_key aws_secret_key src dst () =
       make_request ~body conf ~meth:`PUT ~bucket:dst.bucket ~objekt:dst.objekt
       >>= fun (resp, body) ->
       match Cohttp.Response.status resp with
-      | #Code.success_status -> Printf.printf "Wrote %s to s3://%s\n" src (dst.bucket ^ dst.objekt); return ()
+      | #Code.success_status ->
+        Core.Printf.printf "Wrote %s to s3://%s\n" src (dst.bucket ^ dst.objekt); return ()
       | _ -> Body.to_string body >>| fun s ->
-        Printf.printf "Error: %s\n%s\n" (Sexp.to_string (Response.sexp_of_t resp)) s
+        Core.Printf.printf "Error: %s\n%s\n" (Sexp.to_string (Response.sexp_of_t resp)) s
     end
 
 let () =

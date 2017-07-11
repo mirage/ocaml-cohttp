@@ -22,7 +22,7 @@ open Lwt
 open Cohttp
 open Cohttp_lwt_unix
 
-let handler ~verbose (ch,conn) req body =
+let handler ~verbose _ req body =
   let uri = Cohttp.Request.uri req in
   (* Log the request to the console *)
   if verbose then eprintf "--> %s %s %s\n%!"
@@ -56,7 +56,7 @@ let handler ~verbose (ch,conn) req body =
 
 let start_proxy port host verbose cert key () =
   printf "Listening for HTTP request on: %s %d\n%!" host port;
-  let conn_closed (ch,conn) =
+  let conn_closed (ch,_conn) =
     printf "Connection %s closed\n%!"
       (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)) in
   let callback = handler ~verbose in

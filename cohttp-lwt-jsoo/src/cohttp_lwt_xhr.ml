@@ -125,7 +125,8 @@ module Make_api(X : sig
   type ctx = unit
   let sexp_of_ctx _ = Sexplib.Sexp.List []
 
-  let call ?ctx ?headers ?body ?chunked meth uri = X.call ?headers ?body meth uri
+  let call ?ctx:_ ?headers ?body ?chunked:_ meth uri =
+    X.call ?headers ?body meth uri
 
   (* The HEAD should not have a response body *)
   let head ?ctx ?headers uri =
@@ -146,7 +147,8 @@ module Make_api(X : sig
 
   (* No implementation (can it be done?).  What should the failure exception be? *)
   exception Cohttp_lwt_xhr_callv_not_implemented
-  let callv ?ctx uri reqs = Lwt.fail Cohttp_lwt_xhr_callv_not_implemented (* ??? *)
+  let callv ?ctx:_ _uri _reqs =
+    Lwt.fail Cohttp_lwt_xhr_callv_not_implemented (* ??? *)
 
 end
 
@@ -280,8 +282,8 @@ module Make_client_sync(P : Params) = Make_api(struct
        | Some(body) ->
          CLB.to_string body >|= fun body ->
          let bs = binary_string body in
-         (xml##(send (Js.Opt.return (Obj.magic bs))))) >>= fun body ->
-
+         (xml##(send (Js.Opt.return (Obj.magic bs))))) >>= fun _body ->
+  (* TODO: FIXME: looks like an indenting or cut-and-pasto here. Check this - avsm *)
   (* construct body *)
   let body =
      let b =

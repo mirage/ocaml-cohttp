@@ -33,7 +33,7 @@ let compare_kind = function
 let sort lst = List.sort (fun (ka,_sa,a) (kb,_sb,b) ->
   let c = compare_kind (ka,kb) in
   if c <> 0 then c
-  else String.compare (String.lowercase a) (String.lowercase b)
+  else String.compare (String.lowercase_ascii a) (String.lowercase_ascii b)
 ) lst
 
 let li ?title l =

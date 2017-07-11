@@ -23,7 +23,7 @@ module LString : sig
   val compare: t -> t -> int
 end = struct
   type t = string
-  let of_string x = String.lowercase x
+  let of_string x = String.lowercase_ascii x
   let to_string x = x
   let compare a b = String.compare a b
 end
@@ -168,7 +168,7 @@ let media_type_re =
   let re = Re_emacs.re ~case:true "[ \t]*\\([^ \t;]+\\)" in
   Re.(compile (seq ([start; re])))
 
-let get_first_match re s =
+let get_first_match _re s =
   try
     let subs = Re.exec ~pos:0 media_type_re s in
     let (start, stop) = Re.get_ofs subs 1 in
@@ -252,10 +252,9 @@ let connection h =
   | Some v when v = "keep-alive" -> Some `Keep_alive
   | Some v when v = "close" -> Some `Close
   | Some x -> Some (`Unknown x)
-  | x -> None
+  | _ -> None
 
 open Sexplib
-open Sexplib.Std
 open Sexplib.Conv
 
 let sexp_of_t t =

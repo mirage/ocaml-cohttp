@@ -75,7 +75,7 @@ module Set_cookie_hdr = struct
       | `HTTP_1_1 -> serialize_1_1 c
 
   (* TODO: implement *)
-  let extract_1_1 cstr alist = alist
+  let extract_1_1 _cstr alist = alist
 
   let extract_1_0 cstr alist =
     let attrs = Stringext.split_trim_left cstr ~on:",;" ~trim:" \t" in
@@ -86,7 +86,7 @@ module Set_cookie_hdr = struct
     ) attrs in
     try
       let cookie = List.hd attrs in
-      let attrs = List.map (fun (n,v) -> (String.lowercase n, v))
+      let attrs = List.map (fun (n,v) -> (String.lowercase_ascii n, v))
         (List.tl attrs) in
       let path =
         try
@@ -101,7 +101,7 @@ module Set_cookie_hdr = struct
           let v = List.assoc "domain" attrs in
           if v = "" then raise Not_found
           else Some
-            (String.lowercase
+            (String.lowercase_ascii
                (if v.[0] = '.' then Stringext.string_after v 1 else v))
         with Not_found -> None
       in
@@ -115,7 +115,7 @@ module Set_cookie_hdr = struct
         http_only=List.mem_assoc "httponly" attrs;
         secure = List.mem_assoc "secure" attrs;
       })::alist
-    with (Failure "hd") -> alist
+    with Failure _ -> alist
 
   (* TODO: check dupes+order *)
   let extract hdr =
@@ -125,7 +125,7 @@ module Set_cookie_hdr = struct
       | _ -> (fun _ a -> a)
     ) hdr []
 
-  let value { cookie=(_,v) } = v
+  let value { cookie=(_,v); _ } = v
 end
 
 module Cookie_hdr = struct

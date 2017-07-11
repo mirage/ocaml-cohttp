@@ -17,7 +17,6 @@
   }}}*)
 
 open Lwt.Infix
-open Cohttp
 open Cohttp_lwt_unix
 
 open Cohttp_server
@@ -58,7 +57,7 @@ let serve ~info ~docroot ~index uri path =
                Lwt.return (Some (kind_of_unix_kind stat.Unix.LargeFile.st_kind),
                       stat.Unix.LargeFile.st_size,
                       f))
-            (fun exn -> Lwt.return (None, 0L, f)))
+            (fun _exn -> Lwt.return (None, 0L, f)))
         >>= fun listing ->
         let body = html_of_listing uri path (sort listing) info in
         Server.respond_string ~status:`OK ~body ()
@@ -78,7 +77,7 @@ let serve ~info ~docroot ~index uri path =
   | e -> Lwt.fail e
   )
 
-let handler ~info ~docroot ~index (ch,conn) req body =
+let handler ~info ~docroot ~index (ch,_conn) req _body =
   let uri = Cohttp.Request.uri req in
   let path = Uri.path uri in
   (* Log the request to the console *)

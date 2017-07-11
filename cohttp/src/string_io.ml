@@ -78,7 +78,7 @@ module M = struct
     | None -> return (read_rest x)
     | Some(x) -> return x
 
-  let rec write x s = Buffer.add_string x s; return ()
+  let write x s = Buffer.add_string x s; return ()
 
-  let flush x = return ()
+  let flush _x = return ()
 end

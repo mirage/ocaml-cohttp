@@ -1,6 +1,42 @@
 ## v0.99 
 
-* Port to jbuilder. (TODO)
+Port build to jbuilder, and break up OPAM packages into multiple
+independent packages instead of being optional dependencies against
+the main `cohttp` package. This makes it significantly easier to
+depend on precisely the libraries you need, but requires porting
+applications to use the new `ocamlfind` and `opam` scheme.
+
+The new package layout is:
+
+- `cohttp`: the main `Cohttp` module
+- `cohttp-lwt`: the portable Lwt implementation
+- `cohttp-lwt-unix`: the Lwt/Unix implementation
+- `cohttp-lwt-jsoo`: the js-of-ocaml JavaScript implementation
+- `cohttp-async`: the Jane Street Async implementation
+- `mirage-http`: the MirageOS compatible implementation
+- `cohttp-top`: a toplevel printer for the Cohttp types.
+
+In each of these packages, the `opam` and `ocamlfind` package
+names are now _the same_, so you will need to rename the former
+subpackages such as `cohttp.async` to `cohttp-async`.  The
+implementation is otherwise the same, so no other code changes
+should be required.
+
+In return for these breaking changes to the packaging, it is
+now significantly easier to depend on a particular backend,
+also for us to rev the interfaces towards a stable 1.0 release.
+Jbuilder also builds the source tree around 4x faster than it
+did previously.
+
+A number of deprecation warnings have been added to the source
+tree as well to mark the interfaces that will be removed in 1.0.
+These are `Cohttp_lwt.{Client,Server,Net}`, and a `Cohttp_lwt.Body`
+alias was added to deprecate the direct use of `Cohttp_lwt_body`.
+This will let us unify the namespaces of all the packages to use
+a single top-level module for each package in the future.
+
+Most of the release and packaging work here was done by @rgrinberg
+and @avsm.
 
 ## 0.22.0 (2017-03-09)
 
