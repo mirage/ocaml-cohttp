@@ -24,14 +24,14 @@ let default_reporter () =
     , fun () ->
       let m = Buffer.contents b in Buffer.reset b;
       m ) in
-  let report src level ~over k msgf =
+  let report _src _level ~over k msgf =
     let k _ =
       let write () = Lwt_io.write Lwt_io.stderr (fmtr_flush ()) in
       let unblock () = over (); Lwt.return_unit in
       Lwt.finalize write unblock |> Lwt.ignore_result;
       k ()
     in
-    msgf @@ fun ?header ?tags fmt ->
+    msgf @@ fun ?header:_ ?tags:_ fmt ->
     Format.kfprintf k fmtr ("@[" ^^ fmt ^^ "@]@.")
   in
   { Logs.report = report }
