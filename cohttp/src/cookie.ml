@@ -86,7 +86,7 @@ module Set_cookie_hdr = struct
     ) attrs in
     try
       let cookie = List.hd attrs in
-      let attrs = List.map (fun (n,v) -> (String.lowercase n, v))
+      let attrs = List.map (fun (n,v) -> (String.lowercase_ascii n, v))
         (List.tl attrs) in
       let path =
         try
@@ -101,7 +101,7 @@ module Set_cookie_hdr = struct
           let v = List.assoc "domain" attrs in
           if v = "" then raise Not_found
           else Some
-            (String.lowercase
+            (String.lowercase_ascii
                (if v.[0] = '.' then Stringext.string_after v 1 else v))
         with Not_found -> None
       in

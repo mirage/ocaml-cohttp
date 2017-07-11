@@ -36,7 +36,7 @@ module Make(IO : S.IO) = struct
       |Some line -> begin
           match split_header line with
           | [hd;tl] ->
-              let header = String.lowercase hd in
+              let header = String.lowercase_ascii hd in
               parse_headers' (Header.add headers header tl);
           | _ -> return headers
       end

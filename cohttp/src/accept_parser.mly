@@ -56,10 +56,10 @@ media_range :
   (get_q $4, (AnyMedia, get_rest $4))
 }
 | TOK SLASH STAR params {
-  (get_q $4, (AnyMediaSubtype (String.lowercase $1), get_rest $4))
+  (get_q $4, (AnyMediaSubtype (String.lowercase_ascii $1), get_rest $4))
 }
 | TOK SLASH TOK params {
-  (get_q $4, (MediaType (String.lowercase $1, String.lowercase $3), get_rest $4))
+  (get_q $4, (MediaType (String.lowercase_ascii $1, String.lowercase_ascii $3), get_rest $4))
 }
 
 media_ranges :
@@ -68,7 +68,7 @@ media_ranges :
 | EOI { [] }
 
 charset :
-| TOK params { (get_q $2, Charset (String.lowercase $1)) }
+| TOK params { (get_q $2, Charset (String.lowercase_ascii $1)) }
 | STAR params { (get_q $2, AnyCharset) }
 
 charsets :
@@ -77,7 +77,7 @@ charsets :
 
 encoding :
 | TOK params {
-  (get_q $2, match (String.lowercase $1) with
+  (get_q $2, match (String.lowercase_ascii $1) with
     | "gzip" -> Gzip
     | "compress" -> Compress
     | "deflate" -> Deflate
@@ -94,7 +94,7 @@ encodings :
 
 language :
 | TOK params {
-  (get_q $2, Language (Stringext.split ~on:'-' (String.lowercase $1)))
+  (get_q $2, Language (Stringext.split ~on:'-' (String.lowercase_ascii $1)))
 }
 | STAR params { (get_q $2, AnyLanguage) }
 
