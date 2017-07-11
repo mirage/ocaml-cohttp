@@ -14,6 +14,7 @@ The new package layout is:
 - `cohttp-lwt-jsoo`: the js-of-ocaml JavaScript implementation
 - `cohttp-async`: the Jane Street Async implementation
 - `mirage-http`: the MirageOS compatible implementation
+- `cohttp-top`: a toplevel printer for the Cohttp types.
 
 In each of these packages, the `opam` and `ocamlfind` package
 names are now _the same_, so you will need to rename the former
