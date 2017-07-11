@@ -23,7 +23,7 @@ module Net = struct
       Addr_info.get ~host [ Addr_info.AI_FAMILY PF_INET
                           ; Addr_info.AI_SOCKTYPE SOCK_STREAM]
       >>| function
-      | { Addr_info.ai_addr=ADDR_INET (addr,_) }::_ ->
+      | { Addr_info.ai_addr=ADDR_INET (addr,_); _ }::_ ->
         Or_error.return (host, Ipaddr_unix.of_inet_addr addr, port)
       | _ -> Or_error.error "Failed to resolve Uri" uri Uri.sexp_of_t
 
@@ -117,7 +117,7 @@ let call ?interrupt ?ssl_config ?headers ?(chunked=false) ?(body=`Empty) meth ur
   let req =
     match chunked with
     | false ->
-      Body_raw.disable_chunked_encoding body >>| fun (body, body_length) ->
+      Body_raw.disable_chunked_encoding body >>| fun (_body, body_length) ->
       Request.make_for_client ?headers ~chunked ~body_length meth uri
     | true -> begin
         Body.is_empty body >>| function

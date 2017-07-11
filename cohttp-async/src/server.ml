@@ -102,7 +102,7 @@ let respond_with_file ?flush ?headers ?(error_body=error_body_default) filename 
     )
   >>= function
   |Ok res -> return res
-  |Error exn -> respond_string ~status:`Not_found error_body
+  |Error _exn -> respond_string ~status:`Not_found error_body
 
 let create ?max_connections ?buffer_age_limit ?on_handler_error
     ?(mode=`TCP) where_to_listen handle_request =

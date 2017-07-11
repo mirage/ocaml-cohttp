@@ -81,7 +81,7 @@ let serve ~info ~docroot ~index uri path =
   )
 
 (** HTTP handler *)
-let rec handler ~info ~docroot ~index ~body sock req =
+let handler ~info ~docroot ~index ~body:_ _sock req =
   let uri = Cohttp.Request.uri req in
   let path = Uri.path uri in
   (* Log the request to the console *)
