@@ -1,12 +1,11 @@
 (jbuild_version 1)
 
 (executables
- ((names (hello_world receive_post s3_cp))
-  (libraries (cohttp-async cstruct nocrypto))
+ ((names (hello_world receive_post))
+  (libraries (cohttp-async))
 ))
 
 (alias
  ((name   runtest)
   (package cohttp-async)
-  (deps   (hello_world.exe receive_post.exe s3_cp.exe))))
-
+  (deps   (hello_world.exe receive_post.exe))))
