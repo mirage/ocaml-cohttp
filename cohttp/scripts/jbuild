@@ -1,0 +1,7 @@
+(jbuild_version 1)
+
+(executables
+ ((names (generate))
+  (package cohttp)
+  (libraries (jsonm))
+  (public_names (generate))))
