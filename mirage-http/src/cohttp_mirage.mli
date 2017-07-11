@@ -21,19 +21,19 @@
 
 (** HTTP client. *)
 module Client: sig
-  include Cohttp_lwt.Client
+  include Cohttp_lwt.S.Client
   val ctx: Resolver_lwt.t -> Conduit_mirage.t -> ctx
 end
 
 (** HTTP server. *)
 module Server (Flow: Mirage_flow_lwt.S): sig
-  include Cohttp_lwt.Server with type IO.conn = Flow.flow
+  include Cohttp_lwt.S.Server with type IO.conn = Flow.flow
   val listen: t -> IO.conn -> unit Lwt.t
 end
 
 (** HTTP server with conduit. *)
 module Server_with_conduit : sig
-  include Cohttp_lwt.Server with type IO.conn = Conduit_mirage.Flow.flow
+  include Cohttp_lwt.S.Server with type IO.conn = Conduit_mirage.Flow.flow
   val connect:
     Conduit_mirage.t ->
     (Conduit_mirage.server -> t -> unit Lwt.t) Lwt.t
