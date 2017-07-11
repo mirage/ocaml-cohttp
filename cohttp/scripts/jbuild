@@ -2,6 +2,4 @@
 
 (executables
  ((names (generate))
-  (package cohttp)
-  (libraries (jsonm))
-  (public_names (generate))))
+  (libraries (jsonm))))
