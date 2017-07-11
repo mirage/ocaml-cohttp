@@ -76,7 +76,7 @@ module Make(IO : S.IO) = struct
     then Transfer.has_body (encoding response)
     else `No
 
-  let make_body_reader {encoding} ic = Transfer_IO.make_reader encoding ic
+  let make_body_reader {encoding; _} ic = Transfer_IO.make_reader encoding ic
   let read_body_chunk = Transfer_IO.read
 
   let write_header res oc =
@@ -88,12 +88,12 @@ module Make(IO : S.IO) = struct
       else res.headers in
     Header_IO.write headers oc
 
-  let make_body_writer ?flush {encoding} oc =
+  let make_body_writer ?flush {encoding; _} oc =
     Transfer_IO.make_writer ?flush encoding oc
 
   let write_body = Transfer_IO.write
 
-  let write_footer {encoding} oc =
+  let write_footer {encoding; _} oc =
     match encoding with
     |Transfer.Chunked ->
        (* TODO Trailer header support *)

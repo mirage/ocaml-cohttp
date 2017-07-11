@@ -51,7 +51,7 @@ module Make_client
   type ctx = Net.ctx [@@deriving sexp_of]
   let default_ctx = Net.default_ctx
 
-  let read_response ~closefn ic oc meth =
+  let read_response ~closefn ic _oc meth =
     Response.read ic >>= begin function
     | `Invalid reason ->
       Lwt.fail (Failure ("Failed to read response: " ^ reason))
@@ -67,7 +67,7 @@ module Make_client
           let stream = Body.create_stream Response.read_body_chunk reader in
           let closefn = closefn in
           Lwt_stream.on_terminate stream closefn;
-          let gcfn st = closefn () in
+          let gcfn _st = closefn () in
           Gc.finalise gcfn stream;
           let body = Body.of_stream stream in
           return (res, body)
@@ -87,7 +87,7 @@ module Make_client
 
   let call ?(ctx=default_ctx) ?headers ?(body=`Empty) ?chunked meth uri =
     let headers = match headers with None -> Header.init () | Some h -> h in
-    Net.connect_uri ~ctx uri >>= fun (conn, ic, oc) ->
+    Net.connect_uri ~ctx uri >>= fun (_conn, ic, oc) ->
     let closefn () = Net.close ic oc in
     let chunked =
       match chunked with
@@ -112,7 +112,7 @@ module Make_client
     read_response ~closefn ic oc meth
 
   (* The HEAD should not have a response body *)
-  let head ?ctx ?headers uri =
+  let head ?ctx:_ ?headers uri =
     call ?headers `HEAD uri
     >|= fst
 

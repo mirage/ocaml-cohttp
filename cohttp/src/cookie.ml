@@ -75,7 +75,7 @@ module Set_cookie_hdr = struct
       | `HTTP_1_1 -> serialize_1_1 c
 
   (* TODO: implement *)
-  let extract_1_1 cstr alist = alist
+  let extract_1_1 _cstr alist = alist
 
   let extract_1_0 cstr alist =
     let attrs = Stringext.split_trim_left cstr ~on:",;" ~trim:" \t" in
@@ -115,7 +115,7 @@ module Set_cookie_hdr = struct
         http_only=List.mem_assoc "httponly" attrs;
         secure = List.mem_assoc "secure" attrs;
       })::alist
-    with (Failure "hd") -> alist
+    with Failure _ -> alist
 
   (* TODO: check dupes+order *)
   let extract hdr =
@@ -125,7 +125,7 @@ module Set_cookie_hdr = struct
       | _ -> (fun _ a -> a)
     ) hdr []
 
-  let value { cookie=(_,v) } = v
+  let value { cookie=(_,v); _ } = v
 end
 
 module Cookie_hdr = struct

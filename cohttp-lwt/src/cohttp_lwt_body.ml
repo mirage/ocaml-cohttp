@@ -16,7 +16,6 @@
 
 open Cohttp
 open Lwt
-open Sexplib.Std
 open Sexplib.Conv
 
 type t = [
@@ -88,7 +87,7 @@ let transfer_encoding = function
 let length (body:t) : (int64 * t) Lwt.t =
   match body with
   |#Body.t as body -> return (Body.length body, body)
-  |`Stream s ->
+  |`Stream _ ->
     to_string body >>= fun buf ->
     let len = Int64.of_int (String.length buf) in
     return (len, `String buf)
