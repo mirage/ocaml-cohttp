@@ -1,4 +1,4 @@
-## v0.99.0 
+## v0.99.0 (2017-07-12)
 
 Port build to jbuilder, and break up OPAM packages into multiple
 independent packages instead of being optional dependencies against
