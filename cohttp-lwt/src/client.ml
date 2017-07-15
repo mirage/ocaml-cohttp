@@ -2,23 +2,13 @@ open Lwt.Infix
 
 module Header = Cohttp.Header
 
-module Make_request(IO:S.IO) = struct
-  include Cohttp.Request
-  include (Make(IO) : module type of Make(IO) with type t := t)
-end
-
-module Make_response(IO:S.IO) = struct
-  include Cohttp.Response
-  include (Make(IO) : module type of Make(IO) with type t := t)
-end
-
 module Make
     (IO:S.IO)
     (Net:S.Net with module IO = IO) = struct
 
   module IO = IO
-  module Response = Make_response(IO)
-  module Request = Make_request(IO)
+  module Response = Make.Response(IO)
+  module Request = Make.Request(IO)
 
   type ctx = Net.ctx [@@deriving sexp_of]
   let default_ctx = Net.default_ctx
