@@ -4,7 +4,7 @@ open Cohttp
 open Cohttp_lwt_unix
 
 type 'a io = 'a Lwt.t
-type body = Cohttp_lwt_body.t
+type body = Cohttp_lwt.Body.t
 
 type spec = Request.t -> body -> (Response.t * body) io
 
