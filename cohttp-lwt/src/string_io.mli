@@ -23,5 +23,5 @@
    strings. *)
 include Cohttp.S.IO
   with type 'a t = 'a Lwt.t
-  and type ic = Cohttp.String_io.buf
+  and type ic = Cohttp__String_io.buf
   and type oc = Buffer.t

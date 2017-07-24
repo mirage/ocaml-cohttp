@@ -21,7 +21,7 @@ module Make(IO:S.IO) = struct
   let make ?(conn_closed=ignore) ~callback () =
     { conn_closed ; callback }
 
-  module Transfer_IO = Cohttp.Transfer_io.Make(IO)
+  module Transfer_IO = Cohttp__Transfer_io.Make(IO)
 
   let resolve_local_file ~docroot ~uri =
     let path = Uri.(pct_decode (path (resolve "http" (of_string "/") uri))) in

@@ -17,8 +17,9 @@
 open OUnit
 open Printf
 
-module StringResponse = Cohttp.Response.Make(Cohttp.String_io.M)
-module HIO = Cohttp.Header_io.Make(Cohttp.String_io.M)
+module String_io = Cohttp__String_io
+module StringResponse = Cohttp.Response.Make(String_io.M)
+module HIO = Cohttp__Header_io.Make(String_io.M)
 module H = Cohttp.Header
 
 let valid_auth () =
@@ -96,7 +97,7 @@ let large_header () =
   let obuf = Buffer.create (sz + 1024) in
   HIO.write h obuf;
   let ibuf = Buffer.contents obuf in
-  let sbuf = Cohttp.String_io.open_in ibuf in
+  let sbuf = String_io.open_in ibuf in
   let header_printer h =
     Printf.sprintf "[length %d]%s"
      (List.length (H.to_list h)) 
@@ -117,7 +118,7 @@ let many_headers () =
   let h = add_header size (H.init ()) in
   assert_equal ~printer:string_of_int
     (List.length (H.to_list h)) size
-    
+
 module Content_range = struct
   let h1 = H.of_list [("Content-Length", "123")]
   let h2 = H.of_list [("Content-Range", "bytes 200-300/1000")]
@@ -132,8 +133,8 @@ let links_printer link_list =
   String.concat "\n" (List.map Link.to_string link_list)
 
 let headers_of_response test_name response_string =
-  Cohttp.String_io.M.(
-    StringResponse.read (Cohttp.String_io.open_in response_string)
+  String_io.M.(
+    StringResponse.read (String_io.open_in response_string)
     >>= function
     | `Ok resp -> Cohttp.Response.headers resp
     | _ -> assert_failure (test_name ^ " response parse failed")

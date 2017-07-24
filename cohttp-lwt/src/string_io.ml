@@ -19,13 +19,15 @@ type 'a t = 'a Lwt.t
 let return = Lwt.return
 let (>>=) = Lwt.bind
 
-type ic = Cohttp.String_io.M.ic
-type oc = Cohttp.String_io.M.oc
-type conn = Cohttp.String_io.M.conn
+module Sio = Cohttp__String_io
 
-let read_line ic = return (Cohttp.String_io.M.read_line ic)
-let read ic n = return (Cohttp.String_io.M.read ic n)
+type ic = Sio.M.ic
+type oc = Sio.M.oc
+type conn = Sio.M.conn
 
-let write oc str = return (Cohttp.String_io.M.write oc str)
-let flush oc = return (Cohttp.String_io.M.flush oc)
+let read_line ic = return (Sio.M.read_line ic)
+let read ic n = return (Sio.M.read ic n)
+
+let write oc str = return (Sio.M.write oc str)
+let flush oc = return (Sio.M.flush oc)
 
