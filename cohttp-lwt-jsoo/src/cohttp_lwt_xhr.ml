@@ -152,9 +152,10 @@ module Make_api(X : sig
 
 end
 
+module IO = Cohttp_lwt__String_io
+
 module Make_client_async(P : Params) = Make_api(struct
 
-    module IO = String_io_lwt
     module Response = Cohttp.Response
     module Request = Cohttp.Request
     module Header_io = Cohttp.Header_io.Make(IO)
@@ -248,7 +249,6 @@ module Make_client_async(P : Params) = Make_api(struct
 
 module Make_client_sync(P : Params) = Make_api(struct
 
-    module IO = String_io_lwt
     module Response = Cohttp.Response
     module Request = Cohttp.Request
     module Header_io = Cohttp.Header_io.Make(IO)
