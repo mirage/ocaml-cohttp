@@ -22,7 +22,7 @@ let suite_of
   : type a. (string option -> a)
     -> a Alcotest.testable
     -> (string * a) list
-    -> Alcotest.test_case list
+    -> _ list
   = fun parser t ->
     List.map (fun (s, expected) ->
         let test () =
