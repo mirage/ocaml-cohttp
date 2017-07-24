@@ -1,17 +1,17 @@
 (jbuild_version 1)
 
 (executables
- ((libraries (cohttp oUnit))
+ ((libraries (cohttp alcotest))
   (modules (test_accept))
   (names (test_accept))))
 
 (executables
- ((libraries (cohttp alcotest oUnit))
+ ((libraries (cohttp alcotest))
   (modules (test_header))
   (names (test_header))))
 
 (executables
- ((libraries (cohttp alcotest oUnit))
+ ((libraries (cohttp alcotest))
   (modules (test_request))
   (names (test_request))))
 

@@ -1,4 +1,3 @@
-open OUnit
 open Printf
 open Cohttp
 
@@ -17,21 +16,33 @@ let is_some = function
   | Some _ -> true
 
 let header_has_auth _ =
-  assert_bool "Test header has auth"
+  Alcotest.check Alcotest.bool "Test header has auth"
     (header_auth |> Header.get_authorization |> is_some)
+    true
 
 let uri_has_userinfo _ =
-  assert_bool "Uri has user info" (uri_userinfo |> Uri.userinfo |> is_some)
+  Alcotest.check Alcotest.bool "Uri has user info"
+    (uri_userinfo |> Uri.userinfo |> is_some)
+    true
+
+let t_credentials =
+  Alcotest.testable
+    (fun fmt c ->
+       let sexp = Cohttp.Auth.sexp_of_credential c in
+       Sexplib.Sexp.pp_hum fmt sexp
+    ) (=)
 
 let auth_uri_no_override _ =
   let r = Request.make ~headers:header_auth uri_userinfo in
-  assert_equal
-    (r |> Request.headers |> Header.get_authorization )
+  Alcotest.check (Alcotest.option t_credentials)
+    "auth uri no override"
+    (r |> Request.headers |> Header.get_authorization)
     (Header.get_authorization header_auth)
 
 let auth_uri _ =
   let r = Request.make uri_userinfo in
-  assert_equal
+  Alcotest.check (Alcotest.option t_credentials)
+    "auth_uri"
     (r |> Request.headers |> Header.get_authorization)
     (Some (`Basic ("foo", "bar%25")))
 
@@ -39,30 +50,32 @@ let opt_default default = function
   | None -> default
   | Some v -> v
 
-let parse_request_uri_ r expected name =
+module Parse_result = struct
+  type 'a t = [`Ok of 'a | `Invalid of string | `Eof]
+  let map t ~f =
+    match t with
+    | `Ok x -> `Ok (f x)
+    | (`Invalid _ | `Eof) as e -> e
+end
+
+let t_parse_result_uri
+  : Uri.t Parse_result.t Alcotest.testable
+  = Alcotest.testable (fun fmt -> function
+      | `Invalid s -> Format.fprintf fmt "`Invalid %s" s
+      | `Eof -> Format.fprintf fmt "`Eof"
+      | `Ok u -> Uri.pp_hum fmt u
+    ) (fun x y ->
+      match x, y with
+      | `Ok x, `Ok y -> Uri.equal x y
+      | x, y -> x = y)
+
+let parse_request_uri_ r (expected : Uri.t Parse_result.t) name =
   String_io.M.(
     StringRequest.read (String_io.open_in r)
-    >>= fun result -> match result, expected with
-    | `Ok req, `Ok uri ->
-      let ruri = Request.uri req in
-      let msg = Uri.(Printf.sprintf "expected %s %d %s %s\ngot %s %d %s %s"
-                       (opt_default "_" (host uri))
-                       (opt_default (-1) (port uri))
-                       (path uri) (encoded_of_query (query uri))
-                       (opt_default "_" (host ruri))
-                       (opt_default (-1) (port ruri))
-                       (path ruri) (encoded_of_query (query ruri))
-                    ) in
-      assert_equal ~printer:Uri.to_string ~cmp:Uri.equal ~msg uri ruri
-    | `Invalid rmsg, `Invalid msg ->
-      assert_equal ~printer:(fun x -> x) rmsg msg
-    | `Invalid error, `Ok uri ->
-      assert_failure (
-        Printf.sprintf "Expected uri:'%s'. Received message: '%s'"
-          (Uri.to_string uri) error
-      )
-    | `Ok _, `Invalid _ -> assert_failure "Parsed invalid URI"
-    | _ -> assert_failure (name ^ " unexpected request parse result")
+    >>= fun (result : Cohttp.Request.t Parse_result.t) ->
+    let uri = Parse_result.map result ~f:Request.uri in
+    return @@
+    Alcotest.check t_parse_result_uri name uri expected
   )
 
 let bad_request = `Invalid "bad request URI"
