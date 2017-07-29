@@ -1,3 +1,4 @@
+open Lwt.Infix
 
 module Server (Flow: Mirage_flow_lwt.S) = struct
 
