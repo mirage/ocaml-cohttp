@@ -15,17 +15,13 @@
  *
   }}}*)
 
-type 'a t = 'a Lwt.t
-let return = Lwt.return
-let (>>=) = Lwt.bind
+(** Lwt IO implementation that uses strings to marshal and unmarshal HTTP *)
 
-type ic = Cohttp.String_io.M.ic
-type oc = Cohttp.String_io.M.oc
-type conn = Cohttp.String_io.M.conn
-
-let read_line ic = return (Cohttp.String_io.M.read_line ic)
-let read ic n = return (Cohttp.String_io.M.read ic n)
-
-let write oc str = return (Cohttp.String_io.M.write oc str)
-let flush oc = return (Cohttp.String_io.M.flush oc)
-
+(** IO interface that uses {!buf} for input data and queues output
+   data into a {!Buffer.t}.  Never actually blocks despite the Lwt
+   use, although a future revision may yield when parsing large
+   strings. *)
+include Cohttp.S.IO
+  with type 'a t = 'a Lwt.t
+  and type ic = Cohttp__String_io.buf
+  and type oc = Buffer.t

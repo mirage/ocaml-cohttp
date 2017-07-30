@@ -34,7 +34,6 @@ depends: [
   "fmt"
   "logs"
   "jsonm" {build}
-  "ounit" {test}
   "alcotest" {test}
 ]
 available: [ocaml-version >= "4.03.0"]

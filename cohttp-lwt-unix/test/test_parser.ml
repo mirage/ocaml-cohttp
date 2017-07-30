@@ -110,8 +110,8 @@ let pp_diff fmt (a,b) =
 
 let p_sexp f x = x |> f |> Sexplib.Sexp.to_string
 
-module Req_io = Cohttp.Request.Make(Cohttp_lwt_unix_io)
-module Rep_io = Cohttp.Response.Make(Cohttp_lwt_unix_io)
+module Req_io = Cohttp.Request.Make(Cohttp_lwt_unix.IO)
+module Rep_io = Cohttp.Response.Make(Cohttp_lwt_unix.IO)
 
 let basic_req_parse () =
   let module CU = Cohttp_lwt_unix in

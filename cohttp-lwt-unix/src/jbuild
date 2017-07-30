@@ -5,5 +5,11 @@
   (public_name cohttp-lwt-unix)
   (synopsis "Lwt/Unix backend for Cohttp")
   (preprocess (pps (ppx_sexp_conv)))
-  (wrapped false)
-  (libraries (fmt logs.lwt conduit-lwt-unix magic-mime lwt.unix cohttp cohttp-lwt))))
+  (libraries
+   (fmt
+    logs.lwt
+    conduit-lwt-unix
+    magic-mime
+    lwt.unix
+    cohttp
+    cohttp-lwt))))

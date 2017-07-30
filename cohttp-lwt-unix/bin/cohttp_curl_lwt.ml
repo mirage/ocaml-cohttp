@@ -18,7 +18,7 @@
 open Lwt
 open Cohttp
 open Cohttp_lwt_unix
-module D = Cohttp_lwt_unix_debug
+module D = Cohttp_lwt_unix.Debug
 
 let debug f = if D.debug_active () then Logs_lwt.debug f else return ()
 
@@ -50,7 +50,7 @@ let run_client verbose ofile uri meth =
   Lwt_main.run (
     (if verbose
     then (
-      Cohttp_lwt_unix_debug.activate_debug ();
+      Cohttp_lwt_unix.Debug.activate_debug ();
       debug (fun d -> d ">>> Debug active") >>= fun () -> return ())
     else return ())
     >>= fun () ->

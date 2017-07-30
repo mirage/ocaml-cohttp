@@ -11,58 +11,69 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
-  }}}*)
+ *}}}*)
 
-open OUnit
 open Printf
 
-module StringResponse = Cohttp.Response.Make(Cohttp.String_io.M)
-module HIO = Cohttp.Header_io.Make(Cohttp.String_io.M)
+module String_io = Cohttp__String_io
+module StringResponse = Cohttp.Response.Make(String_io.M)
+module HIO = Cohttp__Header_io.Make(String_io.M)
 module H = Cohttp.Header
+
+let aes = Alcotest.check Alcotest.string
+let aeso = Alcotest.check Alcotest.(option string)
+
+let t_credentials =
+  Alcotest.testable
+    (fun fmt c ->
+       let sexp = Cohttp.Auth.sexp_of_credential c in
+       Sexplib.Sexp.pp_hum fmt sexp
+    ) (=)
 
 let valid_auth () =
   let auth = `Basic ("Aladdin", "open sesame") in
   let h = H.add_authorization (H.init ()) auth in
   let digest = H.get h "authorization" in
-  assert_equal digest (Some "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==");
-  assert_equal (H.get_authorization h) (Some auth)
+  aeso "valid_auth 1" digest (Some "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==");
+  Alcotest.check (Alcotest.option t_credentials)
+    "valid_auth 2" (H.get_authorization h) (Some auth)
 
 let valid_set_cookie () =
   let c = Cohttp.Cookie.Set_cookie_hdr.make ~expiration:`Session
-     ~path:"/foo/bar" ~domain:"ocaml.org"
-     ~secure:true ~http_only:true ("key", "value") in
+      ~path:"/foo/bar" ~domain:"ocaml.org"
+      ~secure:true ~http_only:true ("key", "value") in
   let k, v = Cohttp.Cookie.Set_cookie_hdr.serialize ~version:`HTTP_1_0 c in
-  assert_equal ~printer:(fun x -> x) ~msg:"header key" "Set-Cookie" k;
-  assert_equal ~printer:(fun x -> x) ~msg:"header value" "key=value; domain=ocaml.org; path=/foo/bar; secure; httponly" v;
+  aes "header key" "Set-Cookie" k;
+  aes "header value" "key=value; domain=ocaml.org; path=/foo/bar; secure; httponly" v;
   let c = Cohttp.Cookie.Set_cookie_hdr.make ~expiration:(`Max_age 100L)
-     ~path:"/foo/bar" ~domain:"ocaml.org" ("key", "value") in
+      ~path:"/foo/bar" ~domain:"ocaml.org" ("key", "value") in
   let k, v = Cohttp.Cookie.Set_cookie_hdr.serialize ~version:`HTTP_1_0 c in
-  assert_equal ~printer:(fun x -> x) ~msg:"header key2" "Set-Cookie" k;
-  assert_equal ~printer:(fun x -> x) ~msg:"header value2" "key=value; Max-Age=100; domain=ocaml.org; path=/foo/bar" v;
+  aes "header key2" "Set-Cookie" k;
+  aes "header value2" "key=value; Max-Age=100; domain=ocaml.org; path=/foo/bar" v;
   let k, v = Cohttp.Cookie.Set_cookie_hdr.serialize ~version:`HTTP_1_1 c in
-  assert_equal ~printer:(fun x -> x) ~msg:"header key 1.1" "Set-Cookie2" k;
-  assert_equal ~printer:(fun x -> x) ~msg:"header value 1.1" "Domain=ocaml.org; Max-Age=100; Path=/foo/bar; Version=1" v
+  aes "header key 1.1" "Set-Cookie2" k;
+  aes "header value 1.1" "Domain=ocaml.org; Max-Age=100; Path=/foo/bar; Version=1" v
 
 let cookie_printer x =
   String.concat "; " (List.map (fun (x, y) -> x ^ ":" ^ y) x)
+
+let t_cookies = Alcotest.(list (pair string string))
 
 let cookie_with_eq_val () =
   let cookies = [("test","me=")] in
   let (k, v) = Cohttp.Cookie.Cookie_hdr.serialize cookies in
   let h = Cohttp.Header.of_list [ k, v ] in
   let cookies = Cohttp.Cookie.Cookie_hdr.extract h in
-  assert_equal ~printer:cookie_printer cookies [("test", "me=")]
+  Alcotest.check t_cookies "cookie_with_eq_val" cookies ["test", "me="]
 
 let valid_cookie () =
   let cookies = [ "foo", "bar"; "a", "b" ] in
   let k, v = Cohttp.Cookie.Cookie_hdr.serialize cookies in
-  assert_equal ~msg:"key" "cookie" k;
-  assert_equal ~msg:"value" "foo=bar; a=b" v;
+  aes "key" "cookie" k;
+  aes "value" "foo=bar; a=b" v;
   let h = Cohttp.Header.of_list [ k, v ] in
   let cookies = Cohttp.Cookie.Cookie_hdr.extract h in
-  assert_equal ~printer:cookie_printer
-    ~msg:"headers" [ "foo", "bar"; "a", "b" ] cookies
+  Alcotest.check t_cookies "headers" [ "foo", "bar"; "a", "b" ] cookies
 
 let opt_printer f = function
   | None -> "nothing"
@@ -71,17 +82,20 @@ let opt_printer f = function
 let get_media_type () =
   let mt = " foo/bar ; charset=UTF-8" in
   let header = Cohttp.Header.init_with "content-type" mt in
-  assert_equal ~msg:"media type" ~printer:(opt_printer (fun x -> x))
+  Alcotest.check Alcotest.(option string) "media type"
     (Some "foo/bar") (Cohttp.Header.get_media_type header)
 
 let list_valued_header () =
   let h = H.init () in
   let h = H.add h "accept" "foo" in
   let h = H.add h "accept" "bar" in
-  assert_equal
-    ~printer:(function
-      | None -> "None"
-      | Some x -> x) (H.get h "accept") (Some "bar,foo")
+  aeso "list valued header" (H.get h "accept") (Some "bar,foo")
+
+let t_header =
+  Alcotest.testable (fun fmt h ->
+      let sexp = Cohttp.Header.sexp_of_t h in
+      Sexplib.Sexp.pp_hum fmt sexp
+    ) (fun x y -> Cohttp.Header.compare x y = 0)
 
 let large_header () =
   let sz = 1024 * 1024 * 100 in
@@ -89,19 +103,12 @@ let large_header () =
   let v1 = String.make sz 'a' in
   let h = H.add h "x-large" v1 in
   let h = H.add h v1 "foo" in
-  assert_equal
-    ~printer:(function
-      | None -> "None"
-      | Some x -> x) (H.get h "x-large") (Some v1);
+  aeso "x-large" (H.get h "x-large") (Some v1);
   let obuf = Buffer.create (sz + 1024) in
   HIO.write h obuf;
   let ibuf = Buffer.contents obuf in
-  let sbuf = Cohttp.String_io.open_in ibuf in
-  let header_printer h =
-    Printf.sprintf "[length %d]%s"
-     (List.length (H.to_list h)) 
-     (String.concat "\n" (List.map (fun (k,v) -> Printf.sprintf "%s: %s" k v) (H.to_list h))) in 
-  assert_equal ~cmp:(fun a b -> H.compare a b = 0) ~printer:header_printer (HIO.parse sbuf) h
+  let sbuf = String_io.open_in ibuf in
+  Alcotest.check t_header "large_header" (HIO.parse sbuf) h
 
 let many_headers () =
   let size = 1000000 in
@@ -109,34 +116,40 @@ let many_headers () =
     match num with 
     | 0 -> h
     | n ->
-       let k = sprintf "h%d" n in
-       let v = sprintf "v%d" n in
-       let h = H.add h k v in
-       add_header (num - 1) h
+      let k = sprintf "h%d" n in
+      let v = sprintf "v%d" n in
+      let h = H.add h k v in
+      add_header (num - 1) h
   in
   let h = add_header size (H.init ()) in
-  assert_equal ~printer:string_of_int
-    (List.length (H.to_list h)) size
-    
+  Alcotest.(check int) "many_headers" (List.length (H.to_list h)) size
+
 module Content_range = struct
-  let h1 = H.of_list [("Content-Length", "123")]
-  let h2 = H.of_list [("Content-Range", "bytes 200-300/1000")]
-  let none () = assert_equal None (H.init () |> H.get_content_range)
-  let content_length () = assert_equal (Some 123L) (H.get_content_range h1)
-  let content_range () = assert_equal (Some 101L) (H.get_content_range h2)
+  let h1 = H.of_list ["Content-Length", "123"]
+  let h2 = H.of_list ["Content-Range", "bytes 200-300/1000"]
+  let aeio = Alcotest.(check (option int64))
+  let none () =
+    aeio "none" None (H.init () |> H.get_content_range)
+  let content_length () =
+    aeio "content_length" (Some 123L) (H.get_content_range h1)
+  let content_range () =
+    aeio "content_range" (Some 101L) (H.get_content_range h2)
 end
 
 module Link = Cohttp.Link
 
-let links_printer link_list =
-  String.concat "\n" (List.map Link.to_string link_list)
+let t_links = Alcotest.testable (fun fmt links ->
+    Format.pp_print_list ~pp_sep:Format.pp_print_newline
+      (fun fmt l -> Format.fprintf fmt "%s" (Link.to_string l))
+      fmt links
+  ) (=)
 
 let headers_of_response test_name response_string =
-  Cohttp.String_io.M.(
-    StringResponse.read (Cohttp.String_io.open_in response_string)
+  String_io.M.(
+    StringResponse.read (String_io.open_in response_string)
     >>= function
     | `Ok resp -> Cohttp.Response.headers resp
-    | _ -> assert_failure (test_name ^ " response parse failed")
+    | _ -> failwith (test_name ^ " response parse failed")
   )
 
 let get_resp lines =
@@ -148,296 +161,276 @@ let link_simple () =
   let next_tgt = "/page/2" in
   let resp = get_resp ["Link: <"^next_tgt^">; rel=next"] in
   let headers = headers_of_response "link_simple" resp in
-  let printer = links_printer in
-  assert_equal ~printer Link.([{
-    context = empty_uri;
-    arc = Arc.({ empty with relation=Rel.([next]) });
-    target = Uri.of_string next_tgt;
-  }]) (H.get_links headers)
+  Alcotest.check t_links "link_simple" Link.([{
+      context = empty_uri;
+      arc = Arc.({ empty with relation=Rel.([next]) });
+      target = Uri.of_string next_tgt;
+    }]) (H.get_links headers)
 
 let link_multi_rel () =
   let next_tgt = "/page/2" in
   let resp = get_resp ["Link: <"^next_tgt^">; rel=\"next last\""] in
   let headers = headers_of_response "link_multi_rel" resp in
-  let printer = links_printer in
-  assert_equal ~printer Link.([{
-    context = empty_uri;
-    arc = Arc.({ empty with relation=Rel.([next; last]) });
-    target = Uri.of_string next_tgt;
-  }]) (H.get_links headers)
+  Alcotest.check t_links "link_multi_rel" Link.([{
+      context = empty_uri;
+      arc = Arc.({ empty with relation=Rel.([next; last]) });
+      target = Uri.of_string next_tgt;
+    }]) (H.get_links headers)
 
 let link_multi_line () =
   let self_tgt = "/page/1" in
   let next_tgt = "/page/2" in
   let resp = get_resp [
-    "Link: <"^next_tgt^">; rel=\"next\"";
-    "Link: <"^self_tgt^">; rel=self";
-  ] in
+      "Link: <"^next_tgt^">; rel=\"next\"";
+      "Link: <"^self_tgt^">; rel=self";
+    ] in
   let headers = headers_of_response "link_multi_line" resp in
-  let printer = links_printer in
-  assert_equal ~printer Link.([
-    {
-      context = empty_uri;
-      arc = Arc.({ empty with relation=Rel.([next]) });
-      target = Uri.of_string next_tgt;
-    };
-    {
-      context = empty_uri;
-      arc = Arc.({ empty with relation=Rel.([self]) });
-      target = Uri.of_string self_tgt;
-    };
-  ]) (H.get_links headers)
+  Alcotest.check t_links "link_multi_line" Link.([
+      {
+        context = empty_uri;
+        arc = Arc.({ empty with relation=Rel.([next]) });
+        target = Uri.of_string next_tgt;
+      };
+      {
+        context = empty_uri;
+        arc = Arc.({ empty with relation=Rel.([self]) });
+        target = Uri.of_string self_tgt;
+      };
+    ]) (H.get_links headers)
 
 let link_multi_multi () =
   let next_tgt = "/page/2" in
   let last_tgt = "/page/3" in
   let resp = get_resp [
-    "Link: <"^next_tgt^">; rel=\"next\", <"^last_tgt^">; rel=last";
-  ] in
+      "Link: <"^next_tgt^">; rel=\"next\", <"^last_tgt^">; rel=last";
+    ] in
   let headers = headers_of_response "link_multi_multi" resp in
-  let printer = links_printer in
-  assert_equal ~printer Link.([
-    {
-      context = empty_uri;
-      arc = Arc.({ empty with relation=Rel.([next]) });
-      target = Uri.of_string next_tgt;
-    };
-    {
-      context = empty_uri;
-      arc = Arc.({ empty with relation=Rel.([last]) });
-      target = Uri.of_string last_tgt;
-    };
-  ]) (H.get_links headers)
+  Alcotest.check t_links "link_multi_multi" Link.([
+      {
+        context = empty_uri;
+        arc = Arc.({ empty with relation=Rel.([next]) });
+        target = Uri.of_string next_tgt;
+      };
+      {
+        context = empty_uri;
+        arc = Arc.({ empty with relation=Rel.([last]) });
+        target = Uri.of_string last_tgt;
+      };
+    ]) (H.get_links headers)
 
 let link_rel_uri () =
   let uri_tgt = "/page/2" in
   let uri_s = "http://example.com/a,valid;uri" in
   let resp = get_resp [
-    "Link: <"^uri_tgt^">; rel=\"next "^uri_s^"\"; hreflang=en";
-  ] in
+      "Link: <"^uri_tgt^">; rel=\"next "^uri_s^"\"; hreflang=en";
+    ] in
   let headers = headers_of_response "link_rel_uri" resp in
-  let printer = links_printer in
-  assert_equal ~printer Link.([
-    {
-      context = empty_uri;
-      arc = Arc.({ empty with
-                   relation = Rel.([
-                     next;
-                     extension (Uri.of_string uri_s);
-                   ]);
-                   hreflang = Some "en";
-                 });
-      target = Uri.of_string uri_tgt;
-    };
-  ]) (H.get_links headers)
+  Alcotest.check t_links "link_rel_uri" Link.([
+      {
+        context = empty_uri;
+        arc = Arc.({ empty with
+                     relation = Rel.([
+                         next;
+                         extension (Uri.of_string uri_s);
+                       ]);
+                     hreflang = Some "en";
+                   });
+        target = Uri.of_string uri_tgt;
+      };
+    ]) (H.get_links headers)
 
 let link_anchor () =
   let anchor = "/page/2" in
   let target = "/page/1" in
   let resp = get_resp [
-    "Link: <"^target^">; anchor=\""^anchor^"\"; rel=prev";
-  ] in
+      "Link: <"^target^">; anchor=\""^anchor^"\"; rel=prev";
+    ] in
   let headers = headers_of_response "link_rel_uri" resp in
-  let printer = links_printer in
-  assert_equal ~printer Link.([
-    {
-      context = Uri.of_string anchor;
-      arc = Arc.({ empty with
-                   relation = Rel.([
-                     prev;
-                   ]);
-                 });
-      target = Uri.of_string target;
-    };
-  ]) (H.get_links headers)
+  Alcotest.check t_links "link_anchor" Link.([
+      {
+        context = Uri.of_string anchor;
+        arc = Arc.({ empty with
+                     relation = Rel.([
+                         prev;
+                       ]);
+                   });
+        target = Uri.of_string target;
+      };
+    ]) (H.get_links headers)
 
 let link_rev () =
   let anchor = "/page/2" in
   let resp = get_resp [
-    "Link: <"^anchor^">; rev=prev";
-  ] in
+      "Link: <"^anchor^">; rev=prev";
+    ] in
   let headers = headers_of_response "link_rev" resp in
-  let printer = links_printer in
-  assert_equal ~printer Link.([
-    {
-      context = Uri.of_string anchor;
-      arc = Arc.({ empty with
-                   reverse = true;
-                   relation = Rel.([
-                     prev;
-                   ]);
-                 });
-      target = empty_uri;
-    };
-  ]) (H.get_links headers)
+  Alcotest.check t_links "link_multi_line" Link.([
+      {
+        context = Uri.of_string anchor;
+        arc = Arc.({ empty with
+                     reverse = true;
+                     relation = Rel.([
+                         prev;
+                       ]);
+                   });
+        target = empty_uri;
+      };
+    ]) (H.get_links headers)
 
 let link_media () =
   let target = "/page/2" in
   let resp = get_resp [
-    "Link: <"^target^">; media=screen";
-  ] in
+      "Link: <"^target^">; media=screen";
+    ] in
   let headers = headers_of_response "link_media" resp in
-  let printer = links_printer in
-  assert_equal ~printer Link.([
-    {
-      context = empty_uri;
-      arc = Arc.({ empty with
-                   media = Some "screen";
-                 });
-      target = Uri.of_string target;
-    };
-  ]) (H.get_links headers)
+  Alcotest.check t_links "link_media" Link.([
+      {
+        context = empty_uri;
+        arc = Arc.({ empty with
+                     media = Some "screen";
+                   });
+        target = Uri.of_string target;
+      };
+    ]) (H.get_links headers)
 
 let link_media_complex () =
   let target = "/page/2" in
   let resp = get_resp [
-    "Link: <"^target^">; media=\"screen, print and dpi < 200\"";
-  ] in
+      "Link: <"^target^">; media=\"screen, print and dpi < 200\"";
+    ] in
   let headers = headers_of_response "link_media_complex" resp in
-  let printer = links_printer in
-  assert_equal ~printer Link.([
-    {
-      context = empty_uri;
-      arc = Arc.({ empty with
-                   media = Some "screen, print and dpi < 200";
-                 });
-      target = Uri.of_string target;
-    };
-  ]) (H.get_links headers)
+  Alcotest.check t_links "t_links" Link.([
+      {
+        context = empty_uri;
+        arc = Arc.({ empty with
+                     media = Some "screen, print and dpi < 200";
+                   });
+        target = Uri.of_string target;
+      };
+    ]) (H.get_links headers)
 
 let link_title () =
   let target = "/page/2" in
   let resp = get_resp [
-    "Link: <"^target^">; title=\"Next!\"; rel=next";
-  ] in
+      "Link: <"^target^">; title=\"Next!\"; rel=next";
+    ] in
   let headers = headers_of_response "link_title" resp in
-  let printer = links_printer in
-  assert_equal ~printer Link.([
-    {
-      context = empty_uri;
-      arc = Arc.({ empty with
-                   relation = Rel.([ next ]);
-                   title = Some "Next!";
-                 });
-      target = Uri.of_string target;
-    };
-  ]) (H.get_links headers)
+  Alcotest.check t_links "link_title" Link.([
+      {
+        context = empty_uri;
+        arc = Arc.({ empty with
+                     relation = Rel.([ next ]);
+                     title = Some "Next!";
+                   });
+        target = Uri.of_string target;
+      };
+    ]) (H.get_links headers)
 
 let link_title_star () =
   let target = "/page/2" in
   let resp = get_resp [
-    "Link: <"^target^">; title*=UTF-8'en'Next!; rel=next";
-  ] in
+      "Link: <"^target^">; title*=UTF-8'en'Next!; rel=next";
+    ] in
   let headers = headers_of_response "link_title_star" resp in
-  let printer = links_printer in
-  assert_equal ~printer Link.([
-    {
-      context = empty_uri;
-      arc = Arc.({ empty with
-                   relation = Rel.([ next ]);
-                   title_ext = Some
-                       (Ext.make
-                          ~charset:(Charset.of_string "UTF-8")
-                          ~language:(Language.of_string "en")
-                          "Next!");
-                 });
-      target = Uri.of_string target;
-    };
-  ]) (H.get_links headers)
+  Alcotest.check t_links "link_title_star" Link.([
+      {
+        context = empty_uri;
+        arc = Arc.({ empty with
+                     relation = Rel.([ next ]);
+                     title_ext = Some
+                         (Ext.make
+                            ~charset:(Charset.of_string "UTF-8")
+                            ~language:(Language.of_string "en")
+                            "Next!");
+                   });
+        target = Uri.of_string target;
+      };
+    ]) (H.get_links headers)
 
 let link_type_token () =
   let target = "/page/2" in
   let resp = get_resp [
-    "Link: <"^target^">; type=text/html; rel=next";
-  ] in
+      "Link: <"^target^">; type=text/html; rel=next";
+    ] in
   let headers = headers_of_response "link_type_token" resp in
-  let printer = links_printer in
-  assert_equal ~printer Link.([
-    {
-      context = empty_uri;
-      arc = Arc.({ empty with
-                   relation = Rel.([ next ]);
-                   media_type = Some ("text", "html");
-                 });
-      target = Uri.of_string target;
-    };
-  ]) (H.get_links headers)
+  Alcotest.check t_links "link_type_token" Link.([
+      {
+        context = empty_uri;
+        arc = Arc.({ empty with
+                     relation = Rel.([ next ]);
+                     media_type = Some ("text", "html");
+                   });
+        target = Uri.of_string target;
+      };
+    ]) (H.get_links headers)
 
 let link_type_quoted () =
   let target = "/page/2" in
   let resp = get_resp [
-    "Link: <"^target^">; type=\"text/html\"; rel=next";
-  ] in
+      "Link: <"^target^">; type=\"text/html\"; rel=next";
+    ] in
   let headers = headers_of_response "link_type_quoted" resp in
-  let printer = links_printer in
-  assert_equal ~printer Link.([
-    {
-      context = empty_uri;
-      arc = Arc.({ empty with
-                   relation = Rel.([ next ]);
-                   media_type = Some ("text", "html");
-                 });
-      target = Uri.of_string target;
-    };
-  ]) (H.get_links headers)
+  Alcotest.check t_links "link_type_quoted" Link.([
+      {
+        context = empty_uri;
+        arc = Arc.({ empty with
+                     relation = Rel.([ next ]);
+                     media_type = Some ("text", "html");
+                   });
+        target = Uri.of_string target;
+      };
+    ]) (H.get_links headers)
 
 let link_ext () =
   let target = "/page/2" in
   let resp = get_resp [
-    "Link: <"^target^">; see=saw; rel=next";
-  ] in
+      "Link: <"^target^">; see=saw; rel=next";
+    ] in
   let headers = headers_of_response "link_ext" resp in
-  let printer = links_printer in
-  assert_equal ~printer Link.([
-    {
-      context = empty_uri;
-      arc = Arc.({ empty with
-                   relation = Rel.([ next ]);
-                   extensions = ["see", "saw"];
-                 });
-      target = Uri.of_string target;
-    };
-  ]) (H.get_links headers)
+  Alcotest.check t_links "link_ext" Link.([
+      {
+        context = empty_uri;
+        arc = Arc.({ empty with
+                     relation = Rel.([ next ]);
+                     extensions = ["see", "saw"];
+                   });
+        target = Uri.of_string target;
+      };
+    ]) (H.get_links headers)
 
 let link_ext_star () =
   let target = "/page/2" in
   let resp = get_resp [
-    "Link: <"^target^">; zig*=''zag; rel=next";
-  ] in
+      "Link: <"^target^">; zig*=''zag; rel=next";
+    ] in
   let headers = headers_of_response "link_ext" resp in
-  let printer = links_printer in
-  assert_equal ~printer Link.([
-    {
-      context = empty_uri;
-      arc = Arc.({ empty with
-                   relation = Rel.([ next ]);
-                   extension_exts = ["zig",
-                                     Ext.make
-                                       ~charset:(Charset.of_string "")
-                                       ~language:(Language.of_string "")
-                                       "zag"
-                                    ];
-                 });
-      target = Uri.of_string target;
-    };
-  ]) (H.get_links headers)
+  Alcotest.check t_links "link_ext_star" Link.([
+      {
+        context = empty_uri;
+        arc = Arc.({ empty with
+                     relation = Rel.([ next ]);
+                     extension_exts = ["zig",
+                                       Ext.make
+                                         ~charset:(Charset.of_string "")
+                                         ~language:(Language.of_string "")
+                                         "zag"
+                                      ];
+                   });
+        target = Uri.of_string target;
+      };
+    ]) (H.get_links headers)
 
 let trim_ws () =
   let resp = get_resp ["Age: 281   "] in
   let headers = headers_of_response "trim whitespace" resp in
-  assert_equal
-    ~printer:(function
-      | None -> "None"
-      | Some x -> "\"" ^ x ^ "\"") (H.get headers "age") (Some "281")
+  aeso "trim_ws" (H.get headers "age") (Some "281")
 
 let test_cachecontrol_concat () =
   let resp = get_resp ["Cache-Control: public";
                        "Cache-Control: max-age:86400"] in
   let  h = headers_of_response "concat Cache-Control" resp in
-  assert_equal
-    ~printer:(function
-      | None -> "None"
-      | Some x -> x) (Some "public,max-age:86400") (H.get h "Cache-Control")
+  aeso "test_cachecontrol_concat"
+    (Some "public,max-age:86400") (H.get h "Cache-Control")
 
 ;;
 Printexc.record_backtrace true;

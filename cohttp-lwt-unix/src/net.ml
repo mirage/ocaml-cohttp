@@ -19,7 +19,7 @@
 
 open Lwt
 
-module IO = Cohttp_lwt_unix_io
+module IO = Io
 
 type ctx = {
   ctx: Conduit_lwt_unix.ctx;

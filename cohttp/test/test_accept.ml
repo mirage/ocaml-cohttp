@@ -14,14 +14,20 @@
  *
   }}}*)
 
-open OUnit
 open Printf
 
 module A = Cohttp.Accept
 
-let test (parse,printer) s v () =
-  assert_equal ~printer v (parse (Some s))
-let suite_of p = List.map (fun (s,v) -> s >:: (test p s v))
+let suite_of
+  : type a. (string option -> a)
+    -> a Alcotest.testable
+    -> (string * a) list
+    -> _ list
+  = fun parser t ->
+    List.map (fun (s, expected) ->
+        let test () =
+          Alcotest.(check t) s (parser (Some s)) expected in
+        (s, `Quick, test))
 
 let valid_media_ranges = [
   "text/plain", [1000,(A.MediaType ("text","plain"),[])];
@@ -49,7 +55,9 @@ let valid_media_ranges = [
 ]
 
 let valid_media_ranges_suite =
-  suite_of (A.media_ranges,A.string_of_media_ranges) valid_media_ranges
+  let t_media_ranges =
+    Alcotest.testable (Fmt.of_to_string A.string_of_media_ranges) (=) in
+  suite_of A.media_ranges t_media_ranges valid_media_ranges
 
 let valid_charsets = [
   "utf-8", [1000,A.Charset "utf-8"];
@@ -62,7 +70,9 @@ let valid_charsets = [
 ]
 
 let valid_charsets_suite =
-  suite_of (A.charsets,A.string_of_charsets) valid_charsets
+  let t_charsets =
+    Alcotest.testable (Fmt.of_to_string A.string_of_charsets) (=) in
+  suite_of A.charsets t_charsets valid_charsets
 
 let valid_encodings = [
   "compress, gzip", [1000,A.Compress; 1000,A.Gzip];
@@ -77,7 +87,9 @@ let valid_encodings = [
 ]
 
 let valid_encodings_suite =
-  suite_of (A.encodings,A.string_of_encodings) valid_encodings
+  let t_encodings =
+    Alcotest.testable (Fmt.of_to_string A.string_of_encodings) (=) in
+  suite_of A.encodings t_encodings valid_encodings
 
 let valid_languages = [
   "en",[1000,A.Language["en"]];
@@ -94,37 +106,16 @@ let valid_languages = [
 ]
 
 let valid_languages_suite =
-  suite_of (A.languages,A.string_of_languages) valid_languages
+  let t_languages =
+    Alcotest.testable (Fmt.of_to_string A.string_of_languages) (=) in
+  suite_of A.languages t_languages valid_languages
 
-(* returns true if the result list contains successes only.
-   Copied from oUnit source as it isnt exposed by the mli *)
-let rec was_successful =
-  function
-    | [] -> true
-    | RSuccess _::t
-    | RSkip _::t ->
-        was_successful t
-    | RFailure _::_
-    | RError _::_
-    | RTodo _::_ ->
-        false
+let () = Printexc.record_backtrace true
 
-let _ =
-  let suites = [
-    "Valid Accept" >::: valid_media_ranges_suite;
-    "Valid Accept-Charset" >::: valid_charsets_suite;
-    "Valid Accept-Encoding" >::: valid_encodings_suite;
-    "Valid Accept-Language" >::: valid_languages_suite;
-  ] in
-  let verbose = ref false in
-  let set_verbose _ = verbose := true in
-  Arg.parse
-    [("-verbose", Arg.Unit set_verbose, "Run the test in verbose mode.");]
-    (fun x -> raise (Arg.Bad ("Bad argument : " ^ x)))
-    ("Usage: " ^ Sys.argv.(0) ^ " [-verbose]");
-  if not
-    (List.for_all
-       (fun suite -> was_successful (run_test_tt ~verbose:!verbose suite))
-       suites)
-  then exit 1
-
+let () =
+  Alcotest.run "test_accept" [
+    "Valid Accept",valid_media_ranges_suite;
+    "Valid Accept-Charset", valid_charsets_suite;
+    "Valid Accept-Encoding", valid_encodings_suite;
+    "Valid Accept-Language", valid_languages_suite;
+  ]

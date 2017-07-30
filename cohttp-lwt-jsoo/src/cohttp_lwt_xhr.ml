@@ -152,12 +152,14 @@ module Make_api(X : sig
 
 end
 
+module String_io = Cohttp__String_io
+module IO = Cohttp_lwt__String_io
+module Header_io = Cohttp__Header_io.Make(IO)
+
 module Make_client_async(P : Params) = Make_api(struct
 
-    module IO = String_io_lwt
     module Response = Cohttp.Response
     module Request = Cohttp.Request
-    module Header_io = Cohttp.Header_io.Make(IO)
     module Bb = Body_builder(P)
 
     let call ?headers ?body meth uri =
@@ -208,7 +210,7 @@ module Make_client_async(P : Params) = Make_api(struct
                  (* (re-)construct the response *)
                  let response =
                    let resp_headers = Js.to_string (xml##getAllResponseHeaders) in
-                   let channel = C.String_io.open_in resp_headers in
+                   let channel = String_io.open_in resp_headers in
                    Lwt.(Header_io.parse channel >|= fun resp_headers ->
                         Response.make
                           ~version:`HTTP_1_1
@@ -248,10 +250,8 @@ module Make_client_async(P : Params) = Make_api(struct
 
 module Make_client_sync(P : Params) = Make_api(struct
 
-    module IO = String_io_lwt
     module Response = Cohttp.Response
     module Request = Cohttp.Request
-    module Header_io = Cohttp.Header_io.Make(IO)
     module Bb = Body_builder(P)
 
     let call ?headers ?body meth uri =
@@ -303,7 +303,7 @@ module Make_client_sync(P : Params) = Make_api(struct
 
   (* (re-)construct the response *)
   let resp_headers = Js.to_string (xml##getAllResponseHeaders) in
-  Header_io.parse (C.String_io.open_in resp_headers)
+  Header_io.parse (String_io.open_in resp_headers)
   >>= fun resp_headers ->
 
   let response = Response.make
