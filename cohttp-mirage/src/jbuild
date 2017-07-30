@@ -2,7 +2,7 @@
 
 (library
  ((name cohttp_mirage)
-  (public_name mirage-http)
+  (public_name cohttp-mirage)
   (synopsis "Mirage backend for cohttp")
   (wrapped false)
   (libraries
