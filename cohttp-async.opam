@@ -24,6 +24,7 @@ depends: [
   "cohttp"
   "conduit-async"
   "magic-mime"
+  "logs"
   "fmt"
   "ounit" {test}
 ]
