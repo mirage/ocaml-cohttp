@@ -30,9 +30,7 @@ depends: [
   "ppx_sexp_conv" {build & >="v0.9.0"}
   "stringext"
   "base64" {>= "2.0.0"}
-  "magic-mime"
-  "fmt"
-  "logs"
+  "fmt" {test}
   "jsonm" {build}
   "alcotest" {test}
 ]

@@ -23,6 +23,7 @@ depends: [
   "jbuilder" {build & >= "1.0+beta10"}
   "conduit-lwt-unix"
   "cmdliner"
+  "magic-mime"
   "logs"
   "fmt"
   "cohttp-lwt"

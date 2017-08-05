@@ -1,7 +1,7 @@
 (jbuild_version 1)
 
 (executables
- ((libraries (cohttp alcotest))
+ ((libraries (cohttp alcotest fmt))
   (modules (test_accept))
   (names (test_accept))))
 
