@@ -50,6 +50,8 @@ let is_header_with_list_value =
 let init () =
   StringMap.empty
 
+let is_empty x = StringMap.is_empty x
+
 let init_with k v =
   StringMap.singleton (LString.of_string k) [v]
 
