@@ -22,6 +22,9 @@ type t [@@deriving sexp]
 (** Construct a fresh, empty map of HTTP headers *)
 val init : unit -> t
 
+(** Test whether a HTTP headers are empty or not. *)
+val is_empty : t -> bool
+
 (** Construct a fresh map of HTTP headers with a single key and value entry *)
 val init_with  : string -> string -> t
 
