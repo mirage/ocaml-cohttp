@@ -128,11 +128,13 @@ type section = {
 }
 
 let normalize s =
+  let b = Bytes.of_string s in
   Bytes.iteri (fun i -> function
-      | 'A'..'Z' as c -> if i > 1 then Bytes.set s i (Char.lowercase_ascii c)
-      | ' '|'-'|'\'' -> Bytes.set s i '_'
+      | 'A'..'Z' as c -> if i > 1 then Bytes.set b i (Char.lowercase_ascii c)
+      | ' '|'-'|'\'' -> Bytes.set b i '_'
       | _  -> ()
-    ) s
+    ) (Bytes.of_string s);
+  Bytes.to_string b
 
 let read ic =
   let json = of_channel ic in
@@ -142,8 +144,7 @@ let read ic =
       match List.assoc "class" o with
       | `O o ->
         let s = String.uncapitalize_ascii (to_string (List.assoc "title" o)) in
-        normalize s;
-        s
+        normalize s
       | _ -> assert false in
 
     let codes =
@@ -164,9 +165,9 @@ let read ic =
                     let i = String.index descr '(' in
                     String.sub descr 0 (i-1)
                   with Not_found ->
-                    Bytes.copy descr
+                    descr
                 ) in
-              normalize constr;
+              let constr = normalize constr in
               (* XXX: dirty hack *)
               let constr = if constr = "`Ok" then "`OK" else constr in
               let doc = to_string (List.assoc "summary" o) in
