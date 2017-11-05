@@ -9,6 +9,12 @@ env:
   - EXTRA_REMOTES="https://github.com/mirage/mirage-dev.git"
   - PINS="cohttp-top:. cohttp-async:. cohttp-lwt-unix:. cohttp-lwt-jsoo:. cohttp-lwt:. mirage-http:. cohttp:."
   matrix:
+  - PACKAGE="cohttp" DISTRO="alpine-3.5" OCAML_VERSION="4.06.0"
+  - PACKAGE="cohttp-async" DISTRO="alpine" OCAML_VERSION="4.06.0"
+  - PACKAGE="cohttp-lwt-unix" DISTRO="alpine" OCAML_VERSION="4.06.0"
+  - PACKAGE="cohttp-lwt-jsoo" DISTRO="alpine" OCAML_VERSION="4.06.0"
+  - PACKAGE="cohttp-lwt" DISTRO="alpine" OCAML_VERSION="4.06.0"
+  - PACKAGE="mirage-http" DISTRO="alpine" OCAML_VERSION="4.06.0"
   - PACKAGE="cohttp" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.2"
   - PACKAGE="cohttp-async" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.2"
   - PACKAGE="cohttp-lwt-unix" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04.2"
