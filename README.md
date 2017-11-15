@@ -12,8 +12,7 @@ libraries:
   library.
 * `Cohttp_lwt` exposes an OS-independent Lwt interface, which is used
   by the [Mirage](http://www.openmirage.org) interface
-  to generate standalone microkernels (see the [mirage-http](https://github.com/mirage/mirage-http)
-  repository).
+  to generate standalone microkernels use the cohttp-mirage subpackage.
 * `Cohttp_lwt_xhr` compiles to a JavaScript module that maps the Cohttp
    calls to XMLHTTPRequests.  This is used to compile OCaml libraries like
    the GitHub bindings to JavaScript and still run efficiently.
