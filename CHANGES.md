@@ -1,3 +1,11 @@
+## v1.0.0 (2017-11-16)
+
+* opam: rename `mirage-http` to `cohttp`-mirage` (#572)
+* cohttp-lwt{,-unix}: wrap the libraries in top-level modules (#568)
+* opam: improve dependencies (#574, #566, #575)
+* cohttp: add the convenience function `Header.is_empty` (#576)
+* fix compatibility with OCaml 4.06 and `-safe-string` (#580, #581)
+
 ## v0.99.0 (2017-07-12)
 
 Port build to jbuilder, and break up OPAM packages into multiple
