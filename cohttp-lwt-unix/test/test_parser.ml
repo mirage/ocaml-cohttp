@@ -246,14 +246,14 @@ let write_req expected req =
 let make_simple_req () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
-  let expected = "POST /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
+  let expected = "POST /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\nuser-agent: ocaml-cohttp/\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
   let req = Request.make ~encoding:Transfer.Chunked ~meth:`POST ~headers:(Header.init_with "Foo" "bar") (Uri.of_string "/foo/bar") in
   write_req expected req
 
 let mutate_simple_req () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
-  let expected = "POST /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
+  let expected = "POST /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\nuser-agent: ocaml-cohttp/\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
   let req = Request.make ~encoding:Transfer.Chunked ~headers:(Header.init_with "foo" "bar") (Uri.of_string "/foo/bar") in
   let req = Fieldslib.Field.fset Request.Fields.meth req `POST in
   write_req expected req
