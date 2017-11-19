@@ -1,8 +1,7 @@
-
-.PHONY: build clean test
+.PHONY: build clean test install uninstall clean all-supported-ocaml-versions
 
 build:
-	jbuilder build @install
+	jbuilder build --dev @install
 
 test:
 	jbuilder runtest
@@ -24,6 +23,9 @@ pkg-%:
 	mkdir -p $(PACKAGES)/$*
 	cp -r _build/$*.* $(PACKAGES)/$*/
 	cd $(PACKAGES) && git add $*
+
+all-supported-ocaml-versions:
+	jbuilder build --dev @install @runtest --workspace jbuild-workspace.dev
 
 PKGS=$(basename $(wildcard *.opam))
 opam-pkg:
