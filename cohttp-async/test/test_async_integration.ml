@@ -34,7 +34,7 @@ let server =
        let body =
          let (r, w) = Pipe.create () in
          let chunk = chunk chunk_size in
-         for i = 0 to chunks - 1 do
+         for _ = 0 to chunks - 1 do
            Pipe.write_without_pushback w chunk
          done;
          Pipe.close w;
@@ -74,7 +74,7 @@ let ts =
       |> Client.callv uri >>= fun responses -> responses
                                                |> Pipe.to_list
       >>= fun resps -> resps
-                       |> Deferred.List.iter ~f:(fun (resp, body) ->
+                       |> Deferred.List.iter ~f:(fun (_resp, body) ->
                          let expected_body = body_q |> Queue.dequeue_exn in
                          body |> Body.to_string >>| fun body ->
                          assert_equal ~printer expected_body body

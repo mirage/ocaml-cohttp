@@ -1,6 +1,5 @@
 open Lwt
 open OUnit
-open Cohttp
 open Cohttp_lwt_unix
 
 type 'a io = 'a Lwt.t

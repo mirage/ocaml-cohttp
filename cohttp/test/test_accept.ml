@@ -14,8 +14,6 @@
  *
   }}}*)
 
-open Printf
-
 module A = Cohttp.Accept
 
 let suite_of

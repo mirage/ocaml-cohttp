@@ -95,7 +95,7 @@ module Make
     post ?ctx ~chunked:false ~headers ~body uri
 
   let callv ?(ctx=default_ctx) uri reqs =
-    Net.connect_uri ~ctx uri >>= fun (conn, ic, oc) ->
+    Net.connect_uri ~ctx uri >>= fun (_conn, ic, oc) ->
     (* Serialise the requests out to the wire *)
     let meth_stream = Lwt_stream.map_s (fun (req,body) ->
       Request.write (fun writer ->

@@ -133,13 +133,13 @@ module Make(IO : S.IO) = struct
     | false -> begin
         match mode with
         | Chunked -> Chunked.write
-        | Fixed len -> Fixed.write
+        | Fixed _ -> Fixed.write
         | Unknown -> Unknown.write
       end
     | true -> begin
         match mode with
         | Chunked -> write_and_flush Chunked.write
-        | Fixed len -> write_and_flush Fixed.write
+        | Fixed _ -> write_and_flush Fixed.write
         | Unknown -> write_and_flush Unknown.write
       end |> write_ignore_blank
 
