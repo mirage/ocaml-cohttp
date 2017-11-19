@@ -34,7 +34,7 @@ let respond_file ?headers ~fname () =
                Lwt_log.ign_debug ~exn ("Error resolving file " ^ fname);
                return_none)
         ) in
-      Lwt_stream.on_terminate stream (fun () ->
+      Lwt.on_success (Lwt_stream.closed stream) (fun () ->
           ignore_result (Lwt_io.close ic));
       let body = Cohttp_lwt.Body.of_stream stream in
       let mime_type = Magic_mime.lookup fname in
