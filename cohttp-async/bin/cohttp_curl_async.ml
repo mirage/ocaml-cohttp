@@ -39,7 +39,7 @@ let _ =
   Logs.set_level @@ Some Logs.Debug;
   Logs.set_reporter (Logs_fmt.reporter ());
   let open Command.Spec in
-  Command.async ~summary:"Fetch URL and print it"
+  Command.async_spec ~summary:"Fetch URL and print it"
     (empty
      +> anon ("url" %: string)
      +> flag "-X" (optional_with_default "GET" string)

@@ -55,10 +55,10 @@ val respond_with_file :
 val create :
   ?max_connections:int ->
   ?buffer_age_limit: Writer.buffer_age_limit ->
-  ?on_handler_error:[ `Call of 'address -> exn  -> unit
-                    | `Ignore
-                    | `Raise ] ->
   ?mode:Conduit_async.server ->
+  on_handler_error:[ `Call of 'address -> exn  -> unit
+                   | `Ignore
+                   | `Raise ] ->
   ('address, 'listening_on) Tcp.Where_to_listen.t
   -> (body:Body.t -> 'address -> Request.t -> response Deferred.t)
   -> ('address, 'listening_on) t Deferred.t
