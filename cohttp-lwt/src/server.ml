@@ -95,7 +95,7 @@ module Make(IO:S.IO) = struct
               let reader = Request.make_body_reader req ic in
               let body_stream = Body.create_stream
                                   Request.read_body_chunk reader in
-              Lwt_stream.on_terminate body_stream
+              Lwt.on_success (Lwt_stream.closed body_stream)
                 (fun () -> Lwt_mutex.unlock read_m);
               let body = Body.of_stream body_stream in
               (* The read_m remains locked until the caller reads the body *)

@@ -59,7 +59,7 @@ module Make(IO : S.IO) = struct
   let read ic =
     parse_response_fst_line ic >>= function
     | `Eof -> return `Eof
-    | `Invalid reason as r -> return r
+    | `Invalid _reason as r -> return r
     | `Ok (version, status) ->
        Header_IO.parse ic >>= fun headers ->
        let encoding = Header.get_transfer_encoding headers in

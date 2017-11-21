@@ -28,7 +28,7 @@ module Make
           let reader = Response.make_body_reader res ic in
           let stream = Body.create_stream Response.read_body_chunk reader in
           let closefn = closefn in
-          Lwt_stream.on_terminate stream closefn;
+          Lwt.on_success (Lwt_stream.closed stream) closefn;
           let gcfn _st = closefn () in
           Gc.finalise gcfn stream;
           let body = Body.of_stream stream in
@@ -95,7 +95,7 @@ module Make
     post ?ctx ~chunked:false ~headers ~body uri
 
   let callv ?(ctx=default_ctx) uri reqs =
-    Net.connect_uri ~ctx uri >>= fun (conn, ic, oc) ->
+    Net.connect_uri ~ctx uri >>= fun (_conn, ic, oc) ->
     (* Serialise the requests out to the wire *)
     let meth_stream = Lwt_stream.map_s (fun (req,body) ->
       Request.write (fun writer ->
@@ -120,6 +120,6 @@ module Make
         x
       )
     ) meth_stream in
-    Lwt_stream.on_terminate resps (fun () -> Net.close ic oc);
+    Lwt.on_success (Lwt_stream.closed resps) (fun () -> Net.close ic oc);
     Lwt.return resps
 end

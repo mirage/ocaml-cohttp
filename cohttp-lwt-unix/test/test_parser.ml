@@ -15,7 +15,6 @@
   }}}*)
 
 open OUnit
-open Printf
 
 let basic_req =
 "GET /index.html HTTP/1.1\r\nHost: www.example.com\r\n\r\n"
@@ -158,7 +157,6 @@ let req_parse () =
 
 let post_data_parse () =
   let open Cohttp in
-  let open Cohttp_lwt_unix in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_data_req) in
   Req_io.read ic >>= function
   | `Ok req ->
@@ -225,8 +223,6 @@ let get_substring oc buf =
   b
 
 let write_req expected req =
-  let open Cohttp in
-  let open Cohttp_lwt_unix in
   (* Use the low-level write_header/footer API *)
   let buf = Lwt_bytes.create 4096 in
   let oc = oc_of_buffer buf in

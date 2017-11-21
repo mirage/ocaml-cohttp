@@ -1,4 +1,3 @@
-open Printf
 open Cohttp
 
 module String_io = Cohttp__String_io

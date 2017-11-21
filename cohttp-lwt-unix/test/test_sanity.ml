@@ -69,7 +69,7 @@ let ts =
       ] in
       let counter = ref 0 in
       Client.callv uri (Lwt_stream.of_list reqs) >>= fun resps ->
-      Lwt_stream.iter_s (fun (r,rbody) ->
+      Lwt_stream.iter_s (fun (_, rbody) ->
         rbody |> Body.to_string >|= fun rbody ->
         begin match !counter with
         | 0 | 2 -> assert_equal ~printer ""   rbody
@@ -114,7 +114,7 @@ let ts =
       assert_equal l 3
     in
     let massive_chunked () =
-      Client.get uri >>= fun (resp, body) ->
+      Client.get uri >>= fun (_resp, body) ->
       Body.to_string body >|= fun body ->
       assert_equal ~printer:string_of_int (1000 * 64) (String.length body) in
     let unreadable_file_500 () =
