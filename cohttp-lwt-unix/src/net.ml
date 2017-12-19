@@ -17,7 +17,7 @@
 (* Miscellaneous net-helpers used by Cohttp. Ideally, these will disappear
  * into some connection-management framework such as andrenth/release *)
 
-open Lwt
+open Lwt.Infix
 
 module IO = Io
 
@@ -42,10 +42,15 @@ let connect_uri ~ctx uri =
   >>= fun client ->
   Conduit_lwt_unix.connect ~ctx:ctx.ctx client
 
-let close c = Lwt.catch (fun () -> Lwt_io.close c) (fun _ -> return_unit)
+let close c = Lwt.catch
+  (fun () -> Lwt_io.close c)
+  (fun e ->
+    Logs.warn (fun f -> f "Closing channel failed: %s" (Printexc.to_string e));
+    Lwt.return_unit
+  )
 
-let close_in ic = ignore_result (close ic)
+let close_in ic = Lwt.ignore_result (close ic)
 
-let close_out oc = ignore_result (close oc)
+let close_out oc = Lwt.ignore_result (close oc)
 
-let close ic oc = ignore_result (close ic >>= fun () -> close oc)
+let close ic oc = Lwt.ignore_result (close ic >>= fun () -> close oc)
