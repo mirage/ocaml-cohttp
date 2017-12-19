@@ -26,6 +26,7 @@ depends: [
   "uri" {>= "1.9.0"}
   "fieldslib"
   "sexplib"
+  "ppx_type_conv" {build & >="v0.9.1"}
   "ppx_fields_conv" {build & >="v0.9.0"}
   "ppx_sexp_conv" {build & >="v0.9.0"}
   "stringext"
