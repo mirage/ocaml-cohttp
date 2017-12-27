@@ -47,7 +47,7 @@ module Net_IO = struct
   let close_out _ = ()
   let close ic _oc = Lwt.ignore_result @@ Lwt.catch
     (fun () -> Channel.close ic)
-    (fun e  -> Lwt.return @@ Ok ())
+    (fun _  -> Lwt.return @@ Ok ())
 
 end
 let ctx resolver conduit = { Net_IO.resolver; conduit }
