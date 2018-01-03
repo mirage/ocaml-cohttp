@@ -1,3 +1,9 @@
+## v1.0.1 (2018-01-03)
+
+* cohttp-mirage: expose the missing IO module (#594, @samoht)
+* cohttp-mirage: catch exceptions when closing channels in mirage client
+  (#589, @ansiwen)
+
 ## v1.0.0 (2017-11-16)
 
 * opam: rename `mirage-http` to `cohttp`-mirage` (#572)
