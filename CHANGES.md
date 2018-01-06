@@ -1,3 +1,9 @@
+## v1.0.2 (2018-01-06)
+
+* Support Async v0.10.0 and OCaml 4.06.0 (#588 via @vbmithr)
+* Require `ppx_deriving >=v0.9.1` due to a bug with duplicate modules
+  present in earlier versions.
+
 ## v1.0.1 (2018-01-03)
 
 * cohttp-mirage: expose the missing IO module (#594, @samoht)
