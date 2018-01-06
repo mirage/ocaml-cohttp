@@ -81,9 +81,9 @@ let read_line =
     )
 
 let read ic len =
-  let buf = String.create len in
+  let buf = Bytes.create len in
   Reader.read ic ~len buf >>| function
-  | `Ok len' -> String.sub buf ~pos:0 ~len:len'
+  | `Ok len' -> Bytes.To_string.sub buf ~pos:0 ~len:len'
   | `Eof -> ""
 
 let write =
