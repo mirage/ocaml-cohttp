@@ -220,7 +220,7 @@ let get_substring oc buf =
   let len = Int64.to_int (Lwt_io.position oc) in
   let b = Bytes.create len in
   Lwt_bytes.blit_to_bytes buf 0 b 0 len;
-  b
+  b |> Bytes.to_string
 
 let write_req expected req =
   (* Use the low-level write_header/footer API *)
