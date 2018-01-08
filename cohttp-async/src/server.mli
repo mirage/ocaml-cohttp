@@ -74,8 +74,8 @@ val create_expert :
 (** Build a HTTP server, based on the [Tcp.Server] interface *)
 val create :
   ?max_connections:int ->
-  ?buffer_age_limit: Writer.buffer_age_limit ->
   ?backlog:int ->
+  ?buffer_age_limit: Writer.buffer_age_limit ->
   ?mode:Conduit_async.server ->
   on_handler_error:[ `Call of 'address -> exn  -> unit
                    | `Ignore
