@@ -22,11 +22,12 @@ type t = {
   version: Code.version;
   status: Code.status_code;
   flush: bool;
+  on_exn: exn -> unit
 } [@@deriving fields, sexp]
 
-let make ?(version=`HTTP_1_1) ?(status=`OK) ?(flush=false) ?(encoding=Transfer.Chunked) ?headers () =
+let make ?(version=`HTTP_1_1) ?(status=`OK) ?(flush=false) ?(encoding=Transfer.Chunked) ?(on_exn=ignore) ?headers () =
   let headers = match headers with None -> Header.init () |Some h -> h in
-  { encoding; headers; version; flush; status }
+  { encoding; headers; version; flush; status; on_exn }
 
 let pp_hum ppf r =
   Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib.Sexp.to_string_hum)
@@ -64,7 +65,7 @@ module Make(IO : S.IO) = struct
        Header_IO.parse ic >>= fun headers ->
        let encoding = Header.get_transfer_encoding headers in
        let flush = false in
-       return (`Ok { encoding; headers; version; status; flush })
+       return (`Ok { encoding; headers; version; status; flush; on_exn=ignore })
 
   let allowed_body response = (* rfc7230#section-5.7.1 *)
     match status response with

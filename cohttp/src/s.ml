@@ -111,6 +111,7 @@ module type Response = sig
     version: Code.version; (** (** HTTP version, usually 1.1 *) *)
     status: Code.status_code; (** HTTP status code of the response *)
     flush: bool;
+    on_exn: exn -> unit
   } [@@deriving fields, sexp]
 
   val make :
@@ -118,6 +119,7 @@ module type Response = sig
     ?status:Code.status_code ->
     ?flush:bool ->
     ?encoding:Transfer.encoding ->
+    ?on_exn:(exn -> unit) ->
     ?headers:Header.t ->
     unit -> t
 end

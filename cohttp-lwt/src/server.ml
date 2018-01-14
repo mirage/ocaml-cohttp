@@ -28,7 +28,7 @@ module Make(IO:S.IO) = struct
     let rel_path = String.sub path 1 (String.length path - 1) in
     Filename.concat docroot rel_path
 
-  let respond ?headers ?(flush=true) ~status ~body () =
+  let respond ?headers ?(on_exn=ignore) ?(flush=true) ~status ~body () =
     let encoding =
       match headers with
       | None -> Body.transfer_encoding body
@@ -37,7 +37,7 @@ module Make(IO:S.IO) = struct
         | Cohttp.Transfer.Unknown -> Body.transfer_encoding body
         | t -> t
     in
-    let res = Response.make ~status ~flush ~encoding ?headers () in
+    let res = Response.make ~status ~flush ~encoding ~on_exn ?headers () in
     Lwt.return (res, body)
 
   let respond_string ?(flush=true) ?headers ~status ~body () =
@@ -133,11 +133,14 @@ module Make(IO:S.IO) = struct
       (fun () ->
          (* Transmit the responses *)
          res_stream |> Lwt_stream.iter_s (fun (res,body) ->
+          Lwt.catch (fun () ->
              let flush = Response.flush res in
              Response.write ~flush (fun writer ->
                  Body.write_body (Response.write_body writer) body
                ) res oc
            )
+          (fun e -> Lwt.return @@ res.on_exn e)
+         )
       )
       (fun () ->
          (* Clean up resources when the response stream terminates and call
