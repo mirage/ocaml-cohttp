@@ -16,7 +16,7 @@
   (public_name cohttp)
   (synopsis "Co-operative Client/Server HTTP library.")
   (preprocess (pps (ppx_fields_conv ppx_sexp_conv)))
-  (libraries (re.emacs
+  (libraries (re
               stringext
               uri
               fieldslib
