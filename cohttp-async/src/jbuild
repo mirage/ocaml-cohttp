@@ -13,4 +13,5 @@
     ipaddr.unix
     conduit-async
     magic-mime
-    cohttp))))
+    cohttp))
+  (preprocess (pps (ppx_sexp_conv)))))
