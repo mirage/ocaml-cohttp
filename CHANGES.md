@@ -2,6 +2,7 @@
 
 * Add an "expert mode" to hand off raw responses to a custom handler,
   which in turns makes protocols like Websockets easier (#488 by @msaffer).
+* Set the user-agent by default if one is not provided (#586 by @TheCBaH).
 * Fix typo in the `cohttp.js` META file.
 * Refresh use of the Re library to the latest version (#602 by @rgrinberg).
 * Rearrange the ppx dependencies to be more specific (#596 by @yomimono).
