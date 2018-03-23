@@ -1,3 +1,13 @@
+## v1.1.0 (2018-03-28)
+
+* Add an "expert mode" to hand off raw responses to a custom handler,
+  which in turns makes protocols like Websockets easier (#488 by @msaffer).
+* Set the user-agent by default if one is not provided (#586 by @TheCBaH).
+* Fix typo in the `cohttp.js` META file.
+* Refresh use of the Re library to the latest version (#602 by @rgrinberg).
+* Rearrange the ppx dependencies to be more specific (#596 by @yomimono).
+* Explicitly depend on sexplib in the Async backend (#605 by @kevinqiu).
+
 ## v1.0.2 (2018-01-06)
 
 * Support Async v0.10.0 and OCaml 4.06.0 (#588 via @vbmithr)
