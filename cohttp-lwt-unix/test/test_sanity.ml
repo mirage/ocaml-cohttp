@@ -1,4 +1,4 @@
-open Lwt
+open Lwt.Infix
 open OUnit
 open Cohttp
 open Cohttp_lwt_unix
@@ -78,7 +78,7 @@ let ts =
         incr counter
       ) resps >>= fun () ->
       assert_equal ~printer:string_of_int 3 !counter;
-      return_unit in
+      Lwt.return_unit in
     let not_modified_has_no_body () =
       Client.get uri >>= fun (resp, body) ->
       assert_equal (Response.status resp) `Not_modified;
