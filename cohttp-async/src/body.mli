@@ -1,5 +1,5 @@
-open! Core
-open! Async
+open! Base
+open! Async_kernel
 open! Cohttp
 
 type t = [

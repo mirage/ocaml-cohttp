@@ -1,5 +1,6 @@
-open Core
-open Async
+open Base
+open Async_kernel
+open Async_unix
 
 module Request = struct
   include Cohttp.Request
@@ -66,7 +67,7 @@ let request ?interrupt ?ssl_config ?uri ?(body=`Empty) req =
       read_request ic >>| fun (resp, body) ->
       don't_wait_for (
         Pipe.closed body >>= fun () ->
-        Deferred.all_ignore [Reader.close ic; Writer.close oc]);
+        Deferred.all_unit [Reader.close ic; Writer.close oc]);
       (resp, `Pipe body)) >>= begin function
     | Ok res -> return res
     | Error e ->
@@ -82,7 +83,7 @@ let callv ?interrupt ?ssl_config uri reqs =
   try_with (fun () ->
       reqs
       |> Pipe.iter ~f:(fun (req, body) ->
-          incr reqs_c;
+          Int.incr reqs_c;
           Request.write (fun w -> Body_raw.write_body Request.write_body body w)
             req oc)
       |> don't_wait_for;
@@ -93,7 +94,7 @@ let callv ?interrupt ?ssl_config uri reqs =
             return `Eof
           else
             ic |> read_request >>| fun (resp, body) ->
-            incr resp_c;
+            Int.incr resp_c;
             last_body_drained := Pipe.closed body;
             `Ok (resp, `Pipe body)
         ) in
