@@ -21,7 +21,7 @@ build: [
 build-test: [["jbuilder" "runtest" "-p" name "-j" jobs]]
 depends: [
   "jbuilder" {build & >= "1.0+beta10"}
-  "cohttp"
+  "cohttp" {>= "1.0.0"}
   "lwt"
   "sexplib"
   "ppx_sexp_conv" {build & >="v0.9.0"}
