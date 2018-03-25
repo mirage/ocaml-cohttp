@@ -7,7 +7,7 @@
     base
     core
     async_kernel
-    ounit
+    oUnit
     cohttp-async))
   (modules (test_async_integration))
   (names (test_async_integration))))
