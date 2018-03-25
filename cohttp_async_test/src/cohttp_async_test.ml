@@ -1,5 +1,5 @@
-open Core
-open Async
+open Base
+open Async_kernel
 open OUnit
 open Cohttp_async
 
@@ -16,9 +16,10 @@ let temp_server ?port spec callback =
   let port = match port with
     | None -> Cohttp_test.next_port ()
     | Some p -> p in
-  let uri = Uri.of_string ("http://0.0.0.0:" ^ (string_of_int port)) in
+  let uri = Uri.of_string ("http://0.0.0.0:" ^ (Int.to_string port)) in
   let server = Server.create ~on_handler_error:`Raise
-    (Tcp.Where_to_listen.of_port port) (fun ~body _sock req -> spec req body) in
+    (Async_extra.Tcp.Where_to_listen.of_port port)
+    (fun ~body _sock req -> spec req body) in
   server >>= fun server ->
   callback uri >>= fun res ->
   Server.close server >>| fun () ->

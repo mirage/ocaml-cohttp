@@ -1,5 +1,5 @@
-open Core
-open Async
+open Base
+open Async_kernel
 open OUnit
 open Cohttp
 open Cohttp_async
@@ -93,5 +93,8 @@ let ts =
   end
 
 let () =
-  ts |> run_async_tests >>= (fun _ -> Shutdown.exit 0) |> don't_wait_for;
-  never_returns (Scheduler.go ())
+  ts
+  |> run_async_tests
+  >>= (fun _ -> Async_unix.Shutdown.exit 0)
+  |> don't_wait_for;
+  Core.never_returns (Async_unix.Scheduler.go ())

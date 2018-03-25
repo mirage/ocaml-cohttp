@@ -6,8 +6,11 @@
   (public_name cohttp-async)
   (libraries
    (logs.fmt
+    base
     fmt
-    async
+    async_unix
+    async_kernel
+    async_extra
     uri
     uri.services
     ipaddr.unix

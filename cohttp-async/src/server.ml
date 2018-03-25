@@ -1,5 +1,7 @@
-open Core
-open Async
+open Base
+open Async_kernel
+open Async_unix
+open Async_extra
 
 module Request = struct
   include Cohttp.Request
