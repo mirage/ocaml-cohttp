@@ -44,6 +44,7 @@
 *)
 
 open Base
+open Core
 open Async_kernel
 open Cohttp
 open Cohttp_async

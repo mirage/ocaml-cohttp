@@ -25,6 +25,7 @@ depends: [
   "async_unix" {>= "v0.11.0"}
   "async_extra" {>= "v0.11.0"}
   "base" {>= "v0.11.0"}
+  "core" {test}
   "cohttp"
   "conduit-async"
   "magic-mime"

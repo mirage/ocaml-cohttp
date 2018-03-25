@@ -134,7 +134,7 @@ let respond_with_redirect ?headers uri =
 let resolve_local_file ~docroot ~uri =
   (* This normalises the Uri and strips out .. characters *)
   Uri.(pct_decode (path (resolve "" (of_string "/") uri)))
-  |> Filename.concat docroot
+  |> Caml.Filename.concat docroot
 
 let error_body_default =
   "<html><body><h1>404 Not Found</h1></body></html>"

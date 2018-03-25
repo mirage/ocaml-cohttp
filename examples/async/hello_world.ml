@@ -23,13 +23,15 @@ let start_server port () =
   Caml.Printf.eprintf "Listening for HTTP on port %d\n" port;
   Caml.Printf.eprintf "Try 'curl http://localhost:%d/test?hello=xyz'\n%!" port;
   Cohttp_async.Server.create ~on_handler_error:`Raise
-    (Tcp.Where_to_listen.of_port port) handler
+    (Async_extra.Tcp.Where_to_listen.of_port port) handler
   >>= fun _ -> Deferred.never ()
 
 let () =
+  let module Command = Async_extra.Command in
   Command.async_spec
     ~summary:"Start a hello world Async server"
-    Command.Spec.(empty +>
+    Command.Spec.(
+      empty +>
       flag "-p" (optional_with_default 8080 int)
         ~doc:"int Source port to listen on"
     ) start_server
