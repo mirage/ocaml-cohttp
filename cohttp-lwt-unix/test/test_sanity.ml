@@ -32,21 +32,21 @@ let server =
       let count = ref 0 in
       let chunk = String.make 64 '0' in
       `Stream (Lwt_stream.from_direct (fun () ->
-        if !count < 1000
-        then (incr count; Some chunk)
-        else None
-      ))
+          if !count < 1000
+          then (incr count; Some chunk)
+          else None
+        ))
     end()
   ]
   |> List.map const
   |> (fun tests ->
-    tests @ [
-      (fun _ body -> (* Returns 500 on bad file *)
-         Body.to_string body >>= fun fname ->
-         Server.respond_file ~fname ())] @
-    (Array.init (leak_repeat * 2) (fun _ _ _ ->
-         (* no leaks *)
-         Server.respond_string ~status:`OK ~body:"no leak" ()) |> Array.to_list))
+      tests @ [
+        (fun _ body -> (* Returns 500 on bad file *)
+           Body.to_string body >>= fun fname ->
+           Server.respond_file ~fname ())] @
+      (Array.init (leak_repeat * 2) (fun _ _ _ ->
+           (* no leaks *)
+           Server.respond_string ~status:`OK ~body:"no leak" ()) |> Array.to_list))
   |> response_sequence
 
 let ts =
@@ -70,13 +70,13 @@ let ts =
       let counter = ref 0 in
       Client.callv uri (Lwt_stream.of_list reqs) >>= fun resps ->
       Lwt_stream.iter_s (fun (_, rbody) ->
-        rbody |> Body.to_string >|= fun rbody ->
-        begin match !counter with
-        | 0 | 2 -> assert_equal ~printer ""   rbody
-        | _     -> assert_equal ~printer body rbody
-        end;
-        incr counter
-      ) resps >>= fun () ->
+          rbody |> Body.to_string >|= fun rbody ->
+          begin match !counter with
+            | 0 | 2 -> assert_equal ~printer ""   rbody
+            | _     -> assert_equal ~printer body rbody
+          end;
+          incr counter
+        ) resps >>= fun () ->
       assert_equal ~printer:string_of_int 3 !counter;
       Lwt.return_unit in
     let not_modified_has_no_body () =
@@ -97,20 +97,20 @@ let ts =
       Client.callv uri reqs >>= fun resps ->
       let resps = Lwt_stream.map_s (fun (_, b) -> Body.to_string b) resps in
       Lwt_stream.fold (fun b i ->
-        Lwt_log.ign_info_f "Request %i\n" i;
-        begin match i with
-        | 0 -> assert_equal b "one"
-        | 1 ->
-          assert_equal b "two";
-          Lwt_log.ign_info "Sending extra request";
-          push (Some (r 3))
-        | 2 ->
-          assert_equal b "three";
-          push None;
-        | x -> assert_failure ("Test failed with " ^ string_of_int x)
-        end;
-        succ i
-      ) resps 0 >|= fun l ->
+          Lwt_log.ign_info_f "Request %i\n" i;
+          begin match i with
+            | 0 -> assert_equal b "one"
+            | 1 ->
+              assert_equal b "two";
+              Lwt_log.ign_info "Sending extra request";
+              push (Some (r 3))
+            | 2 ->
+              assert_equal b "three";
+              push None;
+            | x -> assert_failure ("Test failed with " ^ string_of_int x)
+          end;
+          succ i
+        ) resps 0 >|= fun l ->
       assert_equal l 3
     in
     let massive_chunked () =
@@ -120,19 +120,19 @@ let ts =
     let unreadable_file_500 () =
       let fname = "unreadable500" in
       Lwt.finalize (fun () ->
-        Lwt_io.open_file ~flags:[Lwt_unix.O_CREAT] ~perm:0o006
-          ~mode:Lwt_io.Output fname >>= fun oc ->
-        Lwt_io.write_line oc "never read" >>= fun () ->
-        Lwt_io.close oc >>= fun () ->
-        Client.post uri ~body:(Body.of_string fname)
-        >>= begin fun (resp, body) ->
-          assert_equal ~printer:Code.string_of_status
-            (Response.status resp) `Internal_server_error;
-          Body.to_string body
-        end >|= fun body ->
-        assert_equal ~printer:(fun x -> "'" ^ x ^ "'")
-          body "Error: Internal Server Error"
-      ) (fun () -> Lwt_unix.unlink fname)
+          Lwt_io.open_file ~flags:[Lwt_unix.O_CREAT] ~perm:0o006
+            ~mode:Lwt_io.Output fname >>= fun oc ->
+          Lwt_io.write_line oc "never read" >>= fun () ->
+          Lwt_io.close oc >>= fun () ->
+          Client.post uri ~body:(Body.of_string fname)
+          >>= begin fun (resp, body) ->
+            assert_equal ~printer:Code.string_of_status
+              (Response.status resp) `Internal_server_error;
+            Body.to_string body
+          end >|= fun body ->
+          assert_equal ~printer:(fun x -> "'" ^ x ^ "'")
+            body "Error: Internal Server Error"
+        ) (fun () -> Lwt_unix.unlink fname)
     in
     let test_no_leak () =
       let stream = Array.init leak_repeat (fun _ -> uri) |> Lwt_stream.of_array in
