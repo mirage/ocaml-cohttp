@@ -32,12 +32,12 @@ let temp_server ?port spec callback =
 
 let test_server_s ?port ?(name="Cohttp Server Test") spec f =
   temp_server ?port spec begin fun uri ->
-    Lwt_log.ign_info_f "Test %s running on %s" name (Uri.to_string uri);
+    Logs.info (fun f -> f "Test %s running on %s" name (Uri.to_string uri));
     let tests = f uri in
     let results =
       tests
       |> Lwt_list.map_s (fun (name, test) ->
-        Lwt_log.ign_debug_f "Running %s" name;
+        Logs.debug (fun f -> f "Running %s" name);
         let res = Lwt.try_bind test
                     (fun () -> return `Ok)
                     (fun exn -> return (`Exn exn)) in

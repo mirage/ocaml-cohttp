@@ -81,10 +81,12 @@ let handler ~info ~docroot ~index (ch,_conn) req _body =
   let uri = Cohttp.Request.uri req in
   let path = Uri.path uri in
   (* Log the request to the console *)
-  Lwt_log.debug_f "%s %s %s"
-    (Cohttp.(Code.string_of_method (Request.meth req)))
-    path
-    (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)) >>= fun () ->
+  Logs.debug (fun f ->
+      f "%s %s %s"
+        (Cohttp.(Code.string_of_method (Request.meth req)))
+        path
+        (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch))
+    );
   (* Get a canonical filename from the URL and docroot *)
   match Request.meth req with
   | (`GET | `HEAD) as meth ->
@@ -98,11 +100,14 @@ let handler ~info ~docroot ~index (ch,_conn) req _body =
       ~body:(html_of_method_not_allowed meth (String.concat "," allowed) path info) ()
 
 let start_server docroot port host index tls () =
-  Lwt_log.info_f "Listening for HTTP request on: %s %d" host port >>= fun () ->
-  let info = Printf.sprintf "Served by Cohttp/Lwt listening on %s:%d" host port in
+  Logs.info (fun f -> f "Listening for HTTP request on: %s %d" host port);
+  let info =
+    Printf.sprintf "Served by Cohttp/Lwt listening on %s:%d" host port in
   let conn_closed (ch,_conn) =
-    Lwt_log.ign_debug_f "connection %s closed"
-      (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)) in
+    Logs.debug (fun f ->
+        f "connection %s closed"
+          (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)))
+  in
   let callback = handler ~info ~docroot ~index in
   let config = Server.make ~callback ~conn_closed () in
   let mode = match tls with
@@ -117,8 +122,8 @@ let start_server docroot port host index tls () =
 let lwt_start_server docroot port host index verbose tls =
   (match List.length verbose with
   | 0 -> ()
-  | 1 -> Lwt_log_core.(add_rule "*" Info)
-  | _ -> Lwt_log_core.(add_rule "*" Debug));
+  | 1 -> Logs.set_level (Some Logs.Info)
+  | _ -> Logs.set_level (Some Logs.Debug));
   Lwt_main.run (start_server docroot port host index tls ())
 
 open Cmdliner

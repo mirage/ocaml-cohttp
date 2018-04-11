@@ -31,7 +31,9 @@ let respond_file ?headers ~fname () =
               | "" -> None
               | buf -> Some buf)
             (fun exn ->
-               Lwt_log.ign_debug ~exn ("Error resolving file " ^ fname);
+               Logs.debug (fun f ->
+                   f "Error resolving file %s.@.Exn: %s"
+                     fname (Printexc.to_string exn));
                return_none)
         ) in
       Lwt.on_success (Lwt_stream.closed stream) (fun () ->

@@ -6,7 +6,7 @@
   (names (test_parser))))
 
 (executables
- ((libraries (cohttp_lwt_unix_test cohttp-lwt-unix))
+ ((libraries (cohttp_lwt_unix_test cohttp-lwt-unix logs))
   (modules (test_sanity))
   (names (test_sanity))))
 

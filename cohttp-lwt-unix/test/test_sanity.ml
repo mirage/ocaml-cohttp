@@ -97,12 +97,12 @@ let ts =
       Client.callv uri reqs >>= fun resps ->
       let resps = Lwt_stream.map_s (fun (_, b) -> Body.to_string b) resps in
       Lwt_stream.fold (fun b i ->
-          Lwt_log.ign_info_f "Request %i\n" i;
+          Logs.info (fun f -> f "Request %i\n" i);
           begin match i with
             | 0 -> assert_equal b "one"
             | 1 ->
               assert_equal b "two";
-              Lwt_log.ign_info "Sending extra request";
+              Logs.info (fun f -> f "Sending extra request");
               push (Some (r 3))
             | 2 ->
               assert_equal b "three";

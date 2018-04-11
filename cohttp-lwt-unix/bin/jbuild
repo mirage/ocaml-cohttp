@@ -2,6 +2,6 @@
 
 (executables
  ((names (cohttp_curl_lwt cohttp_proxy_lwt cohttp_server_lwt))
-  (libraries (cohttp-lwt-unix cohttp_server cmdliner))
+  (libraries (cohttp-lwt-unix cohttp_server cmdliner logs))
   (package cohttp-lwt-unix)
   (public_names (cohttp-curl-lwt cohttp-proxy-lwt cohttp-server-lwt))))
