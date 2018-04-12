@@ -118,10 +118,7 @@ let start_server docroot port host index tls () =
   Server.create ~ctx ~mode config
 
 let lwt_start_server docroot port host index verbose tls =
-  (match List.length verbose with
-  | 0 -> ()
-  | 1 -> Logs.set_level (Some Logs.Info)
-  | _ -> Logs.set_level (Some Logs.Debug));
+  Logs.set_level verbose;
   Lwt_main.run (start_server docroot port host index tls ())
 
 open Cmdliner
@@ -138,9 +135,7 @@ let index =
   let doc = "Name of index file in directory." in
   Arg.(value & opt string "index.html" & info ["i"] ~docv:"INDEX" ~doc)
 
-let verb =
-  let doc = "Logging output to console." in
-  Arg.(value & flag_all & info ["v"; "verbose"] ~doc)
+let verb = Logs_cli.level ()
 
 let tls =
   let doc = "TLS certificate files." in
