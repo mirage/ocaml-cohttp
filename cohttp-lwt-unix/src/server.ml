@@ -4,6 +4,8 @@ module Server_core = Cohttp_lwt.Make_server (Io)
 include Server_core
 open Lwt
 
+let log_src = Logs.Src.create "cohttp-lwt-unix.server"
+
 let blank_uri = Uri.of_string ""
 
 let resolve_file ~docroot ~uri =
@@ -31,7 +33,10 @@ let respond_file ?headers ~fname () =
               | "" -> None
               | buf -> Some buf)
             (fun exn ->
-               Lwt_log.ign_debug ~exn ("Error resolving file " ^ fname);
+               Logs.debug ~src:log_src
+                 (fun m -> m "Error resolving file %s (%s)"
+                   fname
+                   (Printexc.to_string exn));
                return_none)
         ) in
       Lwt.on_success (Lwt_stream.closed stream) (fun () ->
