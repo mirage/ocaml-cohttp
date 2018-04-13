@@ -7,6 +7,7 @@
   (preprocess (pps (ppx_sexp_conv)))
   (libraries
    (fmt
+    logs
     logs.lwt
     conduit-lwt-unix
     magic-mime
