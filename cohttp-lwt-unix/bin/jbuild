@@ -7,6 +7,7 @@
     cohttp_server
     logs
     logs.lwt
+    logs.fmt
     logs.cli
     cmdliner))
   (package cohttp-lwt-unix)
