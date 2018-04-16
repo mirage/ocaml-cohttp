@@ -4,7 +4,8 @@ module Server_core = Cohttp_lwt.Make_server (Io)
 include Server_core
 open Lwt
 
-let log_src = Logs.Src.create "cohttp-lwt-unix.server"
+let src = Logs.Src.create "cohttp.lwt.server" ~doc:"Cohttp Lwt server module"
+module Log = (val Logs.src_log src : Logs.LOG)
 
 let blank_uri = Uri.of_string ""
 
@@ -33,7 +34,7 @@ let respond_file ?headers ~fname () =
               | "" -> None
               | buf -> Some buf)
             (fun exn ->
-               Logs.debug ~src:log_src
+               Log.debug
                  (fun m -> m "Error resolving file %s (%s)"
                    fname
                    (Printexc.to_string exn));

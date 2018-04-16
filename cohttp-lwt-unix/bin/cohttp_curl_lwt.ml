@@ -18,19 +18,19 @@
 open Lwt
 open Cohttp
 open Cohttp_lwt_unix
-module D = Cohttp_lwt_unix.Debug
 
-let debug f = if D.debug_active () then Logs_lwt.debug f else return ()
+let src = Logs.Src.create "cohttp.lwt.curl" ~doc:"Cohttp Lwt curl implementation"
+module Log = (val Logs.src_log src : Logs.LOG)
 
 let client uri ofile meth' =
-  debug (fun d -> d "Client with URI %s" (Uri.to_string uri)) >>= fun () ->
+  Log.debug (fun d -> d "Client with URI %s" (Uri.to_string uri));
   let meth = Cohttp.Code.method_of_string meth' in
-  debug (fun d -> d "Client %s issued" meth') >>= fun () ->
+  Log.debug (fun d -> d "Client %s issued" meth');
   Client.call meth uri >>= fun (resp, body) ->
   let status = Response.status resp in
-  debug (fun d ->
+  Log.debug (fun d ->
     d "Client %s returned: %s" meth' (Code.string_of_status status)
-  ) >>= fun () ->
+  );
   (* TODO follow redirects *)
   match Code.is_success (Code.code_of_status status) with
   | false ->
@@ -38,7 +38,7 @@ let client uri ofile meth' =
     exit 1
   | true ->
     Cohttp_lwt.Body.length body >>= fun (len, body) ->
-    debug (fun d -> d "Client body length: %Ld" len) >>= fun () ->
+    Log.debug (fun d -> d "Client body length: %Ld" len);
     Cohttp_lwt.Body.to_string body >>= fun _s ->
     let output_body c =
       Lwt_stream.iter_s (Lwt_io.fprint c) (Cohttp_lwt.Body.to_stream body) in
@@ -50,8 +50,10 @@ let run_client verbose ofile uri meth =
   Lwt_main.run (
     (if verbose
     then (
+      (* activate debug sets the reporter *)
       Cohttp_lwt_unix.Debug.activate_debug ();
-      debug (fun d -> d ">>> Debug active") >>= fun () -> return ())
+      Log.debug (fun d -> d ">>> Debug active");
+      return ())
     else return ())
     >>= fun () ->
     client uri ofile meth

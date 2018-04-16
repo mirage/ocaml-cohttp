@@ -18,6 +18,8 @@ let _debug_active = ref false
 let debug_active () = !_debug_active
 
 let default_reporter () =
+  (* Note: we want the logging operation to not block the other operation.
+   * Hence, the reporter creates Lwt promises. *)
   let fmtr, fmtr_flush =
     let b = Buffer.create 512 in
     ( Fmt.with_buffer ~like:Fmt.stdout b
@@ -27,8 +29,8 @@ let default_reporter () =
   let report _src _level ~over k msgf =
     let k _ =
       let write () = Lwt_io.write Lwt_io.stderr (fmtr_flush ()) in
-      let unblock () = over (); Lwt.return_unit in
-      Lwt.finalize write unblock |> Lwt.ignore_result;
+      let unblock () = over (); Lwt.return () in
+      Lwt.ignore_result (Lwt.finalize write unblock : unit Lwt.t);
       k ()
     in
     msgf @@ fun ?header:_ ?tags:_ fmt ->

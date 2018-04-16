@@ -16,7 +16,6 @@
 
 (** Debugging output for Cohttp Unix *)
 
-
 val activate_debug : unit -> unit
 (** [activate_debug] enables debugging output that will be sent to
     standard error. *)

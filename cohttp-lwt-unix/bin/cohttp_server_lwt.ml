@@ -21,7 +21,9 @@ open Cohttp_lwt_unix
 
 open Cohttp_server
 
-let log_src = Logs.Src.create "cohttp-lwt-unix.bin.server"
+let src = Logs.Src.create "cohttp.lwt.server" ~doc:"Cohttp Lwt server"
+module Log = (val Logs.src_log src : Logs.LOG)
+
 
 let method_filter meth (res,body) = match meth with
   | `HEAD -> Lwt.return (res,`Empty)
@@ -83,11 +85,11 @@ let handler ~info ~docroot ~index (ch,_conn) req _body =
   let uri = Cohttp.Request.uri req in
   let path = Uri.path uri in
   (* Log the request to the console *)
-  Logs_lwt.debug ~src:log_src (fun m -> m
+  Log.debug (fun m -> m
     "%s %s %s"
     (Cohttp.(Code.string_of_method (Request.meth req)))
     path
-    (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch))) >>= fun () ->
+    (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)));
   (* Get a canonical filename from the URL and docroot *)
   match Request.meth req with
   | (`GET | `HEAD) as meth ->
@@ -101,10 +103,10 @@ let handler ~info ~docroot ~index (ch,_conn) req _body =
       ~body:(html_of_method_not_allowed meth (String.concat "," allowed) path info) ()
 
 let start_server docroot port host index tls () =
-  Logs_lwt.info (fun m -> m "Listening for HTTP request on: %s %d" host port) >>= fun () ->
+  Log.info (fun m -> m "Listening for HTTP request on: %s %d" host port);
   let info = Printf.sprintf "Served by Cohttp/Lwt listening on %s:%d" host port in
   let conn_closed (ch,_conn) =
-    Logs.debug ~src:log_src (fun m -> m "connection %s closed"
+    Log.debug (fun m -> m "connection %s closed"
       (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch))) in
   let callback = handler ~info ~docroot ~index in
   let config = Server.make ~callback ~conn_closed () in
@@ -117,33 +119,12 @@ let start_server docroot port host index tls () =
   let ctx = Cohttp_lwt_unix.Net.init ~ctx () in
   Server.create ~ctx ~mode config
 
-(* The example of Lwt-aware reporter in Logs' documentation *)
-let lwt_reporter () =
-  let buf_fmt ~like =
-    let b = Buffer.create 512 in
-    Fmt.with_buffer ~like b,
-    fun () -> let m = Buffer.contents b in Buffer.reset b; m
-  in
-  let app, app_flush = buf_fmt ~like:Fmt.stdout in
-  let dst, dst_flush = buf_fmt ~like:Fmt.stderr in
-  let reporter = Logs_fmt.reporter ~app ~dst () in
-  let report src level ~over k msgf =
-    let k () =
-      let write () = match level with
-      | Logs.App -> Lwt_io.write Lwt_io.stdout (app_flush ())
-      | _ -> Lwt_io.write Lwt_io.stderr (dst_flush ())
-      in
-      let unblock () = over (); Lwt.return_unit in
-      Lwt.finalize write unblock |> Lwt.ignore_result;
-      k ()
-    in
-    reporter.Logs.report src level ~over:(fun () -> ()) k msgf;
-  in
-  { Logs.report = report }
-
 let lwt_start_server docroot port host index verbose tls =
-  Logs.set_level verbose;
-  Logs.set_reporter (lwt_reporter ());
+  if verbose <> None then begin
+    (* activate_debug sets the reporter *)
+    Cohttp_lwt_unix.Debug.activate_debug ();
+    Logs.set_level verbose
+  end;
   Lwt_main.run (start_server docroot port host index tls ())
 
 
