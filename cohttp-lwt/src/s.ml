@@ -126,6 +126,7 @@ module type Server = sig
       or [Transfer-encoding] in the [headers] parameter. *)
   val respond :
     ?headers:Cohttp.Header.t ->
+    ?on_exn:(exn -> unit) ->
     ?flush:bool ->
     status:Cohttp.Code.status_code ->
     body:Body.t -> unit -> (Cohttp.Response.t * Body.t) Lwt.t
