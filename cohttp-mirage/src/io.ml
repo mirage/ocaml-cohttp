@@ -29,8 +29,16 @@ module Make (Channel: Mirage_channel_lwt.S) = struct
 
   let failf fmt = Fmt.kstrf Lwt.fail_with fmt
 
+  (* The HTTP spec does not define a maximum limit on the length
+     of an HTTP header but we need one to avoid a malicious client
+     exhausting all our memory.
+     Typical values range from 4k to 48k according to
+     https://stackoverflow.com/questions/686217/maximum-on-http-header-values
+     *)
+  let max_line_length = 4096
+
   let read_line ic =
-    Channel.read_line ic >>= function
+    Channel.read_line ~len:max_line_length ic >>= function
     | Ok (`Data [])   -> Lwt.return_none
     | Ok `Eof         -> Lwt.return_none
     | Ok (`Data bufs) -> Lwt.return (Some (Cstruct.copyv bufs))
