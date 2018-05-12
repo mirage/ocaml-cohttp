@@ -28,15 +28,16 @@ module Net = struct
         Or_error.return (host, Ipaddr_unix.of_inet_addr addr, port)
       | _ -> Or_error.error "Failed to resolve Uri" uri Uri.sexp_of_t
 
-  let connect_uri ?interrupt ?ssl_config uri =
+  let connect_uri
+      ?interrupt
+      ?(ssl_config=Conduit_async_ssl.Cfg.create ()) uri =
     lookup uri
     |> Deferred.Or_error.ok_exn
     >>= fun (host, addr, port) ->
     let mode =
-      match (Uri.scheme uri, ssl_config) with
-      | Some "https", Some config -> `OpenSSL_with_config (host, addr, port, config)
-      | Some "https", None -> `OpenSSL (host, addr, port)
-      | Some "httpunix", _ -> `Unix_domain_socket host
+      match Uri.scheme uri with
+      | Some "https" -> `OpenSSL (addr, port, ssl_config)
+      | Some "httpunix" -> `Unix_domain_socket host
       | _ -> `TCP (addr, port)
     in
     Conduit_async.connect ?interrupt mode
