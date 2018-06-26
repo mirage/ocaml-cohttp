@@ -23,7 +23,7 @@ module LString : sig
   val compare: t -> t -> int
 end = struct
   type t = string
-  let of_string x = String.lowercase_ascii x
+  let of_string x = x
   let to_string x = x
   let compare a b = String.compare a b
 end
@@ -36,11 +36,11 @@ let user_agent = Printf.sprintf "ocaml-cohttp/%s" Conf.version
 let compare = StringMap.compare Pervasives.compare
 
 let headers_with_list_values = Array.map LString.of_string [|
-  "accept";"accept-charset";"accept-encoding";"accept-language";
-  "accept-ranges";"allow";"cache-control";"connection";"content-encoding";
-  "content-language";"expect";"if-match";"if-none-match";"link";"pragma";
-  "proxy-authenticate";"te";"trailer";"transfer-encoding";"upgrade";
-  "vary";"via";"warning";"www-authenticate"; |]
+  "Accept";"Accept-Charset";"Accept-Encoding";"Accept-Language";
+  "Accept-Ranges";"Allow";"Cache-Control";"Connection";"Content-Encoding";
+  "Content-Language";"Expect";"If-Match";"If-None-Match";"Link";"Pragma";
+  "Proxy-Authenticate";"TE";"Trailer";"Transfer-Encoding";"Upgrade";
+  "Vary";"Via";"Warning";"WWW-Authenticate"; |]
 
 let is_header_with_list_value =
   let tbl = Hashtbl.create (Array.length headers_with_list_values) in
@@ -142,10 +142,10 @@ let parse_content_range s =
 (* If we see a "Content-Range" header, than we should limit the
    number of bytes we attempt to read *)
 let get_content_range headers =
-  match get headers "content-length" with
+  match get headers "Content-Length" with
   | Some clen -> (try Some (Int64.of_string clen) with _ -> None)
   | None -> begin
-    match get headers "content-range" with
+    match get headers "Content-Range" with
     | Some range_s -> begin
       match parse_content_range range_s with
       | Some (start, fini, total) ->
@@ -161,7 +161,7 @@ let get_content_range headers =
   end
 
 let get_connection_close headers =
-  match get headers "connection" with
+  match get headers "Connection" with
   | Some "close" -> true
   | _ -> false
 
@@ -179,26 +179,26 @@ let get_first_match _re s =
 
 (* Grab "foo/bar" from " foo/bar ; charset=UTF-8" *)
 let get_media_type headers =
-  match get headers "content-type" with
+  match get headers "Content-Type" with
   | Some s -> get_first_match media_type_re s
   | None -> None
 
 let get_acceptable_media_ranges headers =
-  Accept.media_ranges (get headers "accept")
+  Accept.media_ranges (get headers "Accept")
 
 let get_acceptable_charsets headers =
-  Accept.charsets (get headers "accept-charset")
+  Accept.charsets (get headers "Accept-Charset")
 
 let get_acceptable_encodings headers =
-  Accept.encodings (get headers "accept-encoding")
+  Accept.encodings (get headers "Accept-Encoding")
 
 let get_acceptable_languages headers =
-  Accept.languages (get headers "accept-language")
+  Accept.languages (get headers "Accept-Language")
 
 (* Parse the transfer-encoding and content-length headers to
  * determine how to decode a body *)
 let get_transfer_encoding headers =
-  match get headers "transfer-encoding" with
+  match get headers "Transfer-Encoding" with
   | Some "chunked" -> Transfer.Chunked
   | Some _ | None -> begin
     match get_content_range headers with
@@ -212,18 +212,18 @@ let add_transfer_encoding headers enc =
   match get_transfer_encoding headers, enc with
   |Fixed _,_  (* App has supplied a content length, so use that *)
   |Chunked, _ -> headers (* TODO: this is a protocol violation *)
-  |Unknown, Chunked -> add headers "transfer-encoding" "chunked"
-  |Unknown, Fixed len -> add headers "content-length" (Int64.to_string len)
+  |Unknown, Chunked -> add headers "Transfer-Encoding" "chunked"
+  |Unknown, Fixed len -> add headers "Content-Length" (Int64.to_string len)
   |Unknown, Unknown -> headers
 
 let add_authorization_req headers challenge =
-  add headers "www-authenticate" (Auth.string_of_challenge challenge)
+  add headers "WWW-Authenticate" (Auth.string_of_challenge challenge)
 
 let add_authorization headers cred =
-  add headers "authorization" (Auth.string_of_credential cred)
+  add headers "Authorization" (Auth.string_of_credential cred)
 
 let get_authorization headers =
-  match get headers "authorization" with
+  match get headers "Authorization" with
   |None -> None
   |Some v -> Some (Auth.credential_of_string v)
 
@@ -231,7 +231,7 @@ let is_form headers =
   get_media_type headers = (Some "application/x-www-form-urlencoded")
 
 let get_location headers =
-  match get headers "location" with
+  match get headers "Location" with
   | None -> None
   | Some u -> Some (Uri.of_string u)
 
@@ -241,16 +241,16 @@ let get_links headers =
     [] (get_multi headers "link"))
 
 let add_links headers links =
-  add_multi headers "link" (List.map Link.to_string links)
+  add_multi headers "Link" (List.map Link.to_string links)
 
 let prepend_user_agent headers user_agent =
-  let k = "user-agent" in
+  let k = "User-Agent" in
   match get headers k with
     | Some ua -> replace headers k (user_agent^" "^ua)
     | None -> add headers k user_agent
 
 let connection h =
-  match get h "connection" with
+  match get h "Connection" with
   | Some v when v = "keep-alive" -> Some `Keep_alive
   | Some v when v = "close" -> Some `Close
   | Some x -> Some (`Unknown x)
