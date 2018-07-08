@@ -24,7 +24,7 @@ depends: [
   "cohttp" {>= "1.0.0"}
   "lwt"
   "sexplib"
-  "ppx_sexp_conv" {build & >="v0.9.0"}
+  "ppx_sexp_conv" {>= "v0.9.0"}
 ]
 conflicts: [
   "lwt" {< "2.5.0"}
