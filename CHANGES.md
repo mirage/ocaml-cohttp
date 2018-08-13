@@ -1,3 +1,10 @@
+## v1.1.1 (2018-08-13)
+
+* Update to be compatible with new async/core (#607 by @rgrinberg)
+* Remove use of deprecated `Lwt_logs` (#609 by @raphael-proust)
+* Do not rely on locale for printing qvalues (#611 by @vbmithr)
+* Ppx dependencies aren't just build time dependencies (#625 by @rgrinberg)
+
 ## v1.1.0 (2018-03-28)
 
 * Add an "expert mode" to hand off raw responses to a custom handler,
