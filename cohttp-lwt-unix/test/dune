@@ -1,0 +1,11 @@
+(test
+  (libraries cohttp-lwt-unix oUnit lwt.unix)
+  (package   cohttp-lwt-unix)
+  (modules   test_parser)
+  (name      test_parser))
+
+(test
+ (libraries cohttp_lwt_unix_test cohttp-lwt-unix)
+ (package   cohttp-lwt-unix)
+ (modules   test_sanity)
+ (name      test_sanity))

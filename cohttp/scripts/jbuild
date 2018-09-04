@@ -1,5 +1,0 @@
-(jbuild_version 1)
-
-(executables
- ((names (generate))
-  (libraries (jsonm))))

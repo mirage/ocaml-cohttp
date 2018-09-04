@@ -1,0 +1,4 @@
+(tests
+ (libraries cohttp alcotest fmt)
+ (package   cohttp)
+ (names     test_accept test_header test_request))
