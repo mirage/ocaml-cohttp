@@ -39,7 +39,8 @@ env:
   - PACKAGE="cohttp-lwt-jsoo" DISTRO="alpine" OCAML_VERSION="4.03.0"
   - PACKAGE="cohttp-lwt" DISTRO="alpine" OCAML_VERSION="4.03.0"
   - PACKAGE="cohttp-mirage" DISTRO="alpine" OCAML_VERSION="4.03.0"
-allow_failures:
+matrix:
+  allow_failures:
   - env: PACKAGE="cohttp-async" DISTRO="alpine" OCAML_VERSION="4.03.0"
   - env: PACKAGE="cohttp-async" DISTRO="alpine" OCAML_VERSION="4.06.0"
 
