@@ -1,11 +1,19 @@
-(test
-  (libraries cohttp-lwt-unix oUnit lwt.unix)
-  (package   cohttp-lwt-unix)
+(executable
+  (name      test_parser)
   (modules   test_parser)
-  (name      test_parser))
+  (libraries cohttp-lwt-unix oUnit lwt.unix))
 
-(test
- (libraries cohttp_lwt_unix_test cohttp-lwt-unix)
- (package   cohttp-lwt-unix)
+(alias
+  (name    runtest)
+  (package cohttp-lwt-unix)
+  (action  (run ./test_parser.exe)))
+
+(executable
  (modules   test_sanity)
- (name      test_sanity))
+ (name      test_sanity)
+ (libraries cohttp_lwt_unix_test cohttp-lwt-unix))
+
+(alias
+  (name    runtest)
+  (package cohttp-lwt-unix)
+  (action  (run ./test_sanity.exe)))

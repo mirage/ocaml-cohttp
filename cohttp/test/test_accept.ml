@@ -32,7 +32,7 @@ let suite_of_fail
     -> a Alcotest.testable
     -> (string * exn) list
     -> _ list
-  = fun pf t ->
+  = fun pf _ ->
     List.map (fun (s, e) ->
         let test () =
           Alcotest.check_raises s e (fun () -> ignore (pf (Some s))) in
