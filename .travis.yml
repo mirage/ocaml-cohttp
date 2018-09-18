@@ -43,6 +43,8 @@ matrix:
   allow_failures:
   - env: PACKAGE="cohttp-async" DISTRO="alpine" OCAML_VERSION="4.03"
   - env: PACKAGE="cohttp-async" DISTRO="alpine" OCAML_VERSION="4.06"
+  - env: PACKAGE="cohttp-async" DISTRO="debian-unstable" OCAML_VERSION="4.05"
+  - env: PACKAGE="cohttp-lwt-unix" DISTRO="debian-unstable" OCAML_VERSION="4.05"
 
 notifications:
   webhooks:
