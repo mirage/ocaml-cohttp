@@ -33,8 +33,8 @@ module HTTP(FS: Mirage_kv_lwt.RO)(S: Cohttp_lwt.S.Server) = struct
 
   let exists t name =
   FS.exists t (Key.v name) >|= function
-  | Ok `Value -> true
-  | Ok _ | Error (`Not_found _) -> false
+  | Ok (Some `Value) -> true
+  | Ok (Some _ | None) -> false
   | Error e -> Fmt.failwith "exists %a" FS.pp_error e
 
   let dispatcher request_fn =
