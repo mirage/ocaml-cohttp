@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
   }}}*)
-open Sexplib.Std
+open Sexplib0.Sexp_conv
 
 type t = int [@@deriving sexp]
 

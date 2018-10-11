@@ -28,7 +28,7 @@ let t_credentials =
   Alcotest.testable
     (fun fmt c ->
        let sexp = Cohttp.Auth.sexp_of_credential c in
-       Sexplib.Sexp.pp_hum fmt sexp
+       Sexplib0.Sexp.pp_hum fmt sexp
     ) (=)
 
 let auth_uri_no_override _ =

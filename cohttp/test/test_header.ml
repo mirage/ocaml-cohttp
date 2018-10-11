@@ -27,7 +27,7 @@ let t_credentials =
   Alcotest.testable
     (fun fmt c ->
        let sexp = Cohttp.Auth.sexp_of_credential c in
-       Sexplib.Sexp.pp_hum fmt sexp
+       Sexplib0.Sexp.pp_hum fmt sexp
     ) (=)
 
 let valid_auth () =
@@ -94,7 +94,7 @@ let list_valued_header () =
 let t_header =
   Alcotest.testable (fun fmt h ->
       let sexp = Cohttp.Header.sexp_of_t h in
-      Sexplib.Sexp.pp_hum fmt sexp
+      Sexplib0.Sexp.pp_hum fmt sexp
     ) (fun x y -> Cohttp.Header.compare x y = 0)
 
 let large_header () =

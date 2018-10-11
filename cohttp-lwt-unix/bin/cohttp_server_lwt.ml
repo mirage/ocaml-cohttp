@@ -89,7 +89,7 @@ let handler ~info ~docroot ~index (ch,_conn) req _body =
     "%s %s %s"
     (Cohttp.(Code.string_of_method (Request.meth req)))
     path
-    (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)));
+    (Sexplib0.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)));
   (* Get a canonical filename from the URL and docroot *)
   match Request.meth req with
   | (`GET | `HEAD) as meth ->
@@ -107,7 +107,7 @@ let start_server docroot port host index tls () =
   let info = Printf.sprintf "Served by Cohttp/Lwt listening on %s:%d" host port in
   let conn_closed (ch,_conn) =
     Log.debug (fun m -> m "connection %s closed"
-      (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch))) in
+      (Sexplib0.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch))) in
   let callback = handler ~info ~docroot ~index in
   let config = Server.make ~callback ~conn_closed () in
   let mode = match tls with

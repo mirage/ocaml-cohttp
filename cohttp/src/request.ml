@@ -14,7 +14,7 @@
  *
   }}}*)
 
-open Sexplib.Std
+open Sexplib0.Sexp_conv
 
 type t = {
   headers: Header.t;
@@ -74,7 +74,7 @@ let make_for_client ?headers ?(chunked=true) ?(body_length=Int64.zero) meth uri 
   make ~meth ~encoding ?headers uri
 
 let pp_hum ppf r =
-  Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib.Sexp.to_string_hum)
+  Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib0.Sexp.to_string_hum)
 
 (* Validate path when reading URI. Implemented for compatibility with old
    implementation rather than efficiency *)
