@@ -109,6 +109,36 @@ Consult the following modules for reference:
 * [Cohttp_lwt.Client](https://github.com/mirage/ocaml-cohttp/blob/master/cohttp-lwt/src/s.ml)
 * [Cohttp_async.Client](https://github.com/mirage/ocaml-cohttp/blob/master/cohttp-async/src/client.mli)
 
+## Docker Socket Client example
+
+Cohttp provides a lot of utilites out of the box, but does not prevent the users
+to dig in and customise it for their needs. The following is an example of a
+[unix socket client to communicate with Docker](https://discuss.ocaml.org/t/how-to-write-a-simple-socket-based-web-client-for-docker/1760/3).
+
+```ocaml
+open Lwt.Infix
+
+let t =
+  let resolver =
+    let h = Hashtbl.create 1 in
+    Hashtbl.add h "docker" (`Unix_domain_socket "/var/run/docker.sock");
+    Resolver_lwt_unix.static h in
+  let ctx = Cohttp_lwt_unix.Client.custom_ctx ~resolver () in
+  Cohttp_lwt_unix.Client.get ~ctx (Uri.of_string "http://docker/version") >>= fun (resp, body) ->
+  let open Cohttp in
+  let code = resp |> Response.status |> Code.code_of_status in
+  Printf.printf "Response code: %d\n" code;
+  Printf.printf "Headers: %s\n" (resp |> Response.headers |> Header.to_string);
+  body |> Cohttp_lwt.Body.to_string >|= fun body ->
+  Printf.printf "Body of length: %d\n" (String.length body);
+  print_endline ("Received body\n" ^ body)
+
+let _ = Lwt_main.run t
+```
+
+The main issue there is there no way to resolve a socket address, so you need to
+create a custom resolver to map a hostname to the Unix domain socket.
+
 ## Basic Server Tutorial
 
 Implementing a server in cohttp is mostly equivalent to implementing a function
