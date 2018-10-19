@@ -256,7 +256,6 @@ let connection h =
   | Some x -> Some (`Unknown x)
   | _ -> None
 
-open Sexplib
 open Sexplib0.Sexp_conv
 
 let sexp_of_t t =
@@ -266,4 +265,4 @@ let t_of_sexp s =
   of_list (list_of_sexp (pair_of_sexp string_of_sexp string_of_sexp) s)
 
 let pp_hum ppf h =
-  Format.fprintf ppf "%s" (h |> sexp_of_t |> Sexp.to_string_hum)
+  Format.fprintf ppf "%s" (h |> sexp_of_t |> Sexplib0.Sexp.to_string_hum)
