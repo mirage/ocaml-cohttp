@@ -53,7 +53,7 @@ let respond_file ?headers ~fname () =
         respond_not_found ()
       | exn -> Lwt.fail exn)
 
-let create ?timeout ?stop ?on_exn ?(ctx=Net.default_ctx)
+let create ?timeout ?backlog ?stop ?on_exn ?(ctx=Net.default_ctx)
     ?(mode=`TCP (`Port 8080)) spec =
-  Conduit_lwt_unix.serve ?timeout ?stop ?on_exn ~ctx:ctx.Net.ctx
+  Conduit_lwt_unix.serve ?backlog ?timeout ?stop ?on_exn ~ctx:ctx.Net.ctx
     ~mode (callback spec)

@@ -34,8 +34,11 @@ module Make(IO : S.IO) = struct
 
     let parse_chunksize chunk_size_hex =
       let hex =
-        (* chunk size is optionally delimited by ; *)
-        try String.sub chunk_size_hex 0 (String.rindex chunk_size_hex ';')
+        (* From https://tools.ietf.org/html/rfc7230#section-4.1.1
+           > The chunked encoding allows each chunk to include zero or
+           > more chunk extensions, immediately following the chunk-size
+        *)
+        try String.sub chunk_size_hex 0 (String.index chunk_size_hex ';')
         with _ -> chunk_size_hex in
       try Some (Int64.of_string ("0x" ^ hex))
       with _ -> None
