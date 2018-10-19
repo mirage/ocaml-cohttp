@@ -1,3 +1,12 @@
+## v1.2.0 (2018-10-19)
+
+* Support more than a single chunk extension for RFC7320 compliance (#618 by @djs55)
+* Lwt-unix: add a `?backlog` argument to the serve function (@samoht)
+* Use the uri.2.0.0 interfaces for sexpression generation of types (@avsm)
+* Switch to `sexplib0` for a more lightweight s-expression library (@mseri)
+* Minimum OCaml compiler version requirement is now 4.04.1 (@mseri)
+* Add an example of using custom resolvers to the README (@mseri)
+
 ## v1.1.1 (2018-08-13)
 
 * Update to be compatible with new async/core (#607 by @rgrinberg)
