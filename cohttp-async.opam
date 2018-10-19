@@ -14,6 +14,7 @@ bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
 license: "ISC"
 tags: ["org:mirage" "org:xapi-project"]
 dev-repo: "https://github.com/mirage/ocaml-cohttp.git"
+doc: "https://mirage.github.io/ocaml-cohttp/"
 build: [
   ["dune" "subst"] {pinned}
   ["dune" "build" "-p" name "-j" jobs]
