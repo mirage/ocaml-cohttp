@@ -14,7 +14,7 @@
  *
   }}}*)
 
-open Sexplib.Std
+open Sexplib0.Sexp_conv
 open Printf
 
 type challenge = [

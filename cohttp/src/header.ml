@@ -257,7 +257,7 @@ let connection h =
   | _ -> None
 
 open Sexplib
-open Sexplib.Conv
+open Sexplib0.Sexp_conv
 
 let sexp_of_t t =
   sexp_of_list (sexp_of_pair sexp_of_string sexp_of_string) (to_list t)

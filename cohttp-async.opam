@@ -31,7 +31,7 @@ depends: [
   "magic-mime"
   "logs"
   "fmt" {>="0.8.2"}
-  "sexplib"
+  "sexplib0"
   "ppx_sexp_conv" {>= "v0.9.0"}
   "ounit" {test}
 ]

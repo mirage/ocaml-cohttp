@@ -24,7 +24,7 @@ depends: [
   "re" {>= "1.7.2"}
   "uri" {>= "2.0.0"}
   "fieldslib"
-  "sexplib"
+  "sexplib0"
   "ppx_fields_conv" {>= "v0.9.0"}
   "ppx_sexp_conv" {>= "v0.9.0"}
   "stringext"
@@ -33,4 +33,4 @@ depends: [
   "jsonm" {build}
   "alcotest" {test}
 ]
-available: [ocaml-version >= "4.03.0"]
+available: [ocaml-version >= "4.04.1"]

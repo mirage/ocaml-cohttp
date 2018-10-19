@@ -107,7 +107,7 @@ let pp_diff fmt (a,b) =
   Format.pp_print_newline fmt ();
   Format.pp_print_string fmt b
 
-let p_sexp f x = x |> f |> Sexplib.Sexp.to_string
+let p_sexp f x = x |> f |> Sexplib0.Sexp.to_string
 
 module Req_io = Cohttp.Request.Make(Cohttp_lwt_unix.IO)
 module Rep_io = Cohttp.Response.Make(Cohttp_lwt_unix.IO)

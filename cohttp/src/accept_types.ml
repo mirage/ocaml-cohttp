@@ -17,7 +17,7 @@
 
 (** Type definitions for the {!Accept} module *)
 
-open Sexplib.Std
+open Sexplib0.Sexp_conv
 
 type pv = T of string | S of string [@@deriving sexp]
 type p = string * pv [@@deriving sexp]

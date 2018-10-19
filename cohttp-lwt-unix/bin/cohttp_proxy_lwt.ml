@@ -28,7 +28,7 @@ let handler ~verbose _ req body =
   if verbose then eprintf "--> %s %s %s\n%!"
     (Cohttp.(Code.string_of_method (Request.meth req)))
     (Uri.to_string uri)
-    (Sexplib.Sexp.to_string_hum (Request.sexp_of_t req));
+    (Sexplib0.Sexp.to_string_hum (Request.sexp_of_t req));
   (* Strip out hop-by-hop connection headers *)
   let headers =
     Request.headers req |> fun h ->
@@ -44,7 +44,7 @@ let handler ~verbose _ req body =
   if verbose then
     eprintf "<-- %s %s\n%!"
       (Uri.to_string (Request.uri req))
-      (Sexplib.Sexp.to_string_hum (Response.sexp_of_t resp));
+      (Sexplib0.Sexp.to_string_hum (Response.sexp_of_t resp));
   let status = Response.status resp in
   let headers =
     Response.headers resp |> fun h ->
@@ -58,7 +58,7 @@ let start_proxy port host verbose cert key () =
   printf "Listening for HTTP request on: %s %d\n%!" host port;
   let conn_closed (ch,_conn) =
     printf "Connection %s closed\n%!"
-      (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)) in
+      (Sexplib0.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)) in
   let callback = handler ~verbose in
   let config = Server.make ~callback ~conn_closed () in
   let mode = match cert, key with

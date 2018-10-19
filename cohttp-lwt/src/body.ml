@@ -16,7 +16,7 @@
 
 open Cohttp
 open Lwt
-open Sexplib.Conv
+open Sexplib0.Sexp_conv
 
 type t = [
   | Body.t

@@ -14,7 +14,7 @@
  *
   }}}*)
 
-open Sexplib.Std
+open Sexplib0.Sexp_conv
 
 (* From <https://tools.ietf.org/html/rfc5988> *)
 module Rel = struct
