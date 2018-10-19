@@ -26,7 +26,7 @@ module Net = struct
       >>| function
       | { Addr_info.ai_addr=ADDR_INET (addr,_); _ }::_ ->
         Or_error.return (host, Ipaddr_unix.of_inet_addr addr, port)
-      | _ -> Or_error.error "Failed to resolve Uri" uri Uri.sexp_of_t
+      | _ -> Or_error.error "Failed to resolve Uri" uri Uri_sexp.sexp_of_t
 
   let connect_uri ?interrupt ?ssl_config uri =
     lookup uri
