@@ -35,5 +35,6 @@ depends: [
   "sexplib0"
   "ppx_sexp_conv" {>= "v0.9.0"}
   "ounit" {test}
+  "uri" {>= "2.0.0"}
 ]
 available: [ocaml-version >= "4.04.1"]
