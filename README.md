@@ -104,6 +104,13 @@ There's a few things to notice:
 * We must trigger lwt's event loop for the request to run. `Lwt_main.run` will
   run the event loop and return with final value of `body` which we then print.
 
+Note that in order to request an HTTPS page like in the above example,
+you'll need Cohttp to have been compiled with SSL or TLS. For SSL, you'll
+need to install both [`ssl`](https://github.com/savonet/ocaml-ssl) and
+[`lwt_ssl`](https://github.com/ocsigen/lwt_ssl) before installing `cohttp`.
+The TLS route will require installing
+[`tls`](https://github.com/mirleft/ocaml-tls) before `cohttp`.
+
 Consult the following modules for reference:
 
 * [Cohttp_lwt.Client](https://github.com/mirage/ocaml-cohttp/blob/master/cohttp-lwt/src/s.ml)
