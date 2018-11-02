@@ -106,12 +106,37 @@ module type Server = sig
 
   type conn = IO.conn * Cohttp.Connection.t
 
+  type response_action =
+    (* The connection is not closed in the [`Expert] case until the [unit
+       Lwt.t] becomes determined. *)
+    [ `Expert of Cohttp.Response.t
+                 * (IO.ic
+                    -> IO.oc
+                    -> unit Lwt.t)
+    | `Response of Cohttp.Response.t * Body.t ]
+
   type t
 
-  val make : ?conn_closed:(conn -> unit)
-    -> callback:(conn -> Cohttp.Request.t -> Body.t
-                 -> (Cohttp.Response.t * Body.t) Lwt.t)
-    -> unit -> t
+  val make_response_action :
+    ?conn_closed:(conn -> unit) ->
+    callback:(conn -> Cohttp.Request.t -> Body.t ->
+              response_action Lwt.t) ->
+    unit ->
+    t
+
+  val make_expert :
+    ?conn_closed:(conn -> unit) ->
+    callback:(conn -> Cohttp.Request.t -> Body.t ->
+              (Cohttp.Response.t * (IO.ic -> IO.oc -> unit Lwt.t)) Lwt.t) ->
+    unit ->
+    t
+
+  val make :
+    ?conn_closed:(conn -> unit) ->
+    callback:(conn -> Cohttp.Request.t -> Body.t ->
+              (Cohttp.Response.t * Body.t) Lwt.t) ->
+    unit ->
+    t
 
   (** Resolve a URI and a docroot into a concrete local filename. *)
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
