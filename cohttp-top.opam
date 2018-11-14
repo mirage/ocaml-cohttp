@@ -1,4 +1,4 @@
-opam-version: "1.2"
+opam-version: "2.0"
 maintainer: "anil@recoil.org"
 authors: [
   "Anil Madhavapeddy"
@@ -9,19 +9,25 @@ authors: [
   "Rudi Grinberg"
   "Andy Ray"
 ]
-homepage: "https://github.com/mirage/ocaml-cohttp"
-bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
+synopsis: "CoHTTP toplevel pretty printers for HTTP types"
+description: """
+This library installs toplevel prettyprinters for CoHTTP
+types such as the `Request`, `Response` and `Types` modules.
+Once this library has been loaded, you can directly see the
+values of those types in toplevels such as `utop` or `ocaml`."""
 license: "ISC"
 tags: ["org:mirage" "org:xapi-project"]
-dev-repo: "https://github.com/mirage/ocaml-cohttp.git"
+homepage: "https://github.com/mirage/ocaml-cohttp"
 doc: "https://mirage.github.io/ocaml-cohttp/"
-build: [
-  ["dune" "subst"] {pinned}
-  ["dune" "build" "-p" name "-j" jobs]
-]
-build-test: ["dune" "runtest" "-p" name "-j" jobs]
+bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
 depends: [
+  "ocaml" {>= "4.04.1"}
   "dune" {build & >= "1.1.0"}
   "cohttp"
 ]
-available: [ocaml-version >= "4.04.1"]
+build: [
+  ["dune" "subst"] {pinned}
+  ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
+]
+dev-repo: "git+https://github.com/mirage/ocaml-cohttp.git"
