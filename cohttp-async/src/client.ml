@@ -34,12 +34,15 @@ module Net = struct
     >>= fun (host, addr, port) ->
     let mode =
       match (Uri.scheme uri, ssl_config) with
-      | Some "https", Some config -> `OpenSSL_with_config (host, addr, port, config)
-      | Some "https", None -> `OpenSSL (host, addr, port)
+      | Some "https", Some config ->
+        `OpenSSL (addr, port, config)
+      | Some "https", None ->
+        let config = Conduit_async.V2.Ssl.Config.create ~hostname:host () in
+        `OpenSSL (addr, port, config)
       | Some "httpunix", _ -> `Unix_domain_socket host
       | _ -> `TCP (addr, port)
     in
-    Conduit_async.connect ?interrupt mode
+    Conduit_async.V2.connect ?interrupt mode
 end
 
 let read_request ic =
