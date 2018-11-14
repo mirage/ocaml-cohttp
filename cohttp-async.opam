@@ -28,7 +28,7 @@ depends: [
   "base" {>= "v0.11.0"}
   "core" {test}
   "cohttp"
-  "conduit-async" {>="1.0.3"}
+  "conduit-async" {>="1.2.0"}
   "magic-mime"
   "logs"
   "fmt" {>="0.8.2"}
