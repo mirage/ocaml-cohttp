@@ -1,3 +1,7 @@
+## dev
+
+* Port opam files to opam2 and add local synopsis and descriptions.
+
 ## v1.2.0 (2018-10-19)
 
 * Support more than a single chunk extension for RFC7320 compliance (#618 by @djs55)
