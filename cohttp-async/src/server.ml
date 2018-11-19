@@ -86,7 +86,7 @@ let handle_client handle_request sock rd wr =
     in
     Pipe.iter ~continue_on_error:false requests_pipe ~f:(function
       | `Expert (response, io_handler, body, finished) ->
-        Response.write ~flush:true (Body_raw.write_body Response.write_body Body.empty) response wr
+        Response.write_header response wr
         >>= fun () ->
         io_handler rd wr
         >>= fun () ->
