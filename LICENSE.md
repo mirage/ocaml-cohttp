@@ -1,5 +1,7 @@
 (*
- * Copyright (c) <the authors, see individual headers on files>
+ * ISC License
+ * 
+ * Copyright (c) 2009-2018 <the authors, see individual headers on files>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
