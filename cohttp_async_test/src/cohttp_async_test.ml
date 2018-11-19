@@ -4,11 +4,22 @@ open OUnit
 open Cohttp_async
 
 type 'a io = 'a Deferred.t
+type ic = Async_unix.Reader.t
+type oc = Async_unix.Writer.t
 type body = Body.t
-type spec = Request.t -> body -> (Response.t * body) io
+type response_action =
+  [ `Expert of Cohttp.Response.t
+               * (ic
+                  -> oc
+                  -> unit io)
+  | `Response of Cohttp.Response.t * body ]
+type spec = Request.t -> body -> response_action io
 type async_test = unit -> unit io
 
-let const = Cohttp_test.const
+let response rsp = `Response rsp
+let expert ?(rsp=Cohttp.Response.make ()) f _req _body =
+  return (`Expert (rsp, f))
+let const rsp _req _body = rsp >>| response
 
 let response_sequence = Cohttp_test.response_sequence failwith
 
@@ -17,7 +28,7 @@ let temp_server ?port spec callback =
     | None -> Cohttp_test.next_port ()
     | Some p -> p in
   let uri = Uri.of_string ("http://0.0.0.0:" ^ (Int.to_string port)) in
-  let server = Server.create ~on_handler_error:`Raise
+  let server = Server.create_expert ~on_handler_error:`Raise
     (Async_extra.Tcp.Where_to_listen.of_port port)
     (fun ~body _sock req -> spec req body) in
   server >>= fun server ->

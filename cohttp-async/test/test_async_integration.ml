@@ -26,21 +26,33 @@ let server =
     (* large request *)
     (fun _ body ->
        body |> Body.to_string >>| String.length >>= fun len ->
-       Server.respond_string (Int.to_string len));
+       Server.respond_string (Int.to_string len) >>| response
+    )
   ] @ (* pipelined_chunk *)
   (response_bodies |> List.map ~f:(Fn.compose const ok))
-  @ [ (* large response chunked *)
-    (fun _ _ ->
-       let body =
-         let (r, w) = Pipe.create () in
-         let chunk = chunk chunk_size in
-         for _ = 0 to chunks - 1 do
-           Pipe.write_without_pushback w chunk
-         done;
-         Pipe.close w;
-         r
-       in
-       Server.respond_with_pipe ~code:`OK body
+  @
+  (* large response chunked *)
+  (fun _ _ ->
+     let body =
+       let (r, w) = Pipe.create () in
+       let chunk = chunk chunk_size in
+       for _ = 0 to chunks - 1 do
+         Pipe.write_without_pushback w chunk
+       done;
+       Pipe.close w;
+       r
+     in
+     Server.respond_with_pipe ~code:`OK body >>| response
+  )
+  :: [ (* pipelined_expert *)
+    expert (fun _ic oc ->
+      Async_unix.Writer.write oc "8\r\nexpert 1\r\n0\r\n\r\n";
+      Async_unix.Writer.flushed oc
+    );
+    expert (fun ic oc ->
+      Async_unix.Writer.write oc "8\r\nexpert 2\r\n0\r\n\r\n";
+      Async_unix.Writer.flushed oc >>= fun () ->
+      Async_unix.Reader.close ic
     )
   ]
   |> response_sequence
@@ -84,11 +96,21 @@ let ts =
       assert_equal Cohttp.Transfer.Chunked (Response.encoding resp);
       body |> Body.to_string >>| String.length >>| fun len ->
       assert_equal ~printer:(Int.to_string) (chunk_size * chunks) len in
+    let expert_pipelined () =
+      let printer x = x in
+      Client.get uri >>= fun (_rsp, body) ->
+      Body.to_string body >>= fun body ->
+      assert_equal ~printer "expert 1" body;
+      Client.get ~headers uri >>= fun (_rsp, body) ->
+      Body.to_string body >>| fun body ->
+      assert_equal ~printer "expert 2" body
+    in
     [ "empty chunk test", empty_chunk
     ; "large response", large_response
     ; "large request", large_request
     ; "pipelined chunk test", pipelined_chunk
     ; "large chunked response", large_chunked_response
+    ; "expert response", expert_pipelined
     ]
   end
 

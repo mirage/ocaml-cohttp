@@ -16,7 +16,7 @@ let () = Debug.activate_debug ()
 let () = Logs.set_level (Some Info)
 
 let server =
-  [ (* t *)
+  List.map const [ (* t *)
     Server.respond_string ~status:`OK ~body:message ();
     (* empty_chunk *)
     Server.respond ~status:`OK ~body:(Body.of_string_list chunk_body) ();
@@ -41,15 +41,39 @@ let server =
         ))
     end()
   ]
-  |> List.map const
-  |> (fun tests ->
-      tests @ [
-        (fun _ body -> (* Returns 500 on bad file *)
-           Body.to_string body >>= fun fname ->
-           Server.respond_file ~fname ())] @
-      (Array.init (leak_repeat * 2) (fun _ _ _ ->
-           (* no leaks *)
-           Server.respond_string ~status:`OK ~body:"no leak" ()) |> Array.to_list))
+  @
+  (fun _ body -> (* Returns 500 on bad file *)
+     Body.to_string body >>= fun fname ->
+     Server.respond_file ~fname () >|= fun rsp ->
+     `Response rsp
+  )
+  :: (
+    Array.init (leak_repeat * 2) (fun _ _ _ ->
+      (* no leaks *)
+      Server.respond_string ~status:`OK ~body:"no leak" () >|= fun rsp ->
+      `Response rsp
+    )
+    |> Array.to_list
+  )
+  @ (* pipelined_expert *)
+  [
+    (fun _ _ ->
+      Lwt.return (`Expert (
+        Cohttp.Response.make (),
+        fun _ic oc ->
+          Lwt_io.write oc "8\r\nexpert 1\r\n0\r\n\r\n"
+      ))
+    );
+    (fun _ _ ->
+     Lwt.return (`Expert (
+        Cohttp.Response.make (),
+        fun ic oc ->
+          Lwt_io.write oc "8\r\nexpert 2\r\n0\r\n\r\n" >>= fun () ->
+          Lwt_io.flush oc >>= fun () ->
+          Lwt_io.close ic
+      )
+    ))
+  ]
   |> response_sequence
 
 let ts =
@@ -146,6 +170,15 @@ let ts =
           assert_equal (Response.status resp_get) `OK;
           Body.drain_body body) stream ()
     in
+    let expert_pipelined () =
+      let printer x = x in
+      Client.get uri >>= fun (_rsp, body) ->
+      Body.to_string body >>= fun body ->
+      assert_equal ~printer "expert 1" body;
+      Client.get uri >>= fun (_rsp, body) ->
+      Body.to_string body >|= fun body ->
+      assert_equal ~printer "expert 2" body
+    in
     [ "sanity test", t
     ; "empty chunk test", empty_chunk
     ; "pipelined chunk test", pipelined_chunk
@@ -154,6 +187,7 @@ let ts =
     ; "massive chunked", massive_chunked
     ; "unreadable file returns 500", unreadable_file_500
     ; "no leaks on requests", test_no_leak
+    ; "expert response", expert_pipelined
     ]
   end
 
