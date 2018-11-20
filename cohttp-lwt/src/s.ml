@@ -106,9 +106,16 @@ module type Server = sig
 
   type conn = IO.conn * Cohttp.Connection.t
 
+  (** A request handler can respond in two ways:
+      - Using [`Response], with a {!Response.t} and a {!Body.t}.
+      - Using [`Expert], with a {!Response.t} and an IO function that is
+        expected to write the response body. The IO function has access to the
+        underlying {!IO.ic} and {!IO.oc}, which allows writing a response body
+        more efficiently, stream a response or to switch protocols entirely
+        (e.g. websockets). Processing of pipelined requests continue after the
+        {!unit Lwt.t} is resolved. The connection can be closed by closing the
+        {!IO.ic}. *)
   type response_action =
-    (* The connection is not closed in the [`Expert] case until the [unit
-       Lwt.t] becomes determined. *)
     [ `Expert of Cohttp.Response.t
                  * (IO.ic
                     -> IO.oc
