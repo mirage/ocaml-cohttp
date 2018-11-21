@@ -7,6 +7,9 @@ module Make(IO:S.IO) = struct
   module Request = Make.Request(IO)
   module Response = Make.Response(IO)
 
+  let src = Logs.Src.create "cohttp.lwt.server" ~doc:"Cohttp Lwt server module"
+  module Log = (val Logs.src_log src : Logs.LOG)
+
   type conn = IO.conn * Cohttp.Connection.t
 
   type response_action =
@@ -107,7 +110,7 @@ module Make(IO:S.IO) = struct
          Lwt.catch
            (fun () -> callback conn req body)
            (fun exn ->
-             Format.eprintf "Error handling %a: %s\n%!" Request.pp_hum req (Printexc.to_string exn);
+             Log.err (fun f -> f "Error handling %a: %s\n%!" Request.pp_hum req (Printexc.to_string exn));
              respond_error ~body:"Internal Server Error" () >|= fun rsp ->
              `Response rsp
            ))
