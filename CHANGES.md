@@ -1,6 +1,11 @@
 ## dev
 
 * Port opam files to opam2 and add local synopsis and descriptions.
+* Lwt: Add Expert response action for servers (#647 by @andreas)
+
+Compatibility breaking interface changes:
+
+* Async: Expert response action no longer writes empty HTTP body (#647 by @andreas)
 
 ## v1.2.0 (2018-10-19)
 

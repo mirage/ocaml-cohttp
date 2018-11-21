@@ -3,4 +3,4 @@
   (public_name cohttp-lwt)
   (synopsis    "Lwt backend")
   (preprocess  (pps ppx_sexp_conv))
-  (libraries   lwt uri cohttp))
+  (libraries   lwt uri cohttp logs logs.lwt))

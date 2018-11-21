@@ -16,9 +16,16 @@ type 'r respond_t =
   ?body:Body.t ->
   Cohttp.Code.status_code -> 'r Async_kernel.Deferred.t
 
+(** A request handler can respond in two ways:
+    - Using [`Response], with a {!Response.t} and a {!Body.t}.
+    - Using [`Expert], with a {!Response.t} and an IO function that is expected
+      to write the response body. The IO function has access to the underlying
+      {!Async_unix.Reader.t} and {!Async_unix.Writer.t}, which allows writing a
+      response body more efficiently, stream a response or to switch protocols
+      entirely (e.g. websockets). Processing of pipelined requests continue
+      after the {!unit Async_kernel.Deferred.t} is resolved. The connection can
+      be closed by closing the {!Async_unix.Reader.t}. *)
 type response_action =
-  (* The connection is not closed in the [`Expert] case until the [unit
-     Async_kernel.Deferred.t] becomes determined. *)
   [ `Expert of Cohttp.Response.t
                * (Async_unix.Reader.t
                   -> Async_unix.Writer.t

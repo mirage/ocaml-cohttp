@@ -3,13 +3,25 @@ open OUnit
 open Cohttp_lwt_unix
 
 type 'a io = 'a Lwt.t
+type ic = Lwt_io.input_channel
+type oc = Lwt_io.output_channel
 type body = Cohttp_lwt.Body.t
 
-type spec = Request.t -> body -> (Response.t * body) io
+type response_action =
+  [ `Expert of Cohttp.Response.t
+               * (ic
+                  -> oc
+                  -> unit io)
+  | `Response of Cohttp.Response.t * body ]
+
+type spec = Request.t -> body -> response_action io
 
 type async_test = unit -> unit Lwt.t
 
-let const = Cohttp_test.const
+let response rsp = `Response rsp
+let expert ?(rsp=Cohttp.Response.make ()) f _req _body =
+  return (`Expert (rsp, f))
+let const rsp _req _body = rsp >|= response
 
 let response_sequence = Cohttp_test.response_sequence Lwt.fail_with
 
@@ -20,7 +32,7 @@ let temp_server ?port spec callback =
   let port = match port with
     | None -> Cohttp_test.next_port ()
     | Some p -> p in
-  let server = Server.make ~callback:(fun _ req body -> spec req body) () in
+  let server = Server.make_response_action ~callback:(fun _ req body -> spec req body) () in
   let uri = Uri.of_string ("http://0.0.0.0:" ^ (string_of_int port)) in
   let server_failed, server_failed_wake = Lwt.task () in
   let server = Lwt.catch

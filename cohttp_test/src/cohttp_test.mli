@@ -2,12 +2,24 @@ open Cohttp
 
 module type S = sig
   type 'a io
+  type ic
+  type oc
   type body
 
+  type response_action =
+    [ `Expert of Cohttp.Response.t
+                 * (ic
+                    -> oc
+                    -> unit io)
+    | `Response of Cohttp.Response.t * body ]
+
   (** A server that is being tested must be defined by providing a spec *)
-  type spec = Request.t -> body -> (Response.t * body) io
+  type spec = Request.t -> body -> response_action io
 
   type async_test = unit -> unit io
+
+  val response : Response.t * body -> response_action
+  val expert : ?rsp:Response.t -> (ic -> oc -> unit io) -> spec
 
   (** A constant handler that always returns its argument *)
   val const : (Response.t * body) io -> spec
@@ -34,4 +46,3 @@ end
 val next_port : unit -> int
 val response_sequence : (string -> 'a) -> ('b -> 'c -> 'a) list
   -> 'b -> 'c -> 'a
-val const : 'a -> 'c -> 'd -> 'a
