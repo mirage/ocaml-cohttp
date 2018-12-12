@@ -14,12 +14,12 @@
  *
   }}}*)
 
-open Sexplib.Std
+open Sexplib0.Sexp_conv
 
 (* From <https://tools.ietf.org/html/rfc5988> *)
 module Rel = struct
   type t =
-    | Extension of Uri.t
+    | Extension of Uri_sexp.t
     | Alternate
     | Appendix
     | Bookmark
@@ -159,9 +159,9 @@ module Arc = struct
 end
 
 type t = {
-  context : Uri.t;
+  context : Uri_sexp.t;
   arc : Arc.t;
-  target : Uri.t;
+  target : Uri_sexp.t;
 }
 [@@deriving sexp]
 

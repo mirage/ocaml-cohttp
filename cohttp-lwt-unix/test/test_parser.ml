@@ -92,6 +92,8 @@ another-footer: another-value\r\n\
 \r\n\
 "
 
+let user_agent = Cohttp.Header.user_agent
+
 let basic_res_plus_crlf = basic_res ^ "\r\n\r\n"
 
 let ic_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.input buf
@@ -107,7 +109,7 @@ let pp_diff fmt (a,b) =
   Format.pp_print_newline fmt ();
   Format.pp_print_string fmt b
 
-let p_sexp f x = x |> f |> Sexplib.Sexp.to_string
+let p_sexp f x = x |> f |> Sexplib0.Sexp.to_string
 
 module Req_io = Cohttp.Request.Make(Cohttp_lwt_unix.IO)
 module Rep_io = Cohttp.Response.Make(Cohttp_lwt_unix.IO)
@@ -220,7 +222,7 @@ let get_substring oc buf =
   let len = Int64.to_int (Lwt_io.position oc) in
   let b = Bytes.create len in
   Lwt_bytes.blit_to_bytes buf 0 b 0 len;
-  b
+  b |> Bytes.to_string
 
 let write_req expected req =
   (* Use the low-level write_header/footer API *)
@@ -242,14 +244,14 @@ let write_req expected req =
 let make_simple_req () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
-  let expected = "POST /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
+  let expected = "POST /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\nuser-agent: "^user_agent^"\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
   let req = Request.make ~encoding:Transfer.Chunked ~meth:`POST ~headers:(Header.init_with "Foo" "bar") (Uri.of_string "/foo/bar") in
   write_req expected req
 
 let mutate_simple_req () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
-  let expected = "POST /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
+  let expected = "POST /foo/bar HTTP/1.1\r\nfoo: bar\r\nhost: localhost\r\ntransfer-encoding: chunked\r\nuser-agent: "^user_agent^"\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n" in
   let req = Request.make ~encoding:Transfer.Chunked ~headers:(Header.init_with "foo" "bar") (Uri.of_string "/foo/bar") in
   let req = Fieldslib.Field.fset Request.Fields.meth req `POST in
   write_req expected req

@@ -1,3 +1,50 @@
+## dev
+
+* Port opam files to opam2 and add local synopsis and descriptions.
+* Lwt: Add Expert response action for servers (#647 by @andreas)
+
+Compatibility breaking interface changes:
+
+* Async: Expert response action no longer writes empty HTTP body (#647 by @andreas)
+
+## v1.2.0 (2018-10-19)
+
+* Support more than a single chunk extension for RFC7320 compliance (#618 by @djs55)
+* Lwt-unix: add a `?backlog` argument to the serve function (@samoht)
+* Use the uri.2.0.0 interfaces for sexpression generation of types (@avsm)
+* Switch to `sexplib0` for a more lightweight s-expression library (@mseri)
+* Minimum OCaml compiler version requirement is now 4.04.1 (@mseri)
+* Add an example of using custom resolvers to the README (@mseri)
+
+## v1.1.1 (2018-08-13)
+
+* Update to be compatible with new async/core (#607 by @rgrinberg)
+* Remove use of deprecated `Lwt_logs` (#609 by @raphael-proust)
+* Do not rely on locale for printing qvalues (#611 by @vbmithr)
+* Ppx dependencies aren't just build time dependencies (#625 by @rgrinberg)
+
+## v1.1.0 (2018-03-28)
+
+* Add an "expert mode" to hand off raw responses to a custom handler,
+  which in turns makes protocols like Websockets easier (#488 by @msaffer).
+* Set the user-agent by default if one is not provided (#586 by @TheCBaH).
+* Fix typo in the `cohttp.js` META file.
+* Refresh use of the Re library to the latest version (#602 by @rgrinberg).
+* Rearrange the ppx dependencies to be more specific (#596 by @yomimono).
+* Explicitly depend on sexplib in the Async backend (#605 by @kevinqiu).
+
+## v1.0.2 (2018-01-06)
+
+* Support Async v0.10.0 and OCaml 4.06.0 (#588 via @vbmithr)
+* Require `ppx_type_conv`>=v0.9.1` due to a bug with duplicate modules
+  present in earlier versions.
+
+## v1.0.1 (2018-01-03)
+
+* cohttp-mirage: expose the missing IO module (#594, @samoht)
+* cohttp-mirage: catch exceptions when closing channels in mirage client
+  (#589, @ansiwen)
+
 ## v1.0.0 (2017-11-16)
 
 * opam: rename `mirage-http` to `cohttp`-mirage` (#572)

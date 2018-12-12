@@ -14,8 +14,12 @@
  *
   }}}*)
 
-open Core
-open Async
+open Base
+open Async_kernel
+
+module Writer = Async_unix.Writer
+module Reader = Async_unix.Reader
+module Format = Caml.Format
 
 let log_src_name = "cohttp.async.io"
 let src = Logs.Src.create log_src_name ~doc:"Cohttp Async IO module"
@@ -31,13 +35,13 @@ let default_reporter () =
       m ) in
   let report src _level ~over k msgf =
     let k _ =
-      if Logs.Src.name src = log_src_name then (
+      if String.equal (Logs.Src.name src) log_src_name then (
         Writer.write (Lazy.force Writer.stderr) (fmtr_flush ())
       );
       over ();
       k () in
     msgf @@ fun ?header:_ ?tags:_ fmt ->
-    Format.kfprintf k fmtr ("@[" ^^ fmt ^^ "@]@.")
+    Format.kfprintf k fmtr Caml.("@[" ^^ fmt ^^ "@]@.")
   in
   { Logs.report }
 
@@ -52,10 +56,10 @@ let set_log = lazy (
 )
 
 let check_debug norm_fn debug_fn =
-  match Sys.getenv "COHTTP_DEBUG" with
-  | Some _ ->
+  match Caml.Sys.getenv "COHTTP_DEBUG" with
+  | _ ->
     Lazy.force set_log; debug_fn
-  | None -> norm_fn
+  | exception Caml.Not_found -> norm_fn
 
 type 'a t = 'a Deferred.t
 let (>>=) = Deferred.(>>=)
@@ -81,9 +85,9 @@ let read_line =
     )
 
 let read ic len =
-  let buf = String.create len in
+  let buf = Bytes.create len in
   Reader.read ic ~len buf >>| function
-  | `Ok len' -> String.sub buf ~pos:0 ~len:len'
+  | `Ok len' -> Bytes.To_string.sub buf ~pos:0 ~len:len'
   | `Eof -> ""
 
 let write =
@@ -93,7 +97,7 @@ let write =
        return ())
     (fun oc buf ->
        Log.debug
-         (fun fmt -> fmt "%4d >>> %s" (Pid.to_int (Unix.getpid ())) buf);
+         (fun fmt -> fmt "%4d >>> %s" (Unix.getpid ()) buf);
        Writer.write oc buf;
        return ())
 

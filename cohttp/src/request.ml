@@ -14,7 +14,7 @@
  *
   }}}*)
 
-open Sexplib.Std
+open Sexplib0.Sexp_conv
 
 type t = {
   headers: Header.t;
@@ -42,6 +42,8 @@ let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
        match Uri.port uri with
        | Some p -> ":" ^ string_of_int p
        | None -> "") in
+  let headers =
+    Header.add_unless_exists headers "user-agent" Header.user_agent in
   let headers =
     (* Add user:password auth to headers from uri
      * if headers don't already have auth *)
@@ -72,7 +74,7 @@ let make_for_client ?headers ?(chunked=true) ?(body_length=Int64.zero) meth uri 
   make ~meth ~encoding ?headers uri
 
 let pp_hum ppf r =
-  Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib.Sexp.to_string_hum)
+  Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib0.Sexp.to_string_hum)
 
 (* Validate path when reading URI. Implemented for compatibility with old
    implementation rather than efficiency *)

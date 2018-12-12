@@ -1,4 +1,4 @@
-# JBUILDER_GEN
+# DUNE_GEN
 
 package "top" (
   description = "Deprecated. Use cohttp-top directly"
@@ -21,6 +21,6 @@ package "async" (
 )
 
 package "js" (
-  description = "Deprecated. Use cohttp-lwt-js directly"
-  requires = "cohttp-lwt-js"
+  description = "Deprecated. Use cohttp-lwt-jsoo directly"
+  requires = "cohttp-lwt-jsoo"
 )

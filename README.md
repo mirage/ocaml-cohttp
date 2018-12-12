@@ -6,16 +6,16 @@ Cohttp is an OCaml library for creating HTTP daemons. It has a portable
 HTTP parser, and implementations using various asynchronous programming
 libraries:
 
-* `Cohttp_lwt_unix` uses the [Lwt](http://ocsigen.org/lwt) library, and
+* `Cohttp_lwt_unix` uses the [Lwt](https://ocsigen.org/lwt/) library, and
   specifically the UNIX bindings.
 * `Cohttp_async` uses the [Async](https://realworldocaml.org/v1/en/html/concurrent-programming-with-async.html)
   library.
 * `Cohttp_lwt` exposes an OS-independent Lwt interface, which is used
-  by the [Mirage](http://www.openmirage.org) interface
-  to generate standalone microkernels use the cohttp-mirage subpackage.
+  by the [Mirage](https://mirage.io/) interface to generate standalone
+  microkernels (use the cohttp-mirage subpackage).
 * `Cohttp_lwt_xhr` compiles to a JavaScript module that maps the Cohttp
-   calls to XMLHTTPRequests.  This is used to compile OCaml libraries like
-   the GitHub bindings to JavaScript and still run efficiently.
+  calls to XMLHTTPRequests.  This is used to compile OCaml libraries like
+  the GitHub bindings to JavaScript and still run efficiently.
 
 You can implement other targets using the parser very easily. Look at the `IO`
 signature in `lib/s.mli` and implement that in the desired backend.
@@ -69,7 +69,7 @@ open Cohttp
 open Cohttp_lwt_unix
 
 let body =
-  Client.get (Uri.of_string "http://www.reddit.com/") >>= fun (resp, body) ->
+  Client.get (Uri.of_string "https://www.reddit.com/") >>= fun (resp, body) ->
   let code = resp |> Response.status |> Code.code_of_status in
   Printf.printf "Response code: %d\n" code;
   Printf.printf "Headers: %s\n" (resp |> Response.headers |> Header.to_string);
@@ -104,10 +104,47 @@ There's a few things to notice:
 * We must trigger lwt's event loop for the request to run. `Lwt_main.run` will
   run the event loop and return with final value of `body` which we then print.
 
+Note that in order to request an HTTPS page like in the above example,
+you'll need Cohttp to have been compiled with SSL or TLS. For SSL, you'll
+need to install both [`ssl`](https://github.com/savonet/ocaml-ssl) and
+[`lwt_ssl`](https://github.com/ocsigen/lwt_ssl) before installing `cohttp`.
+The TLS route will require installing
+[`tls`](https://github.com/mirleft/ocaml-tls) before `cohttp`.
+
 Consult the following modules for reference:
 
-* [Cohttp_lwt.Client](https://github.com/mirage/ocaml-cohttp/blob/master/lwt-core/cohttp_lwt.mli)
-* [Cohttp_async.Client](https://github.com/mirage/ocaml-cohttp/blob/master/async/cohttp_async.mli)
+* [Cohttp_lwt.Client](https://github.com/mirage/ocaml-cohttp/blob/master/cohttp-lwt/src/s.ml)
+* [Cohttp_async.Client](https://github.com/mirage/ocaml-cohttp/blob/master/cohttp-async/src/client.mli)
+
+## Docker Socket Client example
+
+Cohttp provides a lot of utilites out of the box, but does not prevent the users
+to dig in and customise it for their needs. The following is an example of a
+[unix socket client to communicate with Docker](https://discuss.ocaml.org/t/how-to-write-a-simple-socket-based-web-client-for-docker/1760/3).
+
+```ocaml
+open Lwt.Infix
+
+let t =
+  let resolver =
+    let h = Hashtbl.create 1 in
+    Hashtbl.add h "docker" (`Unix_domain_socket "/var/run/docker.sock");
+    Resolver_lwt_unix.static h in
+  let ctx = Cohttp_lwt_unix.Client.custom_ctx ~resolver () in
+  Cohttp_lwt_unix.Client.get ~ctx (Uri.of_string "http://docker/version") >>= fun (resp, body) ->
+  let open Cohttp in
+  let code = resp |> Response.status |> Code.code_of_status in
+  Printf.printf "Response code: %d\n" code;
+  Printf.printf "Headers: %s\n" (resp |> Response.headers |> Header.to_string);
+  body |> Cohttp_lwt.Body.to_string >|= fun body ->
+  Printf.printf "Body of length: %d\n" (String.length body);
+  print_endline ("Received body\n" ^ body)
+
+let _ = Lwt_main.run t
+```
+
+The main issue there is there no way to resolve a socket address, so you need to
+create a custom resolver to map a hostname to the Unix domain socket.
 
 ## Basic Server Tutorial
 
@@ -158,9 +195,9 @@ ocamlbuild -pkg cohttp-lwt-unix server_example.native
 
 The following modules are useful references:
 
-* [Cohttp_lwt.Server](https://github.com/mirage/ocaml-cohttp/blob/master/lwt-core/cohttp_lwt_s.ml) - Common to mirage and Unix
-* [Cohttp_lwt_unix.Server](https://github.com/mirage/ocaml-cohttp/blob/master/lwt/cohttp_lwt_unix.mli) - Unix specific.
-* [Cohttp_async.Server](https://github.com/mirage/ocaml-cohttp/blob/master/async/cohttp_async.mli)
+* [Cohttp_lwt.Server](https://github.com/mirage/ocaml-cohttp/blob/master/cohttp-lwt/src/s.ml) - Common to mirage and Unix
+* [Cohttp_lwt_unix.Server](https://github.com/mirage/ocaml-cohttp/blob/master/cohttp-lwt-unix/src/server.mli) - Unix specific.
+* [Cohttp_async.Server](https://github.com/mirage/ocaml-cohttp/blob/master/cohttp-async/src/server.mli)
 
 
 ## Installed Binaries
@@ -175,7 +212,7 @@ This is a simple curl utility implemented using cohttp. An example of an
 invocation is:
 
 ```
-$ cohttp-curl-lwt -v -X GET "http://www.reddit.com/"
+$ cohttp-curl-lwt -v -X GET "https://www.reddit.com/"
 ```
 
 * `$ cohttp-server-{lwt,async}`
@@ -194,4 +231,4 @@ Assuming that the server is running in cohttp's source directory:
 $ cohttp-curl-lwt 'http://0.0.0.0:8080/_oasis'
 ```
 ## Important Links
-- [API Documentation](http://mirage.github.io/ocaml-cohttp/)
+- [API Documentation](https://mirage.github.io/ocaml-cohttp/)

@@ -21,11 +21,42 @@ let suite_of
     -> a Alcotest.testable
     -> (string * a) list
     -> _ list
-  = fun parser t ->
+  = fun pf t ->
     List.map (fun (s, expected) ->
         let test () =
-          Alcotest.(check t) s (parser (Some s)) expected in
+          Alcotest.check t s (pf (Some s)) expected in
         (s, `Quick, test))
+
+let suite_of_fail
+  : type a. (string option -> a)
+    -> a Alcotest.testable
+    -> (string * exn) list
+    -> _ list
+  = fun pf _ ->
+    List.map (fun (s, e) ->
+        let test () =
+          Alcotest.check_raises s e (fun () -> ignore (pf (Some s))) in
+        (s, `Quick, test))
+
+let suite_to_string_of
+  : type a. (a -> string)
+    -> (a * string) list
+    -> _ list
+  = fun pf ->
+    List.map (fun (v, expected_str) ->
+        let test () =
+          Alcotest.(check string expected_str expected_str (pf v)) in
+        (expected_str, `Quick, test))
+
+let suite_to_string_of_fail
+  : type a. (a -> string)
+    -> (a * string * exn) list
+    -> _ list
+  = fun pf ->
+    List.map (fun (v, descr, e) ->
+        let test () =
+          Alcotest.(check_raises descr e (fun () -> ignore (pf v))) in
+        ("", `Quick, test))
 
 let valid_media_ranges = [
   "text/plain", [1000,(A.MediaType ("text","plain"),[])];
@@ -36,7 +67,6 @@ let valid_media_ranges = [
   "*/*;q=1.", [1000,(A.AnyMedia,[])];
   "*/*;q=1.0", [1000,(A.AnyMedia,[])];
   "*/*;q=.0", [0,(A.AnyMedia,[])];
-  (* TODO invalid test "*/*;q=.", [0,(A.AnyMedia,[])]; *)
   "*/*;q=0.", [0,(A.AnyMedia,[])];
   "*/*;q=0.1", [100,(A.AnyMedia,[])];
   "image/*,text/*", [
@@ -52,10 +82,40 @@ let valid_media_ranges = [
   "*/*;f=\";q=0,text/plain\"", [1000,(A.AnyMedia,["f",A.S";q=0,text/plain"])];
 ]
 
+let invalid_media_ranges = [
+  "*/*;q=.", Parsing.Parse_error;
+]
+
 let valid_media_ranges_suite =
   let t_media_ranges =
     Alcotest.testable (Fmt.of_to_string A.string_of_media_ranges) (=) in
   suite_of A.media_ranges t_media_ranges valid_media_ranges
+
+let invalid_media_ranges_suite =
+  let t_media_ranges =
+    Alcotest.testable (Fmt.of_to_string A.string_of_media_ranges) (=) in
+  suite_of_fail A.media_ranges t_media_ranges invalid_media_ranges
+
+let valid_qualities = [
+  (1000,(A.AnyMedia,[])), "*/*;q=1";
+  (0,(A.AnyMedia,[])), "*/*;q=0.000";
+  (353,(A.AnyMedia,[])), "*/*;q=0.353";
+  (25,(A.AnyMedia,[])), "*/*;q=0.025";
+  (1,(A.AnyMedia,[])), "*/*;q=0.001";
+]
+
+let invalid_qualities = [
+  (-3,(A.AnyMedia,[])), "negative", Invalid_argument "qvalue -3 must be positive";
+  (1001,(A.AnyMedia,[])), "bigger than 1000", Invalid_argument "qvalue 1001 must be less than 1000";
+]
+
+let valid_qualities_suite =
+  suite_to_string_of
+    (fun (q,a) -> A.string_of_media_range a q) valid_qualities
+
+let invalid_qualities_suite =
+  suite_to_string_of_fail
+    (fun (q, a) -> A.string_of_media_range a q) invalid_qualities
 
 let valid_charsets = [
   "utf-8", [1000,A.Charset "utf-8"];
@@ -112,8 +172,11 @@ let () = Printexc.record_backtrace true
 
 let () =
   Alcotest.run "test_accept" [
-    "Valid Accept",valid_media_ranges_suite;
-    "Valid Accept-Charset", valid_charsets_suite;
-    "Valid Accept-Encoding", valid_encodings_suite;
-    "Valid Accept-Language", valid_languages_suite;
+    "valid string to media range", valid_media_ranges_suite;
+    "invalid string to media range", invalid_media_ranges_suite;
+    "valid media range to string", valid_qualities_suite;
+    "invalid media range to string", invalid_qualities_suite;
+    "valid string to charset", valid_charsets_suite;
+    "valid string to encoding", valid_encodings_suite;
+    "valid string to language", valid_languages_suite;
   ]

@@ -47,8 +47,16 @@ let rec string_of_pl = function
   | (k,T v)::r -> sprintf ";%s=%s%s" k v (string_of_pl r)
   | (k,S v)::r -> sprintf ";%s=\"%s\"%s" k (Stringext.quote v) (string_of_pl r)
 
+let string_of_q = function
+  | q when q < 0 ->
+    invalid_arg (Printf.sprintf "qvalue %d must be positive" q)
+  | q when q > 1000 ->
+    invalid_arg (Printf.sprintf "qvalue %d must be less than 1000" q)
+  | 1000 -> "1"
+  | q -> Printf.sprintf "0.%03d" q
+
 let accept_el el pl q =
-  sprintf "%s;q=%.3f%s" el ((float q)/.1000.) (string_of_pl pl)
+  sprintf "%s;q=%s%s" el (string_of_q q) (string_of_pl pl)
 
 let string_of_media_range = function
   | (MediaType (t,st),pl) -> accept_el (sprintf "%s/%s" t st) pl

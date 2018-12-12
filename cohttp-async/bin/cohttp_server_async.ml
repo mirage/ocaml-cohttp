@@ -15,8 +15,9 @@
  *
   }}}*)
 
-open Core
-open Async
+open Base
+open Async_kernel
+open Async_unix
 
 open Cohttp_async
 open Cohttp_server
@@ -40,7 +41,7 @@ let serve ~info ~docroot ~index uri path =
     (* Get a list of current files and map to HTML *)
     | `Directory -> begin
       let path_len = String.length path in
-      if path_len <> 0 && path.[path_len - 1] <> '/'
+      if Int.(path_len <> 0) && Char.(path.[path_len - 1] <> '/')
       then Server.respond_with_redirect (Uri.with_path uri (path^"/"))
       (* Check if the index file exists *)
       else Sys.file_exists (file_name / index)
@@ -72,7 +73,7 @@ let serve ~info ~docroot ~index uri path =
   | Error exn ->
     begin match Monitor.extract_exn exn with
     | Unix.Unix_error (Unix.ENOENT, "stat", p) ->
-      if p = ("((filename "^file_name^"))") (* Really? *)
+      if String.equal p ("((filename "^file_name^"))") (* Really? *)
       then Server.respond_string ~status:`Not_found
         (html_of_not_found path info)
       else raise exn
@@ -114,20 +115,20 @@ let start_server docroot port index cert_file key_file verbose () =
   let mode = determine_mode cert_file key_file in
   let mode_str = (match mode with `OpenSSL _ -> "HTTPS" | `TCP -> "HTTP") in
   Logs.info (fun f -> f "Listening for %s requests on %d" mode_str port);
-  let info = sprintf "Served by Cohttp/Async listening on %d" port in
+  let info = Printf.sprintf "Served by Cohttp/Async listening on %d" port in
   Server.create
     ~on_handler_error:(`Call (fun addr exn ->
         Logs.err (fun f -> f "Error from %s" (Socket.Address.to_string addr));
         Logs.err (fun f -> f "%s" @@ Exn.to_string exn)))
     ~mode
-    (Tcp.on_port port)
+    (Async_extra.Tcp.Where_to_listen.of_port port)
     (handler ~info ~docroot ~index) >>= fun _serv ->
   Deferred.never ()
 
 let () =
-  let open Command in
+  let open Async_extra.Command in
   run @@
-  async ~summary:"Serve the local directory contents via HTTP or HTTPS"
+  async_spec ~summary:"Serve the local directory contents via HTTP or HTTPS"
     Spec.(
       empty
       +> anon (maybe_with_default "." ("docroot" %: string))

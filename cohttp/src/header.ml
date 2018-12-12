@@ -167,7 +167,7 @@ let get_connection_close headers =
 
 
 let media_type_re =
-  let re = Re_emacs.re ~case:true "[ \t]*\\([^ \t;]+\\)" in
+  let re = Re.Emacs.re ~case:true "[ \t]*\\([^ \t;]+\\)" in
   Re.(compile (seq ([start; re])))
 
 let get_first_match _re s =
@@ -256,8 +256,7 @@ let connection h =
   | Some x -> Some (`Unknown x)
   | _ -> None
 
-open Sexplib
-open Sexplib.Conv
+open Sexplib0.Sexp_conv
 
 let sexp_of_t t =
   sexp_of_list (sexp_of_pair sexp_of_string sexp_of_string) (to_list t)
@@ -266,4 +265,4 @@ let t_of_sexp s =
   of_list (list_of_sexp (pair_of_sexp string_of_sexp string_of_sexp) s)
 
 let pp_hum ppf h =
-  Format.fprintf ppf "%s" (h |> sexp_of_t |> Sexp.to_string_hum)
+  Format.fprintf ppf "%s" (h |> sexp_of_t |> Sexplib0.Sexp.to_string_hum)

@@ -14,8 +14,8 @@
  *
   }}}*)
 
-open Core
-open Async
+open Base
+open Async_kernel
 open Cohttp_async
 
 let show_headers h =
@@ -31,21 +31,22 @@ let make_net_req uri meth' body () =
   show_headers (Cohttp.Response.headers res);
   body
   |> Body.to_pipe
-  |> Pipe.iter ~f:(fun b -> print_string b; return ())
+  |> Pipe.iter ~f:(fun b -> Caml.Pervasives.print_string b; return ())
 
 let _ =
   (* enable logging to stdout *)
   Fmt_tty.setup_std_outputs ();
   Logs.set_level @@ Some Logs.Debug;
   Logs.set_reporter (Logs_fmt.reporter ());
-  let open Command.Spec in
-  Command.async ~summary:"Fetch URL and print it"
-    (empty
-     +> anon ("url" %: string)
-     +> flag "-X" (optional_with_default "GET" string)
-       ~doc:" Set HTTP method"
-     +> flag "data-binary" (optional_with_default "" string)
-       ~doc:" Data to send when using POST"
+  let open Async_extra.Command in
+  async_spec ~summary:"Fetch URL and print it"
+    Spec.(
+      empty
+      +> anon ("url" %: string)
+      +> flag "-X" (optional_with_default "GET" string)
+        ~doc:" Set HTTP method"
+      +> flag "data-binary" (optional_with_default "" string)
+        ~doc:" Data to send when using POST"
     )
     make_net_req
-  |> Command.run
+  |> run

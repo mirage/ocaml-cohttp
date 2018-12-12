@@ -4,6 +4,9 @@ module Server_core = Cohttp_lwt.Make_server (Io)
 include Server_core
 open Lwt.Infix
 
+let src = Logs.Src.create "cohttp.lwt.server" ~doc:"Cohttp Lwt server module"
+module Log = (val Logs.src_log src : Logs.LOG)
+
 let blank_uri = Uri.of_string ""
 
 let resolve_file ~docroot ~uri =
@@ -31,7 +34,10 @@ let respond_file ?headers ~fname () =
               | "" -> None
               | buf -> Some buf)
             (fun exn ->
-               Lwt_log.ign_debug ~exn ("Error resolving file " ^ fname);
+               Logs.debug
+                 (fun m -> m "Error resolving file %s (%s)"
+                   fname
+                   (Printexc.to_string exn));
                Lwt.return_none)
         ) in
       Lwt.on_success (Lwt_stream.closed stream) (fun () ->
@@ -54,7 +60,7 @@ let respond_file ?headers ~fname () =
         respond_not_found ()
       | exn -> Lwt.fail exn)
 
-let create ?timeout ?stop ?on_exn ?(ctx=Net.default_ctx)
+let create ?timeout ?backlog ?stop ?on_exn ?(ctx=Net.default_ctx)
     ?(mode=`TCP (`Port 8080)) spec =
-  Conduit_lwt_unix.serve ?timeout ?stop ?on_exn ~ctx:ctx.Net.ctx
+  Conduit_lwt_unix.serve ?backlog ?timeout ?stop ?on_exn ~ctx:ctx.Net.ctx
     ~mode (callback spec)

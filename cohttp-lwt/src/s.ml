@@ -106,12 +106,44 @@ module type Server = sig
 
   type conn = IO.conn * Cohttp.Connection.t
 
+  (** A request handler can respond in two ways:
+      - Using [`Response], with a {!Response.t} and a {!Body.t}.
+      - Using [`Expert], with a {!Response.t} and an IO function that is
+        expected to write the response body. The IO function has access to the
+        underlying {!IO.ic} and {!IO.oc}, which allows writing a response body
+        more efficiently, stream a response or to switch protocols entirely
+        (e.g. websockets). Processing of pipelined requests continue after the
+        {!unit Lwt.t} is resolved. The connection can be closed by closing the
+        {!IO.ic}. *)
+  type response_action =
+    [ `Expert of Cohttp.Response.t
+                 * (IO.ic
+                    -> IO.oc
+                    -> unit Lwt.t)
+    | `Response of Cohttp.Response.t * Body.t ]
+
   type t
 
-  val make : ?conn_closed:(conn -> unit)
-    -> callback:(conn -> Cohttp.Request.t -> Body.t
-                 -> (Cohttp.Response.t * Body.t) Lwt.t)
-    -> unit -> t
+  val make_response_action :
+    ?conn_closed:(conn -> unit) ->
+    callback:(conn -> Cohttp.Request.t -> Body.t ->
+              response_action Lwt.t) ->
+    unit ->
+    t
+
+  val make_expert :
+    ?conn_closed:(conn -> unit) ->
+    callback:(conn -> Cohttp.Request.t -> Body.t ->
+              (Cohttp.Response.t * (IO.ic -> IO.oc -> unit Lwt.t)) Lwt.t) ->
+    unit ->
+    t
+
+  val make :
+    ?conn_closed:(conn -> unit) ->
+    callback:(conn -> Cohttp.Request.t -> Body.t ->
+              (Cohttp.Response.t * Body.t) Lwt.t) ->
+    unit ->
+    t
 
   (** Resolve a URI and a docroot into a concrete local filename. *)
   val resolve_local_file : docroot:string -> uri:Uri.t -> string

@@ -1,5 +1,6 @@
-open Core
-open Async
+open Base
+open Async_kernel
+open Async_unix
 
 module Request = struct
   include Cohttp.Request
@@ -25,7 +26,7 @@ module Net = struct
       >>| function
       | { Addr_info.ai_addr=ADDR_INET (addr,_); _ }::_ ->
         Or_error.return (host, Ipaddr_unix.of_inet_addr addr, port)
-      | _ -> Or_error.error "Failed to resolve Uri" uri Uri.sexp_of_t
+      | _ -> Or_error.error "Failed to resolve Uri" uri Uri_sexp.sexp_of_t
 
   let connect_uri ?interrupt ?ssl_config uri =
     lookup uri
@@ -33,12 +34,15 @@ module Net = struct
     >>= fun (host, addr, port) ->
     let mode =
       match (Uri.scheme uri, ssl_config) with
-      | Some "https", Some config -> `OpenSSL_with_config (host, addr, port, config)
-      | Some "https", None -> `OpenSSL (host, addr, port)
+      | Some "https", Some config ->
+        `OpenSSL (addr, port, config)
+      | Some "https", None ->
+        let config = Conduit_async.V2.Ssl.Config.create ~hostname:host () in
+        `OpenSSL (addr, port, config)
       | Some "httpunix", _ -> `Unix_domain_socket host
       | _ -> `TCP (addr, port)
     in
-    Conduit_async.connect ?interrupt mode
+    Conduit_async.V2.connect ?interrupt mode
 end
 
 let read_request ic =
@@ -66,7 +70,7 @@ let request ?interrupt ?ssl_config ?uri ?(body=`Empty) req =
       read_request ic >>| fun (resp, body) ->
       don't_wait_for (
         Pipe.closed body >>= fun () ->
-        Deferred.all_ignore [Reader.close ic; Writer.close oc]);
+        Deferred.all_unit [Reader.close ic; Writer.close oc]);
       (resp, `Pipe body)) >>= begin function
     | Ok res -> return res
     | Error e ->
@@ -82,7 +86,7 @@ let callv ?interrupt ?ssl_config uri reqs =
   try_with (fun () ->
       reqs
       |> Pipe.iter ~f:(fun (req, body) ->
-          incr reqs_c;
+          Int.incr reqs_c;
           Request.write (fun w -> Body_raw.write_body Request.write_body body w)
             req oc)
       |> don't_wait_for;
@@ -93,7 +97,7 @@ let callv ?interrupt ?ssl_config uri reqs =
             return `Eof
           else
             ic |> read_request >>| fun (resp, body) ->
-            incr resp_c;
+            Int.incr resp_c;
             last_body_drained := Pipe.closed body;
             `Ok (resp, `Pipe body)
         ) in

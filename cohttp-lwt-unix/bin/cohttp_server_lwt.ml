@@ -21,6 +21,10 @@ open Cohttp_lwt_unix
 
 open Cohttp_server
 
+let src = Logs.Src.create "cohttp.lwt.server" ~doc:"Cohttp Lwt server"
+module Log = (val Logs.src_log src : Logs.LOG)
+
+
 let method_filter meth (res,body) = match meth with
   | `HEAD -> Lwt.return (res,`Empty)
   | _ -> Lwt.return (res,body)
@@ -81,10 +85,11 @@ let handler ~info ~docroot ~index (ch,_conn) req _body =
   let uri = Cohttp.Request.uri req in
   let path = Uri.path uri in
   (* Log the request to the console *)
-  Lwt_log.debug_f "%s %s %s"
+  Log.debug (fun m -> m
+    "%s %s %s"
     (Cohttp.(Code.string_of_method (Request.meth req)))
     path
-    (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)) >>= fun () ->
+    (Sexplib0.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)));
   (* Get a canonical filename from the URL and docroot *)
   match Request.meth req with
   | (`GET | `HEAD) as meth ->
@@ -98,11 +103,11 @@ let handler ~info ~docroot ~index (ch,_conn) req _body =
       ~body:(html_of_method_not_allowed meth (String.concat "," allowed) path info) ()
 
 let start_server docroot port host index tls () =
-  Lwt_log.info_f "Listening for HTTP request on: %s %d" host port >>= fun () ->
+  Log.info (fun m -> m "Listening for HTTP request on: %s %d" host port);
   let info = Printf.sprintf "Served by Cohttp/Lwt listening on %s:%d" host port in
   let conn_closed (ch,_conn) =
-    Lwt_log.ign_debug_f "connection %s closed"
-      (Sexplib.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)) in
+    Log.debug (fun m -> m "connection %s closed"
+      (Sexplib0.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch))) in
   let callback = handler ~info ~docroot ~index in
   let config = Server.make ~callback ~conn_closed () in
   let mode = match tls with
@@ -115,11 +120,13 @@ let start_server docroot port host index tls () =
   Server.create ~ctx ~mode config
 
 let lwt_start_server docroot port host index verbose tls =
-  (match List.length verbose with
-  | 0 -> ()
-  | 1 -> Lwt_log_core.(add_rule "*" Info)
-  | _ -> Lwt_log_core.(add_rule "*" Debug));
+  if verbose <> None then begin
+    (* activate_debug sets the reporter *)
+    Cohttp_lwt_unix.Debug.activate_debug ();
+    Logs.set_level verbose
+  end;
   Lwt_main.run (start_server docroot port host index tls ())
+
 
 open Cmdliner
 
@@ -135,9 +142,7 @@ let index =
   let doc = "Name of index file in directory." in
   Arg.(value & opt string "index.html" & info ["i"] ~docv:"INDEX" ~doc)
 
-let verb =
-  let doc = "Logging output to console." in
-  Arg.(value & flag_all & info ["v"; "verbose"] ~doc)
+let verb = Logs_cli.level ()
 
 let tls =
   let doc = "TLS certificate files." in
