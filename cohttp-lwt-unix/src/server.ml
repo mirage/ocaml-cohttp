@@ -34,7 +34,7 @@ let respond_file ?headers ~fname () =
               | "" -> None
               | buf -> Some buf)
             (fun exn ->
-               Logs.debug
+               Log.debug
                  (fun m -> m "Error resolving file %s (%s)"
                    fname
                    (Printexc.to_string exn));
@@ -44,7 +44,7 @@ let respond_file ?headers ~fname () =
         Lwt.ignore_result @@ Lwt.catch
           (fun () -> Lwt_io.close ic)
           (fun e ->
-            Logs.warn (fun f ->
+            Log.warn (fun f ->
               f "Closing channel failed: %s" (Printexc.to_string e));
             Lwt.return_unit
           )
