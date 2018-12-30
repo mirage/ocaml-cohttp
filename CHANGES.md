@@ -1,5 +1,6 @@
 ## dev
 
+* Lwt, Mirage: Add log warnings for uncaught exceptions (#592 by @ansiwen)
 * Port opam files to opam2 and add local synopsis and descriptions.
 * Lwt: Add Expert response action for servers (#647 by @andreas)
 
