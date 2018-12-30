@@ -47,7 +47,11 @@ module Net_IO = struct
   let close_out _ = ()
   let close ic _oc = Lwt.ignore_result @@ Lwt.catch
     (fun () -> Channel.close ic)
-    (fun _  -> Lwt.return @@ Ok ())
+    (fun e  ->
+      Logs.warn (fun f ->
+        f "Closing channel failed: %s" (Printexc.to_string e));
+      Lwt.return @@ Ok ()
+    )
 
 end
 let ctx resolver conduit = { Net_IO.resolver; conduit }

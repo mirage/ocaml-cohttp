@@ -29,8 +29,14 @@ let default_reporter () =
   let report _src _level ~over k msgf =
     let k _ =
       let write () = Lwt_io.write Lwt_io.stderr (fmtr_flush ()) in
-      let unblock () = over (); Lwt.return () in
-      Lwt.ignore_result (Lwt.finalize write unblock : unit Lwt.t);
+      let unblock () = over (); Lwt.return_unit in
+      Lwt.ignore_result @@ Lwt.catch
+        (fun () -> (Lwt.finalize write unblock : unit Lwt.t))
+        (fun e  ->
+          Logs.warn (fun f ->
+            f "Flushing stderr failed: %s" (Printexc.to_string e));
+          Lwt.return_unit
+        );
       k ()
     in
     msgf @@ fun ?header:_ ?tags:_ fmt ->

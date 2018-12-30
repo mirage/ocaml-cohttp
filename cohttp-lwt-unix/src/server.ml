@@ -2,7 +2,7 @@
 module Server_core = Cohttp_lwt.Make_server (Io)
 
 include Server_core
-open Lwt
+open Lwt.Infix
 
 let src = Logs.Src.create "cohttp.lwt.server" ~doc:"Cohttp Lwt server module"
 module Log = (val Logs.src_log src : Logs.LOG)
@@ -20,8 +20,8 @@ let respond_file ?headers ~fname () =
       (* Check this isnt a directory first *)
       (fname |> Lwt_unix.stat >>= fun s ->
        if Unix.(s.st_kind <> S_REG)
-       then fail Isnt_a_file
-       else return_unit) >>= fun () ->
+       then Lwt.fail Isnt_a_file
+       else Lwt.return_unit) >>= fun () ->
       let count = 16384 in
       Lwt_io.open_file
         ~buffer:(Lwt_bytes.create count)
@@ -38,16 +38,23 @@ let respond_file ?headers ~fname () =
                  (fun m -> m "Error resolving file %s (%s)"
                    fname
                    (Printexc.to_string exn));
-               return_none)
+               Lwt.return_none)
         ) in
       Lwt.on_success (Lwt_stream.closed stream) (fun () ->
-          ignore_result (Lwt_io.close ic));
+        Lwt.ignore_result @@ Lwt.catch
+          (fun () -> Lwt_io.close ic)
+          (fun e ->
+            Log.warn (fun f ->
+              f "Closing channel failed: %s" (Printexc.to_string e));
+            Lwt.return_unit
+          )
+      );
       let body = Cohttp_lwt.Body.of_stream stream in
       let mime_type = Magic_mime.lookup fname in
       let headers = Cohttp.Header.add_opt_unless_exists
           headers "content-type" mime_type in
       let res = Cohttp.Response.make ~status:`OK ~encoding ~headers () in
-      return (res, body)
+      Lwt.return (res, body)
     ) (function
       | Unix.Unix_error(Unix.ENOENT,_,_) | Isnt_a_file ->
         respond_not_found ()
