@@ -110,7 +110,7 @@ module Make(IO:S.IO) = struct
          Lwt.catch
            (fun () -> callback conn req body)
            (function
-             | Out_of_memory -> raise Out_of_memory
+             | Out_of_memory -> Lwt.fail Out_of_memory
              | exn ->
                Log.err (fun f -> f "Error handling %a: %s\n%!" Request.pp_hum req (Printexc.to_string exn));
                respond_error ~body:"Internal Server Error" () >|= fun rsp ->
