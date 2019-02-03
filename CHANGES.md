@@ -1,15 +1,29 @@
-## dev
+## v2.0.0
 
+Compatibility breaking interface changes:
+
+Async: Expert response action no longer writes empty HTTP body (#647 by @andreas)
+
+In cohttp.0.99, a number of subpackages were turned into explicit
+opam packages to simplify dependency management.
+To aid migration, some compatability shims were left in place so that
+the old findlib names would continue to work. They have now been removed
+as of this release.  If you were still using them, then please rename
+them as follows:
+- `cohttp.lwt-core` -> `cohttp-lwt`
+- `cohttp.lwt` -> `cohttp-lwt-unix`
+- `cohttp.js` -> `cohttp-lwt-jsoo`
+- `cohttp.async` -> `cohttp-async`
+- `cohttp.top` -> `cohttp-top`
+
+Other changes and bugfixes:
 * Lwt, Mirage: Add log warnings for uncaught exceptions (#592 by @ansiwen)
+* Log invalid client input and do not catch out of memory exceptions (#652 @hannesm)
 * Port opam files to opam2 and add local synopsis and descriptions.
 * Lwt: Add Expert response action for servers (#647 by @andreas)
 * Use the namespaced `js_of_ocaml` interfaces from 3.3.0 onwards (#654 @avsm)
 * Use Base64 3.1.0 interfaces (#655 @avsm)
 * Clean up redundant conflicts in the `opam` files (@avsm)
-
-Compatibility breaking interface changes:
-
-* Async: Expert response action no longer writes empty HTTP body (#647 by @andreas)
 
 ## v1.2.0 (2018-10-19)
 
