@@ -27,7 +27,7 @@ module type Params = sig
 
   (** JavaScript string to OCaml conversion.  [Js.to_bytestring] or
       [Js.to_string] *)
-  val convert_body_string : Js.js_string Js.t -> string
+  val convert_body_string : Js_of_ocaml.Js.js_string Js_of_ocaml.Js.t -> string
 
   (** Whether withCredentials property of XHR is set. *)
   val with_credentials : bool

@@ -27,13 +27,9 @@ depends: [
   "cohttp" {>= "1.0.0"}
   "cohttp-lwt" {>= "1.0.0"}
   "lwt" {>= "3.0.0"}
-  "js_of_ocaml" {>= "3.0"}
-  "js_of_ocaml-ppx" {>= "3.0"}
-  "js_of_ocaml-lwt"
-]
-conflicts: [
-  "lwt" {< "2.5.0"}
-  "js_of_ocaml" {< "2.8"}
+  "js_of_ocaml" {>= "3.3.0"}
+  "js_of_ocaml-ppx" {>= "3.3.0"}
+  "js_of_ocaml-lwt" {>= "3.3.0"}
 ]
 build: [
   ["dune" "subst"] {pinned}
