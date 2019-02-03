@@ -109,16 +109,20 @@ module Make(IO:S.IO) = struct
       (fun () ->
          Lwt.catch
            (fun () -> callback conn req body)
-           (fun exn ->
-             Log.err (fun f -> f "Error handling %a: %s\n%!" Request.pp_hum req (Printexc.to_string exn));
-             respond_error ~body:"Internal Server Error" () >|= fun rsp ->
-             `Response rsp
+           (function
+             | Out_of_memory -> Lwt.fail Out_of_memory
+             | exn ->
+               Log.err (fun f -> f "Error handling %a: %s\n%!" Request.pp_hum req (Printexc.to_string exn));
+               respond_error ~body:"Internal Server Error" () >|= fun rsp ->
+               `Response rsp
            ))
       (fun () -> Body.drain_body body)
 
   let rec handle_client ic oc conn callback =
     Request.read ic >>= function
-    | `Eof | `Invalid _ -> (* TODO: request logger for invalid req *)
+    | `Eof -> Lwt.return_unit
+    | `Invalid data ->
+      Log.err (fun m -> m "invalid input %s while handling client" data);
       Lwt.return_unit
     | `Ok req ->
       begin let body = read_body ic req in
