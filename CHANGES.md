@@ -3,6 +3,9 @@
 * Lwt, Mirage: Add log warnings for uncaught exceptions (#592 by @ansiwen)
 * Port opam files to opam2 and add local synopsis and descriptions.
 * Lwt: Add Expert response action for servers (#647 by @andreas)
+* Use the namespaced `js_of_ocaml` interfaces from 3.3.0 onwards (#654 @avsm)
+* Use Base64 3.1.0 interfaces (#655 @avsm)
+* Clean up redundant conflicts in the `opam` files (@avsm)
 
 Compatibility breaking interface changes:
 
