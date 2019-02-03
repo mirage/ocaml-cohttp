@@ -15,6 +15,7 @@
  *
   }}}*)
 
+open Js_of_ocaml
 module C = Cohttp
 module CLB = Cohttp_lwt.Body
 
