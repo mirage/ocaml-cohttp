@@ -1,4 +1,4 @@
-## v2.0.0
+## v2.0.0 (2019-02-04):
 
 Compatibility breaking interface changes:
 
@@ -9,7 +9,7 @@ opam packages to simplify dependency management.
 To aid migration, some compatability shims were left in place so that
 the old findlib names would continue to work. They have now been removed
 as of this release.  If you were still using them, then please rename
-them as follows:
+them as follows in your dune or ocamlbuild files:
 - `cohttp.lwt-core` -> `cohttp-lwt`
 - `cohttp.lwt` -> `cohttp-lwt-unix`
 - `cohttp.js` -> `cohttp-lwt-jsoo`
