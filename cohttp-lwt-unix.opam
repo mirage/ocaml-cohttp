@@ -37,9 +37,6 @@ depends: [
   "base-unix"
   "ounit" {with-test}
 ]
-conflicts: [
-  "lwt" {< "2.5.0"}
-]
 build: [
   ["dune" "subst"] {pinned}
   ["dune" "build" "-p" name "-j" jobs]

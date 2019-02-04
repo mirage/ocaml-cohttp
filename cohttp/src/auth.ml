@@ -29,13 +29,13 @@ type credential = [
 let string_of_credential (cred:credential) =
   match cred with
   | `Basic (user, pass) ->
-    "Basic " ^ (B64.encode (sprintf "%s:%s" user pass))
+    "Basic " ^ (Base64.encode_string (sprintf "%s:%s" user pass))
   | `Other buf -> buf
 
 let credential_of_string (buf:string) : credential =
   try
     let b64 = Scanf.sscanf buf "Basic %s" (fun b -> b) in
-    match Stringext.split ~on:':' (B64.decode b64) ~max:2 with
+    match Stringext.split ~on:':' (Base64.decode_exn b64) ~max:2 with
     |[user;pass] -> `Basic (user,pass)
     |_ -> `Other buf
   with _ -> `Other buf
