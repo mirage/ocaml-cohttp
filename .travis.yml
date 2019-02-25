@@ -32,7 +32,6 @@ env:
   - PACKAGE="cohttp-lwt-unix" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04"
   - PACKAGE="cohttp-lwt-jsoo" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04"
   - PACKAGE="cohttp-lwt" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04"
-  - PACKAGE="cohttp-mirage" DISTRO="ubuntu-16.04" OCAML_VERSION="4.04"
 matrix:
   allow_failures:
   - env: PACKAGE="cohttp-async" DISTRO="alpine" OCAML_VERSION="4.06"

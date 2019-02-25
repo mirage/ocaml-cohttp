@@ -18,7 +18,7 @@ system.
 Please see <https://mirage.io> for a self-hosted explanation
 and instructions on how to use this library."""
 depends: [
-  "ocaml" {>= "4.04.1"}
+  "ocaml" {>= "4.05.0"}
   "dune" {build & >= "1.1.0"}
   "result"
   "mirage-flow-lwt" {>= "1.2.0"}
