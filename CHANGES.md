@@ -1,3 +1,7 @@
+## v2.1.0 cohttp-mirage
+
+- `cohttp-mirage`: update to the newest `Mirage_kv.RO` API
+
 ## v2.0.0
 
 Compatibility breaking interface changes:
