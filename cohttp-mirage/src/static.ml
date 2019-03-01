@@ -17,6 +17,8 @@
  * %%NAME%% %%VERSION%%
  *)
 
+module Key = Mirage_kv.Key
+
 module HTTP(FS: Mirage_kv_lwt.RO)(S: Cohttp_lwt.S.Server) = struct
 
   open Lwt.Infix
@@ -25,17 +27,15 @@ module HTTP(FS: Mirage_kv_lwt.RO)(S: Cohttp_lwt.S.Server) = struct
   let failf fmt = Fmt.kstrf Lwt.fail_with fmt
 
   let read_fs t name =
-  FS.size t name >>= function
-  | Error e -> failf "read: %a" FS.pp_error e
-  | Ok size ->
-      FS.read t name 0L size >>= function
-      | Error e -> failf "read %a" FS.pp_error e
-      | Ok bufs -> Lwt.return (Cstruct.copyv bufs)
+    FS.get t (Key.v name) >>= function
+    | Error e -> failf "read %a" FS.pp_error e
+    | Ok buf  -> Lwt.return buf
 
   let exists t name =
-  FS.mem t name >>= function
-  | Ok true -> Lwt.return_true
-  | _ -> Lwt.return_false
+  FS.exists t (Key.v name) >|= function
+  | Ok (Some `Value) -> true
+  | Ok (Some _ | None) -> false
+  | Error e -> Fmt.failwith "exists %a" FS.pp_error e
 
   let dispatcher request_fn =
     let rec fn fs uri =
