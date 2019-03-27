@@ -134,7 +134,7 @@ let () =
       +> anon (maybe_with_default "." ("docroot" %: string))
       +> flag "-p" (optional_with_default 8080 int) ~doc:"port TCP port to listen on"
       +> flag "-i" (optional_with_default "index.html" string) ~doc:"file Name of index file in directory"
-      +> flag "-cert-file" (optional file) ~doc:"File of cert for https"
-      +> flag "-key-file" (optional file) ~doc:"File of private key for https"
+      +> flag "-cert-file" (optional string) ~doc:"File of cert for https"
+      +> flag "-key-file" (optional string) ~doc:"File of private key for https"
       +> flag "-v" no_arg ~doc:" Verbose logging output to console"
     ) start_server
