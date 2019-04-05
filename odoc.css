@@ -1,7 +1,7 @@
 @charset "UTF-8";
-/* Copyright (c) 2016 Daniel C. Bünzli. All rights reserved.
+/* Copyright (c) 2016 The odoc contributors. All rights reserved.
    Distributed under the ISC license, see terms at the end of the file.
-   odoc v1.1.1-909-gc68dbe8b */
+   odoc 1.4.0 */
 
 /* Fonts */
 @import url('https://fonts.googleapis.com/css?family=Fira+Mono:400,500');
@@ -448,7 +448,7 @@ span.at-tag {
 
 .heading {
   margin-top: 10px;
-  border-top: solid;
+  border-bottom: solid;
   border-width: 1px;
   border-color: #DDD;
   text-align: right;
@@ -579,7 +579,7 @@ h1+.modules, h1+.sel {
 
 .toc:before {
   display: block;
-  content: "Topics";
+  content: "Contents";
   text-transform: uppercase;
   font-size: 1em;
   margin: 1.414em 0 0.5em;
@@ -748,7 +748,7 @@ h1+.modules, h1+.sel {
 }
 
 /*---------------------------------------------------------------------------
-   Copyright (c) 2016 Daniel C. Bünzli
+   Copyright (c) 2016 The odoc contributors
 
    Permission to use, copy, modify, and/or distribute this software for any
    purpose with or without fee is hereby granted, provided that the above
