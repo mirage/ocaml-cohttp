@@ -1,8 +1,14 @@
-## v2.1.0 cohttp-mirage
+## v2.1.1 (2019-04-05)
+
+- `cohttp-mirage`: remove dependency on the `result` module
+  (#662 @hannesm)
+- Support Async v0.12.0 and higher (#661 @copy)
+
+## v2.1.0 (2019-03-01)
 
 - `cohttp-mirage`: update to the newest `Mirage_kv.RO` API
 
-## v2.0.0
+## v2.0.0 (2019-02-04)
 
 Compatibility breaking interface changes:
 
