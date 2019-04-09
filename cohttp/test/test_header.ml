@@ -66,6 +66,15 @@ let cookie_with_eq_val () =
   let cookies = Cohttp.Cookie.Cookie_hdr.extract h in
   Alcotest.check t_cookies "cookie_with_eq_val" cookies ["test", "me="]
 
+let ignores_empty_cookie () =
+  let cookies = ["foo", "bar"] in
+  let (k, v) = Cohttp.Cookie.Cookie_hdr.serialize cookies in
+  (* prepend an invalid empty component *)
+  let v = "; " ^ v in
+  let h = Cohttp.Header.of_list [ k, v ] in
+  let cookies = Cohttp.Cookie.Cookie_hdr.extract h in
+  Alcotest.check t_cookies "cookie" cookies ["foo", "bar"]
+
 let valid_cookie () =
   let cookies = [ "foo", "bar"; "a", "b" ] in
   let k, v = Cohttp.Cookie.Cookie_hdr.serialize cookies in
@@ -462,6 +471,7 @@ Alcotest.run "test_header" [
     "Valid Set-Cookie", `Quick, valid_set_cookie;
     "Valid Cookie", `Quick, valid_cookie;
     "Cookie with =", `Quick, cookie_with_eq_val;
+    "Ignores empty cookie", `Quick, ignores_empty_cookie;
   ];
   "Content Range", [
     "none", `Quick, Content_range.none;
