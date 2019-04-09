@@ -34,7 +34,7 @@ bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
 depends: [
   "ocaml" {>= "4.04.1"}
   "dune" {build & >= "1.1.0"}
-  "re" {>= "1.7.2"}
+  "re" {>= "1.9.0"}
   "uri" {>= "2.0.0"}
   "fieldslib"
   "sexplib0"
