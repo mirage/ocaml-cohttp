@@ -1,3 +1,8 @@
+## v2.1.2 (2019-04-09)
+
+- cohttp: handle empty cookie components gracefully without raising
+  an exception (#663 @martinslota)
+
 ## v2.1.1 (2019-04-05)
 
 - `cohttp-mirage`: remove dependency on the `result` module
