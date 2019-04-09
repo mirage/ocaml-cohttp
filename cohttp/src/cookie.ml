@@ -146,7 +146,7 @@ module Cookie_hdr = struct
           let comps = Stringext.split_trim_left ~on:";" ~trim:" \t" header in
           (* We don't handle $Path, $Domain, $Port, $Version (or $anything
              $else) *)
-          let cookies = List.filter (fun s -> s.[0] != '$') comps in
+          let cookies = List.filter (fun s -> String.length s > 0 && s.[0] != '$') comps in
           let split_pair nvp =
             match Stringext.split ~on:'=' nvp ~max:2 with
             | [] -> ("","")
