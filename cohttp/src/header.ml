@@ -173,7 +173,7 @@ let media_type_re =
 let get_first_match _re s =
   try
     let subs = Re.exec ~pos:0 media_type_re s in
-    let (start, stop) = Re.get_ofs subs 1 in
+    let (start, stop) = Re.Group.offset subs 1 in
     Some (String.sub s start (stop - start))
   with Not_found -> None
 
