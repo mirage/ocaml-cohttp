@@ -1,3 +1,7 @@
+## dev
+
+- use re.1.9.0 api to remove deprecation warnings (#664 @vbmithr)
+
 ## v2.1.2 (2019-04-09)
 
 - cohttp: handle empty cookie components gracefully without raising
