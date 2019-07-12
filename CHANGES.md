@@ -1,5 +1,6 @@
 ## dev
 
+- support uri.3.0.0 that has optional sexp support (@avsm)
 - use re.1.9.0 api to remove deprecation warnings (#664 @vbmithr)
 
 ## v2.1.2 (2019-04-09)
