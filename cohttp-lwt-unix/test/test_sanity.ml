@@ -76,6 +76,13 @@ let server =
   ]
   |> response_sequence
 
+let check_logs test () =
+  let old = Logs.(warn_count () + err_count ()) in
+  test () >|= fun () ->
+  let new_errs = Logs.(warn_count () + err_count ()) - old in
+  if new_errs > 0 then
+    Fmt.failwith "Test produced %d log messages at level >= warn" new_errs
+
 let ts =
   Cohttp_lwt_unix_test.test_server_s server begin fun uri ->
     let t () =
@@ -179,15 +186,15 @@ let ts =
       Body.to_string body >|= fun body ->
       assert_equal ~printer "expert 2" body
     in
-    [ "sanity test", t
-    ; "empty chunk test", empty_chunk
-    ; "pipelined chunk test", pipelined_chunk
-    ; "no body when response is not modified", not_modified_has_no_body
-    ; "pipelined with interleaving requests", pipelined_interleave
-    ; "massive chunked", massive_chunked
-    ; "unreadable file returns 500", unreadable_file_500
-    ; "no leaks on requests", test_no_leak
-    ; "expert response", expert_pipelined
+    [ "sanity test",                            check_logs t
+    ; "empty chunk test",                       check_logs empty_chunk
+    ; "pipelined chunk test",                   check_logs pipelined_chunk
+    ; "no body when response is not modified",  check_logs not_modified_has_no_body
+    ; "pipelined with interleaving requests",   check_logs pipelined_interleave
+    ; "massive chunked",                        check_logs massive_chunked
+    ; "unreadable file returns 500",            unreadable_file_500
+    ; "no leaks on requests",                   check_logs test_no_leak
+    ; "expert response",                        check_logs expert_pipelined
     ]
   end
 
