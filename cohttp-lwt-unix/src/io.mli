@@ -14,9 +14,8 @@
  *
   }}}*)
 
-include Cohttp.S.IO
- with type 'a t = 'a Lwt.t
- and type ic = Lwt_io.input_channel
+include Cohttp_lwt.S.IO
+ with type ic = Lwt_io.input_channel
  and type oc = Lwt_io.output_channel
  and type conn = Conduit_lwt_unix.flow
-
+ and type error = exn

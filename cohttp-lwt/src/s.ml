@@ -4,7 +4,17 @@
     functors must be instantiated by an implementation that provides
     a concrete IO monad. *)
 
-module type IO = Cohttp.S.IO with type 'a t = 'a Lwt.t
+module type IO = sig
+  include Cohttp.S.IO with type 'a t = 'a Lwt.t
+
+  type error
+
+  val catch : (unit -> 'a t) -> ('a, error) result t
+  (** [catch f] is [f () >|= Result.ok], unless [f] fails with an IO error,
+      in which case it returns the error. *)
+
+  val pp_error : Format.formatter -> error -> unit
+end
 (** The IO module is specialized for the [Lwt] monad. *)
 
 (** The [Net] module type defines how to connect to a remote node
