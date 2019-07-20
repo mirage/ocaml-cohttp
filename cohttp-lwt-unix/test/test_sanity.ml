@@ -6,6 +6,12 @@ open Cohttp_lwt_unix_test
 
 module Body = Cohttp_lwt.Body
 
+module IO = Cohttp_lwt_unix.IO
+module Request = struct
+  include Cohttp.Request
+  include (Make(IO) : module type of Make(IO) with type t := t)
+end
+
 let message = "Hello sanity!"
 
 let chunk_body = ["one"; ""; " "; "bar"; ""]
@@ -14,6 +20,8 @@ let leak_repeat = 1024
 
 let () = Debug.activate_debug ()
 let () = Logs.set_level (Some Info)
+
+let cond = Lwt_condition.create ()
 
 let server =
   List.map const [ (* t *)
@@ -74,7 +82,28 @@ let server =
       )
     ))
   ]
+  @ (* client_close *)
+  [
+    fun _ _ ->
+    let ready = Lwt_condition.wait cond in
+    let i = ref 0 in
+    let stream = Lwt_stream.from (fun () ->
+        ready >|= fun () ->
+        incr i;
+        if !i > 1000 then failwith "Connection should have failed by now!";
+        Some (String.make 4096 'X')
+      )
+    in
+    Lwt.return (`Response (Cohttp.Response.make ~status:`OK (), `Stream stream))
+  ]
   |> response_sequence
+
+let check_logs test () =
+  let old = Logs.(warn_count () + err_count ()) in
+  test () >|= fun () ->
+  let new_errs = Logs.(warn_count () + err_count ()) - old in
+  if new_errs > 0 then
+    Fmt.failwith "Test produced %d log messages at level >= warn" new_errs
 
 let ts =
   Cohttp_lwt_unix_test.test_server_s server begin fun uri ->
@@ -179,15 +208,29 @@ let ts =
       Body.to_string body >|= fun body ->
       assert_equal ~printer "expert 2" body
     in
-    [ "sanity test", t
-    ; "empty chunk test", empty_chunk
-    ; "pipelined chunk test", pipelined_chunk
-    ; "no body when response is not modified", not_modified_has_no_body
-    ; "pipelined with interleaving requests", pipelined_interleave
-    ; "massive chunked", massive_chunked
-    ; "unreadable file returns 500", unreadable_file_500
-    ; "no leaks on requests", test_no_leak
-    ; "expert response", expert_pipelined
+    let client_close () =
+      Cohttp_lwt_unix.Net.(connect_uri ~ctx:default_ctx) uri >>= fun (_conn, ic, oc) ->
+      let req = Cohttp.Request.make_for_client ~chunked:false `GET (Uri.with_path uri "/test.html") in
+      Request.write (fun _writer -> Lwt.return_unit) req oc
+      >>= fun () ->
+      Response.read ic >>= function
+      | `Eof | `Invalid _ -> assert false
+      | `Ok rsp ->
+        assert_equal ~printer:Cohttp.Code.string_of_status `OK (Cohttp.Response.status rsp);
+        Cohttp_lwt_unix.Net.close ic oc;
+        Lwt_condition.broadcast cond ();
+        Lwt.pause ()
+    in
+    [ "sanity test",                            check_logs t
+    ; "empty chunk test",                       check_logs empty_chunk
+    ; "pipelined chunk test",                   check_logs pipelined_chunk
+    ; "no body when response is not modified",  check_logs not_modified_has_no_body
+    ; "pipelined with interleaving requests",   check_logs pipelined_interleave
+    ; "massive chunked",                        check_logs massive_chunked
+    ; "unreadable file returns 500",            unreadable_file_500
+    ; "no leaks on requests",                   check_logs test_no_leak
+    ; "expert response",                        check_logs expert_pipelined
+    ; "client_close",                           check_logs client_close
     ]
   end
 

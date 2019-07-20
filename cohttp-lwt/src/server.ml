@@ -112,7 +112,7 @@ module Make(IO:S.IO) = struct
            (function
              | Out_of_memory -> Lwt.fail Out_of_memory
              | exn ->
-               Log.err (fun f -> f "Error handling %a: %s\n%!" Request.pp_hum req (Printexc.to_string exn));
+               Log.err (fun f -> f "Error handling %a: %s" Request.pp_hum req (Printexc.to_string exn));
                respond_error ~body:"Internal Server Error" () >|= fun rsp ->
                `Response rsp
            ))
@@ -147,7 +147,12 @@ module Make(IO:S.IO) = struct
     let conn_closed () = spec.conn_closed (io_id,conn_id) in
     Lwt.finalize
       (fun () ->
-         handle_client ic oc (io_id,conn_id) spec.callback
+         IO.catch (fun () -> handle_client ic oc (io_id,conn_id) spec.callback)
+         >>= function
+         | Ok () -> Lwt.return_unit
+         | Error e ->
+           Log.info (fun m -> m "IO error while handling client: %a" IO.pp_error e);
+           Lwt.return_unit
       )
       (fun () ->
          (* Clean up resources when the response stream terminates and call

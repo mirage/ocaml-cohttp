@@ -14,7 +14,7 @@
  *
   }}}*)
 
-module type IO = S.IO with type 'a t = 'a Lwt.t
+module type IO = S.IO
 
 module Request = Cohttp.Request
 module Response = Cohttp.Response
