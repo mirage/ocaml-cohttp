@@ -50,10 +50,17 @@ let read_request ic =
   | `Eof -> failwith "Connection closed by remote host"
   | `Invalid reason -> failwith reason
   | `Ok res ->
-    (* Build a response pipe for the body *)
-    let reader = Response.make_body_reader res ic in
-    let pipe = Body_raw.pipe_of_body Response.read_body_chunk reader in
-    (res, pipe)
+    begin
+      match Response.has_body res with
+      | `Yes | `Unknown ->
+        (* Build a response pipe for the body *)
+        let reader = Response.make_body_reader res ic in
+        let pipe = Body_raw.pipe_of_body Response.read_body_chunk reader in
+        (res, pipe)
+      | `No ->
+        let pipe = Pipe.of_list [] in
+        (res, pipe)
+    end
 
 let request ?interrupt ?ssl_config ?uri ?(body=`Empty) req =
   (* Connect to the remote side *)
