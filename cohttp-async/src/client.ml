@@ -45,7 +45,7 @@ module Net = struct
     Conduit_async.V2.connect ?interrupt mode
 end
 
-let read_request ic =
+let read_response ic =
   Response.read ic >>| function
   | `Eof -> failwith "Connection closed by remote host"
   | `Invalid reason -> failwith reason
@@ -74,7 +74,7 @@ let request ?interrupt ?ssl_config ?uri ?(body=`Empty) req =
       Request.write (fun writer ->
           Body_raw.write_body Request.write_body body writer) req oc
       >>= fun () ->
-      read_request ic >>| fun (resp, body) ->
+      read_response ic >>| fun (resp, body) ->
       don't_wait_for (
         Pipe.closed body >>= fun () ->
         Deferred.all_unit [Reader.close ic; Writer.close oc]);
@@ -103,7 +103,7 @@ let callv ?interrupt ?ssl_config uri reqs =
           if Pipe.is_closed reqs && (!resp_c >= !reqs_c) then
             return `Eof
           else
-            ic |> read_request >>| fun (resp, body) ->
+            ic |> read_response >>| fun (resp, body) ->
             Int.incr resp_c;
             last_body_drained := Pipe.closed body;
             `Ok (resp, `Pipe body)
