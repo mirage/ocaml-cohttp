@@ -1,5 +1,7 @@
 ## dev
 
+- use conduit-mirage instead of mirage-conduit, which was renamed
+  upstream in conduit (@avsm)
 - remove deprecation warnings in OCaml 4.08.0 using stdlib-shims (@avsm)
 
 ## v2.1.3 (2019-07-12)
