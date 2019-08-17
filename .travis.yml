@@ -6,9 +6,9 @@ install: wget https://raw.githubusercontent.com/ocaml/ocaml-travisci-skeleton/ma
 script: bash -ex ./.travis-docker.sh
 env:
   global:
-  - EXTRA_REMOTES="https://github.com/mirage/mirage-dev.git"
-  - PINS="cohttp-top:. cohttp-async:. cohttp-lwt-unix:. cohttp-lwt-jsoo:. cohttp-lwt:. cohttp-mirage:. cohttp:."
+  - PINS="cohttp-top.dev:. cohttp-async.dev:. cohttp-lwt-unix.dev:. cohttp-lwt-jsoo.dev:. cohttp-lwt.dev:. cohttp-mirage.dev:. cohttp.dev:."
   matrix:
+  - PACKAGE="cohttp" DISTRO="ubuntu" OCAML_VERSION="4.08" DEPOPTS="cohttp-async cohttp-lwt-unix cohttp-mirage"
   - PACKAGE="cohttp" DISTRO="ubuntu-18.04" OCAML_VERSION="4.07"
   - PACKAGE="cohttp-async" DISTRO="ubuntu-18.04" OCAML_VERSION="4.07"
   - PACKAGE="cohttp-lwt-unix" DISTRO="ubuntu-18.04" OCAML_VERSION="4.07"
