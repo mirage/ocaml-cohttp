@@ -1,4 +1,4 @@
-## dev
+## v2.2.0 (2019-08-18)
 
 - use conduit-mirage instead of mirage-conduit, which was renamed
   upstream in conduit. The minimum OCaml version supported for
