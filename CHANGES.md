@@ -1,3 +1,10 @@
+## dev
+
+- use conduit-mirage instead of mirage-conduit, which was renamed
+  upstream in conduit. The minimum OCaml version supported for
+  conduit-mirage is now OCaml 4.07 and higher. (@avsm)
+- remove deprecation warnings in OCaml 4.08.0 using stdlib-shims (@avsm)
+
 ## v2.1.3 (2019-07-12)
 
 - support uri.3.0.0 that has optional sexp support (#668 @avsm)
