@@ -2,8 +2,9 @@
 
 - use conduit-mirage instead of mirage-conduit, which was renamed
   upstream in conduit. The minimum OCaml version supported for
-  conduit-mirage is now OCaml 4.07 and higher. (@avsm)
-- remove deprecation warnings in OCaml 4.08.0 using stdlib-shims (@avsm)
+  conduit-mirage is now OCaml 4.07 and higher. (#672 @avsm)
+- remove deprecation warnings in OCaml 4.08.0 using stdlib-shims (#672 @avsm)
+- async: do not read body if none is present (#671 @emillon)
 
 ## v2.2.0 (2019-07-20)
 
