@@ -20,7 +20,7 @@
 (** Serve static HTTP sites from a Mirage key-value store. *)
 
 (** Plain HTTP file serving from a read-only key-value store. *)
-module HTTP(FS: Mirage_kv_lwt.RO)(S:Cohttp_lwt.S.Server) : sig
+module HTTP(FS: Mirage_kv.RO)(S:Cohttp_lwt.S.Server) : sig
 
   (** [start http_port ?request_fn fs http] will start a static
     HTTP server listening on [http_port].  The files to serve will

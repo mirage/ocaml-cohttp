@@ -19,7 +19,7 @@
 
 module Key = Mirage_kv.Key
 
-module HTTP(FS: Mirage_kv_lwt.RO)(S: Cohttp_lwt.S.Server) = struct
+module HTTP(FS: Mirage_kv.RO)(S: Cohttp_lwt.S.Server) = struct
 
   open Lwt.Infix
   open Astring
