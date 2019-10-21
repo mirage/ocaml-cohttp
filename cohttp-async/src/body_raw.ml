@@ -37,7 +37,7 @@ let is_empty (body:t) =
 
 let to_pipe = function
   | `Empty -> Pipe.of_list []
-  | `String s -> Pipe.of_list [s]
+  | `String s -> Pipe.singleton s
   | `Strings sl -> Pipe.of_list sl
   | `Pipe p -> p
 
