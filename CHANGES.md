@@ -1,3 +1,10 @@
+## v2.4.0 (2019-11-08)
+
+- mirage: adapt to new mirage interfaces: mirage-flow 2.0.0,
+  mirage-channel 4.0.0, mirage-kv 3.0.0 (#678 @hannesm)
+- async: use Pipe.singleton instead of Pipe.of_list as it is more efficient
+  (#677 @smuenzel-js)
+
 ## v2.3.0 (2019-08-18)
 
 - use conduit-mirage instead of mirage-conduit, which was renamed
