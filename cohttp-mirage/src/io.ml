@@ -19,7 +19,7 @@
 
 open Lwt.Infix
 
-module Make (Channel: Mirage_channel_lwt.S) = struct
+module Make (Channel: Mirage_channel.S) = struct
 
   type error =
     | Read_error of Channel.error

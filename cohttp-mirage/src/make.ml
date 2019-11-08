@@ -1,8 +1,8 @@
 open Lwt.Infix
 
-module Server (Flow: Mirage_flow_lwt.S) = struct
+module Server (Flow: Mirage_flow.S) = struct
 
-  module Channel = Mirage_channel_lwt.Make(Flow)
+  module Channel = Mirage_channel.Make(Flow)
   module HTTP_IO = Io.Make(Channel)
   include Cohttp_lwt.Make_server(HTTP_IO)
 

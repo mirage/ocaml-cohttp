@@ -19,7 +19,7 @@
 
 open Lwt.Infix
 
-module Channel = Mirage_channel_lwt.Make(Conduit_mirage.Flow)
+module Channel = Mirage_channel.Make(Conduit_mirage.Flow)
 module HTTP_IO = Io.Make(Channel)
 
 module Net_IO = struct

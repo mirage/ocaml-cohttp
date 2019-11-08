@@ -20,11 +20,11 @@ and instructions on how to use this library."""
 depends: [
   "ocaml" {>= "4.05.0"}
   "dune" {>= "1.1.0"}
-  "mirage-flow-lwt" {>= "1.2.0"}
-  "mirage-channel-lwt" {>= "3.0.0"}
-  "conduit" {>= "0.99"}
-  "conduit-mirage"
-  "mirage-kv-lwt" {>= "2.0.0"}
+  "mirage-flow" {>= "2.0.0"}
+  "mirage-channel" {>= "4.0.0"}
+  "conduit" {>= "2.0.2"}
+  "conduit-mirage" {>= "2.0.2"}
+  "mirage-kv" {>= "3.0.0"}
   "lwt" {>= "2.4.3"}
   "cohttp"
   "cohttp-lwt"
