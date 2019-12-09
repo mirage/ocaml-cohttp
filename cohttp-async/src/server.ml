@@ -13,7 +13,7 @@ module Response = struct
 end
 
 type ('address, 'listening_on) t = {
-  server: ('address, 'listening_on) Tcp.Server.t sexp_opaque;
+  server: ('address, 'listening_on) Tcp.Server.t [@sexp.opaque];
 } [@@deriving sexp_of]
 
 type response = Response.t * Body.t [@@deriving sexp_of]
