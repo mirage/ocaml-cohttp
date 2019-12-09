@@ -1,6 +1,6 @@
 (executables
   (names     hello_world receive_post)
-  (libraries cohttp-async async_extra base async_kernel))
+  (libraries cohttp-async base async_kernel))
 
 (alias
   (name    runtest)
