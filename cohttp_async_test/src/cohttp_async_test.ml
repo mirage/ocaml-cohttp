@@ -29,7 +29,7 @@ let temp_server ?port spec callback =
     | Some p -> p in
   let uri = Uri.of_string ("http://0.0.0.0:" ^ (Int.to_string port)) in
   let server = Server.create_expert ~on_handler_error:`Raise
-    (Async_extra.Tcp.Where_to_listen.of_port port)
+    (Async.Tcp.Where_to_listen.of_port port)
     (fun ~body _sock req -> spec req body) in
   server >>= fun server ->
   callback uri >>= fun res ->

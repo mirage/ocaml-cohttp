@@ -121,12 +121,12 @@ let start_server docroot port index cert_file key_file verbose () =
         Logs.err (fun f -> f "Error from %s" (Socket.Address.to_string addr));
         Logs.err (fun f -> f "%s" @@ Exn.to_string exn)))
     ~mode
-    (Async_extra.Tcp.Where_to_listen.of_port port)
+    (Tcp.Where_to_listen.of_port port)
     (handler ~info ~docroot ~index) >>= fun _serv ->
   Deferred.never ()
 
 let () =
-  let open Async_extra.Command in
+  let open Async_command in
   run @@
   async_spec ~summary:"Serve the local directory contents via HTTP or HTTPS"
     Spec.(

@@ -74,7 +74,7 @@ val create_expert :
   on_handler_error:[ `Call of 'address -> exn  -> unit
                    | `Ignore
                    | `Raise ] ->
-  ('address, 'listening_on) Async_extra.Tcp.Where_to_listen.t
+  ('address, 'listening_on) Async.Tcp.Where_to_listen.t
   -> (body:Body.t -> 'address -> Request.t
       -> response_action Async_kernel.Deferred.t)
   -> ('address, 'listening_on) t Async_kernel.Deferred.t
@@ -89,6 +89,6 @@ val create :
   on_handler_error:[ `Call of 'address -> exn  -> unit
                    | `Ignore
                    | `Raise ] ->
-  ('address, 'listening_on) Async_extra.Tcp.Where_to_listen.t
+  ('address, 'listening_on) Async.Tcp.Where_to_listen.t
   -> (body:Body.t -> 'address -> Request.t -> response Async_kernel.Deferred.t)
   -> ('address, 'listening_on) t Async_kernel.Deferred.t

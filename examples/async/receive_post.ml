@@ -9,7 +9,7 @@ let start_server port () =
   Caml.Printf.eprintf "Listening for HTTP on port %d\n" port;
   Caml.Printf.eprintf "Try 'curl -X POST -d 'foo bar' http://localhost:%d\n" port;
   Cohttp_async.Server.create ~on_handler_error:`Raise
-    (Async_extra.Tcp.Where_to_listen.of_port port) (fun ~body _ req ->
+    (Async.Tcp.Where_to_listen.of_port port) (fun ~body _ req ->
       match req |> Cohttp.Request.meth with
       | `POST ->
         (Body.to_string body) >>= (fun body ->
@@ -20,7 +20,7 @@ let start_server port () =
   >>= fun _ -> Deferred.never ()
 
 let () =
-  let module Command = Async_extra.Command in
+  let module Command = Async_command in
   Command.async_spec
     ~summary:"Simple http server that outputs body of POST's"
     Command.Spec.(empty +>
