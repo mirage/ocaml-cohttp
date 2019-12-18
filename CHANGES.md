@@ -1,7 +1,7 @@
 ## v2.5.0 (2019-12-17)
 
 - cohttp-async: support async v0.13.0 (#680 @copy)
-- cohttp-lwt-jsoo: support js_of_ocaml 3.5.0 and higher (@avsm)
+- cohttp-lwt-jsoo: support js_of_ocaml 3.5.0 and higher (#682 @avsm @mseri)
 
 ## v2.4.0 (2019-11-08)
 
