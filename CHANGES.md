@@ -1,3 +1,8 @@
+## v2.5.0 (2019-12-17)
+
+- cohttp-async: support async v0.13.0 (#680 @copy)
+- cohttp-lwt-jsoo: support js_of_ocaml 3.5.0 and higher (@avsm)
+
 ## v2.4.0 (2019-11-08)
 
 - mirage: adapt to new mirage interfaces: mirage-flow 2.0.0,
