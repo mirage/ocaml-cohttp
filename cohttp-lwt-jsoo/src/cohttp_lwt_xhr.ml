@@ -195,16 +195,18 @@ module Make_client_async(P : Params) = Make_api(struct
                  (* construct body *)
                  let body =
                    let b =
+                     let respText () = 
+                       Js.Opt.case xml##.responseText (fun () -> `String (Js.string ""))
+                         (fun s -> `String s) in
                      if xhr_response_supported then
                        Js.Opt.case
                           (File.CoerceTo.arrayBuffer xml##.response)
                           (fun () -> Firebug.console##log
                              (Js.string "XHR Response is not an arrayBuffer; using responseText");
-                             `String xml##.responseText
-                          )
+                             (respText ()))
                           (fun ab -> `ArrayBuffer ab)
                       else
-                        `String xml##.responseText
+                        respText ()
                     in
                     Bb.get b
                  in
@@ -288,16 +290,18 @@ module Make_client_sync(P : Params) = Make_api(struct
   (* construct body *)
   let body =
      let b =
+       let respText () =
+         Js.Opt.case xml##.responseText (fun () -> `String (Js.string ""))
+           (fun s -> `String s) in
        if xhr_response_supported then
          Js.Opt.case
            (File.CoerceTo.arrayBuffer xml##.response)
            (fun () -> Firebug.console##log
               (Js.string "XHR Response is not an arrayBuffer; using responseText");
-              `String xml##.responseText
-                          )
+              (respText ()))
            (fun ab -> `ArrayBuffer ab)
        else
-         `String xml##.responseText
+         respText ()
      in
      Bb.get b
   in
