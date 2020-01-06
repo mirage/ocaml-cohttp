@@ -111,7 +111,7 @@ module type Response = sig
     version: Code.version; (** (** HTTP version, usually 1.1 *) *)
     status: Code.status_code; (** HTTP status code of the response *)
     flush: bool;
-  } [@@deriving fields, sexp]
+  } [@@deriving compare, fields, sexp]
 
   val make :
     ?version:Code.version ->
