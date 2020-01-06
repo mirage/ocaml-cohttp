@@ -193,7 +193,7 @@ let output_type oc ~mli t =
       else
         append oc "  | %s%s" c.constr doc
     ) t.codes;
-  append oc "  ] [@@deriving sexp]";
+  append oc "  ] [@@deriving compare, sexp]";
   if mli then
     append oc "(** %s *)" (String.capitalize_ascii t.section);
   append oc ""
@@ -202,9 +202,10 @@ let output_status_types oc ~mli t =
   List.iter (output_type oc ~mli) t;
   append oc "type status = [";
   List.iter (fun t -> append oc "  | %s_status" t.section) t;
-  append oc "] [@@deriving sexp]";
+  append oc "] [@@deriving compare, sexp]";
   append oc "";
-  append oc "type status_code = [`Code of int | status ] [@@deriving sexp]";
+  if not mli then append oc "let compare_int = Int.compare\n" else ();
+  append oc "type status_code = [`Code of int | status ] [@@deriving compare, sexp]";
   append oc ""
 
 let iter fn s =

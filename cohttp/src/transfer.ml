@@ -16,10 +16,13 @@
 
 open Sexplib0.Sexp_conv
 
+let compare_int64 = Int64.compare
+
 type encoding =
   | Chunked
   | Fixed of int64
-  | Unknown [@@deriving sexp]
+  | Unknown
+[@@deriving compare, sexp]
 
 type chunk =
   | Chunk of string
