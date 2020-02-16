@@ -74,8 +74,8 @@ module Make
     read_response ~closefn ic oc meth
 
   (* The HEAD should not have a response body *)
-  let head ?ctx:_ ?headers uri =
-    call ?headers `HEAD uri
+  let head ?ctx ?headers uri =
+    call ?ctx ?headers `HEAD uri
     >|= fst
 
   let get ?ctx ?headers uri = call ?ctx ?headers `GET uri
