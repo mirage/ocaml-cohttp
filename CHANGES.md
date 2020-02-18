@@ -1,3 +1,7 @@
+## v2.5.1 (2020-02-18)
+
+- cohttp-lwt: pass ctx through HEAD client requests (#689 @hannesm)
+
 ## v2.5.0 (2019-12-17)
 
 - cohttp-async: support async v0.13.0 (#680 @copy)
