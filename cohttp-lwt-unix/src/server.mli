@@ -34,5 +34,6 @@ val create :
   ?backlog:int ->
   ?stop:unit Lwt.t ->
   ?on_exn:(exn -> unit) ->
-  ?ctx:Net.ctx ->
-  ?mode:Conduit_lwt_unix.server -> t -> unit Lwt.t
+  'cfg ->
+  (_, 'flow) Conduit_lwt.protocol ->
+  ('cfg, 't, 'flow) Conduit_lwt.Service.service -> t -> unit Lwt.t
