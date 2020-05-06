@@ -31,14 +31,14 @@ let temp_server ?port spec callback =
   let port = match port with
     | None -> get_port ()
     | Some p -> p in
-  let uri = Uri.of_string ("http://0.0.0.0:" ^ (Int.to_string port)) in
-  let server = Server.create_expert ~on_handler_error:`Raise
-    (Async.Tcp.Where_to_listen.of_port port)
+  let uri = Uri.of_string ("http://localhost:" ^ (Int.to_string port)) in
+  let stop, server = Server.create_expert ~on_handler_error:`Raise
+    ~protocol:Conduit_async.TCP.protocol ~service:Conduit_async.TCP.service
+    (Conduit_async.TCP.Listen (None, Async.Tcp.Where_to_listen.of_port port))
     (fun ~body _sock req -> spec req body) in
-  server >>= fun server ->
-  callback uri >>= fun res ->
-  Server.close server >>| fun () ->
-  res
+  Async.Deferred.both server (callback uri >>= fun res ->
+                              Async.Condition.broadcast stop () ; Async.return res)
+  >>= fun ((), res) -> Async.return res
 
 let test_server_s ?port ?(name="Cohttp Server Test") spec f =
   temp_server ?port spec begin fun uri ->
