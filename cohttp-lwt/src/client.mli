@@ -4,4 +4,4 @@
     module.  The resulting module satisfies the {! Client } module type. *)
 
 module Make (IO:S.IO) (Net:S.Net with module IO = IO) : S.Client
-  with type ctx = Net.ctx
+  with type resolvers = Net.resolvers
