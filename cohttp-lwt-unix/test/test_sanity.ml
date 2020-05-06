@@ -22,13 +22,6 @@ let () = Logs.set_level (Some Warning)
 
 let cond = Lwt_condition.create ()
 
-let check_logs test () =
-  let old = Logs.(warn_count () + err_count ()) in
-  test () >|= fun () ->
-  let new_errs = Logs.(warn_count () + err_count ()) - old in
-  if new_errs > 0 then
-    Fmt.failwith "Test produced %d log messages at level >= warn" new_errs
-
 let server =
   List.map const [ (* t *)
     Server.respond_string ~status:`OK ~body:message ();
