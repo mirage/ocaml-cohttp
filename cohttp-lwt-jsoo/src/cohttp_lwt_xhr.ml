@@ -122,33 +122,32 @@ module Make_api(X : sig
   module Request = X.Request
   module Response = X.Response
 
-  let default_ctx = ()
-  type ctx = unit
+  type resolvers = unit
   let sexp_of_ctx _ = Sexplib0.Sexp.List []
 
-  let call ?ctx:_ ?headers ?body ?chunked:_ meth uri =
+  let call ?resolvers:_ ?headers ?body ?chunked:_ meth uri =
     X.call ?headers ?body meth uri
 
   (* The HEAD should not have a response body *)
-  let head ?ctx ?headers uri =
+  let head ?resolvers ?headers uri =
     let open Lwt in
-    call ?ctx ?headers ~chunked:false `HEAD uri
+    call ?resolvers ?headers ~chunked:false `HEAD uri
     >|= fst
 
-  let get ?ctx ?headers uri = call ?ctx ?headers ~chunked:false `GET uri
-  let delete ?ctx ?body ?chunked ?headers uri = call ?ctx ?headers ?body ?chunked `DELETE uri
-  let post ?ctx ?body ?chunked ?headers uri = call ?ctx ?headers ?body ?chunked `POST uri
-  let put ?ctx ?body ?chunked ?headers uri = call ?ctx ?headers ?body ?chunked `PUT uri
-  let patch ?ctx ?body ?chunked ?headers uri = call ?ctx ?headers ?body ?chunked `PATCH uri
+  let get ?resolvers ?headers uri = call ?resolvers ?headers ~chunked:false `GET uri
+  let delete ?resolvers ?body ?chunked ?headers uri = call ?resolvers ?headers ?body ?chunked `DELETE uri
+  let post ?resolvers ?body ?chunked ?headers uri = call ?resolvers ?headers ?body ?chunked `POST uri
+  let put ?resolvers ?body ?chunked ?headers uri = call ?resolvers ?headers ?body ?chunked `PUT uri
+  let patch ?resolvers ?body ?chunked ?headers uri = call ?resolvers ?headers ?body ?chunked `PATCH uri
 
-  let post_form ?ctx ?headers ~params uri =
+  let post_form ?resolvers ?headers ~params uri =
     let headers = C.Header.add_opt headers "content-type" "application/x-www-form-urlencoded" in
     let body = Cohttp_lwt.Body.of_string (Uri.encoded_of_query params) in
-    post ?ctx ~chunked:false ~headers ~body uri
+    post ?resolvers ~chunked:false ~headers ~body uri
 
   (* No implementation (can it be done?).  What should the failure exception be? *)
   exception Cohttp_lwt_xhr_callv_not_implemented
-  let callv ?ctx:_ _uri _reqs =
+  let callv ?resolvers:_ _uri _reqs =
     Lwt.fail Cohttp_lwt_xhr_callv_not_implemented (* ??? *)
 
 end
