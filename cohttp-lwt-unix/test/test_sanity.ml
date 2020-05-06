@@ -88,10 +88,29 @@ let server =
   ]
   |> response_sequence
 
+let check_logs test () =
+  let old = Logs.(warn_count () + err_count ()) in
+  test () >|= fun () ->
+  let new_errs = Logs.(warn_count () + err_count ()) - old in
+  if new_errs > 0 then
+    Fmt.failwith "Test produced %d log messages at level >= warn" new_errs
+
+let http_resolver ?(port= 80) domain_name =
+  try let inet_addr = Unix.inet_addr_of_string (Domain_name.to_string domain_name) in
+      Lwt.return_some (Unix.ADDR_INET (inet_addr, port))
+  with _ ->
+    Lwt_unix.gethostbyname (Domain_name.to_string domain_name) >>= function
+    | { Unix.h_addr_list; _ } when Array.length h_addr_list > 0 ->
+      Lwt.return_some (Unix.ADDR_INET (h_addr_list.(0), port))
+    | _ -> Lwt.return_none
+
 let ts =
   Cohttp_lwt_unix_test.test_server_s server begin fun uri ->
+    let resolvers = Conduit_lwt.register_resolver
+      ~key:Conduit_lwt_unix_tcp.endpoint (http_resolver ?port:(Uri.port uri))
+      Conduit.empty in
     let t () =
-      Client.get uri >>= fun (_, body) ->
+      Client.get ~resolvers uri >>= fun (_, body) ->
       body |> Body.to_string >|= fun body ->
       assert_equal body message in
     let pipelined_chunk () =
@@ -103,7 +122,7 @@ let ts =
         Request.make ~meth:`HEAD uri, `Empty;
       ] in
       let counter = ref 0 in
-      Client.callv uri (Lwt_stream.of_list reqs) >>= fun resps ->
+      Client.callv ~resolvers uri (Lwt_stream.of_list reqs) >>= fun resps ->
       Lwt_stream.iter_s (fun (_, rbody) ->
           rbody |> Body.to_string >|= fun rbody ->
           begin match !counter with
@@ -121,7 +140,7 @@ let ts =
       let (reqs, push) = Lwt_stream.create () in
       push (Some (r 1));
       push (Some (r 2));
-      Client.callv uri reqs >>= fun resps ->
+      Client.callv ~resolvers uri reqs >>= fun resps ->
       let resps = Lwt_stream.map_s (fun (_, b) -> Body.to_string b) resps in
       Lwt_stream.fold (fun b i ->
           Logs.info (fun f -> f "Request %i\n" i);
@@ -141,29 +160,29 @@ let ts =
       assert_equal l 3
     in
     let massive_chunked () =
-      Client.get uri >>= fun (_resp, body) ->
+      Client.get ~resolvers uri >>= fun (_resp, body) ->
       Body.to_string body >|= fun body ->
       assert_equal ~printer:string_of_int (1000 * 64) (String.length body) in
     let test_no_leak () =
       let stream = Array.init leak_repeat (fun _ -> uri) |> Lwt_stream.of_array in
       Lwt_stream.fold_s (fun uri () ->
-          Client.head uri >>= fun resp_head ->
+          Client.head ~resolvers uri >>= fun resp_head ->
           assert_equal (Response.status resp_head) `OK;
-          Client.get uri >>= fun (resp_get, body) ->
+          Client.get ~resolvers uri >>= fun (resp_get, body) ->
           assert_equal (Response.status resp_get) `OK;
           Body.drain_body body) stream ()
     in
     let expert_pipelined () =
       let printer x = x in
-      Client.get uri >>= fun (_rsp, body) ->
+      Client.get ~resolvers uri >>= fun (_rsp, body) ->
       Body.to_string body >>= fun body ->
       assert_equal ~printer "expert 1" body;
-      Client.get uri >>= fun (_rsp, body) ->
+      Client.get ~resolvers uri >>= fun (_rsp, body) ->
       Body.to_string body >|= fun body ->
       assert_equal ~printer "expert 2" body
     in
     let client_close () =
-      Cohttp_lwt_unix.Net.(connect_uri ~ctx:default_ctx) uri >>= fun (_conn, ic, oc) ->
+      Cohttp_lwt_unix.Net.(connect_uri ~resolvers) uri >>= fun (_conn, ic, oc) ->
       let req = Cohttp.Request.make_for_client ~chunked:false `GET (Uri.with_path uri "/test.html") in
       Request.write (fun _writer -> Lwt.return_unit) req oc
       >>= fun () ->
