@@ -21,26 +21,20 @@ open Lwt.Infix
 
 module IO = Io
 
-type ctx = {
-  ctx: Conduit_lwt_unix.ctx;
-  resolver: Resolver_lwt.t;
-} [@@deriving sexp_of]
+type resolvers = Conduit.resolvers
 
-let init ?(ctx=Conduit_lwt_unix.default_ctx)
-         ?(resolver=Resolver_lwt_unix.system) () =
-  { ctx; resolver }
+let empty = Conduit.empty
 
-let default_ctx = {
-  resolver = Resolver_lwt_unix.system;
-  ctx = Conduit_lwt_unix.default_ctx;
-}
+let failwith fmt = Format.kasprintf (fun err -> Lwt.fail (Failure err)) fmt
 
-let connect_uri ~ctx uri =
-  Resolver_lwt.resolve_uri ~uri ctx.resolver
-  >>= fun endp ->
-  Conduit_lwt_unix.endp_to_client ~ctx:ctx.ctx endp
-  >>= fun client ->
-  Conduit_lwt_unix.connect ~ctx:ctx.ctx client
+let connect_uri ?host:(default= "localhost") ~resolvers uri =
+  let domain_name = Domain_name.(host_exn (of_string_exn (Uri.host_with_default ~default uri))) in
+  Conduit_lwt.resolve resolvers domain_name >>= function
+  | Ok flow ->
+    let ic, oc = Conduit_lwt.io_of_flow flow in
+    Lwt.return (flow, ic, oc)
+  | Error err ->
+    failwith "%a" Conduit_lwt.pp_error err
 
 let close c = Lwt.catch
   (fun () -> Lwt_io.close c)

@@ -18,19 +18,20 @@
 
 module IO = Io
 
-type ctx = {
-  ctx : Conduit_lwt_unix.ctx;
-  resolver : Resolver_lwt.t;
-} [@@deriving sexp_of]
+type resolvers = Conduit.resolvers
 
-val init : ?ctx:Conduit_lwt_unix.ctx -> ?resolver:Resolver_lwt.t -> unit -> ctx
+val empty : resolvers
 
-val default_ctx : ctx
+(** Exceptions from [conduit].
+
+    When the [recv] or the [send] {i syscalls} return an error,
+    [conduit] will reraise it. *)
 
 val connect_uri :
-  ctx:ctx ->
+  ?host:string ->
+  resolvers:resolvers ->
   Uri.t ->
-  (Conduit_lwt_unix.flow * Conduit_lwt_unix.ic * Conduit_lwt_unix.oc) Lwt.t
+  (Conduit_lwt.flow * Lwt_io.input Lwt_io.channel * Lwt_io.output Lwt_io.channel) Lwt.t
 
 val close_in : 'a Lwt_io.channel -> unit
 val close_out : 'a Lwt_io.channel -> unit
