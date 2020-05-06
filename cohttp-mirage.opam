@@ -37,3 +37,8 @@ build: [
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 dev-repo: "git+https://github.com/mirage/ocaml-cohttp.git"
+pin-depends: [
+  [ "conduit.dev" "git+https://github.com/dinosaure/ocaml-conduit.git#4dffc531e6dde24fcc6aec84bb453f5bea277e80" ]
+  [ "conduit-tls.dev" "git+https://github.com/dinosaure/ocaml-conduit.git#4dffc531e6dde24fcc6aec84bb453f5bea277e80" ]
+  [ "conduit-mirage.dev" "git+https://github.com/dinosaure/ocaml-conduit.git#4dffc531e6dde24fcc6aec84bb453f5bea277e80" ]
+]

@@ -32,6 +32,7 @@ depends: [
   "core" {with-test}
   "cohttp" {=version}
   "conduit-async" {>="1.2.0"}
+  "conduit-async-ssl"
   "magic-mime"
   "logs"
   "fmt" {>= "0.8.2"}
@@ -41,6 +42,7 @@ depends: [
   "ounit" {with-test}
   "uri" {>= "2.0.0"}
   "uri-sexp"
+  "ipaddr"
 ]
 build: [
   ["dune" "subst"] {pinned}
@@ -48,3 +50,9 @@ build: [
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 dev-repo: "git+https://github.com/mirage/ocaml-cohttp.git"
+pin-depends: [
+  [ "conduit.dev" "git+https://github.com/dinosaure/ocaml-conduit.git#4dffc531e6dde24fcc6aec84bb453f5bea277e80" ]
+  [ "conduit-tls.dev" "git+https://github.com/dinosaure/ocaml-conduit.git#4dffc531e6dde24fcc6aec84bb453f5bea277e80" ]
+  [ "conduit-async-ssl.dev" "git+https://github.com/dinosaure/ocaml-conduit.git#4dffc531e6dde24fcc6aec84bb453f5bea277e80" ]
+  [ "conduit-async.dev" "git+https://github.com/dinosaure/ocaml-conduit.git#4dffc531e6dde24fcc6aec84bb453f5bea277e80" ]
+]
