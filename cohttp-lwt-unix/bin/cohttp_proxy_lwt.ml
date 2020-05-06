@@ -22,6 +22,27 @@ open Lwt
 open Cohttp
 open Cohttp_lwt_unix
 
+let option_bind x f = match x with
+  | Some x -> f x
+  | None -> None
+
+let ssl_protocol, ssl_service =
+  let open Conduit_lwt_ssl.TCP in
+  protocol, service
+
+let sockaddr_of_flow
+  : Conduit_lwt.flow -> Unix.sockaddr option
+  = fun flow -> match Conduit_lwt.cast flow Conduit_lwt.TCP.protocol,
+                      Conduit_lwt.cast flow ssl_protocol with
+  | Some flow, None -> Some (Conduit_lwt.TCP.Protocol.sock flow)
+  | None, Some flow -> Some (Lwt_ssl.getsockname flow)
+  | _ -> None
+
+let pp_sockaddr ppf = function
+  | Unix.ADDR_UNIX v -> Format.fprintf ppf "<%s>" v
+  | Unix.ADDR_INET (inet_addr, port) ->
+    Format.fprintf ppf "<%s:%d>" (Unix.string_of_inet_addr inet_addr) port
+
 let handler ~verbose _ req body =
   let uri = Cohttp.Request.uri req in
   (* Log the request to the console *)
@@ -54,18 +75,40 @@ let handler ~verbose _ req body =
   in
   Server.respond ~headers ~status ~body ()
 
+let load_ssl ?(version= Ssl.TLSv1_2) (cert, key) =
+  try
+    let ctx = Ssl.create_context version Ssl.Server_context in
+    Ssl.use_certificate ctx cert key ;
+    Some ctx
+  with _ -> None
+
+let sockaddr_of_host_and_port host port =
+  let inet_addr = Unix.inet_addr_of_string host in
+  Unix.ADDR_INET (inet_addr, port)
+
 let start_proxy port host verbose cert key () =
   printf "Listening for HTTP request on: %s %d\n%!" host port;
   let conn_closed (ch,_conn) =
-    printf "Connection %s closed\n%!"
-      (Sexplib0.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)) in
+    let pp_option pp_val ppf = function
+      | Some x -> pp_val ppf x
+      | None -> () in
+    Format.printf "Connection %a closed.\n%!"
+      (pp_option pp_sockaddr) (sockaddr_of_flow ch) in
   let callback = handler ~verbose in
   let config = Server.make ~callback ~conn_closed () in
-  let mode = match cert, key with
-    | Some c, Some k -> `TLS (`Crt_file_path c, `Key_file_path k, `No_password, `Port port)
-    | _ -> `TCP (`Port port)
-  in
-  Server.create ~mode config
+  let ssl = match cert, key with
+    | Some cert, Some key -> Some (cert, key)
+    | None, None -> None
+    | _ -> failwith "A TLS proxy requires a certificates and a key" in
+  let ssl_config = option_bind ssl load_ssl in
+  let tcp_config =
+    { Conduit_lwt.TCP.sockaddr= sockaddr_of_host_and_port host port
+    ; capacity= 40; } in
+  match ssl_config with
+  | Some ssl_config ->
+    Server.create (ssl_config, tcp_config) ssl_protocol ssl_service config
+  | None ->
+    Server.create tcp_config Conduit_lwt.TCP.protocol Conduit_lwt.TCP.service config
 
 let lwt_start_proxy port host verbose cert key =
   Lwt_main.run (start_proxy port host verbose cert key ())
@@ -74,7 +117,7 @@ open Cmdliner
 
 let host = 
   let doc = "IP address to listen on." in
-  Arg.(value & opt string "0.0.0.0" & info ["s"] ~docv:"HOST" ~doc)
+  Arg.(value & opt string "localhost" & info ["s"] ~docv:"HOST" ~doc)
 
 let port =
   let doc = "TCP port to listen on." in
