@@ -12,28 +12,18 @@ module Make
 
   type ctx = Net.ctx
 
-  let read_response ~closefn ic _oc meth =
-    Response.read ic >>= begin function
-    | `Invalid reason ->
-      Lwt.fail (Failure ("Failed to read response: " ^ reason))
-    | `Eof -> Lwt.fail (Failure "Client connection was closed")
-    | `Ok res -> begin
-        let has_body = match meth with
-          | `HEAD -> `No
-          | _ -> Response.has_body res
-        in
-        match has_body with
-        | `Yes | `Unknown ->
-          let reader = Response.make_body_reader res ic in
-          let stream = Body.create_stream Response.read_body_chunk reader in
-          let closefn = closefn in
-          Lwt.on_success (Lwt_stream.closed stream) closefn;
-          let gcfn _st = closefn () in
-          Gc.finalise gcfn stream;
-          let body = Body.of_stream stream in
-          Lwt.return (res, body)
-        | `No -> closefn (); Lwt.return (res, `Empty)
-      end
+  let read_body ~closefn ic res =
+    begin
+      match Response.has_body res with
+      | `Yes | `Unknown ->
+        let reader = Response.make_body_reader res ic in
+        let stream = Body.create_stream Response.read_body_chunk reader in
+        Lwt.on_success (Lwt_stream.closed stream) closefn;
+        let gcfn st = closefn () in
+        Gc.finalise gcfn stream;
+        let body = Body.of_stream stream in
+        Lwt.return body
+      | `No -> closefn (); Lwt.return `Empty
     end
     |> fun t ->
     Lwt.on_cancel t closefn;
@@ -70,7 +60,18 @@ module Make
           Body.write_body (Request.write_body writer) buf) req oc
     in
     sent >>= fun () ->
-    read_response ~closefn ic oc meth
+    Response.read ic >>= function
+    | `Invalid reason ->
+      Lwt.fail (Failure ("Failed to read response: " ^ reason))
+    | `Eof ->
+      Lwt.fail (Failure "Server closed connection prematurely.")
+    | `Ok res ->
+      match meth with
+      | `HEAD ->
+        Lwt.return (res, `Empty)
+      | _ ->
+        read_body ~closefn ic res >>= fun body ->
+        Lwt.return (res, body)
 
   (* The HEAD should not have a response body *)
   let head ?ctx ?headers uri =
@@ -113,11 +114,22 @@ module Make
       | None -> Lwt.return_unit
       | Some body -> Body.drain_body body
       end >>= fun () ->
-      Lwt_mutex.with_lock read_m (fun () -> read_response ~closefn ic oc meth)
-      >|= (fun ((_,body) as x) ->
-        last_body := Some body;
-        x
-      )
+      Lwt_mutex.with_lock read_m begin fun () ->
+        Response.read ic >>= function
+        | `Invalid reason ->
+          Lwt.fail (Failure ("Failed to read response: " ^ reason))
+        | `Eof ->
+          Lwt.fail (Failure "Server closed connection prematurely.")
+        | `Ok res ->
+          match meth with
+          | `HEAD ->
+            last_body := None;
+            Lwt.return (res, `Empty)
+          | _ ->
+            read_body ~closefn ic res >>= fun body ->
+            last_body := Some body;
+            Lwt.return (res, body)
+      end
     ) meth_stream in
     Lwt.on_success (Lwt_stream.closed resps) (fun () -> Net.close ic oc);
     Lwt.return resps
