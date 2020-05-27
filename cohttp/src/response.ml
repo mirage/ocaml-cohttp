@@ -24,7 +24,7 @@ type t = {
   flush: bool;
 } [@@deriving fields, sexp]
 
-let make ?(version=`HTTP_1_1) ?(status=`OK) ?(flush=false) ?(encoding=Transfer.Fixed Int64.zero) ?(headers=Header.init ()) () =
+let make ?(version=`HTTP_1_1) ?(status=`OK) ?(flush=false) ?(encoding=Transfer.Chunked) ?(headers=Header.init ()) () =
   let encoding =
     match Header.get_transfer_encoding headers with
     | Transfer.(Chunked | Fixed _)  as enc -> enc
