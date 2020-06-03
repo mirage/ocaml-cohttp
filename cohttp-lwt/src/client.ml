@@ -13,22 +13,16 @@ module Make
   type ctx = Net.ctx
 
   let read_body ~closefn ic res =
-    begin
-      match Response.has_body res with
-      | `Yes | `Unknown ->
-        let reader = Response.make_body_reader res ic in
-        let stream = Body.create_stream Response.read_body_chunk reader in
-        Lwt.on_success (Lwt_stream.closed stream) closefn;
-        let gcfn st = closefn () in
-        Gc.finalise gcfn stream;
-        let body = Body.of_stream stream in
-        Lwt.return body
-      | `No -> closefn (); Lwt.return `Empty
-    end
-    |> fun t ->
-    Lwt.on_cancel t closefn;
-    Lwt.on_failure t (fun _exn -> closefn ());
-    t
+    match Response.has_body res with
+    | `Yes | `Unknown ->
+      let reader = Response.make_body_reader res ic in
+      let stream = Body.create_stream Response.read_body_chunk reader in
+      Lwt.on_success (Lwt_stream.closed stream) closefn;
+      let gcfn st = closefn () in
+      Gc.finalise gcfn stream;
+      let body = Body.of_stream stream in
+      body
+    | `No -> closefn (); `Empty
 
   let is_meth_chunked = function
     | `HEAD -> false
@@ -70,7 +64,7 @@ module Make
       | `HEAD ->
         Lwt.return (res, `Empty)
       | _ ->
-        read_body ~closefn ic res >>= fun body ->
+        let body = read_body ~closefn ic res in
         Lwt.return (res, body)
 
   (* The HEAD should not have a response body *)
@@ -126,7 +120,7 @@ module Make
             last_body := None;
             Lwt.return (res, `Empty)
           | _ ->
-            read_body ~closefn ic res >>= fun body ->
+            let body = read_body ~closefn ic res in
             last_body := Some body;
             Lwt.return (res, body)
       end
