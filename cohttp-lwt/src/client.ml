@@ -17,10 +17,11 @@ module Make
     | `Yes | `Unknown ->
       let reader = Response.make_body_reader res ic in
       let stream = Body.create_stream Response.read_body_chunk reader in
-      Lwt.on_success (Lwt_stream.closed stream) closefn;
-      let gcfn st = closefn () in
-      Gc.finalise gcfn stream;
       let body = Body.of_stream stream in
+      Lwt.on_success (Lwt_stream.closed stream) closefn;
+      Gc.finalise
+        (fun body -> Lwt.async (fun () -> Body.drain_body body))
+        stream;
       body
     | `No -> closefn (); `Empty
 
