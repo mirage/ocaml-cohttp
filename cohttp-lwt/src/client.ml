@@ -102,13 +102,8 @@ module Make
        response has consumed the body before continuing to the next
        response because HTTP/1.1-pipelining cannot be interleaved. *)
     let read_m = Lwt_mutex.create () in
-    let last_body = ref None in
     let closefn () = Lwt_mutex.unlock read_m in
     let resps = Lwt_stream.map_s (fun meth ->
-      begin match !last_body with
-      | None -> Lwt.return_unit
-      | Some body -> Body.drain_body body
-      end >>= fun () ->
       Lwt_mutex.with_lock read_m begin fun () ->
         Response.read ic >>= function
         | `Invalid reason ->
@@ -118,11 +113,9 @@ module Make
         | `Ok res ->
           match meth with
           | `HEAD ->
-            last_body := None;
             Lwt.return (res, `Empty)
           | _ ->
             let body = read_body ~closefn ic res in
-            last_body := Some body;
             Lwt.return (res, body)
       end
     ) meth_stream in
