@@ -18,9 +18,14 @@ module Make
       let reader = Response.make_body_reader res ic in
       let stream = Body.create_stream Response.read_body_chunk reader in
       let body = Body.of_stream stream in
-      Lwt.on_success (Lwt_stream.closed stream) closefn;
-      Gc.finalise
-        (fun body -> Lwt.async (fun () -> Body.drain_body body))
+      let closed = ref false in
+      Lwt.on_success (Lwt_stream.closed stream)
+        (fun () -> closed := true; closefn ());
+      (* finalise could run in a thread different from the lwt main thread.
+       * You may therefore not call into Lwt from a finaliser. *)
+      Gc.finalise_last
+        (fun () -> if not !closed then
+            prerr_endline "Cohttp_lwt: body not consumed - leaking stream!")
         stream;
       body
     | `No -> closefn (); `Empty
