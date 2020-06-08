@@ -45,6 +45,40 @@ let auth_uri _ =
     (r |> Request.headers |> Header.get_authorization)
     (Some (`Basic ("foo", "bar%25")))
 
+let t_encoding =
+  Alcotest.testable
+    (fun fmt e ->
+       let sexp = Cohttp.Transfer.sexp_of_encoding e in
+       Sexplib0.Sexp.pp fmt sexp) (=)
+
+let encoding_content_length_header () =
+  let r = Request.make ~headers:(Cohttp.Header.of_list ["content-length", "100"]) (Uri.of_string "http://someuri.com")  in
+  Alcotest.check t_encoding
+    "body encoding determined by content-length header"
+    (r |> Request.encoding)
+    (Fixed 100L)
+
+let encoding_transfer_encoding_header () =
+  let r = Request.make ~headers:(Cohttp.Header.of_list ["transfer-encoding", "chunked"]) (Uri.of_string "http://someuri.com")  in
+  Alcotest.check t_encoding
+    "body encoding determined by transfer-encoding header"
+    (r |> Request.encoding)
+    (Chunked)
+
+let encoding_both_headers () =
+  let r = Request.make ~headers:(Cohttp.Header.of_list ["transfer-encoding", "chunked"; "content-length", "100"]) (Uri.of_string "http://someuri.com")  in
+  Alcotest.check t_encoding
+    "body encoding with content-length and transfer-encoding headers."
+    (r |> Request.encoding)
+    (Chunked)
+
+let encoding_header_opt_argument () =
+  let r = Request.make ~encoding:Chunked ~headers:(Cohttp.Header.of_list ["content-length", "100"]) (Uri.of_string "http://someuri.com")  in
+  Alcotest.check t_encoding
+    "body encoding with content-length and transfer-encoding headers."
+    (r |> Request.encoding)
+    (Fixed 100L)
+
 let opt_default default = function
   | None -> default
   | Some v -> v
@@ -214,6 +248,12 @@ Alcotest.run "test_request" [
     "URI has user info", `Quick, uri_has_userinfo;
     "from URI - do not override", `Quick, auth_uri_no_override;
     "from URI", `Quick, auth_uri;
+  ];
+  "Encoding", [
+    "from content-length header",`Quick, encoding_content_length_header;
+    "from transfer-encoding header",`Quick, encoding_transfer_encoding_header;
+    "with both headers",`Quick, encoding_both_headers;
+    "from both optional argument and headers", `Quick, encoding_header_opt_argument;
   ];
   "Parse URI", [
     "simple", `Quick, parse_request_uri;
