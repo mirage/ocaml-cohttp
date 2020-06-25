@@ -38,10 +38,13 @@ let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
     | Some h -> h in
   let headers =
     Header.add_unless_exists headers "host"
-      (Uri.host_with_default ~default:"localhost" uri ^
-       match Uri.port uri with
-       | Some p -> ":" ^ string_of_int p
-       | None -> "") in
+      (match Uri.scheme uri with
+      | Some "httpunix" -> ""
+      | _ ->
+        Uri.host_with_default ~default:"localhost" uri ^
+         match Uri.port uri with
+         | Some p -> ":" ^ string_of_int p
+         | None -> "") in
   let headers =
     Header.add_unless_exists headers "user-agent" Header.user_agent in
   let headers =
