@@ -27,9 +27,9 @@ type t = {
 let fixed_zero = Transfer.Fixed Int64.zero
 
 let guess_encoding ?(encoding=fixed_zero) headers =
-  match Header.get_content_range headers with
-  | Some clen -> Transfer.Fixed clen
-  | None -> encoding
+  match Header.get_transfer_encoding headers with
+  | Transfer.(Chunked | Fixed _) as enc -> enc
+  | Unknown -> encoding
 
 let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
   let headers =

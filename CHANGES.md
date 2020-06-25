@@ -1,3 +1,8 @@
+## Unreleased
+
+- cohttp: better body encoding management when creating request and
+  response, and correction of Header.replace fonction (#694 @lyrm)
+
 ## v2.5.1 (2020-02-18)
 
 - cohttp-lwt: pass ctx through HEAD client requests (#689 @hannesm)

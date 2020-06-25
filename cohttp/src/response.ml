@@ -24,8 +24,12 @@ type t = {
   flush: bool;
 } [@@deriving fields, sexp]
 
-let make ?(version=`HTTP_1_1) ?(status=`OK) ?(flush=false) ?(encoding=Transfer.Chunked) ?headers () =
-  let headers = match headers with None -> Header.init () |Some h -> h in
+let make ?(version=`HTTP_1_1) ?(status=`OK) ?(flush=false) ?(encoding=Transfer.Chunked) ?(headers=Header.init ()) () =
+  let encoding =
+    match Header.get_transfer_encoding headers with
+    | Transfer.(Chunked | Fixed _)  as enc -> enc
+    | Unknown -> encoding
+  in
   { encoding; headers; version; flush; status }
 
 let pp_hum ppf r =
