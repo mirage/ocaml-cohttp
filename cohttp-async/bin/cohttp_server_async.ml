@@ -72,7 +72,7 @@ let serve ~info ~docroot ~index uri path =
   | Ok res -> return res
   | Error exn ->
     begin match Monitor.extract_exn exn with
-    | Unix.Unix_error (Unix.ENOENT, "stat", p) ->
+    | Unix.Unix_error (Unix.Error.ENOENT, "stat", p) ->
       if String.equal p ("((filename "^file_name^"))") (* Really? *)
       then Server.respond_string ~status:`Not_found
         (html_of_not_found path info)
