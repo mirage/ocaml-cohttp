@@ -1,3 +1,7 @@
+## v2.5.3 (2020-06-27)
+
+- cohttp-async: adapt to async >= v0.14 (#699 @copy)
+
 ## v2.5.2 (2020-06-27)
 
 - cohttp, cohttp-async: correctly set host header for unix domain sockets,
