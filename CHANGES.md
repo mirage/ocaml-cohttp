@@ -1,7 +1,9 @@
-## Unreleased
+## v2.5.2 (2020-06-27)
 
+- cohttp, cohttp-async: correctly set host header for unix domain sockets,
+  implement Unix domain socket support for cohttp-async (#698 @Leonidas-from-XIV)
 - cohttp: better body encoding management when creating request and
-  response, and correction of Header.replace fonction (#694 @lyrm)
+  response, and correction of Header.replace function (#694 @lyrm)
 
 ## v2.5.1 (2020-02-18)
 
