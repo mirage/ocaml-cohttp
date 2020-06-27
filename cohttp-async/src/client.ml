@@ -15,7 +15,7 @@ end
 module Net = struct
 
   let lookup uri =
-    let host = Option.value (Uri.host uri) ~default:"localhost" in
+    let host = Uri.host_with_default ~default:"localhost" uri in
     match Uri_services.tcp_port_of_uri ~default:"http" uri with
     | None -> Deferred.Or_error.error_string
                 "Net.lookup: failed to get TCP port form Uri"
@@ -29,19 +29,22 @@ module Net = struct
       | _ -> Or_error.error "Failed to resolve Uri" uri Uri_sexp.sexp_of_t
 
   let connect_uri ?interrupt ?ssl_config uri =
-    lookup uri
-    |> Deferred.Or_error.ok_exn
-    >>= fun (host, addr, port) ->
-    let mode =
-      match (Uri.scheme uri, ssl_config) with
-      | Some "https", Some config ->
-        `OpenSSL (addr, port, config)
-      | Some "https", None ->
-        let config = Conduit_async.V2.Ssl.Config.create ~hostname:host () in
-        `OpenSSL (addr, port, config)
-      | Some "httpunix", _ -> `Unix_domain_socket host
-      | _ -> `TCP (addr, port)
-    in
+    (match Uri.scheme uri with
+    | Some "httpunix" ->
+      let host = Uri.host_with_default ~default:"localhost" uri in
+      return @@ `Unix_domain_socket host
+    | _ ->
+      lookup uri
+      |> Deferred.Or_error.ok_exn
+      >>= fun (host, addr, port) ->
+      return @@ match (Uri.scheme uri, ssl_config) with
+        | Some "https", Some config ->
+          `OpenSSL (addr, port, config)
+        | Some "https", None ->
+          let config = Conduit_async.V2.Ssl.Config.create ~hostname:host () in
+          `OpenSSL (addr, port, config)
+        | _ -> `TCP (addr, port))
+    >>= fun mode ->
     Conduit_async.V2.connect ?interrupt mode
 end
 
