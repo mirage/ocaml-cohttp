@@ -67,7 +67,13 @@ val replace : t -> string -> string -> t
     if [w] is [Some z] then [k] is associated to [z] in the resulting headers.
     If [k] was already associated in [h] to a value that is physically equal
     to [z], [h] is returned unchanged (the result of the function is then
-    physically equal to [h]). The original header parameters are not modified. *)
+    physically equal to [h]). Similarly as for [get], if the header is one
+    of the set of headers defined to have list values, then all of the values are
+    concatenated into a single string separated by commas and passed to [f],
+    while the return value of [f] is split on commas and associated to [k].
+    If it is a singleton header, then the first value is passed to [f] and
+    no concatenation is performed, similarly for the return value.
+    The original header parameters are not modified. *)
 val update: t -> string -> (string option -> string option) -> t
 
 (** Check if a key exists in the header. *)

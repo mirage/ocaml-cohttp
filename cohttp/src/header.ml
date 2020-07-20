@@ -84,7 +84,10 @@ let update h k f =
   let f v =
     let v' = match v with
       | None -> f None
-      | Some l -> f (Some (String.concat "," l))
+      | Some l -> 
+        if is_header_with_list_value k then
+          f (Some (String.concat "," l))
+        else f (Some (List.hd l))
     in match v' with
     | None -> None
     | Some s ->
