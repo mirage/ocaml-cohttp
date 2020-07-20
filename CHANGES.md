@@ -1,8 +1,8 @@
 ## Unreleased
 
 - cohttp: a change in #694 modified the semantics of Header.replace.
-  The semantics change is reverted, and a new Header.update function
-  is introduced which changes a header value only when present. (@mseri)
+  The semantics change is reverted, and a new Header.update_existing function
+  is introduced which changes a header value only when present. (#702 @mseri)
 
 ## v2.5.3 (2020-06-27)
 
