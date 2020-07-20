@@ -77,8 +77,12 @@ let remove h k =
 
 let replace h k v =
   let k = LString.of_string k in
-  if StringMap.mem k h
-  then StringMap.add k [v] h
+  StringMap.add k [v] h
+
+let update h k v =
+  let k' = LString.of_string k in
+  if StringMap.mem k' h
+  then replace h k v
   else h
 
 let get h k =

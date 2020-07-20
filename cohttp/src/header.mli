@@ -56,9 +56,13 @@ val add_opt_unless_exists : t option -> string -> string -> t
     original header parameter is not modified. *)
 val remove : t -> string -> t
 
-(** Replace the value of a key from the header map if it exists. The
-   original header parameter is not modified. *)
+(** Replace the value of a key from the header map if it exists, otherwise it
+    adds it to the header map. The original header parameter is not modified. *)
 val replace : t -> string -> string -> t
+
+(** Replace the value of a key from the header map if it exists, otherwise
+    return the header map unmodified. The original header parameter is not modified. *)
+val update: t -> string -> string -> t
 
 (** Check if a key exists in the header. *)
 val mem : t -> string -> bool
