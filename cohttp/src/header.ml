@@ -79,11 +79,20 @@ let replace h k v =
   let k = LString.of_string k in
   StringMap.add k [v] h
 
-let update_existing h k v =
-    let k' = LString.of_string k in
-    if StringMap.mem k' h
-    then Some (replace h k v)
-    else None
+let update h k f =
+  let k = LString.of_string k in
+  let f v =
+    let v' = match v with
+      | None -> f None
+      | Some l -> f (Some (String.concat "," l))
+    in match v' with
+    | None -> None
+    | Some s ->
+      if is_header_with_list_value k then
+        Some (String.split_on_char ',' s)
+      else Some [s]
+  in
+  StringMap.update k f h
 
 let get h k =
   let k = LString.of_string k in

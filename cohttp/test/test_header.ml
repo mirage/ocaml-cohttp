@@ -147,13 +147,13 @@ module Updates = struct
     Alcotest.(check (option string)) "replace_new_header" (Some "3") (H.get h "third")
 
   let update_headers_if_exists () =
-    let h1 = H.update_existing h "second" "2a" in
+    let h1 = H.update h "second" (function | Some _ -> Some "2a" | None -> None) in
     let h2 = H.replace h "second" "2a" in
-    Alcotest.(check (option t_header)) "update_existing_header" h1 (Some h2)
+    Alcotest.(check t_header) "update_existing_header" h1 h2
 
   let update_headers_if_absent () =
-    let h1 = H.update_existing h "third" "3" in
-    Alcotest.(check (option t_header)) "update_new_header: none returned" None h1;
+    let h1 = H.update h "third" (function | Some _ -> Some "3" | None -> None) in
+    Alcotest.(check t_header) "update_new_header: unchanged" h h1;
     Alcotest.(check (option string)) "update_new_header: map unchanged" None (H.get h "third")
 end
 
