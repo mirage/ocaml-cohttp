@@ -60,9 +60,12 @@ val remove : t -> string -> t
     adds it to the header map. The original header parameter is not modified. *)
 val replace : t -> string -> string -> t
 
-(** Replace the value of a key from the header map if it exists, otherwise
-    return the header map unmodified. The original header parameter is not modified. *)
-val update: t -> string -> string -> t
+(** [update_existing h k v] replaces the value [v] of a key [k] in the
+    header map [h] if [k] is already in [h], otherwise it leaves [h]
+    unchanged and returns [None].
+    The option value returned by the function contains the updated map.
+    The original header parameter is not modified. *)
+val update_existing: t -> string -> string -> t option
 
 (** Check if a key exists in the header. *)
 val mem : t -> string -> bool

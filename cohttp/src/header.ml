@@ -79,11 +79,11 @@ let replace h k v =
   let k = LString.of_string k in
   StringMap.add k [v] h
 
-let update h k v =
-  let k' = LString.of_string k in
-  if StringMap.mem k' h
-  then replace h k v
-  else h
+let update_existing h k v =
+    let k' = LString.of_string k in
+    if StringMap.mem k' h
+    then Some (replace h k v)
+    else None
 
 let get h k =
   let k = LString.of_string k in
