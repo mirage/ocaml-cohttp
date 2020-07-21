@@ -1,3 +1,9 @@
+## Unreleased
+
+- cohttp: a change in #694 modified the semantics of Header.replace.
+  The semantics change is reverted, and a new Header.update function
+  is introduced, following the semantics of Map.update. (#702 @mseri)
+
 ## v2.5.3 (2020-06-27)
 
 - cohttp-async: adapt to async >= v0.14 (#699 @copy)

@@ -56,9 +56,25 @@ val add_opt_unless_exists : t option -> string -> string -> t
     original header parameter is not modified. *)
 val remove : t -> string -> t
 
-(** Replace the value of a key from the header map if it exists. The
-   original header parameter is not modified. *)
+(** Replace the value of a key from the header map if it exists, otherwise it
+    adds it to the header map. The original header parameter is not modified. *)
 val replace : t -> string -> string -> t
+
+(** [update h k f] returns a map containing the same headers as [h],
+    except for the header [k]. Depending on the value of [v] where [v] is
+    [f (get h k)], the header [k] is added, removed or updated.
+    If [w] is [None], the header is removed if it exists; otherwise,
+    if [w] is [Some z] then [k] is associated to [z] in the resulting headers.
+    If [k] was already associated in [h] to a value that is physically equal
+    to [z], [h] is returned unchanged (the result of the function is then
+    physically equal to [h]). Similarly as for [get], if the header is one
+    of the set of headers defined to have list values, then all of the values are
+    concatenated into a single string separated by commas and passed to [f],
+    while the return value of [f] is split on commas and associated to [k].
+    If it is a singleton header, then the first value is passed to [f] and
+    no concatenation is performed, similarly for the return value.
+    The original header parameters are not modified. *)
+val update: t -> string -> (string option -> string option) -> t
 
 (** Check if a key exists in the header. *)
 val mem : t -> string -> bool

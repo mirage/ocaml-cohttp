@@ -133,6 +133,37 @@ let many_headers () =
   let h = add_header size (H.init ()) in
   Alcotest.(check int) "many_headers" (List.length (H.to_list h)) size
 
+module Updates = struct
+  let h = H.init ()
+    |> fun h -> H.add h "first" "1"
+    |> fun h -> H.add h "second" "2"
+    |> fun h -> H.add h "accept" "foo"
+    |> fun h -> H.add h "accept" "bar"
+
+  let replace_headers_if_exists () =
+    let h = H.replace h "second" "2a" in
+    Alcotest.(check (option string)) "replace_existing_header" (Some "2a") (H.get h "second")
+
+  let replace_headers_if_absent () =
+    let h = H.replace h "third" "3" in
+    Alcotest.(check (option string)) "replace_new_header" (Some "3") (H.get h "third")
+
+  let update_headers_if_exists () =
+    let h1 = H.update h "second" (function | Some _ -> Some "2a" | None -> None) in
+    let h2 = H.replace h "second" "2a" in
+    Alcotest.(check t_header) "update_existing_header" h1 h2
+
+  let update_headers_if_exists_multi () =
+    let h1 = H.update h "accept" (function | Some v -> Some ("baz,"^v) | None -> None) in
+    let h2 = H.add h "accept" "baz" in
+    Alcotest.(check (option string)) "update_existing_header_multivalued" (H.get h1 "accept") (H.get h2 "accept")
+
+  let update_headers_if_absent () =
+    let h1 = H.update h "third" (function | Some _ -> Some "3" | None -> None) in
+    Alcotest.(check t_header) "update_new_header: unchanged" h h1;
+    Alcotest.(check (option string)) "update_new_header: map unchanged" None (H.get h "third")
+end
+
 module Content_range = struct
   let h1 = H.of_list ["Content-Length", "123"]
   let h2 = H.of_list ["Content-Range", "bytes 200-300/1000"]
@@ -484,6 +515,11 @@ Alcotest.run "test_header" [
   "Header", [
     "get list valued", `Quick, list_valued_header;
     "trim whitespace", `Quick, trim_ws;
+    "replace existing", `Quick, Updates.replace_headers_if_exists;
+    "replace absent", `Quick, Updates.replace_headers_if_absent;
+    "update existing", `Quick, Updates.update_headers_if_exists;
+    "update existing list", `Quick, Updates.update_headers_if_exists_multi;
+    "update absent", `Quick, Updates.update_headers_if_absent;
     "large header", `Slow, large_header;
     "many headers", `Slow, many_headers;
   ];
