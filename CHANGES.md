@@ -1,4 +1,4 @@
-## Unreleased
+## v2.5.4 (2020-07-21)
 
 - cohttp: a change in #694 modified the semantics of Header.replace.
   The semantics change is reverted, and a new Header.update function
