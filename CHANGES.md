@@ -3,6 +3,8 @@
 - cohttp: a change in #694 modified the semantics of Header.replace.
   The semantics change is reverted, and a new Header.update function
   is introduced, following the semantics of Map.update. (#702 @mseri)
+- cohttp: reimplement update to support compilers that are older than
+  OCaml 4.06 (#703 @mseri)
 
 ## v2.5.3 (2020-06-27)
 
