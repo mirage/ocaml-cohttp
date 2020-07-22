@@ -91,16 +91,15 @@ let get h k =
   let update h k f =
     let vorig = get h k in
     let k = LString.of_string k in
-    match f vorig with
-    | None -> StringMap.remove k h
-    | Some s as vnew ->
-      if vorig == vnew then h
-      else
-        let v' =
-          if is_header_with_list_value k then
-            (String.split_on_char ',' s)
-          else [s]
-        in StringMap.add k v' h
+    match f vorig, vorig with
+    | None, _ -> StringMap.remove k h
+    | Some s, Some s' when s == s' -> h
+    | Some s, _ ->
+      let v' =
+        if is_header_with_list_value k then
+          (String.split_on_char ',' s)
+        else [s]
+      in StringMap.add k v' h
 
 let mem h k = StringMap.mem (LString.of_string k) h
 
