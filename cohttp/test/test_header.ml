@@ -152,6 +152,19 @@ module Updates = struct
     let h1 = H.update h "second" (function | Some _ -> Some "2a" | None -> None) in
     let h2 = H.replace h "second" "2a" in
     Alcotest.(check t_header) "update_existing_header" h1 h2
+  
+  let update_headers_if_exists_rm () =
+    let h1 = H.update h "second" (function | Some _ -> None | None -> Some "3") in
+    let h2 = H.remove h "second" in
+    Alcotest.(check t_header) "update_remove_header" h1 h2
+  
+  let update_headers_if_absent_add () =
+    let h = H.update h "third" (function | Some _ -> None | None -> Some "3") in
+    Alcotest.(check (option string)) "update_add_new_header" (Some "3") (H.get h "third")
+  
+  let update_headers_if_absent_rm () =
+    let h1 = H.update h "third" (function _ -> None) in
+    Alcotest.(check t_header) "update_remove_absent_header" h h1
 
   let update_headers_if_exists_multi () =
     let h1 = H.update h "accept" (function | Some v -> Some ("baz,"^v) | None -> None) in
@@ -519,6 +532,9 @@ Alcotest.run "test_header" [
     "replace absent", `Quick, Updates.replace_headers_if_absent;
     "update existing", `Quick, Updates.update_headers_if_exists;
     "update existing list", `Quick, Updates.update_headers_if_exists_multi;
+    "update add absent", `Quick, Updates.update_headers_if_absent_add;
+    "update rm existing", `Quick, Updates.update_headers_if_exists_rm;
+    "update rm absent", `Quick, Updates.update_headers_if_absent_rm;
     "update absent", `Quick, Updates.update_headers_if_absent;
     "large header", `Slow, large_header;
     "many headers", `Slow, many_headers;

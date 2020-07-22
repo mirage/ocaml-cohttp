@@ -79,24 +79,6 @@ let replace h k v =
   let k = LString.of_string k in
   StringMap.add k [v] h
 
-let update h k f =
-  let k = LString.of_string k in
-  let f v =
-    let v' = match v with
-      | None -> f None
-      | Some l -> 
-        if is_header_with_list_value k then
-          f (Some (String.concat "," l))
-        else f (Some (List.hd l))
-    in match v' with
-    | None -> None
-    | Some s ->
-      if is_header_with_list_value k then
-        Some (String.split_on_char ',' s)
-      else Some [s]
-  in
-  StringMap.update k f h
-
 let get h k =
   let k = LString.of_string k in
   try
@@ -105,6 +87,19 @@ let get h k =
     then Some (String.concat "," v)
     else Some (List.hd v)
   with Not_found | Failure _ -> None
+
+  let update h k f =
+    let vorig = get h k in
+    let k = LString.of_string k in
+    match f vorig, vorig with
+    | None, _ -> StringMap.remove k h
+    | Some s, Some s' when s == s' -> h
+    | Some s, _ ->
+      let v' =
+        if is_header_with_list_value k then
+          (String.split_on_char ',' s)
+        else [s]
+      in StringMap.add k v' h
 
 let mem h k = StringMap.mem (LString.of_string k) h
 
