@@ -19,6 +19,7 @@ open Sexplib0.Sexp_conv
 type t = {
   headers: Header.t;
   meth: Code.meth;
+  scheme: string option;
   resource: string;
   version: Code.version;
   encoding: Transfer.encoding;
@@ -56,7 +57,7 @@ let make ?(meth=`GET) ?(version=`HTTP_1_1) ?encoding ?headers uri =
       Header.add_authorization headers auth
     | _, _, _ -> headers in
   let encoding = guess_encoding ?encoding headers in
-  { meth; version; headers; resource=(Uri.path_and_query uri); encoding }
+  { meth; version; headers; scheme=(Uri.scheme uri); resource=(Uri.path_and_query uri); encoding }
 
 let is_keep_alive { version; headers; _ } =
   not (version = `HTTP_1_0 ||
@@ -87,44 +88,49 @@ let is_valid_uri path meth =
    | Some _ -> true
    | None -> not (String.length path > 0 && path.[0] <> '/'))
 
-let uri { resource ; headers ; meth ; _ } =
-  match resource with
-  | "*" ->
-    begin match Header.get headers "host" with
-    | None -> Uri.of_string ""
-    | Some host ->
-      let host_uri = Uri.of_string ("//"^host) in
-      let uri = Uri.(with_host (of_string "") (host host_uri)) in
-      Uri.(with_port uri (port host_uri))
-    end
-  | authority when meth = `CONNECT -> Uri.of_string ("//" ^ authority)
-  | path ->
-    let uri = Uri.of_string path in
-    begin match Uri.scheme uri with
-    | Some _ -> (* we have an absoluteURI *)
-      Uri.(match path uri with "" -> with_path uri "/" | _ -> uri)
-    | None ->
-      let empty = Uri.of_string "" in
-      let empty_base = Uri.of_string "///" in
-      let pqs = match Stringext.split ~max:2 path ~on:'?' with
-        | [] -> empty_base
-        | [path] ->
-          Uri.resolve "http" empty_base (Uri.with_path empty path)
-        | path::qs::_ ->
-          let path_base =
+let uri { scheme ; resource ; headers ; meth ; _ } =
+  let uri =
+    match resource with
+    | "*" ->
+      begin match Header.get headers "host" with
+      | None -> Uri.of_string ""
+      | Some host ->
+        let host_uri = Uri.of_string ("//"^host) in
+        Uri.(make ?host:(host host_uri) ?port:(port host_uri) ())
+      end
+    | authority when meth = `CONNECT -> Uri.of_string ("//" ^ authority)
+    | path ->
+      let uri = Uri.of_string path in
+      begin match Uri.scheme uri with
+      | Some _ -> (* we have an absoluteURI *)
+        Uri.(match path uri with "" -> with_path uri "/" | _ -> uri)
+      | None ->
+        let empty = Uri.of_string "" in
+        let empty_base = Uri.of_string "///" in
+        let pqs = match Stringext.split ~max:2 path ~on:'?' with
+          | [] -> empty_base
+          | [path] ->
             Uri.resolve "http" empty_base (Uri.with_path empty path)
-          in
-          Uri.with_query path_base (Uri.query_of_encoded qs)
-      in
-      let uri = match Header.get headers "host" with
-        | None -> Uri.(with_scheme (with_host pqs None) None)
-        | Some host ->
-          let host_uri = Uri.of_string ("//"^host) in
-          let uri = Uri.with_host pqs (Uri.host host_uri) in
-          Uri.with_port uri (Uri.port host_uri)
-      in
-      uri
-    end
+          | path::qs::_ ->
+            let path_base =
+              Uri.resolve "http" empty_base (Uri.with_path empty path)
+            in
+            Uri.with_query path_base (Uri.query_of_encoded qs)
+        in
+        let uri = match Header.get headers "host" with
+          | None -> Uri.(with_scheme (with_host pqs None) None)
+          | Some host ->
+            let host_uri = Uri.of_string ("//"^host) in
+            let uri = Uri.with_host pqs (Uri.host host_uri) in
+            Uri.with_port uri (Uri.port host_uri)
+        in
+        uri
+      end
+  in
+  (* Only set the scheme if it's not already part of the URI *)
+  match Uri.scheme uri with
+  | Some _ -> uri
+  | None -> Uri.with_scheme uri scheme
 
 type tt = t
 module Make(IO : S.IO) = struct
@@ -160,7 +166,7 @@ module Make(IO : S.IO) = struct
       if is_valid_uri resource meth then
         Header_IO.parse ic >>= fun headers ->
         let encoding = Header.get_transfer_encoding headers in
-        return (`Ok { headers; meth; resource; version; encoding })
+        return (`Ok { headers; meth; scheme = None; resource; version; encoding })
       else
         return (`Invalid "bad request URI")
 
