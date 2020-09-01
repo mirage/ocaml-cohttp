@@ -128,20 +128,19 @@ let callv ?interrupt ?ssl_config uri reqs =
 let call ?interrupt ?ssl_config ?headers ?(chunked=false) ?(body=`Empty) meth uri =
   (* Create a request, then make the request. Figure out an appropriate
      transfer encoding *)
-  let req =
+  begin
     match chunked with
     | false ->
-      Body_raw.disable_chunked_encoding body >>| fun (_body, body_length) ->
-      Request.make_for_client ?headers ~chunked ~body_length meth uri
+      Body_raw.disable_chunked_encoding body >>| fun (body, body_length) ->
+      Request.make_for_client ?headers ~chunked ~body_length meth uri, body
     | true -> begin
         Body.is_empty body >>| function
         | true -> (* Don't used chunked encoding with an empty body *)
-          Request.make_for_client ?headers ~chunked:false ~body_length:0L meth uri
+          Request.make_for_client ?headers ~chunked:false ~body_length:0L meth uri, body
         | false -> (* Use chunked encoding if there is a body *)
-          Request.make_for_client ?headers ~chunked:true meth uri
+          Request.make_for_client ?headers ~chunked:true meth uri, body
       end
-  in
-  req >>= request ?interrupt ?ssl_config ~body ~uri
+  end >>= fun (req, body) -> request ?interrupt ?ssl_config ~body ~uri req
 
 let get ?interrupt ?ssl_config ?headers uri =
   call ?interrupt ?ssl_config ?headers ~chunked:false `GET uri
