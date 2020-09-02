@@ -91,6 +91,10 @@ module Parse_result = struct
     | (`Invalid _ | `Eof) as e -> e
 end
 
+let uri_testable
+  : Uri.t Alcotest.testable
+  = Alcotest.testable Uri.pp_hum Uri.equal
+
 let t_parse_result_uri
   : Uri.t Parse_result.t Alcotest.testable
   = Alcotest.testable (fun fmt -> function
@@ -240,6 +244,11 @@ let parse_request_uri_host_traversal _ =
   let uri = `Ok (Uri.of_string "//example.com/etc/shadow") in
   parse_request_uri_ r uri "parse_request_uri_host_traversal"
 
+let uri_round_trip _ =
+  let expected_uri = Uri.of_string "https://www.example.com/test" in
+  let actual_uri = Request.make expected_uri |> Request.uri in
+  Alcotest.check uri_testable "Request.make uri round-trip" actual_uri expected_uri
+
 ;;
 Printexc.record_backtrace true;
 Alcotest.run "test_request" [
@@ -283,5 +292,6 @@ Alcotest.run "test_request" [
     "OPTIONS with host", `Quick, parse_request_options_host;
     "parent traversal", `Quick, parse_request_uri_traversal;
     "parent traversal with host", `Quick, parse_request_uri_host_traversal;
+    "uri round-trip", `Quick, uri_round_trip;
   ];
 ]
