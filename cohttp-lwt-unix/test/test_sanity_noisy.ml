@@ -43,7 +43,7 @@ let server_noisy =
   ] |> response_sequence
 
 let ts_noisy =
-  Cohttp_lwt_unix_test.test_server_s server_noisy begin fun uri ->
+  Cohttp_lwt_unix_test.test_server_s ~port:10193 server_noisy begin fun uri ->
     let empty_chunk () =
       Client.get uri >>= fun (_, body) ->
       body |> Body.to_string >|= fun body ->
