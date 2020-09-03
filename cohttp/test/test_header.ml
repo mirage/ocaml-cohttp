@@ -536,7 +536,7 @@ Alcotest.run "test_header" [
     "update rm existing", `Quick, Updates.update_headers_if_exists_rm;
     "update rm absent", `Quick, Updates.update_headers_if_absent_rm;
     "update absent", `Quick, Updates.update_headers_if_absent;
-    "large header", `Slow, large_header;
     "many headers", `Slow, many_headers;
-  ];
+  ]
+  @ if Sys.word_size = 64 then ["large header", `Slow, large_header] else []
 ]

@@ -13,7 +13,17 @@
  (name      test_sanity)
  (libraries cohttp_lwt_unix_test cohttp-lwt-unix))
 
+(executable
+ (modules   test_sanity_noisy)
+ (name      test_sanity_noisy)
+ (libraries cohttp_lwt_unix_test cohttp-lwt-unix))
+
 (alias
   (name    runtest)
   (package cohttp-lwt-unix)
   (action  (run ./test_sanity.exe)))
+
+(alias
+  (name    runtest)
+  (package cohttp-lwt-unix)
+  (action  (run ./test_sanity_noisy.exe)))

@@ -23,9 +23,13 @@ let const rsp _req _body = rsp >>| response
 
 let response_sequence = Cohttp_test.response_sequence failwith
 
+let get_port =
+  let port = ref 8080 in
+  (fun () -> let v = !port in Int.incr port ; v )
+
 let temp_server ?port spec callback =
   let port = match port with
-    | None -> Cohttp_test.next_port ()
+    | None -> get_port ()
     | Some p -> p in
   let uri = Uri.of_string ("http://0.0.0.0:" ^ (Int.to_string port)) in
   let server = Server.create_expert ~on_handler_error:`Raise
