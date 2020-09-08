@@ -36,7 +36,7 @@ let temp_server ?port spec callback =
     ~protocol:Conduit_async.TCP.protocol ~service:Conduit_async.TCP.service
     (Conduit_async.TCP.Listen (None, Async.Tcp.Where_to_listen.of_port port))
     (fun ~body _sock req -> spec req body) in
-  Async.Deferred.both server (callback uri >>= fun res ->
+  Async.Deferred.both (server ()) (callback uri >>= fun res ->
                               Async.Condition.broadcast stop () ; Async.return res)
   >>= fun ((), res) -> Async.return res
 

@@ -133,7 +133,7 @@ let sockaddr_of_host_and_port host port =
   let inet_addr = Unix.inet_addr_of_string host in
   Unix.ADDR_INET (inet_addr, port)
 
-let start_server docroot port host index tls () =
+let start_server docroot port host index tls =
   Log.info (fun m -> m "Listening for HTTP request on: %s %d" host port);
   let info = Printf.sprintf "Served by Cohttp/Lwt listening on %s:%d" host port in
   let conn_closed (ch,_conn) =

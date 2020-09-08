@@ -107,7 +107,7 @@ let determine_mode cert_file_path key_file_path =
   | None, None -> `TCP
   | _ -> failwith "Error: must specify both certificate and key for HTTPS"
 
-let start_server docroot port index cert_file key_file verbose () =
+let start_server docroot port index cert_file key_file verbose =
   (* enable logging to stdout *)
   Fmt_tty.setup_std_outputs ();
   Logs.set_level @@ if verbose then (Some Logs.Debug) else (Some Logs.Info);

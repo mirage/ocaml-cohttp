@@ -164,7 +164,7 @@ let create_raw
       cfg
       -> (body:Body.t ->
           Conduit_async.flow -> Request.t -> response_action Async_kernel.Deferred.t)
-      -> unit Async.Condition.t * unit Async.Deferred.t
+      -> unit Async.Condition.t * (unit -> unit Async.Deferred.t)
      = fun ?timeout ?backlog
        ~on_handler_error ~protocol ~service
        cfg handle_request ->

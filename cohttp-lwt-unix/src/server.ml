@@ -81,7 +81,7 @@ let create
   -> cfg
   -> (_, flow) Conduit_lwt.protocol
   -> (cfg, t, flow) Conduit_lwt.Service.service
-  -> _ -> unit Lwt.t
+  -> _ -> (unit -> unit Lwt.t)
   = fun ?timeout ?(backlog= 128) ?(stop= fst (Lwt.wait ())) ?(on_exn=log_on_exn)
     cfg protocol service spec ->
     let error_handler exn = on_exn exn ; Lwt.return_unit in
@@ -95,5 +95,4 @@ let create
         (safe error_handler callback spec flow)
         (fun () -> Conduit_lwt.close flow >>= fun _ -> Lwt.return_unit) in
     let cond, run = Conduit_lwt.serve ?timeout ~handler ~service cfg in
-    Lwt.pick [ (stop >|= Lwt_condition.signal cond)
-             ; run ]
+    (); fun () -> Lwt.pick [ (stop >|= Lwt_condition.signal cond); run () ]

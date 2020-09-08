@@ -64,7 +64,7 @@ val create_expert :
   service:('cfg, 't, 'flow) Conduit_async.Service.service ->
   'cfg
   -> (body:Body.t -> Conduit_async.flow -> Request.t -> response_action Async_kernel.Deferred.t)
-  -> unit Async.Condition.t * unit Async.Deferred.t
+  -> unit Async.Condition.t * (unit -> unit Async.Deferred.t)
 
 
 (** Build a HTTP server, based on the [Tcp.Server] interface *)
@@ -78,4 +78,4 @@ val create :
   service:('cfg, 't, 'flow) Conduit_async.Service.service ->
   'cfg
   -> (body:Body.t -> Conduit_async.flow -> Request.t -> response Async_kernel.Deferred.t)
-  -> unit Async.Condition.t * unit Async.Deferred.t
+  -> unit Async.Condition.t * (unit -> unit Async.Deferred.t)

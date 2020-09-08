@@ -45,7 +45,7 @@ let temp_server ?port spec callback =
           let tcp_config =
             { sockaddr= Unix.ADDR_INET (Unix.inet_addr_any, port)
             ; capacity= 40 } in
-          Cohttp_lwt_unix.Server.create tcp_config protocol service server)
+          Cohttp_lwt_unix.Server.create tcp_config protocol service server ())
                  (function
                    | Lwt.Canceled -> Lwt.return_unit
                    | x -> Lwt.wakeup_exn server_failed_wake x; Lwt.fail x)

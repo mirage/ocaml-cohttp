@@ -86,7 +86,7 @@ let sockaddr_of_host_and_port host port =
   let inet_addr = Unix.inet_addr_of_string host in
   Unix.ADDR_INET (inet_addr, port)
 
-let start_proxy port host verbose cert key () =
+let start_proxy port host verbose cert key =
   printf "Listening for HTTP request on: %s %d\n%!" host port;
   let conn_closed (ch,_conn) =
     let pp_option pp_val ppf = function

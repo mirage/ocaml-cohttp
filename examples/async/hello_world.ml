@@ -18,7 +18,7 @@ let handler ~body:_ _sock req =
   | _ ->
     Server.respond_string ~status:`Not_found "Route not found"
 
-let start_server port () =
+let start_server port =
   Caml.Printf.eprintf "Listening for HTTP on port %d\n" port;
   Caml.Printf.eprintf "Try 'curl http://localhost:%d/test?hello=xyz'\n%!" port;
   let _never, server = Cohttp_async.Server.create ~on_handler_error:`Raise
