@@ -95,20 +95,14 @@ let check_logs test () =
   if new_errs > 0 then
     Fmt.failwith "Test produced %d log messages at level >= warn" new_errs
 
-let http_resolver ?(port= 80) domain_name =
-  try let inet_addr = Unix.inet_addr_of_string (Domain_name.to_string domain_name) in
-      Lwt.return_some (Unix.ADDR_INET (inet_addr, port))
-  with _ ->
-    Lwt_unix.gethostbyname (Domain_name.to_string domain_name) >>= function
-    | { Unix.h_addr_list; _ } when Array.length h_addr_list > 0 ->
-      Lwt.return_some (Unix.ADDR_INET (h_addr_list.(0), port))
-    | _ -> Lwt.return_none
-
 let ts =
   Cohttp_lwt_unix_test.test_server_s server begin fun uri ->
-    let resolvers = Conduit_lwt.register_resolver
-      ~key:Conduit_lwt_unix_tcp.endpoint (http_resolver ?port:(Uri.port uri))
-      Conduit.empty in
+    let resolvers = match Uri.port uri with
+      | Some port ->
+        Cohttp_lwt_unix.Net.empty
+        |> Conduit_lwt.add ~priority:0 Conduit_lwt.TCP.protocol
+          (Conduit_lwt.TCP.resolve ~port)
+      | None -> Cohttp_lwt_unix.Net.empty in
     let t () =
       Client.get ~resolvers uri >>= fun (_, body) ->
       body |> Body.to_string >|= fun body ->
