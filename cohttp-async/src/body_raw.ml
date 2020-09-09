@@ -29,11 +29,11 @@ let is_empty (body:t) =
   | `Pipe s ->
     Pipe.values_available s
     >>| function
-    |`Eof -> false
+    |`Eof -> true
     |`Ok ->
       match Pipe.peek s with
-      | Some "" -> true
-      | Some _ | None -> false
+      | None -> true
+      | Some _ -> false
 
 let to_pipe = function
   | `Empty -> Pipe.of_list []

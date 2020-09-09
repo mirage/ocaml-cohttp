@@ -103,7 +103,19 @@ let ts =
       assert_equal ~printer "expert 1" body;
       Client.get ~headers uri >>= fun (_rsp, body) ->
       Body.to_string body >>| fun body ->
-      assert_equal ~printer "expert 2" body
+      assert_equal ~printer "expert 2" body in
+    let check_body_empty_status () =
+      let is_empty = Cohttp_async.Body.is_empty in
+      let tests = [
+        Pipe.of_list [], true
+      ; Pipe.of_list ["foo"; "bar"], false
+      ; Pipe.of_list [""; "baz"], false]
+      in
+      Deferred.List.iter tests ~f:(fun (pipe, expected) ->
+        is_empty (`Pipe pipe)
+        >>| fun real ->
+          assert_equal expected real;
+      )
     in
     [ "empty chunk test", empty_chunk
     ; "large response", large_response
@@ -111,6 +123,7 @@ let ts =
     ; "pipelined chunk test", pipelined_chunk
     ; "large chunked response", large_chunked_response
     ; "expert response", expert_pipelined
+    ; "check body is_empty status for pipes", check_body_empty_status
     ]
   end
 
