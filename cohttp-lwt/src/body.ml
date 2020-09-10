@@ -42,7 +42,10 @@ let create_stream fn arg =
 let is_empty (body:t) =
   match body with
   | #Body.t as body -> return (Body.is_empty body)
-  | `Stream s -> Lwt_stream.is_empty s
+  | `Stream s ->
+      Lwt_stream.get_while (fun x -> x = "") s
+      >>= fun _ ->
+        Lwt_stream.is_empty s
 
 let to_string (body:t) =
   match body with
@@ -75,7 +78,7 @@ let drain_body (body:t) =
 
 let of_string_list l = `Strings l
 
-let of_stream s = `Stream (Lwt_stream.filter (fun s -> s <> "") s)
+let of_stream s = `Stream s
 
 let transfer_encoding = function
   |#Body.t as t -> Body.transfer_encoding t

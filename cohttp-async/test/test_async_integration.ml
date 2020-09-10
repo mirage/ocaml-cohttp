@@ -113,10 +113,18 @@ let ts =
       ; "Pipe with empty strings", Pipe.of_list [""; ""; ""], true]
       in
       Deferred.List.iter tests ~f:(fun (msg, pipe, expected) ->
-        is_empty ( Body.of_pipe pipe )
+        is_empty (`Pipe pipe)
         >>| fun real ->
           assert_equal ~msg expected real;
       )
+      >>= fun () ->
+        let b = Pipe.of_list [""; ""; "foo"; "bar"] in
+        is_empty (`Pipe b)
+      >>= fun _ ->
+        Pipe.to_list b
+      >>| fun real ->
+        let msg = "Checking if pipe is empty consumes all leading empty strings" in
+        assert_equal ~msg ["foo"; "bar"] real
     in
     [ "empty chunk test", empty_chunk
     ; "large response", large_response
