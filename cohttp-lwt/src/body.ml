@@ -75,7 +75,7 @@ let drain_body (body:t) =
 
 let of_string_list l = `Strings l
 
-let of_stream s = `Stream s
+let of_stream s = `Stream (Lwt_stream.filter (fun s -> s <> "") s)
 
 let transfer_encoding = function
   |#Body.t as t -> Body.transfer_encoding t

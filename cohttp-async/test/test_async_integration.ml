@@ -107,14 +107,15 @@ let ts =
     let check_body_empty_status () =
       let is_empty = Cohttp_async.Body.is_empty in
       let tests = [
-        Pipe.of_list [], true
-      ; Pipe.of_list ["foo"; "bar"], false
-      ; Pipe.of_list [""; "baz"], false]
+        "empty pipe", Pipe.of_list [], true
+      ; "pipe with elements", Pipe.of_list ["foo"; "bar"], false
+      ; "pipe with empty items at the beginning", Pipe.of_list [""; "baz"], false
+      ; "Pipe with empty strings", Pipe.of_list [""; ""; ""], true]
       in
-      Deferred.List.iter tests ~f:(fun (pipe, expected) ->
-        is_empty (`Pipe pipe)
+      Deferred.List.iter tests ~f:(fun (msg, pipe, expected) ->
+        is_empty ( Body.of_pipe pipe )
         >>| fun real ->
-          assert_equal expected real;
+          assert_equal ~msg expected real;
       )
     in
     [ "empty chunk test", empty_chunk

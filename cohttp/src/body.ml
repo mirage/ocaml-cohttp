@@ -42,7 +42,7 @@ let to_string_list = function
   | `Strings sl -> sl
 
 let of_string s = `String s
-let of_string_list s = `Strings s
+let of_string_list s = `Strings (List.filter (fun s' -> s' <> "") s)
 
 let transfer_encoding = function
   | `Empty -> Transfer.Fixed 0L

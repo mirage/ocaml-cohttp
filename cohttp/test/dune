@@ -27,3 +27,13 @@
   (name    runtest)
   (package cohttp)
   (action  (run ./test_request.exe)))
+
+(executable
+ (name      test_body)
+ (modules   test_body)
+ (libraries cohttp alcotest fmt))
+
+(alias
+  (name    runtest)
+  (package cohttp)
+  (action  (run ./test_body.exe)))
