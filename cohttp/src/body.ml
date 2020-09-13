@@ -26,10 +26,12 @@ let empty = `Empty
 
 let is_empty = function
   | `Empty
-  | `String ""
-  | `Strings [] -> true
-  | `String _
-  | `Strings _ -> false
+  | `String "" -> true
+  | `String _ -> false
+  | `Strings xs ->
+      match List.filter (fun s -> s <> "") xs with
+      | [] -> true
+      | _ -> false
 
 let to_string = function
   | `Empty -> ""

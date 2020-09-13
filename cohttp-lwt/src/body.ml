@@ -42,7 +42,10 @@ let create_stream fn arg =
 let is_empty (body:t) =
   match body with
   | #Body.t as body -> return (Body.is_empty body)
-  | `Stream s -> Lwt_stream.is_empty s
+  | `Stream s ->
+      Lwt_stream.get_while (fun x -> x = "") s
+      >>= fun _ ->
+        Lwt_stream.is_empty s
 
 let to_string (body:t) =
   match body with

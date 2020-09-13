@@ -27,3 +27,13 @@
   (name    runtest)
   (package cohttp-lwt-unix)
   (action  (run ./test_sanity_noisy.exe)))
+
+(executable
+ (modules   test_body)
+ (name      test_body)
+ (libraries cohttp_lwt_unix_test cohttp-lwt-unix))
+
+(alias
+  (name    runtest)
+  (package cohttp-lwt-unix)
+  (action  (run ./test_body.exe)))

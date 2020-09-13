@@ -9,7 +9,7 @@ type t = [
 
 let empty = `Empty
 let of_string s = ((B.of_string s) :> t)
-let of_pipe p = `Pipe p
+let of_pipe p = `Pipe (Pipe.filter ~f:(fun s -> String.(s <> "")) p)
 
 let to_string = function
   | #B.t as body -> return (B.to_string body)
@@ -26,14 +26,23 @@ let drain = function
 let is_empty (body:t) =
   match body with
   | #B.t as body -> return (B.is_empty body)
-  | `Pipe s ->
-    Pipe.values_available s
-    >>| function
-    |`Eof -> true
-    |`Ok ->
-      match Pipe.peek s with
-      | None -> true
-      | Some _ -> false
+  | `Pipe pipe ->
+      Deferred.repeat_until_finished () @@ fun () ->
+        Pipe.values_available pipe
+        >>= function
+          | `Eof -> return (`Finished true)
+          | `Ok -> begin
+            match Pipe.peek pipe with
+            | None -> return (`Finished true)
+            | Some "" ->
+                begin
+                  Pipe.read pipe
+                  >>| function
+                    | `Eof -> `Finished true
+                    | `Ok _ -> `Repeat ()
+                end
+            | Some _ -> return (`Finished false)
+          end
 
 let to_pipe = function
   | `Empty -> Pipe.of_list []
