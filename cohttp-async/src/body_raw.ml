@@ -9,7 +9,7 @@ type t = [
 
 let empty = `Empty
 let of_string s = ((B.of_string s) :> t)
-let of_pipe p = `Pipe (Pipe.filter ~f:(fun s -> String.(s <> "")) p)
+let of_pipe p = `Pipe p
 
 let to_string = function
   | #B.t as body -> return (B.to_string body)
