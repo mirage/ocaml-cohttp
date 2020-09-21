@@ -9,13 +9,12 @@ authors: [
   "Rudi Grinberg"
   "Andy Ray"
 ]
-synopsis: "CoHTTP implementation for Unix and Windows using Lwt"
+synopsis: "CoHTTP implementation for Unix and Windows using Lwt and SSL"
 description: """
 An implementation of an HTTP client and server using the Lwt
-concurrency library. See the `Cohttp_lwt_unix` module for information
+concurrency library. See the `Cohttp_lwt_unix_ssl` module for information
 on how to use this.  The package also installs `cohttp-curl-lwt`
-and a `cohttp-server-lwt` binaries for quick uses of a HTTP(S)
-client and server respectively.
+binary for quick uses of a HTTP(S) client.
 
 Although the name implies that this only works under Unix, it
 should also be fine under Windows too."""
@@ -47,7 +46,6 @@ build: [
 dev-repo: "git+https://github.com/mirage/ocaml-cohttp.git"
 pin-depends: [
   [ "conduit.dev" "git+https://github.com/dinosaure/ocaml-conduit.git#4dffc531e6dde24fcc6aec84bb453f5bea277e80" ]
-  [ "conduit-tls.dev" "git+https://github.com/dinosaure/ocaml-conduit.git#4dffc531e6dde24fcc6aec84bb453f5bea277e80" ]
   [ "conduit-lwt-ssl.dev" "git+https://github.com/dinosaure/ocaml-conduit.git#4dffc531e6dde24fcc6aec84bb453f5bea277e80" ]
   [ "conduit-lwt.dev" "git+https://github.com/dinosaure/ocaml-conduit.git#4dffc531e6dde24fcc6aec84bb453f5bea277e80" ]
 ]
