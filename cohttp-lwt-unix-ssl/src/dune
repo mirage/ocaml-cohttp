@@ -1,7 +1,0 @@
-(library
- (name cohttp_lwt_unix_ssl)
- (public_name cohttp-lwt-unix-ssl)
- (synopsis "Lwt/Unix backend for Cohttp with SSL support")
- (preprocess
-  (pps ppx_sexp_conv))
- (libraries cohttp-lwt-unix-nossl conduit-lwt-ssl))

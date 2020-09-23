@@ -1,7 +1,0 @@
-(library
- (name cohttp_lwt_unix_tls)
- (public_name cohttp-lwt-unix-tls)
- (synopsis "Lwt/Unix backend for Cohttp with TLS support")
- (preprocess
-  (pps ppx_sexp_conv))
- (libraries cohttp-lwt-unix-nossl mirage-crypto-rng.unix conduit-lwt-tls))
