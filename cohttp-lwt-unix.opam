@@ -35,7 +35,6 @@ depends: [
   "fmt" {>= "0.8.2"}
   "cohttp-lwt" {=version}
   "lwt" {>= "3.0.0"}
-  "lwt_ssl"
   "base-unix"
   "ounit" {with-test}
 ]
