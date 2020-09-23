@@ -22,7 +22,7 @@ end
 module type Net = sig
   module IO : IO
 
-  type ctx
+  type ctx [@@deriving sexp]
 
   val empty : ctx
   val connect_uri : ?host:string -> ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t

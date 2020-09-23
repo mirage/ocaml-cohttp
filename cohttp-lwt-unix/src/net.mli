@@ -18,7 +18,7 @@
 
 module IO = Io
 
-type ctx = Conduit.resolvers
+type ctx = (Conduit.resolvers[@sexp.opaque]) [@@deriving sexp]
 
 val empty : ctx
 

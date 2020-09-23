@@ -22,11 +22,12 @@ open Lwt.Infix
 module Channel = Mirage_channel.Make(Conduit_mirage_flow)
 module HTTP_IO = Io.Make(Channel)
 
+
 module Net_IO = struct
 
   module IO = HTTP_IO
 
-  type ctx = Conduit.resolvers
+  type ctx = (Conduit.resolvers[@sexp.opaque]) [@@deriving sexp]
 
   let empty = Conduit.empty
 

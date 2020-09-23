@@ -21,7 +21,7 @@ open Lwt.Infix
 
 module IO = Io
 
-type ctx = Conduit.resolvers
+type ctx = (Conduit.resolvers[@sexp.opaque]) [@@deriving sexp]
 
 let () = Mirage_crypto_rng_unix.initialize ()
 
