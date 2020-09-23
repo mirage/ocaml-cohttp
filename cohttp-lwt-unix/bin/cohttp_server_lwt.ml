@@ -28,16 +28,14 @@ let option_bind x f = match x with
 let src = Logs.Src.create "cohttp.lwt.server" ~doc:"Cohttp Lwt server"
 module Log = (val Logs.src_log src : Logs.LOG)
 
-let ssl_protocol, ssl_service =
-  let open Conduit_lwt_ssl.TCP in
-  protocol, service
-
 let sockaddr_of_flow
   : Conduit_lwt.flow -> Unix.sockaddr option
   = fun flow -> match Conduit_lwt.cast flow Conduit_lwt.TCP.protocol,
-                      Conduit_lwt.cast flow ssl_protocol with
+                      Conduit_lwt.cast flow Conduit_lwt_tls.TCP.protocol with
   | Some flow, None -> Some (Conduit_lwt.TCP.Protocol.sock flow)
-  | None, Some flow -> Some (Lwt_ssl.getsockname flow)
+  | None, Some flow ->
+    let flow = Conduit_lwt_tls.underlying flow in
+    Some (Conduit_lwt.TCP.Protocol.sock flow)
   | _ -> None
 
 let pp_sockaddr ppf = function
@@ -122,12 +120,12 @@ let handler ~info ~docroot ~index (ch,_conn) req _body =
     Server.respond_string ~headers ~status:`Method_not_allowed
       ~body:(html_of_method_not_allowed meth (String.concat "," allowed) path info) ()
 
-let load_ssl ?(version= Ssl.TLSv1_2) (cert, key) =
-  try
-    let ctx = Ssl.create_context version Ssl.Server_context in
-    Ssl.use_certificate ctx cert key ;
-    Some ctx
-  with _ -> None
+let load_file filename =
+  let ic = open_in filename in
+  let ln = in_channel_length ic in
+  let rs = Bytes.create ln in
+  really_input ic rs 0 ln ; close_in ic ;
+  Cstruct.of_bytes rs
 
 let sockaddr_of_host_and_port host port =
   let inet_addr = Unix.inet_addr_of_string host in
@@ -141,13 +139,21 @@ let start_server docroot port host index tls =
                   Fmt.(option pp_sockaddr) (sockaddr_of_flow ch)) in
   let callback = handler ~info ~docroot ~index in
   let config = Server.make ~callback ~conn_closed () in
-  let ssl_config = option_bind tls load_ssl in
+  let tls_config =
+    match tls with
+    | Some (cert, key) ->
+      let open Rresult in
+      X509.Certificate.decode_pem_multiple (load_file cert) >>= fun certs ->
+      X509.Private_key.decode_pem (load_file key) >>| fun (`RSA key) ->
+      Tls.Config.server ~certificates:(`Single (certs, key)) ()
+    | _ -> Error (`Msg "No TLS certificate") in
+  let tls_config = Rresult.R.to_option tls_config in
   let tcp_config =
     { Conduit_lwt.TCP.sockaddr= sockaddr_of_host_and_port host port
     ; capacity= 40; } in
-  match ssl_config with
-  | Some ssl_config ->
-    Server.create (ssl_config, tcp_config) ssl_protocol ssl_service config
+  match tls_config with
+  | Some tls_config ->
+    Server.create (tcp_config, tls_config) Conduit_lwt_tls.TCP.protocol Conduit_lwt_tls.TCP.service config
   | None ->
     Server.create tcp_config Conduit_lwt.TCP.protocol Conduit_lwt.TCP.service config
 
