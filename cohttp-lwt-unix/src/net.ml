@@ -23,23 +23,19 @@ module IO = Io
 
 type resolvers = Conduit.resolvers
 
-let () = Ssl.init ()
+let () = Mirage_crypto_rng_unix.initialize ()
 
-let default_ssl_context =
-  Ssl.create_context Ssl.SSLv23 Ssl.Client_context
+let authenticator ~host:_ _ = Ok None
+
+let tls_config =
+  Tls.Config.client ~authenticator ()
 
 let empty =
   Conduit_lwt.empty
   |> Conduit_lwt.add Conduit_lwt.TCP.protocol
     (Conduit_lwt.TCP.resolve ~port:80)
-  |> Conduit_lwt.add Conduit_lwt_ssl.TCP.protocol
-    (Conduit_lwt_ssl.TCP.resolve ~port:443 ~context:default_ssl_context)
-(* XXX(dinosaure) [cohttp-lwt-unix] provides a default resolve which is
- * able to start a simple TCP/IP connection or a TLS 1.3 connection to
- * handle [http] and [https] cases.
- *
- * The user is able to prioritize over these resolvers its own resolver
- * such as one with a specific [Ssl.context] (with TLS 1.3 support) if he wants. *)
+  |> Conduit_lwt.add ~priority:10 Conduit_lwt_tls.TCP.protocol
+    (Conduit_lwt_tls.TCP.resolve ~port:443 ~config:tls_config)
 
 let failwith fmt = Format.kasprintf (fun err -> Lwt.fail (Failure err)) fmt
 
