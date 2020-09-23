@@ -18,9 +18,9 @@
 
 module IO = Io
 
-type resolvers = Conduit.resolvers
+type ctx = Conduit.resolvers
 
-val empty : resolvers
+val empty : ctx
 
 (** Exceptions from [conduit].
 
@@ -29,7 +29,7 @@ val empty : resolvers
 
 val connect_uri :
   ?host:string ->
-  resolvers:resolvers ->
+  ctx:ctx ->
   Uri.t ->
   (Conduit_lwt.flow * Lwt_io.input Lwt_io.channel * Lwt_io.output Lwt_io.channel) Lwt.t
 

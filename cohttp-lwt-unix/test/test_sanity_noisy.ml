@@ -44,18 +44,18 @@ let server_noisy =
 
 let ts_noisy =
   Cohttp_lwt_unix_test.test_server_s ~port:10193 server_noisy begin fun uri ->
-    let resolvers = match Uri.port uri with
+    let ctx = match Uri.port uri with
       | Some port ->
         Cohttp_lwt_unix.Net.empty
         |> Conduit_lwt.add ~priority:0 Conduit_lwt.TCP.protocol
           (Conduit_lwt.TCP.resolve ~port)
       | None -> Cohttp_lwt_unix.Net.empty in
     let empty_chunk () =
-      Client.get ~resolvers uri >>= fun (_, body) ->
+      Client.get ~ctx uri >>= fun (_, body) ->
       body |> Body.to_string >|= fun body ->
       assert_equal body (String.concat "" chunk_body) in
     let not_modified_has_no_body () =
-      Client.get ~resolvers uri >>= fun (resp, body) ->
+      Client.get ~ctx uri >>= fun (resp, body) ->
       assert_equal (Response.status resp) `Not_modified;
       let headers = Response.headers resp in
       assert_equal ~printer:Transfer.string_of_encoding
@@ -69,7 +69,7 @@ let ts_noisy =
             ~mode:Lwt_io.Output fname >>= fun oc ->
           Lwt_io.write_line oc "never read" >>= fun () ->
           Lwt_io.close oc >>= fun () ->
-          Client.post ~resolvers uri ~body:(Body.of_string fname)
+          Client.post ~ctx uri ~body:(Body.of_string fname)
           >>= begin fun (resp, body) ->
             assert_equal ~printer:Code.string_of_status
               (Response.status resp) `Internal_server_error;

@@ -22,10 +22,10 @@ end
 module type Net = sig
   module IO : IO
 
-  type resolvers
+  type ctx
 
-  val empty : resolvers
-  val connect_uri : ?host:string -> resolvers:resolvers -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
+  val empty : ctx
+  val connect_uri : ?host:string -> ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
   val close_in : IO.ic -> unit
   val close_out : IO.oc -> unit
   val close : IO.ic -> IO.oc -> unit
@@ -38,11 +38,11 @@ end
     fashion.  It will still be finalized by a GC hook if it is not used
     up, but this can take some additional time to happen. *)
 module type Client = sig
-  type resolvers
+  type ctx
 
-  (** [call ?resolvers ?headers ?body ?chunked meth uri] will resolve the
+  (** [call ?ctx ?headers ?body ?chunked meth uri] will resolve the
       [uri] to a concrete network endpoint using the resolver initialized
-      in [resolvers].  It will then issue an HTTP request with method [meth],
+      in [ctx].  It will then issue an HTTP request with method [meth],
       adding request headers from [headers] if present.  If a [body]
       is specified then that will be included with the request, using
       chunked encoding if [chunked] is true.  The default is to disable
@@ -52,7 +52,7 @@ module type Client = sig
       interface rather than invoke this function directly.  See {!head},
       {!get} and {!post} for some examples. *)
   val call :
-    ?resolvers:resolvers ->
+    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     ?body:Body.t ->
     ?chunked:bool ->
@@ -60,51 +60,51 @@ module type Client = sig
     Uri.t -> (Cohttp.Response.t * Body.t) Lwt.t
 
   val head :
-    ?resolvers:resolvers ->
+    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> Cohttp.Response.t Lwt.t
 
   val get :
-    ?resolvers:resolvers ->
+    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Cohttp.Response.t * Body.t) Lwt.t
 
   val delete :
-    ?resolvers:resolvers ->
+    ?ctx:ctx ->
     ?body:Body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Cohttp.Response.t * Body.t) Lwt.t
 
   val post :
-    ?resolvers:resolvers ->
+    ?ctx:ctx ->
     ?body:Body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Cohttp.Response.t * Body.t) Lwt.t
 
   val put :
-    ?resolvers:resolvers ->
+    ?ctx:ctx ->
     ?body:Body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Cohttp.Response.t * Body.t) Lwt.t
 
   val patch :
-    ?resolvers:resolvers ->
+    ?ctx:ctx ->
     ?body:Body.t ->
     ?chunked:bool ->
     ?headers:Cohttp.Header.t ->
     Uri.t -> (Cohttp.Response.t * Body.t) Lwt.t
 
   val post_form :
-    ?resolvers:resolvers ->
+    ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
     params:(string * string list) list ->
     Uri.t -> (Cohttp.Response.t * Body.t) Lwt.t
 
   val callv :
-    ?resolvers:resolvers ->
+    ?ctx:ctx ->
     Uri.t ->
     (Cohttp.Request.t * Body.t) Lwt_stream.t ->
     (Cohttp.Response.t * Body.t) Lwt_stream.t Lwt.t

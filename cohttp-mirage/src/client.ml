@@ -26,15 +26,15 @@ module Net_IO = struct
 
   module IO = HTTP_IO
 
-  type resolvers = Conduit.resolvers
+  type ctx = Conduit.resolvers
 
   let empty = Conduit.empty
 
   let failwith fmt = Fmt.kstrf (fun err -> Lwt.fail (Failure err)) fmt
 
-  let connect_uri ?host:(default= "localhost") ~resolvers uri =
+  let connect_uri ?host:(default= "localhost") ~ctx uri =
     let domain_name = Domain_name.(host_exn (of_string_exn (Uri.host_with_default ~default uri))) in
-    Conduit_mirage.resolve resolvers domain_name >>= function
+    Conduit_mirage.resolve ctx domain_name >>= function
     | Ok flow ->
       let ch = Channel.create flow in
       Lwt.return (flow, ch, ch)

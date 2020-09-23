@@ -10,7 +10,7 @@ module Make
   module Response = Make.Response(IO)
   module Request = Make.Request(IO)
 
-  type resolvers = Net.resolvers
+  type ctx = Net.ctx
 
   let read_response ~closefn ic _oc meth =
     Response.read ic >>= begin function
@@ -46,9 +46,9 @@ module Make
     | `DELETE -> false
     | _ -> true
 
-  let call ?(resolvers= Net.empty) ?headers ?(body=`Empty) ?chunked meth uri =
+  let call ?(ctx= Net.empty) ?headers ?(body=`Empty) ?chunked meth uri =
     let headers = match headers with None -> Header.init () | Some h -> h in
-    Net.connect_uri ~resolvers uri >>= fun (_conn, ic, oc) ->
+    Net.connect_uri ~ctx uri >>= fun (_conn, ic, oc) ->
     let closefn () = Net.close ic oc in
     let chunked =
       match chunked with
@@ -73,28 +73,28 @@ module Make
     read_response ~closefn ic oc meth
 
   (* The HEAD should not have a response body *)
-  let head ?resolvers ?headers uri =
-    call ?resolvers ?headers `HEAD uri
+  let head ?ctx ?headers uri =
+    call ?ctx ?headers `HEAD uri
     >|= fst
 
-  let get ?resolvers ?headers uri = call ?resolvers ?headers `GET uri
-  let delete ?resolvers ?body ?chunked ?headers uri =
-    call ?resolvers ?headers ?body ?chunked `DELETE uri
-  let post ?resolvers ?body ?chunked ?headers uri =
-    call ?resolvers ?headers ?body ?chunked `POST uri
-  let put ?resolvers ?body ?chunked ?headers uri =
-    call ?resolvers ?headers ?body ?chunked `PUT uri
-  let patch ?resolvers ?body ?chunked ?headers uri =
-    call ?resolvers ?headers ?body ?chunked `PATCH uri
+  let get ?ctx ?headers uri = call ?ctx ?headers `GET uri
+  let delete ?ctx ?body ?chunked ?headers uri =
+    call ?ctx ?headers ?body ?chunked `DELETE uri
+  let post ?ctx ?body ?chunked ?headers uri =
+    call ?ctx ?headers ?body ?chunked `POST uri
+  let put ?ctx ?body ?chunked ?headers uri =
+    call ?ctx ?headers ?body ?chunked `PUT uri
+  let patch ?ctx ?body ?chunked ?headers uri =
+    call ?ctx ?headers ?body ?chunked `PATCH uri
 
-  let post_form ?resolvers ?headers ~params uri =
+  let post_form ?ctx ?headers ~params uri =
     let headers = Header.add_opt_unless_exists headers
                     "content-type" "application/x-www-form-urlencoded" in
     let body = Body.of_string (Uri.encoded_of_query params) in
-    post ?resolvers ~chunked:false ~headers ~body uri
+    post ?ctx ~chunked:false ~headers ~body uri
 
-  let callv ?(resolvers= Net.empty) uri reqs =
-    Net.connect_uri ~resolvers uri >>= fun (_conn, ic, oc) ->
+  let callv ?(ctx= Net.empty) uri reqs =
+    Net.connect_uri ~ctx uri >>= fun (_conn, ic, oc) ->
     (* Serialise the requests out to the wire *)
     let meth_stream = Lwt_stream.map_s (fun (req,body) ->
       Request.write (fun writer ->

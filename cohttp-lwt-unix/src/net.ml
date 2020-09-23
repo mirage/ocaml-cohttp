@@ -21,7 +21,7 @@ open Lwt.Infix
 
 module IO = Io
 
-type resolvers = Conduit.resolvers
+type ctx = Conduit.resolvers
 
 let () = Mirage_crypto_rng_unix.initialize ()
 
@@ -39,9 +39,9 @@ let empty =
 
 let failwith fmt = Format.kasprintf (fun err -> Lwt.fail (Failure err)) fmt
 
-let connect_uri ?host:(default= "localhost") ~resolvers uri =
+let connect_uri ?host:(default= "localhost") ~ctx uri =
   let domain_name = Domain_name.(host_exn (of_string_exn (Uri.host_with_default ~default uri))) in
-  Conduit_lwt.resolve resolvers domain_name >>= function
+  Conduit_lwt.resolve ctx domain_name >>= function
   | Ok flow ->
     let ic, oc = Conduit_lwt.io_of_flow flow in
     Lwt.return (flow, ic, oc)
