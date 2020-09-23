@@ -80,9 +80,14 @@ module Make(IO : S.IO) = struct
 
     let write oc buf =
       let len = String.length buf in
-      write oc (Printf.sprintf "%x\r\n" len) >>= fun () ->
-      write oc buf >>= fun () ->
-      write oc "\r\n"
+      (* do NOT send empty chunks, as it signals the end of the
+         chunked body *)
+      if len <> 0 then
+        write oc (Printf.sprintf "%x\r\n" len) >>= fun () ->
+        write oc buf >>= fun () ->
+        write oc "\r\n"
+      else
+        return ()
   end
 
   module Fixed = struct
