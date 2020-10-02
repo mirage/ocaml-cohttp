@@ -28,7 +28,8 @@ val respond : response respond_t
 val resolve_local_file : docroot:string -> uri:Uri.t -> string
 
 (** Respond with a [string] Pipe that provides the response string
-    Pipe.Reader.t. @param code Default is HTTP 200 `OK *)
+    Pipe.Reader.t.
+    @param code Default is HTTP 200 `OK *)
 val respond_with_pipe :
   ?flush:bool ->
   ?headers:Cohttp.Header.t -> ?code:Cohttp.Code.status_code ->
