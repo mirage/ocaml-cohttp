@@ -23,8 +23,6 @@ module IO = Io
 
 type ctx = (Conduit.resolvers[@sexp.opaque]) [@@deriving sexp]
 
-let () = Mirage_crypto_rng_unix.initialize ()
-
 let authenticator ~host:_ _ = Ok None
 
 let tls_config =

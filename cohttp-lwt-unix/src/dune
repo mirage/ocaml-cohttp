@@ -4,5 +4,5 @@
  (synopsis "Lwt/Unix backend for Cohttp")
  (preprocess
   (pps ppx_sexp_conv))
- (libraries mirage-crypto-rng.unix fmt logs logs.lwt conduit-lwt
+ (libraries fmt logs logs.lwt conduit-lwt
    conduit-lwt-tls magic-mime lwt.unix cohttp cohttp-lwt))
