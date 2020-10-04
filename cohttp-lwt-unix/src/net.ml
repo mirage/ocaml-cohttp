@@ -23,13 +23,15 @@ module IO = Io
 
 type ctx = (Conduit.resolvers[@sexp.opaque]) [@@deriving sexp]
 
+let empty = Conduit_lwt.empty
+
 let authenticator ~host:_ _ = Ok None
 
 let tls_config =
   Tls.Config.client ~authenticator ()
 
-let empty =
-  Conduit_lwt.empty
+let init ?(ctx = empty) ?(tls_config = tls_config) () =
+  ctx
   |> Conduit_lwt.add Conduit_lwt.TCP.protocol
     (Conduit_lwt.TCP.resolve ~port:80)
   |> Conduit_lwt.add ~priority:10 Conduit_lwt_tls.TCP.protocol

@@ -22,6 +22,8 @@ type ctx = (Conduit.resolvers[@sexp.opaque]) [@@deriving sexp]
 
 val empty : ctx
 
+val init : ?ctx:ctx -> ?tls_config:Tls.Config.client -> unit -> ctx
+
 (** Exceptions from [conduit].
 
     When the [recv] or the [send] {i syscalls} return an error,
