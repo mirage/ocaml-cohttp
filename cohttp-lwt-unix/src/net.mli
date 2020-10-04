@@ -20,9 +20,9 @@ module IO = Io
 
 type ctx = (Conduit.resolvers[@sexp.opaque]) [@@deriving sexp]
 
-val empty : ctx
+val default_ctx : ctx
 
-val init : ?ctx:ctx -> ?tls_config:Tls.Config.client -> unit -> ctx
+val init : ?tls_config:Tls.Config.client -> unit -> ctx
 
 (** Exceptions from [conduit].
 
@@ -30,7 +30,6 @@ val init : ?ctx:ctx -> ?tls_config:Tls.Config.client -> unit -> ctx
     [conduit] will reraise it. *)
 
 val connect_uri :
-  ?host:string ->
   ctx:ctx ->
   Uri.t ->
   (Conduit_lwt.flow * Lwt_io.input Lwt_io.channel * Lwt_io.output Lwt_io.channel) Lwt.t

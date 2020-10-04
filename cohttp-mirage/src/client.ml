@@ -29,20 +29,22 @@ module Net_IO = struct
 
   type ctx = (Conduit.resolvers[@sexp.opaque]) [@@deriving sexp]
 
-  let empty = Conduit.empty
+  let default_ctx = Conduit.empty
 
   let failwith fmt = Fmt.kstrf (fun err -> Lwt.fail (Failure err)) fmt
 
-  let uri_to_endpoint ?host:(default= "localhost") uri =
-    let v = Uri.host_with_default ~default uri in
+  let uri_to_endpoint uri =
+    (match Uri.host uri with
+     | None -> failwith "Invalid uri: no host component in %a" Uri.pp uri
+     | Some h -> Lwt.return h) >>= fun v ->
     let ( >>= ) x f = match x with Ok x -> f x | Error err -> Error err in
     match Domain_name.(of_string v >>= host), Ipaddr.of_string v with
     | Ok domain_name, _ -> Lwt.return (Conduit.Endpoint.domain domain_name)
     | Error _, Ok v -> Lwt.return (Conduit.Endpoint.ip v)
     | Error _, Error _ -> failwith "Invalid uri: %a" Uri.pp uri
 
-  let connect_uri ?host ~ctx uri =
-    uri_to_endpoint ?host uri >>= fun edn ->
+  let connect_uri ~ctx uri =
+    uri_to_endpoint uri >>= fun edn ->
     Conduit_mirage.resolve ctx edn >>= function
     | Ok flow ->
       let ch = Channel.create flow in

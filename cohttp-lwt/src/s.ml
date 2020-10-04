@@ -24,8 +24,8 @@ module type Net = sig
 
   type ctx [@@deriving sexp]
 
-  val empty : ctx
-  val connect_uri : ?host:string -> ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
+  val default_ctx : ctx
+  val connect_uri : ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
   val close_in : IO.ic -> unit
   val close_out : IO.oc -> unit
   val close : IO.ic -> IO.oc -> unit

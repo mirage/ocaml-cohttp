@@ -46,7 +46,7 @@ module Make
     | `DELETE -> false
     | _ -> true
 
-  let call ?(ctx= Net.empty) ?headers ?(body=`Empty) ?chunked meth uri =
+  let call ?(ctx = Net.default_ctx) ?headers ?(body=`Empty) ?chunked meth uri =
     let headers = match headers with None -> Header.init () | Some h -> h in
     Net.connect_uri ~ctx uri >>= fun (_conn, ic, oc) ->
     let closefn () = Net.close ic oc in
@@ -93,7 +93,7 @@ module Make
     let body = Body.of_string (Uri.encoded_of_query params) in
     post ?ctx ~chunked:false ~headers ~body uri
 
-  let callv ?(ctx= Net.empty) uri reqs =
+  let callv ?(ctx = Net.default_ctx) uri reqs =
     Net.connect_uri ~ctx uri >>= fun (_conn, ic, oc) ->
     (* Serialise the requests out to the wire *)
     let meth_stream = Lwt_stream.map_s (fun (req,body) ->
