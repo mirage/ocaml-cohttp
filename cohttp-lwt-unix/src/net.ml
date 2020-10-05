@@ -51,6 +51,22 @@ let uri_to_endpoint uri =
 
 let connect_uri ~ctx uri =
   uri_to_endpoint uri >>= fun edn ->
+  (* XXX(dinosaure): this situation is not the right one, [connect_uri] should
+   * take [Conduit.Endpoint.t] and use the given [ctx] which is well-defined
+   * by the user. However, [Cohttp] proposes a /default/ [ctx].
+   *
+   * We can see an another use of [Conduit] with [Cohttp_async] which does not
+   * rely on the given [ctx] but it uses [Conduit_async.connect] according to
+   * the introspection of the given [uri]. We have 3 incompatible choices here:
+   * - expect an user's [ctx] with a [Conduit.Endpoint.t]
+   * - make a [ctx] from the given [uri]
+   * - *)
+  let ctx = match Uri.scheme uri, Uri.port uri with
+    | Some "https", Some port ->
+      Conduit_lwt.add ~priority:0 Conduit_lwt_tls.TCP.protocol (Conduit_lwt_tls.TCP.resolve ~port ~config:tls_config) ctx
+    | (Some "http" | None), Some port ->
+      Conduit_lwt.add ~priority:0 Conduit_lwt.TCP.protocol (Conduit_lwt.TCP.resolve ~port) ctx
+    | _ -> ctx in
   Conduit_lwt.resolve ctx edn >>= function
   | Ok flow ->
     let ic, oc = Conduit_lwt.io_of_flow flow in
