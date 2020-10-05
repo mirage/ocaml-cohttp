@@ -97,12 +97,7 @@ let check_logs test () =
 
 let ts =
   Cohttp_lwt_unix_test.test_server_s server begin fun uri ->
-    let ctx = match Uri.port uri with
-      | Some port ->
-        Cohttp_lwt_unix.Net.empty
-        |> Conduit_lwt.add ~priority:0 Conduit_lwt.TCP.protocol
-          (Conduit_lwt.TCP.resolve ~port)
-      | None -> Cohttp_lwt_unix.Net.empty in
+    let ctx = Cohttp_lwt_unix.Net.init () in
     let t () =
       Client.get ~ctx uri >>= fun (_, body) ->
       body |> Body.to_string >|= fun body ->
