@@ -23,7 +23,10 @@ module IO = Io
 
 type ctx = (Conduit.resolvers[@sexp.opaque]) [@@deriving sexp]
 
-let authenticator ~host:_ _ = Ok None
+let authenticator =
+  match Ca_certs.authenticator () with
+  | Ok a -> a
+  | Error (`Msg msg) -> failwith msg
 
 let tls_config =
   Tls.Config.client ~authenticator ()

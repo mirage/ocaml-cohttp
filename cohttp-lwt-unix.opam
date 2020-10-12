@@ -29,6 +29,7 @@ depends: [
   "dune" {>= "1.1.0"}
   "conduit-lwt" {>= "1.0.3"}
   "conduit-lwt-tls"
+  "ca-certs"
   "cmdliner"
   "magic-mime"
   "logs"
