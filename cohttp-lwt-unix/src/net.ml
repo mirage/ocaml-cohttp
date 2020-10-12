@@ -28,14 +28,7 @@ let authenticator ~host:_ _ = Ok None
 let tls_config =
   Tls.Config.client ~authenticator ()
 
-let init ?(tls_config = tls_config) () =
-  Conduit_lwt.empty
-  |> Conduit_lwt.add Conduit_lwt.TCP.protocol
-    (Conduit_lwt.TCP.resolve ~port:80)
-  |> Conduit_lwt.add ~priority:10 Conduit_lwt_tls.TCP.protocol
-    (Conduit_lwt_tls.TCP.resolve ~port:443 ~config:tls_config)
-
-let default_ctx = init ()
+let default_ctx = Conduit_lwt.empty
 
 let failwith fmt = Format.kasprintf (fun err -> Lwt.fail (Failure err)) fmt
 
@@ -51,21 +44,15 @@ let uri_to_endpoint uri =
 
 let connect_uri ~ctx uri =
   uri_to_endpoint uri >>= fun edn ->
-  (* XXX(dinosaure): this situation is not the right one, [connect_uri] should
-   * take [Conduit.Endpoint.t] and use the given [ctx] which is well-defined
-   * by the user. However, [Cohttp] proposes a /default/ [ctx].
-   *
-   * We can see an another use of [Conduit] with [Cohttp_async] which does not
-   * rely on the given [ctx] but it uses [Conduit_async.connect] according to
-   * the introspection of the given [uri]. We have 3 incompatible choices here:
-   * - expect an user's [ctx] with a [Conduit.Endpoint.t]
-   * - make a [ctx] from the given [uri]
-   * - *)
-  let ctx = match Uri.scheme uri, Uri.port uri with
-    | Some "https", Some port ->
-      Conduit_lwt.add ~priority:0 Conduit_lwt_tls.TCP.protocol (Conduit_lwt_tls.TCP.resolve ~port ~config:tls_config) ctx
-    | (Some "http" | None), Some port ->
-      Conduit_lwt.add ~priority:0 Conduit_lwt.TCP.protocol (Conduit_lwt.TCP.resolve ~port) ctx
+  let ctx = match Uri.scheme uri with
+    | Some "https" ->
+      let port = Option.value ~default:443 (Uri.port uri) in
+      Conduit_lwt.add
+        Conduit_lwt_tls.TCP.protocol
+        (Conduit_lwt_tls.TCP.resolve ~port ~config:tls_config) ctx
+    | (Some "http" | None) ->
+      let port = Option.value ~default:80 (Uri.port uri) in
+      Conduit_lwt.add Conduit_lwt.TCP.protocol (Conduit_lwt.TCP.resolve ~port) ctx
     | _ -> ctx in
   Conduit_lwt.resolve ctx edn >>= function
   | Ok flow ->

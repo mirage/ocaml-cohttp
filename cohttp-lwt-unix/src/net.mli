@@ -22,8 +22,6 @@ type ctx = (Conduit.resolvers[@sexp.opaque]) [@@deriving sexp]
 
 val default_ctx : ctx
 
-val init : ?tls_config:Tls.Config.client -> unit -> ctx
-
 (** Exceptions from [conduit].
 
     When the [recv] or the [send] {i syscalls} return an error,
