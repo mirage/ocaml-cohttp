@@ -28,8 +28,8 @@ let authenticator =
   | Ok a -> a
   | Error (`Msg msg) -> failwith msg
 
-let tls_config =
-  Tls.Config.client ~authenticator ()
+let tls_config ?peer_name () =
+  Tls.Config.client ~authenticator ?peer_name ()
 
 let default_ctx = Conduit_lwt.empty
 
@@ -41,14 +41,15 @@ let uri_to_endpoint uri =
    | Some h -> Lwt.return h) >>= fun v ->
   let ( >>= ) x f = match x with Ok x -> f x | Error err -> Error err in
   match Domain_name.(of_string v >>= host), Ipaddr.of_string v with
-  | Ok domain_name, _ -> Lwt.return (Conduit.Endpoint.domain domain_name)
-  | Error _, Ok v -> Lwt.return (Conduit.Endpoint.ip v)
+  | Ok domain_name, _ -> Lwt.return (Conduit.Endpoint.domain domain_name, Some v)
+  | Error _, Ok v -> Lwt.return (Conduit.Endpoint.ip v, None)
   | Error _, Error _ -> failwith "Invalid uri: %a" Uri.pp uri
 
 let connect_uri ~ctx uri =
-  uri_to_endpoint uri >>= fun edn ->
+  uri_to_endpoint uri >>= fun (edn, peer_name) ->
   let ctx = match Uri.scheme uri with
     | Some "https" ->
+      let tls_config = tls_config ?peer_name () in
       let port = Option.value ~default:443 (Uri.port uri) in
       Conduit_lwt.add
         Conduit_lwt_tls.TCP.protocol
