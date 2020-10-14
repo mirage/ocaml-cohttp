@@ -1,4 +1,4 @@
-(*{{{ Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+(*{{{ Copyright (c) 2015 David Sheets <sheets@alum.mit.edu>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,20 +14,25 @@
  *
   }}}*)
 
-module Request = struct
-  include Cohttp.Request
-  include (Make(Cohttp_lwt_unix_nossl.IO)
-           : module type of Make(Cohttp_lwt_unix_nossl.IO) with type t := t)
-end
+(** Basic satisfaction of {! Cohttp_lwt.Net } *)
 
-module Response = struct
-  include Cohttp.Response
-  include (Make(Cohttp_lwt_unix_nossl.IO)
-           : module type of Make(Cohttp_lwt_unix_nossl.IO) with type t := t)
-end
+module IO = Io
 
-module Client = Client
-module Server = Cohttp_lwt_unix_nossl.Server
-module Debug = Cohttp_lwt_unix_nossl.Debug
-module Net = Net
-module IO = Cohttp_lwt_unix_nossl.IO
+type ctx = (Conduit.resolvers[@sexp.opaque]) [@@deriving sexp]
+
+val default_ctx : ctx
+
+(** Exceptions from [conduit].
+
+    When the [recv] or the [send] {i syscalls} return an error,
+    [conduit] will reraise it. *)
+
+val connect_uri :
+  ctx:ctx ->
+  Uri.t ->
+  (Conduit_lwt.flow * Lwt_io.input Lwt_io.channel * Lwt_io.output Lwt_io.channel) Lwt.t
+
+val close_in : 'a Lwt_io.channel -> unit
+val close_out : 'a Lwt_io.channel -> unit
+
+val close  : 'a Lwt_io.channel -> 'b Lwt_io.channel -> unit

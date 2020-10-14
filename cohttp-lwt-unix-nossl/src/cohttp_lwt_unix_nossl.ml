@@ -16,18 +16,18 @@
 
 module Request = struct
   include Cohttp.Request
-  include (Make(Cohttp_lwt_unix_nossl.IO)
-           : module type of Make(Cohttp_lwt_unix_nossl.IO) with type t := t)
+  include (Make(Io)
+           : module type of Make(Io) with type t := t)
 end
 
 module Response = struct
   include Cohttp.Response
-  include (Make(Cohttp_lwt_unix_nossl.IO)
-           : module type of Make(Cohttp_lwt_unix_nossl.IO) with type t := t)
+  include (Make(Io)
+           : module type of Make(Io) with type t := t)
 end
 
 module Client = Client
-module Server = Cohttp_lwt_unix_nossl.Server
-module Debug = Cohttp_lwt_unix_nossl.Debug
+module Server = Server
+module Debug = Debug
 module Net = Net
-module IO = Cohttp_lwt_unix_nossl.IO
+module IO = Io

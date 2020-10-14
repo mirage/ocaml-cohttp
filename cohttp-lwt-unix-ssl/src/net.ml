@@ -23,10 +23,7 @@ module IO = Cohttp_lwt_unix_nossl.IO
 
 type ctx = (Conduit.resolvers[@sexp.opaque]) [@@deriving sexp]
 
-let authenticator =
-  match Ca_certs.authenticator () with
-  | Ok a -> a
-  | Error (`Msg msg) -> failwith msg
+let () = Ssl.init ()
 
 let default_ctx = Conduit_lwt.empty
 
@@ -42,21 +39,32 @@ let uri_to_endpoint uri =
   | Error _, Ok v -> Lwt.return (Conduit.Endpoint.ip v)
   | Error _, Error _ -> failwith "Invalid uri: %a" Uri.pp uri
 
+let verify ?host ctx flow =
+  let socket = Conduit_lwt.TCP.Protocol.file_descr flow in
+  let uninitialized_socket = Lwt_ssl.embed_uninitialized_socket socket ctx in
+  let ssl_socket = Lwt_ssl.ssl_socket_of_uninitialized_socket uninitialized_socket in
+  Option.iter (Ssl.set_client_SNI_hostname ssl_socket) host ;
+  Lwt_ssl.ssl_perform_handshake uninitialized_socket >|= fun v -> Ok v
+
 let connect_uri ~ctx uri =
   uri_to_endpoint uri >>= fun edn ->
   let ctx = match Uri.scheme uri with
     | Some "https" ->
-      let peer_name = Uri.host uri in
-      let tls_config = Tls.Config.client ~authenticator ?peer_name () in
       let port = Option.value ~default:443 (Uri.port uri) in
+      let host = Uri.host uri in
+      let context = Ssl.create_context Ssl.TLSv1_2 Ssl.Client_context in
       Conduit_lwt.add
-        Conduit_lwt_tls.TCP.protocol
-        (Conduit_lwt_tls.TCP.resolve ~port ~config:tls_config) ctx
+        Conduit_lwt_ssl.TCP.protocol
+        (Conduit_lwt_ssl.TCP.resolve ~verify:(verify ?host) ~port ~context) ctx
     | (Some "http" | None) ->
       let port = Option.value ~default:80 (Uri.port uri) in
       Conduit_lwt.add Conduit_lwt.TCP.protocol (Conduit_lwt.TCP.resolve ~port) ctx
     | _ -> ctx in
   Conduit_lwt.resolve ctx edn >>= function
+  | Ok (Conduit_lwt_ssl.TCP.T (Value socket) as flow) ->
+    let ic = Lwt_ssl.in_channel_of_descr socket in
+    let oc = Lwt_ssl.out_channel_of_descr socket in
+    Lwt.return (flow, ic, oc)
   | Ok flow ->
     let ic, oc = Conduit_lwt.io_of_flow flow in
     Lwt.return (flow, ic, oc)
