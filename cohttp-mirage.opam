@@ -38,7 +38,7 @@ build: [
 ]
 dev-repo: "git+https://github.com/mirage/ocaml-cohttp.git"
 pin-depends: [
-  [ "conduit.dev" "git+https://github.com/mirage/ocaml-conduit.git#8912d458b2f3e43245e99cf3cb74e9c00712a8b0" ]
-  [ "conduit-tls.dev" "git+https://github.com/mirage/ocaml-conduit.git#8912d458b2f3e43245e99cf3cb74e9c00712a8b0" ]
-  [ "conduit-mirage.dev" "git+https://github.com/mirage/ocaml-conduit.git#8912d458b2f3e43245e99cf3cb74e9c00712a8b0" ]
+  [ "conduit.dev" "git+https://github.com/mirage/ocaml-conduit.git#4b9e8b0f8e96459c8e27ca27ed7416b8d1b5ba23" ]
+  [ "conduit-tls.dev" "git+https://github.com/mirage/ocaml-conduit.git#4b9e8b0f8e96459c8e27ca27ed7416b8d1b5ba23" ]
+  [ "conduit-mirage.dev" "git+https://github.com/mirage/ocaml-conduit.git#4b9e8b0f8e96459c8e27ca27ed7416b8d1b5ba23" ]
 ]
