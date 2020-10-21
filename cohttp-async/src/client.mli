@@ -8,7 +8,17 @@ val request :
   (Cohttp.Response.t * Body.t) Async_kernel.Deferred.t
 
 (** Send an HTTP request with arbitrary method and a body
-    Infers the transfer encoding *)
+    Infers the transfer encoding. Depending on the given [uri],
+    we choose a way to start a communication such as:
+
+    {ul
+    {- If the scheme is [https], we try to initiate an SSL connection with
+       the given [ssl_ctx] or a default one on the default port ([*:443]) or
+       the specified one.}
+    {- If the scheme is [httpunix], we use a UNIX domain socket.}
+    {- If the scheme ie [http], we try an usual TCP/IP connection on the
+       default port ([*:80]) or the specified one.}}
+*)
 val call :
   ?ssl_ctx:Conduit_async_ssl.context ->
   ?headers:Cohttp.Header.t ->

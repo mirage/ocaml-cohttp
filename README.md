@@ -7,9 +7,10 @@ HTTP parser, and implementations using various asynchronous programming
 libraries:
 
 * `Cohttp_lwt_unix` uses the [Lwt](https://ocsigen.org/lwt/) library, and
-  specifically the UNIX bindings.
+  specifically the UNIX bindings. It uses [ocaml-tls](https://github.com/mirleft/ocaml-tls)
+  as the TLS implementation to handle HTTPS connections.
 * `Cohttp_async` uses the [Async](https://realworldocaml.org/v1/en/html/concurrent-programming-with-async.html)
-  library.
+  library and `async_ssl` to handle HTTPS connections.
 * `Cohttp_lwt` exposes an OS-independent Lwt interface, which is used
   by the [Mirage](https://mirage.io/) interface to generate standalone
   microkernels (use the cohttp-mirage subpackage).
@@ -104,12 +105,10 @@ There's a few things to notice:
 * We must trigger lwt's event loop for the request to run. `Lwt_main.run` will
   run the event loop and return with final value of `body` which we then print.
 
-Note that in order to request an HTTPS page like in the above example,
-you'll need Cohttp to have been compiled with SSL or TLS. For SSL, you'll
-need to install both [`ssl`](https://github.com/savonet/ocaml-ssl) and
-[`lwt_ssl`](https://github.com/ocsigen/lwt_ssl) before installing `cohttp`.
-The TLS route will require installing
-[`tls`](https://github.com/mirleft/ocaml-tls) before `cohttp`.
+Note that `Cohttp_lwt_unix`/`Cohttp_async` is able to request an HTTPS page
+by default. For `Cohttp_lwt_unix`, we use [ocaml-tls](https://github.com/mirleft/ocaml-tls.git)
+(but the user is able to use `lwt_ssl` if he wants). For `Cohttp_async`, we use
+`async_ssl` (but the user is able to use `ocaml-tls`).
 
 Consult the following modules for reference:
 
@@ -125,12 +124,17 @@ to dig in and customise it for their needs. The following is an example of a
 ```ocaml
 open Lwt.Infix
 
+let resolve_unix_socket = function
+  | IP _ -> Lwt.return_none
+  | Domain v -> match Domain_name.to_string v with
+    | "docker" -> Lwt.return_some (Unix.ADDR_UNIX "/var/run/docker.sock")
+    | _ -> Lwt.return_none
+
 let t =
-  let resolver =
-    let h = Hashtbl.create 1 in
-    Hashtbl.add h "docker" (`Unix_domain_socket "/var/run/docker.sock");
-    Resolver_lwt_unix.static h in
-  let ctx = Cohttp_lwt_unix.Client.custom_ctx ~resolver () in
+  let ctx =
+    Conduit_lwt.add
+      ~priority:0 (* highest priority *)
+      Conduit_lwt.TCP.protocol resolve_unix_socket Conduit.empty in
   Cohttp_lwt_unix.Client.get ~ctx (Uri.of_string "http://docker/version") >>= fun (resp, body) ->
   let open Cohttp in
   let code = resp |> Response.status |> Code.code_of_status in

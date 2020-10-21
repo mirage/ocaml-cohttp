@@ -41,8 +41,8 @@ module type Client = sig
   type ctx
 
   (** [call ?ctx ?headers ?body ?chunked meth uri] will resolve the
-      [uri] to a concrete network endpoint using the resolver initialized
-      in [ctx].  It will then issue an HTTP request with method [meth],
+      [uri] to a concrete network endpoint using the {!Conduit.resolvers} [ctx].
+      It will then issue an HTTP request with method [meth],
       adding request headers from [headers] if present.  If a [body]
       is specified then that will be included with the request, using
       chunked encoding if [chunked] is true.  The default is to disable
@@ -50,7 +50,14 @@ module type Client = sig
 
       In most cases you should use the more specific helper calls in the
       interface rather than invoke this function directly.  See {!head},
-      {!get} and {!post} for some examples. *)
+      {!get} and {!post} for some examples.
+  
+      Depending on [ctx], the library is able to send a simple HTTP request
+      or an encrypted one with a secured protocol (such as TLS). By default
+      (on [cohttp-lwt-unix]), [ctx] tries to initiate a secured connection
+      with TLS (it uses [ocaml-tls]) on [*:443] or on the specified port by
+      the user. If the peer is not available, [cohttp]/[conduit] tries the usual
+      ([*:80]) or the specified port by the user in a non-secured way. *)
   val call :
     ?ctx:ctx ->
     ?headers:Cohttp.Header.t ->
