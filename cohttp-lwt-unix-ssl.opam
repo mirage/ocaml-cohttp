@@ -27,7 +27,7 @@ bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
 depends: [
   "ocaml" {>= "4.04.1"}
   "dune" {>= "1.1.0"}
-  "conduit-lwt" {>= "1.0.3"}
+  "conduit-lwt" {>= "3.0.0"}
   "conduit-lwt-ssl"
   "ca-certs"
   "cmdliner"
@@ -46,9 +46,3 @@ build: [
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 dev-repo: "git+https://github.com/mirage/ocaml-cohttp.git"
-pin-depends: [
-  [ "conduit.dev" "git+https://github.com/mirage/ocaml-conduit.git#4b9e8b0f8e96459c8e27ca27ed7416b8d1b5ba23" ]
-  [ "conduit-tls.dev" "git+https://github.com/mirage/ocaml-conduit.git#4b9e8b0f8e96459c8e27ca27ed7416b8d1b5ba23" ]
-  [ "conduit-lwt-ssl.dev" "git+https://github.com/mirage/ocaml-conduit.git#4b9e8b0f8e96459c8e27ca27ed7416b8d1b5ba23" ]
-  [ "conduit-lwt.dev" "git+https://github.com/mirage/ocaml-conduit.git#4b9e8b0f8e96459c8e27ca27ed7416b8d1b5ba23" ]
-]
