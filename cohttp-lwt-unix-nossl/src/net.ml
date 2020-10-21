@@ -19,14 +19,9 @@
 
 open Lwt.Infix
 
-module IO = Cohttp_lwt_unix_nossl.IO
+module IO = Io
 
 type ctx = (Conduit.resolvers[@sexp.opaque]) [@@deriving sexp]
-
-let authenticator =
-  match Ca_certs.authenticator () with
-  | Ok a -> a
-  | Error (`Msg msg) -> failwith msg
 
 let default_ctx = Conduit_lwt.empty
 
@@ -45,13 +40,6 @@ let uri_to_endpoint uri =
 let connect_uri ~ctx uri =
   uri_to_endpoint uri >>= fun edn ->
   let ctx = match Uri.scheme uri with
-    | Some "https" ->
-      let peer_name = Uri.host uri in
-      let tls_config = Tls.Config.client ~authenticator ?peer_name () in
-      let port = Option.value ~default:443 (Uri.port uri) in
-      Conduit_lwt.add
-        Conduit_lwt_tls.TCP.protocol
-        (Conduit_lwt_tls.TCP.resolve ~port ~config:tls_config) ctx
     | (Some "http" | None) ->
       let port = Option.value ~default:80 (Uri.port uri) in
       Conduit_lwt.add Conduit_lwt.TCP.protocol (Conduit_lwt.TCP.resolve ~port) ctx

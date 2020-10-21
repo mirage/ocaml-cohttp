@@ -21,8 +21,10 @@ end
     and close the resulting channels to clean up. *)
 module type Net = sig
   module IO : IO
-  type ctx [@@deriving sexp_of]
-  val default_ctx: ctx
+
+  type ctx [@@deriving sexp]
+
+  val default_ctx : ctx
   val connect_uri : ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
   val close_in : IO.ic -> unit
   val close_out : IO.oc -> unit
@@ -36,9 +38,7 @@ end
     fashion.  It will still be finalized by a GC hook if it is not used
     up, but this can take some additional time to happen. *)
 module type Client = sig
-
-  type ctx [@@deriving sexp_of]
-  val default_ctx : ctx
+  type ctx
 
   (** [call ?ctx ?headers ?body ?chunked meth uri] will resolve the
       [uri] to a concrete network endpoint using the resolver initialized

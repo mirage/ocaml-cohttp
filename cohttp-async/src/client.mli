@@ -1,8 +1,7 @@
 (** Send an HTTP request with an arbitrary body
     The request is sent as-is. *)
 val request :
-  ?interrupt:unit Async_kernel.Deferred.t ->
-  ?ssl_config:Conduit_async.V2.Ssl.Config.t ->
+  ?ssl_ctx:Conduit_async_ssl.context ->
   ?uri:Uri.t ->
   ?body:Body.t ->
   Cohttp.Request.t ->
@@ -11,8 +10,7 @@ val request :
 (** Send an HTTP request with arbitrary method and a body
     Infers the transfer encoding *)
 val call :
-  ?interrupt:unit Async_kernel.Deferred.t ->
-  ?ssl_config:Conduit_async.V2.Ssl.Config.t ->
+  ?ssl_ctx:Conduit_async_ssl.context ->
   ?headers:Cohttp.Header.t ->
   ?chunked:bool ->
   ?body:Body.t ->
@@ -21,32 +19,28 @@ val call :
   (Cohttp.Response.t * Body.t) Async_kernel.Deferred.t
 
 val callv :
-  ?interrupt:unit Async_kernel.Deferred.t ->
-  ?ssl_config:Conduit_async.V2.Ssl.Config.t ->
+  ?ssl_ctx:Conduit_async_ssl.context ->
   Uri.t ->
   (Cohttp.Request.t * Body.t) Async_kernel.Pipe.Reader.t ->
   (Cohttp.Response.t * Body.t) Async_kernel.Pipe.Reader.t Async_kernel.Deferred.t
 
 (** Send an HTTP GET request *)
 val get :
-  ?interrupt:unit Async_kernel.Deferred.t ->
-  ?ssl_config:Conduit_async.V2.Ssl.Config.t ->
+  ?ssl_ctx:Conduit_async_ssl.context ->
   ?headers:Cohttp.Header.t ->
   Uri.t ->
   (Cohttp.Response.t * Body.t) Async_kernel.Deferred.t
 
 (** Send an HTTP HEAD request *)
 val head :
-  ?interrupt:unit Async_kernel.Deferred.t ->
-  ?ssl_config:Conduit_async.V2.Ssl.Config.t ->
+  ?ssl_ctx:Conduit_async_ssl.context ->
   ?headers:Cohttp.Header.t ->
   Uri.t ->
   Cohttp.Response.t Async_kernel.Deferred.t
 
 (** Send an HTTP DELETE request *)
 val delete :
-  ?interrupt:unit Async_kernel.Deferred.t ->
-  ?ssl_config:Conduit_async.V2.Ssl.Config.t ->
+  ?ssl_ctx:Conduit_async_ssl.context ->
   ?headers:Cohttp.Header.t ->
   ?chunked:bool ->
   ?body:Body.t ->
@@ -57,8 +51,7 @@ val delete :
     [chunked] encoding is off by default as not many servers support it
 *)
 val post :
-  ?interrupt:unit Async_kernel.Deferred.t ->
-  ?ssl_config:Conduit_async.V2.Ssl.Config.t ->
+  ?ssl_ctx:Conduit_async_ssl.context ->
   ?headers:Cohttp.Header.t ->
   ?chunked:bool ->
   ?body:Body.t ->
@@ -69,8 +62,7 @@ val post :
     [chunked] encoding is off by default as not many servers support it
 *)
 val put :
-  ?interrupt:unit Async_kernel.Deferred.t ->
-  ?ssl_config:Conduit_async.V2.Ssl.Config.t ->
+  ?ssl_ctx:Conduit_async_ssl.context ->
   ?headers:Cohttp.Header.t ->
   ?chunked:bool ->
   ?body:Body.t ->
@@ -81,8 +73,7 @@ val put :
     [chunked] encoding is off by default as not many servers support it
 *)
 val patch :
-  ?interrupt:unit Async_kernel.Deferred.t ->
-  ?ssl_config:Conduit_async.V2.Ssl.Config.t ->
+  ?ssl_ctx:Conduit_async_ssl.context ->
   ?headers:Cohttp.Header.t ->
   ?chunked:bool ->
   ?body:Body.t ->
@@ -91,8 +82,7 @@ val patch :
 
 (** Send an HTTP POST request in form format *)
 val post_form:
-  ?interrupt:unit Async_kernel.Deferred.t ->
-  ?ssl_config:Conduit_async.V2.Ssl.Config.t ->
+  ?ssl_ctx:Conduit_async_ssl.context ->
   ?headers:Cohttp.Header.t ->
   params:(string * string list) list ->
   Uri.t ->

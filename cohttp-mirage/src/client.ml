@@ -19,29 +19,38 @@
 
 open Lwt.Infix
 
-module Channel = Mirage_channel.Make(Conduit_mirage.Flow)
+module Channel = Mirage_channel.Make(Conduit_mirage_flow)
 module HTTP_IO = Io.Make(Channel)
+
 
 module Net_IO = struct
 
   module IO = HTTP_IO
 
-  type ctx = {
-    resolver: Resolver_lwt.t;
-    conduit : Conduit_mirage.t;
-  }
+  type ctx = (Conduit.resolvers[@sexp.opaque]) [@@deriving sexp]
 
-  let sexp_of_ctx { resolver; _ } = Resolver_lwt.sexp_of_t resolver
+  let default_ctx = Conduit.empty
 
-  let default_ctx =
-    { resolver = Resolver_mirage.localhost; conduit = Conduit_mirage.empty }
+  let failwith fmt = Fmt.kstrf (fun err -> Lwt.fail (Failure err)) fmt
+
+  let uri_to_endpoint uri =
+    (match Uri.host uri with
+     | None -> failwith "Invalid uri: no host component in %a" Uri.pp uri
+     | Some h -> Lwt.return h) >>= fun v ->
+    let ( >>= ) x f = match x with Ok x -> f x | Error err -> Error err in
+    match Domain_name.(of_string v >>= host), Ipaddr.of_string v with
+    | Ok domain_name, _ -> Lwt.return (Conduit.Endpoint.domain domain_name)
+    | Error _, Ok v -> Lwt.return (Conduit.Endpoint.ip v)
+    | Error _, Error _ -> failwith "Invalid uri: %a" Uri.pp uri
 
   let connect_uri ~ctx uri =
-    Resolver_lwt.resolve_uri ~uri ctx.resolver >>= fun endp ->
-    Conduit_mirage.client endp >>= fun client ->
-    Conduit_mirage.connect ctx.conduit client >>= fun flow ->
-    let ch = Channel.create flow in
-    Lwt.return (flow, ch, ch)
+    uri_to_endpoint uri >>= fun edn ->
+    Conduit_mirage.resolve ctx edn >>= function
+    | Ok flow ->
+      let ch = Channel.create flow in
+      Lwt.return (flow, ch, ch)
+    | Error err ->
+      failwith "%a" Conduit_mirage.pp_error err
 
   let close_in _ = ()
   let close_out _ = ()
@@ -54,7 +63,6 @@ module Net_IO = struct
     )
 
 end
-let ctx resolver conduit = { Net_IO.resolver; conduit }
 
 (* Build all the core modules from the [Cohttp_lwt] functors *)
 include Cohttp_lwt.Make_client(HTTP_IO)(Net_IO)

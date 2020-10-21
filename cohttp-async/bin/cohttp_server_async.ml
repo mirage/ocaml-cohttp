@@ -107,7 +107,7 @@ let determine_mode cert_file_path key_file_path =
   | None, None -> `TCP
   | _ -> failwith "Error: must specify both certificate and key for HTTPS"
 
-let start_server docroot port index cert_file key_file verbose () =
+let start_server docroot port index cert_file key_file verbose =
   (* enable logging to stdout *)
   Fmt_tty.setup_std_outputs ();
   Logs.set_level @@ if verbose then (Some Logs.Debug) else (Some Logs.Info);
@@ -116,14 +116,19 @@ let start_server docroot port index cert_file key_file verbose () =
   let mode_str = (match mode with `OpenSSL _ -> "HTTPS" | `TCP -> "HTTP") in
   Logs.info (fun f -> f "Listening for %s requests on %d" mode_str port);
   let info = Printf.sprintf "Served by Cohttp/Async listening on %d" port in
-  Server.create
-    ~on_handler_error:(`Call (fun addr exn ->
+  let _never, server = Server.create
+    ~on_handler_error:(`Call (fun flow exn ->
+        let addr = match Conduit_async.cast flow Conduit_async.TCP.protocol with
+          | Some flow -> Conduit_async.TCP.Protocol.address flow
+          | None -> assert false (* XXX(dinosaure): safe when we initialize the server with
+                                    [Conduit_async_tcp.service] *) in
         Logs.err (fun f -> f "Error from %s" (Socket.Address.to_string addr));
         Logs.err (fun f -> f "%s" @@ Exn.to_string exn)))
-    ~mode
-    (Tcp.Where_to_listen.of_port port)
-    (handler ~info ~docroot ~index) >>= fun _serv ->
-  Deferred.never ()
+    ~protocol:Conduit_async.TCP.protocol
+    ~service:Conduit_async.TCP.service
+    (Conduit_async.TCP.Listen (None, Tcp.Where_to_listen.of_port port))
+    (handler ~info ~docroot ~index) in
+  server
 
 let () =
   let open Async_command in

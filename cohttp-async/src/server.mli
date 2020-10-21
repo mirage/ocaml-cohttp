@@ -1,13 +1,3 @@
-type ('address, 'listening_on) t constraint 'address
-  = [< Async_unix.Socket.Address.t ]
-  [@@deriving sexp_of]
-
-val close          : (_, _) t -> unit Async_kernel.Deferred.t
-val close_finished : (_, _) t -> unit Async_kernel.Deferred.t
-val is_closed      : (_, _) t -> bool
-
-val listening_on   : (_, 'listening_on) t -> 'listening_on
-
 type response = Response.t * Body.t [@@deriving sexp_of]
 
 type 'r respond_t =
@@ -38,7 +28,8 @@ val respond : response respond_t
 val resolve_local_file : docroot:string -> uri:Uri.t -> string
 
 (** Respond with a [string] Pipe that provides the response string
-    Pipe.Reader.t. @param code Default is HTTP 200 `OK *)
+    Pipe.Reader.t.
+    @param code Default is HTTP 200 `OK *)
 val respond_with_pipe :
   ?flush:bool ->
   ?headers:Cohttp.Header.t -> ?code:Cohttp.Code.status_code ->
@@ -62,33 +53,30 @@ val respond_with_file :
   ?headers:Cohttp.Header.t -> ?error_body:string ->
   string -> response Async_kernel.Deferred.t
 
-type mode = Conduit_async.server
-
 (** Build a HTTP server and expose the [IO.ic] and [IO.oc]s, based on the
     [Tcp.Server] interface. *)
 val create_expert :
-  ?max_connections:int ->
+  ?timeout:int ->
   ?backlog:int ->
-  ?buffer_age_limit:Async_unix.Writer.buffer_age_limit ->
-  ?mode:mode ->
-  on_handler_error:[ `Call of 'address -> exn  -> unit
+  on_handler_error:[ `Call of Conduit_async.flow -> exn  -> unit
                    | `Ignore
                    | `Raise ] ->
-  ('address, 'listening_on) Async.Tcp.Where_to_listen.t
-  -> (body:Body.t -> 'address -> Request.t
-      -> response_action Async_kernel.Deferred.t)
-  -> ('address, 'listening_on) t Async_kernel.Deferred.t
+  protocol:(_, 'flow) Conduit_async.protocol ->
+  service:('cfg, 't, 'flow) Conduit_async.Service.service ->
+  'cfg
+  -> (body:Body.t -> Conduit_async.flow -> Request.t -> response_action Async_kernel.Deferred.t)
+  -> unit Async.Condition.t * (unit -> unit Async.Deferred.t)
 
 
 (** Build a HTTP server, based on the [Tcp.Server] interface *)
 val create :
-  ?max_connections:int ->
+  ?timeout:int ->
   ?backlog:int ->
-  ?buffer_age_limit:Async_unix.Writer.buffer_age_limit ->
-  ?mode:Conduit_async.server ->
-  on_handler_error:[ `Call of 'address -> exn  -> unit
+  on_handler_error:[ `Call of Conduit_async.flow -> exn  -> unit
                    | `Ignore
                    | `Raise ] ->
-  ('address, 'listening_on) Async.Tcp.Where_to_listen.t
-  -> (body:Body.t -> 'address -> Request.t -> response Async_kernel.Deferred.t)
-  -> ('address, 'listening_on) t Async_kernel.Deferred.t
+  protocol:(_, 'flow) Conduit_async.protocol ->
+  service:('cfg, 't, 'flow) Conduit_async.Service.service ->
+  'cfg
+  -> (body:Body.t -> Conduit_async.flow -> Request.t -> response Async_kernel.Deferred.t)
+  -> unit Async.Condition.t * (unit -> unit Async.Deferred.t)
