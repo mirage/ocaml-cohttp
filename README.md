@@ -174,6 +174,13 @@ Fatal error: exception (Failure "Timeout expired")
 Similarly, in the case of `cohttp-async` you can directly use Async's
 [`with_timeout`](https://ocaml.janestreet.com/ocaml-core/latest/doc/async_unix/Async_unix/Clock/index.html#val-with_timeout) function.
 
+## Managing sessions
+
+Managing sessions and saving cookies across requests is not directly supported by
+`cohttp`. It is not hard to roll out a custom solution, but an alternative is
+to use the [`session`](https://github.com/inhabitedtype/ocaml-session) library,
+which is compatible with `cohttp`.
+
 ## Creating custom resolver: a Docker Socket Client example
 
 Cohttp provides a lot of utilities out of the box, but does not prevent the users
