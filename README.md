@@ -310,7 +310,8 @@ folder in the sources
 
 ## Debugging
 
-Conduit uses `Logs` for debugging output. This means that to enable debugging you need to add something on the following lines (courtesy of @dinosaure)
+You can activate some runtime debugging for the servers by setting `COHTTP_DEBUG` to any value different from `0` or `false`, and it will set a default debug-level logger on stdout. 
+Both Cohttp and Conduit use `Logs` for debugging output: this means that you can enable custom debugging in your software if needed by adding something like the following to your code (courtesy of @dinosaure)
 
 ```ocaml
 let reporter ppf =
@@ -331,10 +332,6 @@ let () = Fmt_tty.setup_std_outputs ~style_renderer:`Ansi_tty ~utf_8:true ()
 let () = Logs.set_reporter (reporter Fmt.stderr)
 let () = Logs.set_level ~all:true (Some Logs.Debug)
 ```
-
-You can activate some runtime debugging for the servers by setting `COHTTP_DEBUG` to any value, and all requests and responses will be written to stderr. 
-This currently gives limited output on the async version and nothing on the lwt version.
-We welcome any help to port also this library to log.
 
 ## Important Links
 
