@@ -301,12 +301,40 @@ $ cohttp-server-async
 Assuming that the server is running in cohttp's source directory:
 
 ```
-$ cohttp-curl-lwt 'http://0.0.0.0:8080/_oasis'
+$ cohttp-curl-lwt 'http://0.0.0.0:8080/README.md'
 ```
 
 Other examples using the async api are avaliable in the
 [examples/async](https://github.com/mirage/ocaml-cohttp/tree/master/examples)
 folder in the sources
+
+## Debugging
+
+Conduit uses `Logs` for debugging output. This means that to enable debugging you need to add something on the following lines (courtesy of @dinosaure)
+
+```ocaml
+let reporter ppf =
+  let report src level ~over k msgf =
+    let k _ =
+      over () ;
+      k () in
+    let with_metadata header _tags k ppf fmt =
+      Format.kfprintf k ppf
+        ("%a[%a]: " ^^ fmt ^^ "\n%!")
+        Logs_fmt.pp_header (level, header)
+        Fmt.(styled `Magenta string)
+        (Logs.Src.name src) in
+    msgf @@ fun ?header ?tags fmt -> with_metadata header tags k ppf fmt in
+  { Logs.report }
+
+let () = Fmt_tty.setup_std_outputs ~style_renderer:`Ansi_tty ~utf_8:true ()
+let () = Logs.set_reporter (reporter Fmt.stderr)
+let () = Logs.set_level ~all:true (Some Logs.Debug)
+```
+
+You can activate some runtime debugging for the servers by setting `COHTTP_DEBUG` to any value, and all requests and responses will be written to stderr. 
+This currently gives limited output on the async version and nothing on the lwt version.
+We welcome any help to port also this library to log.
 
 ## Important Links
 
