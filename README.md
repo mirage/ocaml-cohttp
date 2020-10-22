@@ -136,7 +136,45 @@ then build and execute the example with
 $ dune exec ./client_example.exe
 ```
 
-## Docker Socket Client example
+## Dealing with timeouts
+
+You can use [`Lwt.pick`](https://ocsigen.org/lwt/4.1.0/api/Lwt) to set a timeout
+on the execution of a thread. For example, say that you want to set a timeout on
+the `Client.get` thread in the example above, then you could modify the get call
+as follows
+ 
+```ocaml
+(* [...] *)
+
+let compute ~time ~f =
+  Lwt.pick
+    [
+      (f () >|= fun v -> `Done v)
+    ; (Lwt_unix.sleep time >|= fun () -> `Timeout)
+    ]
+
+let body =
+  let get () = Client.get (Uri.of_string "https://www.reddit.com/") in
+  compute ~time:0.1 ~f:get >>= function
+  | `Timeout -> Lwt.fail_with "Timeout expired"
+  | `Done (resp, body) ->
+      let code =
+(* [...] *)
+```
+
+Executing the code, which you can actually try by calling
+```
+$ dune exec examples/lwt_unix_doc/client_lwt_timeout.exe
+```
+the call will most likely fail with the following output
+```
+Fatal error: exception (Failure "Timeout expired")
+```
+
+Similarly, in the case of `cohttp-async` you can directly use Async's
+[`with_timeout`](https://ocaml.janestreet.com/ocaml-core/latest/doc/async_unix/Async_unix/Clock/index.html#val-with_timeout) function.
+
+## Creating custom resolver: a Docker Socket Client example
 
 Cohttp provides a lot of utilities out of the box, but does not prevent the users
 to dig in and customise it for their needs. The following is an example of a
