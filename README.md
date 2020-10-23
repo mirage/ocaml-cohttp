@@ -355,8 +355,9 @@ folder in the sources
 
 ## Debugging
 
-You can activate some runtime debugging for the servers by setting `COHTTP_DEBUG` to any value different from `0` or `false`, and it will set a default debug-level logger on stdout. 
-Both Cohttp and Conduit use `Logs` for debugging output: this means that you can enable custom debugging in your software if needed by adding something like the following to your code (courtesy of @dinosaure)
+You can activate some runtime debugging for the servers by setting `COHTTP_DEBUG` to any value different from `0` or `false`, and it will set a default debug-level logger on stdout. Note: If you turn on the debugging on the `cohttp-lwt-server` example, you need to make sure you also pass the `-vvv` option, which forces the debug level of the logger.
+
+Since both Cohttp and Conduit use `Logs` for debugging output, you can enable custom debugging in your code (if needed) by adding something like the following to your code (courtesy of @dinosaure)
 
 ```ocaml
 let reporter ppf =
