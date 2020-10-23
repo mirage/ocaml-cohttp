@@ -12,6 +12,8 @@
 - refactoring of tests (@mseri #709, @dinosaure #692)
 - update documentation (@dinosaure #716, @mseri #720)
 - cohttp: fix transfer-encoding ordering in headers (@mseri #721)
+- Lower-level support for long-running cohttp-async connections (@brendanlong #704)
+- fix deadlock in logging (@dinosaure #722)
 
 ## v2.5.4 (2020-07-21)
 
