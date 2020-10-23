@@ -34,7 +34,7 @@ let respond_file ?headers ~fname () =
               | "" -> None
               | buf -> Some buf)
             (fun exn ->
-               Log.debug
+               Log.warn
                  (fun m -> m "Error resolving file %s (%s)"
                    fname
                    (Printexc.to_string exn));
@@ -63,11 +63,20 @@ let respond_file ?headers ~fname () =
 let log_on_exn =
   function
   | Unix.Unix_error (error, func, arg) ->
-     Logs.warn (fun m -> m "Client connection error %s: %s(%S)"
+     Log.warn (fun m -> m "Client connection error %s: %s(%S)"
        (Unix.error_message error) func arg)
-  | exn -> Logs.err (fun m -> m "Unhandled exception: %a" Fmt.exn exn)
+  | exn -> Log.err (fun m -> m "Unhandled exception: %a" Fmt.exn exn)
+
+let pp_sockaddr ppf = function
+  | Unix.ADDR_UNIX v -> Fmt.pf ppf "<unix:%s>" v
+  | Unix.ADDR_INET (inet_addr, port) -> Fmt.pf ppf "<inet:%s:%d>" (Unix.string_of_inet_addr inet_addr) port
 
 let safe error_handler callback spec flow () =
+  let () = match flow with
+    | Conduit_lwt.TCP.T (Value file_descr) ->
+      let sockaddr = Conduit_lwt.TCP.Protocol.peer file_descr in
+      Log.debug (fun m -> m "Receive a connection from: %a.%!" pp_sockaddr sockaddr) ;
+    | _ -> () in
   Lwt.catch
     (fun () -> let ic, oc = Conduit_lwt.io_of_flow flow in callback spec flow ic oc)
     (fun exn -> error_handler exn)

@@ -38,7 +38,7 @@ let default_reporter (file_descr, ppf) =
       Lwt.async (fun () -> Lwt.catch
         (fun () -> Lwt.finalize write clean)
         (fun exn ->
-           Logs.warn (fun m -> m "Flushing error: %s.\n%!" (Printexc.to_string exn)) ;
+           Logs.warn (fun m -> m "Flushing error: %s." (Printexc.to_string exn)) ;
            Lwt.return_unit)) ;
       k () in
     let with_metadata header _tags k ppf fmt =
@@ -61,8 +61,9 @@ let set_log = lazy (
 
 let activate_debug () =
   Lazy.force set_log;
-  _debug_active := true;
-  Logs.debug (fun f -> f "Cohttp debugging output is active")
+  if not !_debug_active
+  then ( _debug_active := true
+       ; Logs.debug (fun f -> f "Cohttp debugging output is active") )
 
 let () =
   try (
