@@ -17,10 +17,29 @@
 let _debug_active = ref false
 let debug_active () = !_debug_active
 
-let default_reporter ppf =
+open Lwt.Infix
+
+let default_reporter (file_descr, ppf) =
+  let ppf, flush =
+    let buf = Buffer.create 0x100 in
+    Fmt.with_buffer ~like:ppf buf,
+    (fun () ->
+       let str = Buffer.contents buf in Buffer.reset buf ; str) in
   let report src level ~over k msgf =
     let k _ =
-      over () ;
+      let write () =
+        let buf = Bytes.unsafe_of_string (flush ()) in
+        let rec go off len =
+          Lwt_unix.write file_descr buf off len >>= fun len' ->
+          if len' = len then Lwt.return_unit
+          else go (off + len') (len - len') in
+        go 0 (Bytes.length buf) in
+      let clean () = over () ; Lwt.return_unit in
+      Lwt.async (fun () -> Lwt.catch
+        (fun () -> Lwt.finalize write clean)
+        (fun exn ->
+           Logs.warn (fun m -> m "Flushing error: %s.\n%!" (Printexc.to_string exn)) ;
+           Lwt.return_unit)) ;
       k () in
     let with_metadata header _tags k ppf fmt =
       Format.kfprintf k ppf
@@ -37,7 +56,7 @@ let set_log = lazy (
   if (Logs.reporter ()) == Logs.nop_reporter
   then
     Logs.set_level @@ Some Logs.Debug;
-    Logs.set_reporter (default_reporter Fmt.stderr);
+    Logs.set_reporter (default_reporter (Lwt_unix.stderr, Fmt.stderr));
 )
 
 let activate_debug () =
