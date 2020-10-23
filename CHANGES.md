@@ -14,6 +14,7 @@
 - cohttp: fix transfer-encoding ordering in headers (@mseri #721)
 - Lower-level support for long-running cohttp-async connections (@brendanlong #704)
 - fix deadlock in logging (@dinosaure #722)
+- add of_form and to_form functions to body (@seliopou #440, @mseri #723)
 
 ## v2.5.4 (2020-07-21)
 
