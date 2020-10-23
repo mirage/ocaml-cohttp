@@ -23,6 +23,24 @@ You can find help from cohttp users and maintainers at the
 [discuss.ocaml.org](https://discuss.ocaml.org) forum or on the
 [OCaml discord server](https://discord.gg/cCYQbqN).
 
+## Table of contents
+
+- [Installation](#installation)
+- [Client Tutorial](#client-tutorial)
+  * [Compile and execute with ocamlbuild](#compile-and-execute-with-ocamlbuild)
+  * [Compile and execute with dune](#compile-and-execute-with-dune)
+- [Dealing with timeouts](#dealing-with-timeouts)
+- [Managing sessions](#managing-sessions)
+- [Multipart form data](#multipart-form-data)
+- [Creating custom resolver: a Docker Socket Client example](#creating-custom-resolver--a-docker-socket-client-example)
+- [Basic Server Tutorial](#basic-server-tutorial)
+  * [Compile and execute with ocamlbuild](#compile-and-execute-with-ocamlbuild-1)
+  * [Compile and execute with dune](#compile-and-execute-with-dune-1)
+- [Installed Binaries](#installed-binaries)
+- [Debugging](#debugging)
+- [Important Links](#important-links)
+
+
 ## Installation
 
 Latest stable version should be obtained from `opam`. Make sure to install the
