@@ -71,6 +71,9 @@ let map t ~f =
 
 let as_pipe t ~f = `Pipe (t |> to_pipe |> f)
 
+let to_form t = to_string t >>| Uri.query_of_encoded
+let of_form ?scheme f = Uri.encoded_of_query ?scheme f |> of_string
+
 let write_body write_body (body : t) writer =
   match body with
   | `Empty -> return ()

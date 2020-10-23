@@ -16,3 +16,4 @@ val to_pipe : t -> string Pipe.Reader.t
 val of_pipe : string Pipe.Reader.t -> t
 val map : t -> f:(string -> string) -> t
 val as_pipe : t -> f:(string Pipe.Reader.t -> string Pipe.Reader.t) -> t
+val to_form : t -> (string * string list) list Deferred.t
