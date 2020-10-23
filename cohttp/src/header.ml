@@ -42,6 +42,10 @@ let headers_with_list_values = Array.map LString.of_string [|
   "proxy-authenticate";"te";"trailer";"transfer-encoding";"upgrade";
   "vary";"via";"warning";"www-authenticate"; |]
 
+let is_transfer_encoding =
+  let k = LString.of_string "transfer-encoding" in
+  fun k' -> LString.compare k k' = 0
+
 let is_header_with_list_value =
   let tbl = Hashtbl.create (Array.length headers_with_list_values) in
   headers_with_list_values |> Array.iter (fun h -> Hashtbl.add tbl h ());
@@ -57,7 +61,11 @@ let init_with k v =
 
 let add h k v =
   let k = LString.of_string k in
-  try StringMap.add k (v::(StringMap.find k h)) h
+  try 
+    if is_transfer_encoding k then
+      StringMap.add k ((StringMap.find k h) @ [v]) h
+    else
+      StringMap.add k (v::(StringMap.find k h)) h
   with Not_found -> StringMap.add k [v] h
 
 let add_list h l =
@@ -122,7 +130,8 @@ let iter fn h = ignore(map fn h)
 let fold fn h acc = StringMap.fold
   (fun k v acc -> List.fold_left (fun acc v -> fn (LString.to_string k) v acc) acc v)
   h acc
-let of_list l = List.fold_left (fun h (k,v) -> add h k v) (init ()) l
+let of_list l =
+  List.fold_left (fun h (k,v) -> add h k v) (init ()) l
 
 let to_list h = List.rev (fold (fun k v acc -> (k,v)::acc) h [])
 let header_line k v = Printf.sprintf "%s: %s\r\n" k v

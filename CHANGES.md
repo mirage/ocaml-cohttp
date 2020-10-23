@@ -5,9 +5,13 @@
 - cohttp: fix chunked encoding of empty body (@mefyl #715)
 - cohttp-async: fix body not being uploaded with unchunked Async.Pipe (@mefyl #706)
 - cohttp-{async, lwt}: fix suprising behaviours of Body.is_empty (@anuragsoni #714 #712 #713)
-- port to conduit 3.0.0 and documentation update, includes minor breaking changes on the API and the distinction between cohttp-lwt-unix (using tls), cohttp-lwt-notls and cohttp-lwt-ssl (using lwt_ssl) (@dinosaure #692 #716)
+- port to conduit 3.0.0: minor breaking changes on the server API, an explicit distinction
+  between cohttp-lwt-unix (using tls), cohttp-lwt-notls and cohttp-lwt-ssl (using lwt_ssl),
+  and includes ssl in cohttp-async (@dinosaure #692)
 - cohttp-lwt-jsoo: rename Cohttp_lwt_xhr to Cohttp_lwt_jsoo for consistency (@mseri #717)
 - refactoring of tests (@mseri #709, @dinosaure #692)
+- update documentation (@dinosaure #716, @mseri #720)
+- cohttp: fix transfer-encoding ordering in headers (@mseri #721)
 
 ## v2.5.4 (2020-07-21)
 

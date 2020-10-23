@@ -9,8 +9,9 @@ let test_if_body_empty () =
     Alcotest.(check bool) name (Cohttp.Body.is_empty body) expected
   ) tests
 
+let () = Printexc.record_backtrace true
+
 let () =
-  Printexc.record_backtrace true;
   Alcotest.run "test_body" [
     "Query body information", [
       "Check if body is empty", `Quick, test_if_body_empty;
