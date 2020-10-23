@@ -181,6 +181,11 @@ Managing sessions and saving cookies across requests is not directly supported b
 to use the [`session`](https://github.com/inhabitedtype/ocaml-session) library,
 which is compatible with `cohttp`.
 
+## Multipart form data
+
+Multipart form data is not supported out of the box, but is provided by the external library
+[`multipart-form-data`](https://github.com/cryptosense/multipart-form-data).
+
 ## Creating custom resolver: a Docker Socket Client example
 
 Cohttp provides a lot of utilities out of the box, but does not prevent the users
