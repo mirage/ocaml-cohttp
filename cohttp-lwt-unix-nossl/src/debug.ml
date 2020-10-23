@@ -17,32 +17,19 @@
 let _debug_active = ref false
 let debug_active () = !_debug_active
 
-let default_reporter () =
-  (* Note: we want the logging operation to not block the other operation.
-   * Hence, the reporter creates Lwt promises. *)
-  let fmtr, fmtr_flush =
-    let b = Buffer.create 512 in
-    ( Fmt.with_buffer ~like:Fmt.stdout b
-    , fun () ->
-      let m = Buffer.contents b in Buffer.reset b;
-      m ) in
-  let report _src _level ~over k msgf =
+let default_reporter ppf =
+  let report src level ~over k msgf =
     let k _ =
-      let write () = Lwt_io.write Lwt_io.stderr (fmtr_flush ()) in
-      let unblock () = over (); Lwt.return_unit in
-      Lwt.ignore_result @@ Lwt.catch
-        (fun () -> (Lwt.finalize write unblock : unit Lwt.t))
-        (fun e  ->
-          Logs.warn (fun f ->
-            f "Flushing stderr failed: %s" (Printexc.to_string e));
-          Lwt.return_unit
-        );
-      k ()
-    in
-    msgf @@ fun ?header:_ ?tags:_ fmt ->
-    Format.kfprintf k fmtr ("@[" ^^ fmt ^^ "@]@.")
-  in
-  { Logs.report = report }
+      over () ;
+      k () in
+    let with_metadata header _tags k ppf fmt =
+      Format.kfprintf k ppf
+        ("%a[%a]: " ^^ fmt ^^ "\n%!")
+        Logs_fmt.pp_header (level, header)
+        Fmt.(styled `Magenta string)
+        (Logs.Src.name src) in
+    msgf @@ fun ?header ?tags fmt -> with_metadata header tags k ppf fmt in
+  { Logs.report }
 
 let set_log = lazy (
   (* If no reporter has been set by the application, set default one
@@ -50,7 +37,7 @@ let set_log = lazy (
   if (Logs.reporter ()) == Logs.nop_reporter
   then
     Logs.set_level @@ Some Logs.Debug;
-    Logs.set_reporter (default_reporter ());
+    Logs.set_reporter (default_reporter Fmt.stderr);
 )
 
 let activate_debug () =
