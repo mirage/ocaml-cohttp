@@ -19,6 +19,8 @@ module Make
       let stream = Body.create_stream Response.read_body_chunk reader in
       let body = Body.of_stream stream in
       let closed = ref false in
+      (* Lwt.on_success registers a callback in the stream.
+       * The GC will still be able to collect stream. *)
       Lwt.on_success (Lwt_stream.closed stream)
         (fun () -> closed := true; closefn ());
       (* finalise could run in a thread different from the lwt main thread.
