@@ -64,12 +64,15 @@ module Make
     sent >>= fun () ->
     Response.read ic >>= function
     | `Invalid reason ->
+      closefn () ;
       Lwt.fail (Failure ("Failed to read response: " ^ reason))
     | `Eof ->
+      closefn () ;
       Lwt.fail (Failure "Server closed connection prematurely.")
     | `Ok res ->
       match meth with
       | `HEAD ->
+        closefn () ;
         Lwt.return (res, `Empty)
       | _ ->
         let body = read_body ~closefn ic res in
@@ -114,12 +117,15 @@ module Make
       Lwt_mutex.with_lock read_m begin fun () ->
         Response.read ic >>= function
         | `Invalid reason ->
+          closefn () ;
           Lwt.fail (Failure ("Failed to read response: " ^ reason))
         | `Eof ->
+          closefn () ;
           Lwt.fail (Failure "Server closed connection prematurely.")
         | `Ok res ->
           match meth with
           | `HEAD ->
+            closefn () ;
             Lwt.return (res, `Empty)
           | _ ->
             let body = read_body ~closefn ic res in
