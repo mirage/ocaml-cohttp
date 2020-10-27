@@ -62,12 +62,10 @@ module Make
           Body.write_body (Request.write_body writer) buf) req oc
     in
     sent >>= fun () ->
-    Response.read ic >>= function
+    Response.read ic >>= begin function
     | `Invalid reason ->
-      closefn () ;
       Lwt.fail (Failure ("Failed to read response: " ^ reason))
     | `Eof ->
-      closefn () ;
       Lwt.fail (Failure "Server closed connection prematurely.")
     | `Ok res ->
       match meth with
@@ -76,7 +74,10 @@ module Make
         Lwt.return (res, `Empty)
       | _ ->
         let body = read_body ~closefn ic res in
-        Lwt.return (res, body)
+        Lwt.return (res, body) end |> fun t ->
+    Lwt.on_cancel t closefn ;
+    Lwt.on_failure t (fun _exn -> closefn ()) ;
+    t
 
   (* The HEAD should not have a response body *)
   let head ?ctx ?headers uri =
@@ -115,12 +116,10 @@ module Make
     let closefn () = Lwt_mutex.unlock read_m in
     let resps = Lwt_stream.map_s (fun meth ->
       Lwt_mutex.with_lock read_m begin fun () ->
-        Response.read ic >>= function
+        Response.read ic >>= begin function
         | `Invalid reason ->
-          closefn () ;
           Lwt.fail (Failure ("Failed to read response: " ^ reason))
         | `Eof ->
-          closefn () ;
           Lwt.fail (Failure "Server closed connection prematurely.")
         | `Ok res ->
           match meth with
@@ -129,7 +128,9 @@ module Make
             Lwt.return (res, `Empty)
           | _ ->
             let body = read_body ~closefn ic res in
-            Lwt.return (res, body)
+            Lwt.return (res, body) end |> fun t ->
+        Lwt.on_cancel t closefn ;
+        Lwt.on_failure t (fun _exn -> closefn ()) ; t
       end
     ) meth_stream in
     Lwt.on_success (Lwt_stream.closed resps) (fun () -> Net.close ic oc);
