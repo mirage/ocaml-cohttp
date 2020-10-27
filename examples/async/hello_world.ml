@@ -1,7 +1,6 @@
 (* This file is in the public domain *)
 
-open Core.Std
-open Async.Std
+open Base
 open Cohttp_async
 
 (* given filename: hello_world.ml compile with:
@@ -19,17 +18,20 @@ let handler ~body:_ _sock req =
   | _ ->
     Server.respond_string ~status:`Not_found "Route not found"
 
-let start_server port () =
-  eprintf "Listening for HTTP on port %d\n" port;
-  eprintf "Try 'curl http://localhost:%d/test?hello=xyz'\n%!" port;
-  Cohttp_async.Server.create ~on_handler_error:`Raise
-    (Tcp.on_port port) handler
-  >>= fun _ -> Deferred.never ()
+let start_server port =
+  Caml.Printf.eprintf "Listening for HTTP on port %d\n" port;
+  Caml.Printf.eprintf "Try 'curl http://localhost:%d/test?hello=xyz'\n%!" port;
+  let _never, server = Cohttp_async.Server.create ~on_handler_error:`Raise
+    ~protocol:Conduit_async.TCP.protocol ~service:Conduit_async.TCP.service
+    (Conduit_async.TCP.Listen (None, Async.Tcp.Where_to_listen.of_port port)) handler in
+  server
 
 let () =
-  Command.async
+  let module Command = Async_command in
+  Command.async_spec
     ~summary:"Start a hello world Async server"
-    Command.Spec.(empty +>
+    Command.Spec.(
+      empty +>
       flag "-p" (optional_with_default 8080 int)
         ~doc:"int Source port to listen on"
     ) start_server

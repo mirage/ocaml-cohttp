@@ -1,11 +1,5 @@
-*.swp
+.*.swp
 _build/
-dist/
-lib_test/_tests
-setup.data
-setup.log
-setup.bin
-*.docdir
-*.native
-*.byte
-_tests/
+*.install
+.merlin
+_opam/

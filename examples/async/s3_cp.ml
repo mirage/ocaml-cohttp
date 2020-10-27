@@ -43,8 +43,9 @@
    example of abstraction, interface design or error handling.
 *)
 
-open Core.Std
-open Async.Std
+open Base
+open Core
+open Async
 open Cohttp
 open Cohttp_async
 
@@ -77,9 +78,9 @@ module Compat = struct
             if is_hex(String.get s (i+1)) && is_hex(String.get s (i+2)) then
               Buffer.add_char buf c
             else
-              Buffer.add_bytes buf "%25"
+              Buffer.add_string buf "%25"
         end
-      | _ -> Buffer.add_bytes buf (Printf.sprintf "%%%X" (Char.to_int c))
+      | _ -> Buffer.add_string buf (Printf.sprintf "%%%X" (Char.to_int c))
     done;
     Buffer.contents buf
 
@@ -107,7 +108,7 @@ module Compat = struct
        URI.encoded_of_query encodes [""] as ?a=, and [] as ?a.
     *)
     Uri.query uri
-    |> List.sort ~cmp:ksrt
+    |> List.sort ~compare:ksrt
     |> List.map
       ~f:(fun (k,v) -> (k, match v with [] -> [""] | x -> x))
     |> Uri.encoded_of_query
@@ -115,7 +116,7 @@ module Compat = struct
   let format_time t =
     (* Core.Std.Time doesn't have a format function that takes a timezone *)
     let d, s = Time.to_date_ofday ~zone:Time.Zone.utc t in
-    let open Core.Span.Parts in
+    let open Time.Span.Parts in
     let {hr; min; sec; _} = Time.Ofday.to_parts s in
     Printf.sprintf "%sT%.2d%.2d%.2dZ"
       (Date.to_string_iso8601_basic d) hr min sec
@@ -179,7 +180,7 @@ module Auth = struct
 
   let digest s =
     (* string -> sha256 as a hex string *)
-    Nocrypto.Hash.(digest `SHA256 (Cstruct.of_string s))
+    Mirage_crypto.Hash.(digest `SHA256 (Cstruct.of_string s))
     |> Compat.cstruct_to_hex_string
 
   let make_amz_headers ?body time =
@@ -206,11 +207,12 @@ module Auth = struct
     let open Cohttp.Request in
     let http_method = Code.string_of_method request.meth in
     (* Nb the path will be url encoded as per spec *)
-    let canoncical_uri = Compat.encode_string(Uri.path request.uri) in
+    let uri = Cohttp.Request.uri request in
+    let canoncical_uri = Compat.encode_string (Uri.path uri) in
     (* Sort query string in alphabetical order by key *)
-    let canonical_query = Compat.encode_query_string request.uri in
+    let canonical_query = Compat.encode_query_string uri in
     let sorted_headers = Header.to_list request.headers
-                         |> List.sort ~cmp:ksrt in
+                         |> List.sort ~compare:ksrt in
     let canonical_headers = sorted_headers
                             |> List.fold ~init:"" ~f:(fun acc (k,v) ->
                                 acc ^
@@ -242,7 +244,7 @@ module Auth = struct
     Printf.sprintf "AWS4-HMAC-SHA256\n%s\n%s\n%s" time_str scope_str hashed_req
 
   let make_signing_key ?date ~region ~service ~secret_access_key =
-    let mac k v = Nocrypto.Hash.(mac `SHA256
+    let mac k v = Mirage_crypto.Hash.(mac `SHA256
                                    ~key:k
                                    (Cstruct.of_string v)) in
     let date' = match date with
@@ -267,7 +269,7 @@ module Auth = struct
         (string_of_region region)
         (string_of_service service)
     in
-    let signature = Nocrypto.Hash.(mac `SHA256
+    let signature = Mirage_crypto.Hash.(mac `SHA256
                                      ~key:signing_key
                                      (Cstruct.of_string string_to_sign)) in
     let auth_header = Printf.sprintf
@@ -341,7 +343,7 @@ let determine_paths src dst =
   | (false, false) -> failwith "Use cp(1) :)"
   | (true, true) -> failwith "Does not support copying from s3 to s3"
 
-let run region_str aws_access_key aws_secret_key src dst () =
+let main region_str aws_access_key aws_secret_key src dst () =
   (* nb client does not support redirects or preflight 100 *)
   let open S3 in
   let region = region_of_string region_str in
@@ -357,8 +359,8 @@ let run region_str aws_access_key aws_secret_key src dst () =
         Out_channel.with_file
           ~f:(fun oc -> Out_channel.output_string oc s)
           dst;
-        Printf.printf "Wrote s3://%s to %s\n" (src.bucket ^ src.objekt) dst
-      | _ -> Printf.printf "Error: %s\n" (Sexp.to_string (Response.sexp_of_t resp));
+        Core.Printf.printf "Wrote s3://%s to %s\n" (src.bucket ^ src.objekt) dst
+      | _ -> Core.Printf.printf "Error: %s\n" (Sexp.to_string (Response.sexp_of_t resp));
         return ()
     end
   | LocaltoS3 (src, dst) ->
@@ -367,20 +369,22 @@ let run region_str aws_access_key aws_secret_key src dst () =
       make_request ~body conf ~meth:`PUT ~bucket:dst.bucket ~objekt:dst.objekt
       >>= fun (resp, body) ->
       match Cohttp.Response.status resp with
-      | #Code.success_status -> Printf.printf "Wrote %s to s3://%s\n" src (dst.bucket ^ dst.objekt); return ()
+      | #Code.success_status ->
+        Core.Printf.printf "Wrote %s to s3://%s\n" src (dst.bucket ^ dst.objekt); return ()
       | _ -> Body.to_string body >>| fun s ->
-        Printf.printf "Error: %s\n%s\n" (Sexp.to_string (Response.sexp_of_t resp)) s
+        Core.Printf.printf "Error: %s\n%s\n" (Sexp.to_string (Response.sexp_of_t resp)) s
     end
 
 let () =
-  Command.async
+  let open Async_command in
+  async_spec
     ~summary:"Simple command line client that copies files to/from S3"
-    Command.Spec.(empty
-                  +> flag "-r" (optional_with_default "us-east-1" string)
-                    ~doc:"string AWS Region"
-                  +> anon ("aws_access_key" %: string)
-                  +> anon ("aws_secret_key" %: string)
-                  +> anon ("src" %: string)
-                  +> anon ("dst" %: string)
-                 ) run
-  |> Command.run
+    Spec.(empty
+          +> flag "-r" (optional_with_default "us-east-1" string)
+            ~doc:"string AWS Region"
+          +> anon ("aws_access_key" %: string)
+          +> anon ("aws_secret_key" %: string)
+          +> anon ("src" %: string)
+          +> anon ("dst" %: string)
+         ) main
+  |> run
