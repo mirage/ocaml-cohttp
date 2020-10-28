@@ -64,4 +64,6 @@ let map f = function
   | `String s -> `String (f s)
   | `Strings sl -> `Strings (List.map f sl)
 
+let to_form t = Uri.query_of_encoded (to_string t)
+let of_form ?scheme f = Uri.encoded_of_query ?scheme f |> of_string
 (* TODO: maybe add a functor here that uses IO.S *)

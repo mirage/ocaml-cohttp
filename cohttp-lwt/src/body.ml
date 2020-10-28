@@ -104,3 +104,6 @@ let map f t =
   match t with
   | #Body.t as t -> (Body.map f t :> t)
   | `Stream s -> `Stream (Lwt_stream.map f s)
+
+  let to_form (body:t) = to_string body >|= Uri.query_of_encoded
+  let of_form ?scheme f = Uri.encoded_of_query ?scheme f |> of_string

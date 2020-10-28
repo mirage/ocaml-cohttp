@@ -133,10 +133,12 @@ module type Body = sig
   type t
   val to_string : t -> string
   val to_string_list : t -> string list
+  val to_form : t -> (string * string list) list
   val empty : t
   val is_empty : t -> bool
   val of_string : string -> t
   val of_string_list : string list -> t
+  val of_form : ?scheme:string -> (string * string list) list -> t
   val map : (string -> string) -> t -> t
   val transfer_encoding : t -> Transfer.encoding
 end
