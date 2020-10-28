@@ -12,9 +12,11 @@
 - refactoring of tests (@mseri #709, @dinosaure #692)
 - update documentation (@dinosaure #716, @mseri #720)
 - cohttp: fix transfer-encoding ordering in headers (@mseri #721)
-- Lower-level support for long-running cohttp-async connections (@brendanlong #704)
+- lower-level support for long-running cohttp-async connections (@brendanlong #704)
 - fix deadlock in logging (@dinosaure #722)
 - add of_form and to_form functions to body (@seliopou #440, @mseri #723)
+- cohttp-lwt: partly inline read_response, fix body stream leak (@madroach @dinosaure #696)
+- improve media type parsing (@seliopou #542, @dinosaure #725)
 
 ## v2.5.4 (2020-07-21)
 
