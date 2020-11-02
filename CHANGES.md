@@ -1,4 +1,4 @@
-## current
+## v3.0.0 (2020-10-02)
 
 - cohttp: update HTTP codes (@emillon #711)
 - cohttp: add Uti.t to uri scheme (@brendanlong #707)
@@ -17,6 +17,7 @@
 - add of_form and to_form functions to body (@seliopou #440, @mseri #723)
 - cohttp-lwt: partly inline read_response, fix body stream leak (@madroach @dinosaure #696)
 - improve media type parsing (@seliopou #542, @dinosaure #725)
+- add comparison functions for Request.t and Response.t via ppx_compare (@msaffer-js @dinosaure #686)
 
 ## v2.5.4 (2020-07-21)
 
