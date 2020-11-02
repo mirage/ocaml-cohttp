@@ -88,7 +88,7 @@ module type Request = sig
     resource: string;         (** Request path and query *)
     version: Code.version; (** HTTP version, usually 1.1 *)
     encoding: Transfer.encoding; (** transfer encoding of this HTTP request *)
-  } [@@deriving fields, sexp]
+  } [@@deriving compare, fields, sexp]
 
   val make : ?meth:Code.meth -> ?version:Code.version ->
     ?encoding:Transfer.encoding -> ?headers:Header.t ->
@@ -112,7 +112,7 @@ module type Response = sig
     version: Code.version; (** (** HTTP version, usually 1.1 *) *)
     status: Code.status_code; (** HTTP status code of the response *)
     flush: bool;
-  } [@@deriving fields, sexp]
+  } [@@deriving compare, fields, sexp]
 
   (* The response creates by [make ~encoding ~headers ()] has an
      encoding value determined from the content of [headers] or if no
