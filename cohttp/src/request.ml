@@ -14,6 +14,7 @@
  *
   }}}*)
 
+open Ppx_compare_lib.Builtin
 open Sexplib0.Sexp_conv
 
 type t = {
@@ -23,7 +24,7 @@ type t = {
   resource: string;
   version: Code.version;
   encoding: Transfer.encoding;
-} [@@deriving fields, sexp]
+} [@@deriving compare, fields, sexp]
 
 let fixed_zero = Transfer.Fixed Int64.zero
 
