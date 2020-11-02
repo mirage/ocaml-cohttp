@@ -42,7 +42,10 @@ let create_stream fn arg =
 let is_empty (body:t) =
   match body with
   | #Body.t as body -> return (Body.is_empty body)
-  | `Stream s -> Lwt_stream.is_empty s
+  | `Stream s ->
+      Lwt_stream.get_while (fun x -> x = "") s
+      >>= fun _ ->
+        Lwt_stream.is_empty s
 
 let to_string (body:t) =
   match body with
@@ -101,3 +104,6 @@ let map f t =
   match t with
   | #Body.t as t -> (Body.map f t :> t)
   | `Stream s -> `Stream (Lwt_stream.map f s)
+
+  let to_form (body:t) = to_string body >|= Uri.query_of_encoded
+  let of_form ?scheme f = Uri.encoded_of_query ?scheme f |> of_string

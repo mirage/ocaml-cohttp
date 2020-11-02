@@ -12,10 +12,6 @@ module Response = struct
   include (Make(Io) : module type of Make(Io) with type t := t)
 end
 
-type ('address, 'listening_on) t = {
-  server: ('address, 'listening_on) Tcp.Server.t [@sexp.opaque];
-} [@@deriving sexp_of]
-
 type response = Response.t * Body.t [@@deriving sexp_of]
 
 type response_action =
@@ -29,11 +25,6 @@ type 'r respond_t =
   -> ?body    : Body.t
   -> Cohttp.Code.status_code
   -> 'r Deferred.t
-
-let close t = Tcp.Server.close t.server
-let close_finished t = Tcp.Server.close_finished t.server
-let is_closed t = Tcp.Server.is_closed t.server
-let listening_on t = Tcp.Server.listening_on t.server
 
 let read_body req rd =
   match Request.has_body req with
@@ -152,36 +143,70 @@ let respond_with_file ?flush ?headers ?(error_body=error_body_default) filename 
   |Ok res -> return res
   |Error _exn -> respond_string ~status:`Not_found error_body
 
-type mode = Conduit_async.server
+let reader_and_writer_of_flow flow =
+  match Conduit_async.cast flow Conduit_async.TCP.protocol,
+        Conduit_async.cast flow Conduit_async_ssl.TCP.protocol with
+  | Some flow, None ->
+    Async.return (Conduit_async.TCP.Protocol.reader flow,
+                  Conduit_async.TCP.Protocol.writer flow)
+  | None, Some flow ->
+    let { Conduit_async_ssl.reader; writer; _ } = flow in
+    Async.return (reader, writer)
+  | _ -> Conduit_async.reader_and_writer_of_flow flow
 
-let create_raw ?max_connections ?backlog ?buffer_age_limit ?(mode=`TCP)
-    ~on_handler_error where_to_listen handle_request =
-  Conduit_async.serve ?max_connections ?backlog
-    ?buffer_age_limit ~on_handler_error mode
-    where_to_listen (handle_client handle_request)
-  >>| fun server ->
-  { server }
+let create_raw
+    : type cfg t flow.
+      ?timeout:int ->
+      ?backlog:int ->
+      on_handler_error:[ `Call of Conduit_async.flow -> exn  -> unit | `Ignore | `Raise ] ->
+      protocol:(_, flow) Conduit_async.protocol ->
+      service:(cfg, t, flow) Conduit_async.Service.service ->
+      cfg
+      -> (body:Body.t ->
+          Conduit_async.flow -> Request.t -> response_action Async_kernel.Deferred.t)
+      -> unit Async.Condition.t * (unit -> unit Async.Deferred.t)
+     = fun ?timeout ?backlog
+       ~on_handler_error ~protocol ~service
+       cfg handle_request ->
+  let handler flow =
+    let flow = Conduit_async.pack protocol flow in
+    let on_handler_error = match on_handler_error with
+      | `Ignore -> `Log
+      | `Call f -> `Call (f flow)
+      | `Raise  -> `Raise in
+    reader_and_writer_of_flow flow >>= fun (reader, writer) ->
+    Monitor.try_with
+      ~rest:on_handler_error
+      (fun () -> handle_client handle_request flow reader writer) >>= function
+    | Ok () | Error _ -> Async.return () in
+  let cfg : cfg = match Conduit_async.Service.equal service Conduit_async.TCP.service with
+    | Some (Refl, _, _) ->
+      let Conduit_async.TCP.Listen (_backlog, where) = cfg in
+      (* XXX(dinosaure): to be compatible with [cohttp-lwt-unix],
+       * [?backlog] takes the lead over the user's configuration
+       * on [cohttp-lwt-unix]. We do the same here - even if we
+       * should introspect [cfg] and let the value given by the
+       * user. *)
+      Conduit_async.TCP.Listen (backlog, where)
+    | _ -> cfg in
+  Conduit_async.serve ?timeout ~service ~handler cfg
 
-
-let create_expert ?max_connections ?backlog
-      ?buffer_age_limit ?(mode=`TCP) ~on_handler_error where_to_listen handle_request =
-  create_raw ?max_connections ?backlog
-    ?buffer_age_limit ~on_handler_error ~mode where_to_listen
+let create_expert ?timeout ?backlog
+      ~on_handler_error ~protocol ~service cfg handle_request =
+  create_raw ?timeout ?backlog
+    ~on_handler_error ~protocol ~service cfg
     handle_request
 
 let create
-      ?max_connections
-      ?backlog
-      ?buffer_age_limit
-      ?(mode = `TCP)
+      ?timeout ?backlog
       ~on_handler_error
-      where_to_listen
+      ~protocol ~service cfg
       handle_request =
   let handle_request ~body address request =
     handle_request ~body address request >>| fun r -> `Response r
   in
-  create_raw ?max_connections ?backlog
-    ?buffer_age_limit ~on_handler_error ~mode where_to_listen
+  create_raw ?timeout ?backlog
+    ~on_handler_error ~protocol ~service cfg
     handle_request
 
 

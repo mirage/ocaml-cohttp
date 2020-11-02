@@ -1,3 +1,46 @@
+## current
+
+- cohttp: update HTTP codes (@emillon #711)
+- cohttp: add Uti.t to uri scheme (@brendanlong #707)
+- cohttp: fix chunked encoding of empty body (@mefyl #715)
+- cohttp-async: fix body not being uploaded with unchunked Async.Pipe (@mefyl #706)
+- cohttp-{async, lwt}: fix suprising behaviours of Body.is_empty (@anuragsoni #714 #712 #713)
+- port to conduit 3.0.0: minor breaking changes on the server API, an explicit distinction
+  between cohttp-lwt-unix (using tls), cohttp-lwt-notls and cohttp-lwt-ssl (using lwt_ssl),
+  and includes ssl in cohttp-async (@dinosaure #692)
+- cohttp-lwt-jsoo: rename Cohttp_lwt_xhr to Cohttp_lwt_jsoo for consistency (@mseri #717)
+- refactoring of tests (@mseri #709, @dinosaure #692)
+- update documentation (@dinosaure #716, @mseri #720)
+- cohttp: fix transfer-encoding ordering in headers (@mseri #721)
+- lower-level support for long-running cohttp-async connections (@brendanlong #704)
+- fix deadlock in logging (@dinosaure #722)
+- add of_form and to_form functions to body (@seliopou #440, @mseri #723)
+- cohttp-lwt: partly inline read_response, fix body stream leak (@madroach @dinosaure #696)
+- improve media type parsing (@seliopou #542, @dinosaure #725)
+
+## v2.5.4 (2020-07-21)
+
+- cohttp: a change in #694 modified the semantics of Header.replace.
+  The semantics change is reverted, and a new Header.update function
+  is introduced, following the semantics of Map.update. (#702 @mseri)
+- cohttp: reimplement update to support compilers that are older than
+  OCaml 4.06 (#703 @mseri)
+
+## v2.5.3 (2020-06-27)
+
+- cohttp-async: adapt to async >= v0.14 (#699 @copy)
+
+## v2.5.2 (2020-06-27)
+
+- cohttp, cohttp-async: correctly set host header for unix domain sockets,
+  implement Unix domain socket support for cohttp-async (#698 @Leonidas-from-XIV)
+- cohttp: better body encoding management when creating request and
+  response, and correction of Header.replace function (#694 @lyrm)
+
+## v2.5.1 (2020-02-18)
+
+- cohttp-lwt: pass ctx through HEAD client requests (#689 @hannesm)
+
 ## v2.5.0 (2019-12-17)
 
 - cohttp-async: support async v0.13.0 (#680 @copy)

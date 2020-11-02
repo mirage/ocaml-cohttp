@@ -26,10 +26,12 @@ let empty = `Empty
 
 let is_empty = function
   | `Empty
-  | `String ""
-  | `Strings [] -> true
-  | `String _
-  | `Strings _ -> false
+  | `String "" -> true
+  | `String _ -> false
+  | `Strings xs ->
+      match List.filter (fun s -> s <> "") xs with
+      | [] -> true
+      | _ -> false
 
 let to_string = function
   | `Empty -> ""
@@ -62,4 +64,6 @@ let map f = function
   | `String s -> `String (f s)
   | `Strings sl -> `Strings (List.map f sl)
 
+let to_form t = Uri.query_of_encoded (to_string t)
+let of_form ?scheme f = Uri.encoded_of_query ?scheme f |> of_string
 (* TODO: maybe add a functor here that uses IO.S *)

@@ -26,14 +26,23 @@ let drain = function
 let is_empty (body:t) =
   match body with
   | #B.t as body -> return (B.is_empty body)
-  | `Pipe s ->
-    Pipe.values_available s
-    >>| function
-    |`Eof -> false
-    |`Ok ->
-      match Pipe.peek s with
-      | Some "" -> true
-      | Some _ | None -> false
+  | `Pipe pipe ->
+      Deferred.repeat_until_finished () @@ fun () ->
+        Pipe.values_available pipe
+        >>= function
+          | `Eof -> return (`Finished true)
+          | `Ok -> begin
+            match Pipe.peek pipe with
+            | None -> return (`Finished true)
+            | Some "" ->
+                begin
+                  Pipe.read pipe
+                  >>| function
+                    | `Eof -> `Finished true
+                    | `Ok _ -> `Repeat ()
+                end
+            | Some _ -> return (`Finished false)
+          end
 
 let to_pipe = function
   | `Empty -> Pipe.of_list []
@@ -61,6 +70,9 @@ let map t ~f =
   | `Pipe p -> `Pipe (Pipe.map p ~f)
 
 let as_pipe t ~f = `Pipe (t |> to_pipe |> f)
+
+let to_form t = to_string t >>| Uri.query_of_encoded
+let of_form ?scheme f = Uri.encoded_of_query ?scheme f |> of_string
 
 let write_body write_body (body : t) writer =
   match body with

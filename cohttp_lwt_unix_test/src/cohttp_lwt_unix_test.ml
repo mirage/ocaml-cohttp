@@ -28,15 +28,24 @@ let response_sequence = Cohttp_test.response_sequence Lwt.fail_with
 let () = Debug.activate_debug ()
 let () = Logs.set_level (Some Info)
 
+let get_port =
+  let port = ref 4000 in
+  (fun () -> let v = !port in incr port ; v)
+
 let temp_server ?port spec callback =
   let port = match port with
-    | None -> Cohttp_test.next_port ()
+    | None -> get_port ()
     | Some p -> p in
   let server = Server.make_response_action ~callback:(fun _ req body -> spec req body) () in
-  let uri = Uri.of_string ("http://0.0.0.0:" ^ (string_of_int port)) in
+  let uri = Uri.of_string ("http://localhost:" ^ (string_of_int port)) in
   let server_failed, server_failed_wake = Lwt.task () in
   let server = Lwt.catch
-                 (fun () -> Server.create ~mode:(`TCP (`Port port)) server)
+                 (fun () ->
+          let open Conduit_lwt.TCP in
+          let tcp_config =
+            { sockaddr= Unix.ADDR_INET (Unix.inet_addr_any, port)
+            ; capacity= 40 } in
+          Cohttp_lwt_unix.Server.create tcp_config protocol service server ())
                  (function
                    | Lwt.Canceled -> Lwt.return_unit
                    | x -> Lwt.wakeup_exn server_failed_wake x; Lwt.fail x)

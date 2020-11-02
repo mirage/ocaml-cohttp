@@ -122,9 +122,7 @@ module Make_api(X : sig
   module Request = X.Request
   module Response = X.Response
 
-  let default_ctx = ()
   type ctx = unit
-  let sexp_of_ctx _ = Sexplib0.Sexp.List []
 
   let call ?ctx:_ ?headers ?body ?chunked:_ meth uri =
     X.call ?headers ?body meth uri

@@ -34,7 +34,7 @@ let respond_file ?headers ~fname () =
               | "" -> None
               | buf -> Some buf)
             (fun exn ->
-               Log.debug
+               Log.warn
                  (fun m -> m "Error resolving file %s (%s)"
                    fname
                    (Printexc.to_string exn));
@@ -63,11 +63,45 @@ let respond_file ?headers ~fname () =
 let log_on_exn =
   function
   | Unix.Unix_error (error, func, arg) ->
-     Logs.warn (fun m -> m "Client connection error %s: %s(%S)"
+     Log.warn (fun m -> m "Client connection error %s: %s(%S)"
        (Unix.error_message error) func arg)
-  | exn -> Logs.err (fun m -> m "Unhandled exception: %a" Fmt.exn exn)
+  | exn -> Log.err (fun m -> m "Unhandled exception: %a" Fmt.exn exn)
 
-let create ?timeout ?backlog ?stop ?(on_exn=log_on_exn) ?(ctx=Net.default_ctx)
-    ?(mode=`TCP (`Port 8080)) spec =
-  Conduit_lwt_unix.serve ?backlog ?timeout ?stop ~on_exn ~ctx:ctx.Net.ctx
-    ~mode (callback spec)
+let pp_sockaddr ppf = function
+  | Unix.ADDR_UNIX v -> Fmt.pf ppf "<unix:%s>" v
+  | Unix.ADDR_INET (inet_addr, port) -> Fmt.pf ppf "<inet:%s:%d>" (Unix.string_of_inet_addr inet_addr) port
+
+let safe error_handler callback spec flow () =
+  let () = match flow with
+    | Conduit_lwt.TCP.T (Value file_descr) ->
+      let sockaddr = Conduit_lwt.TCP.Protocol.peer file_descr in
+      Log.debug (fun m -> m "Receive a connection from: %a.%!" pp_sockaddr sockaddr) ;
+    | _ -> () in
+  Lwt.catch
+    (fun () -> let ic, oc = Conduit_lwt.io_of_flow flow in callback spec flow ic oc)
+    (fun exn -> error_handler exn)
+
+let create
+  : type cfg t flow.
+     ?timeout:int
+  -> ?backlog:int
+  -> ?stop:unit Lwt.t
+  -> ?on_exn:(exn -> unit)
+  -> cfg
+  -> (_, flow) Conduit_lwt.protocol
+  -> (cfg, t, flow) Conduit_lwt.Service.service
+  -> _ -> (unit -> unit Lwt.t)
+  = fun ?timeout ?(backlog= 128) ?(stop= fst (Lwt.wait ())) ?(on_exn=log_on_exn)
+    cfg protocol service spec ->
+    let error_handler exn = on_exn exn ; Lwt.return_unit in
+    let cfg : cfg = match Conduit_lwt.Service.equal service Conduit_lwt.TCP.service with
+      | Some (Conduit.Refl, _, _) ->
+        { cfg with Conduit_lwt.TCP.capacity= backlog }
+      | None -> cfg in
+    let handler flow =
+      let flow = Conduit_lwt.pack protocol flow in
+      Lwt.finalize
+        (safe error_handler callback spec flow)
+        (fun () -> Conduit_lwt.close flow >>= fun _ -> Lwt.return_unit) in
+    let cond, run = Conduit_lwt.serve ?timeout ~handler ~service cfg in
+    (); fun () -> Lwt.pick [ (stop >|= Lwt_condition.signal cond); run () ]

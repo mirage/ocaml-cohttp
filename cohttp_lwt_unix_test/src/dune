@@ -1,4 +1,4 @@
 (library
- (name      cohttp_lwt_unix_test)
- (wrapped   false)
- (libraries cohttp-lwt-unix cohttp_test oUnit))
+ (name cohttp_lwt_unix_test)
+ (wrapped false)
+ (libraries conduit-lwt cohttp-lwt-unix cohttp_test oUnit))

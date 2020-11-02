@@ -84,6 +84,7 @@ module type Request = sig
   type t = {
     headers: Header.t;    (** HTTP request headers *)
     meth: Code.meth;      (** HTTP request method *)
+    scheme: string option; (** URI scheme (http or https) *)
     resource: string;         (** Request path and query *)
     version: Code.version; (** HTTP version, usually 1.1 *)
     encoding: Transfer.encoding; (** transfer encoding of this HTTP request *)
@@ -113,6 +114,12 @@ module type Response = sig
     flush: bool;
   } [@@deriving compare, fields, sexp]
 
+  (* The response creates by [make ~encoding ~headers ()] has an
+     encoding value determined from the content of [headers] or if no
+     proper header is present, using the value of [encoding]. Checked
+     headers are "content-lenght", "content-range" and
+     "transfer-encoding". The default value of [encoding] is
+     chunked. *)
   val make :
     ?version:Code.version ->
     ?status:Code.status_code ->
@@ -126,10 +133,12 @@ module type Body = sig
   type t
   val to_string : t -> string
   val to_string_list : t -> string list
+  val to_form : t -> (string * string list) list
   val empty : t
   val is_empty : t -> bool
   val of_string : string -> t
   val of_string_list : string list -> t
+  val of_form : ?scheme:string -> (string * string list) list -> t
   val map : (string -> string) -> t -> t
   val transfer_encoding : t -> Transfer.encoding
 end

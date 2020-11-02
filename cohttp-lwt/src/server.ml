@@ -105,6 +105,7 @@ module Make(IO:S.IO) = struct
       `Empty
 
   let handle_request callback conn req body =
+    Log.debug (fun m -> m "Handle request: %a." Request.pp_hum req) ;
     Lwt.finalize
       (fun () ->
          Lwt.catch

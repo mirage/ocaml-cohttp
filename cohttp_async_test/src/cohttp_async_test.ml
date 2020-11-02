@@ -23,18 +23,24 @@ let const rsp _req _body = rsp >>| response
 
 let response_sequence = Cohttp_test.response_sequence failwith
 
+let get_port =
+  let port = ref 10_000 in
+  (fun () -> let v = !port in Int.incr port ; v )
+
 let temp_server ?port spec callback =
   let port = match port with
-    | None -> Cohttp_test.next_port ()
+    | None -> get_port ()
     | Some p -> p in
-  let uri = Uri.of_string ("http://0.0.0.0:" ^ (Int.to_string port)) in
-  let server = Server.create_expert ~on_handler_error:`Raise
-    (Async.Tcp.Where_to_listen.of_port port)
+  let uri = Uri.of_string ("http://localhost:" ^ (Int.to_string port)) in
+  let stop, server = Server.create_expert ~on_handler_error:`Raise
+    ~protocol:Conduit_async.TCP.protocol ~service:Conduit_async.TCP.service
+    (Conduit_async.TCP.Listen (None, Async.Tcp.Where_to_listen.of_port port))
     (fun ~body _sock req -> spec req body) in
-  server >>= fun server ->
-  callback uri >>= fun res ->
-  Server.close server >>| fun () ->
-  res
+  Async.Deferred.both (server ())
+    (Async.after Core.Time.Span.(of_sec 0.5) >>= fun () ->
+     callback uri >>= fun res ->
+                              Async.Condition.broadcast stop () ; Async.return res)
+  >>= fun ((), res) -> Async.return res
 
 let test_server_s ?port ?(name="Cohttp Server Test") spec f =
   temp_server ?port spec begin fun uri ->
