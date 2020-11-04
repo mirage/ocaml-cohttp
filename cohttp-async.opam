@@ -34,6 +34,7 @@ depends: [
   "conduit-async" {>="3.0.0"}
   "conduit-async-ssl"
   "magic-mime"
+  "mirage-crypto" {with-test}
   "logs"
   "fmt" {>= "0.8.2"}
   "sexplib0"
