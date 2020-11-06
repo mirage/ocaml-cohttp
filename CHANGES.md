@@ -8,6 +8,50 @@
 - port to conduit 3.0.0: minor breaking changes on the server API, an explicit distinction
   between cohttp-lwt-unix (using tls), cohttp-lwt-notls and cohttp-lwt-ssl (using lwt_ssl),
   and includes ssl in cohttp-async (@dinosaure #692)
+
+  **breaking changes**, the API to launch a server was updated and types used by the client
+  were updated too. A clean-recompilation of your project should be enough for users of the
+  client part - however, if you deeply use Conduit, you should look the release of Conduit
+  3.0.0 (documentation & howto) to be aware about the new usage of this library.
+
+  [Release of Conduit 3.0.0](https://github.com/mirage/ocaml-conduit/releases/tag/v3.0.0)
+  [HOW-TO use Conduit 3.0.0](https://mirage.github.io/ocaml-conduit/conduit/howto.html)
+  [Documentation of Conduit 3.0.0](https://mirage.github.io/ocaml-conduit/conduit/Conduit/module-type-S/index.html)
+
+  About the server-side part of Cohttp, we broke the API according to Conduit 3.0.0. The user
+  must update the way to launch a Cohttp server. The technical update is about the `~mode`
+  argument which disappears to let 3 arguments: `cfg`, `service` and `protocol`.
+
+  They permit to the user to choose which kind of service he wants (a TLS service or
+  a simple TCP service). Such values are provided by Conduit 3.0.0. For example, if
+  you want to launch a simple HTTP (no secure) service, you can use:
+  - `Conduit_{async,lwt}.TCP.service`
+  - `Conduit_{async,lwt}.TCP.protocol`
+
+  The encryption layer can be provided by `Conduit_{async,lwt}_{tls,ssl}.TCP` module (`tls` means
+  an usage of `ocaml-tls`, `ssl` means a usage of OpenSSL). Then, the `cfg` value depends on the
+  `service` value. For example, for `Conduit_lwt.TCP.service`, `cfg = Conduit_lwt.TCP.configuration`.
+  On this way, the user is able to launch a HTTP server with:
+
+```ocaml
+let cfg =
+  { Conduit_lwt.TCP.sockaddr= Unix.ADDR_INET (Unix.inet_addr_loopback, 8080)
+  ; capacity= 40 }
+
+let run cohttp_config =
+  Cohttp_lwt_unix.Server.create cfg Conduit_lwt.TCP.protocol Conduit_lwt.TCP.service
+    cohttp_config
+```
+
+  Of course, [the documentation](https://mirage.github.io/ocaml-cohttp/cohttp-lwt-unix-nossl/Cohttp_lwt_unix_nossl/Server/index.html)
+  was updated according this new interface. More details can be found into Conduit 3.0.0
+  too about encryption services.
+
+  Finally, an other **breaking change** is about the TLS stack used by `cohttp-lwt-unix`
+  on the client side. In **anyway**, `cohttp-lwt-unix` uses `ocaml-tls` to handle TLS. To
+  explicitely use OpenSSL, users will need to depend ong `cohttp-lwt-unix-ssl` instead. If they
+  do not want to use the encryption layer, they now need to use `cohttp-lwt-unix-nossl`.
+
 - cohttp-lwt-jsoo: rename Cohttp_lwt_xhr to Cohttp_lwt_jsoo for consistency (@mseri #717)
 - refactoring of tests (@mseri #709, @dinosaure #692)
 - update documentation (@dinosaure #716, @mseri #720)
