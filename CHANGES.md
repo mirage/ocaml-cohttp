@@ -22,7 +22,7 @@
   must update the way to launch a Cohttp server. The technical update is about the `~mode`
   argument which disappears to let 3 arguments: `cfg`, `service` and `protocol`.
 
-  They permit to the user to choose which kind of service he wants (a TLS service or
+  This allow users to choose which kind of service they want (a TLS service or
   a simple TCP service). Such values are provided by Conduit 3.0.0. For example, if
   you want to launch a simple HTTP (no secure) service, you can use:
   - `Conduit_{async,lwt}.TCP.service`
