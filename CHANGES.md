@@ -14,9 +14,9 @@
   client part - however, if you deeply use Conduit, you should look the release of Conduit
   3.0.0 (documentation & howto) to be aware about the new usage of this library.
 
-  [Release of Conduit 3.0.0](https://github.com/mirage/ocaml-conduit/releases/tag/v3.0.0)
-  [HOW-TO use Conduit 3.0.0](https://mirage.github.io/ocaml-conduit/conduit/howto.html)
-  [Documentation of Conduit 3.0.0](https://mirage.github.io/ocaml-conduit/conduit/Conduit/module-type-S/index.html)
+  - [Release of Conduit 3.0.0](https://github.com/mirage/ocaml-conduit/releases/tag/v3.0.0)
+  -  [HOW-TO use Conduit 3.0.0](https://mirage.github.io/ocaml-conduit/conduit/howto.html)
+  - [Documentation of Conduit 3.0.0](https://mirage.github.io/ocaml-conduit/conduit/Conduit/module-type-S/index.html)
 
   About the server-side part of Cohttp, we broke the API according to Conduit 3.0.0. The user
   must update the way to launch a Cohttp server. The technical update is about the `~mode`
@@ -32,16 +32,15 @@
   an usage of `ocaml-tls`, `ssl` means a usage of OpenSSL). Then, the `cfg` value depends on the
   `service` value. For example, for `Conduit_lwt.TCP.service`, `cfg = Conduit_lwt.TCP.configuration`.
   On this way, the user is able to launch a HTTP server with:
-
-```ocaml
-let cfg =
-  { Conduit_lwt.TCP.sockaddr= Unix.ADDR_INET (Unix.inet_addr_loopback, 8080)
-  ; capacity= 40 }
-
-let run cohttp_config =
-  Cohttp_lwt_unix.Server.create cfg Conduit_lwt.TCP.protocol Conduit_lwt.TCP.service
-    cohttp_config
-```
+  ```ocaml
+  let cfg =
+    { Conduit_lwt.TCP.sockaddr= Unix.ADDR_INET (Unix.inet_addr_loopback, 8080)
+    ; capacity= 40 }
+ 
+  let run cohttp_config =
+    Cohttp_lwt_unix.Server.create cfg Conduit_lwt.TCP.protocol Conduit_lwt.TCP.service
+      cohttp_config
+  ```
 
   Of course, [the documentation](https://mirage.github.io/ocaml-cohttp/cohttp-lwt-unix-nossl/Cohttp_lwt_unix_nossl/Server/index.html)
   was updated according this new interface. More details can be found into Conduit 3.0.0
