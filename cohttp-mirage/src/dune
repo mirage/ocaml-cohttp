@@ -2,7 +2,6 @@
  (name cohttp_mirage)
  (public_name cohttp-mirage)
  (synopsis "Mirage backend for cohttp")
- (wrapped false)
  (preprocess
   (pps ppx_sexp_conv))
  (libraries conduit-mirage.flow cohttp-lwt mirage-channel conduit-mirage
