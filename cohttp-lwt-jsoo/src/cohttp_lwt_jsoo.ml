@@ -189,43 +189,48 @@ module Make_client_async(P : Params) = Make_api(struct
         Js.wrap_callback
           (fun _ ->
              match xml##.readyState with
-             | XmlHttpRequest.DONE -> begin
-                 (* construct body *)
-                 let body =
-                   let b =
-                     let respText () = 
-                       Js.Opt.case xml##.responseText (fun () -> `String (Js.string ""))
-                         (fun s -> `String s) in
-                     if xhr_response_supported then
-                       Js.Opt.case
-                          (File.CoerceTo.arrayBuffer xml##.response)
-                          (fun () -> Firebug.console##log
-                             (Js.string "XHR Response is not an arrayBuffer; using responseText");
-                             (respText ()))
-                          (fun ab -> `ArrayBuffer ab)
-                      else
-                        respText ()
+             | XmlHttpRequest.DONE ->
+                begin
+                  try
+                    (* construct body *)
+                    let body =
+                      let b =
+                        let respText () =
+                          Js.Opt.case xml##.responseText (fun () -> `String (Js.string ""))
+                            (fun s -> `String s)
+                        in
+                        if xhr_response_supported then
+                          Js.Opt.case
+                            (File.CoerceTo.arrayBuffer xml##.response)
+                            (fun () -> Firebug.console##log
+                                         (Js.string "XHR Response is not an arrayBuffer; using responseText");
+                                       (respText ()))
+                            (fun ab -> `ArrayBuffer ab)
+                        else
+                          respText ()
+                      in
+                      Bb.get b
                     in
-                    Bb.get b
-                 in
-                 (* (re-)construct the response *)
-                 let response =
-                   let resp_headers = Js.to_string (xml##getAllResponseHeaders) in
-                   let channel = String_io.open_in resp_headers in
-                   Lwt.(Header_io.parse channel >|= fun resp_headers ->
-                        Response.make
-                          ~version:`HTTP_1_1
-                          ~status:(C.Code.status_of_code xml##.status)
-                          ~flush:false (* ??? *)
-                          ~encoding:(CLB.transfer_encoding body)
-                          ~headers:resp_headers
-                          ())
-                 in
-                 (* Note; a type checker subversion seems to be possible here (4.01.0).
-                  * Remove the type constraint on Lwt.task above and return any old
-                  * guff here.  It'll compile and crash in the browser! *)
-                 Lwt.wakeup wake (response, body)
-               end
+                    (* (re-)construct the response *)
+                    let response =
+                      let resp_headers = Js.to_string (xml##getAllResponseHeaders) in
+                      let channel = String_io.open_in resp_headers in
+                      Lwt.(Header_io.parse channel >|= fun resp_headers ->
+                           Response.make
+                             ~version:`HTTP_1_1
+                             ~status:(C.Code.status_of_code xml##.status)
+                             ~flush:false (* ??? *)
+                             ~encoding:(CLB.transfer_encoding body)
+                             ~headers:resp_headers
+                             ())
+                    in
+                    (* Note; a type checker subversion seems to be possible here (4.01.0).
+                     * Remove the type constraint on Lwt.task above and return any old
+                     * guff here.  It'll compile and crash in the browser! *)
+                    Lwt.wakeup wake (response, body)
+                  with
+                  | e -> Lwt.wakeup_exn wake e
+                end
              | _ -> ()
           );
 
@@ -335,5 +340,3 @@ module Client_sync = Make_client_sync(struct
     let convert_body_string = Js.to_bytestring
     let with_credentials = false
   end)
-
-
