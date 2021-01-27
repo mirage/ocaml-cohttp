@@ -1,4 +1,12 @@
-## v3.0.0 (2020-10-02)
+## current
+
+- fix opam files and dependencies
+- add GitHub Actions workflow (@smorimoto #739)
+- lwt_jsoo: Forward exceptions to caller when response is null (@mefyl #738)
+- Remove wrapped false (@rgrinberg #734)
+- Use implicit executable dependency for generate.exe (@TheLortex #735)
+
+## v3.0.0 (2020-10-02) -- unreleased
 
 - cohttp: update HTTP codes (@emillon #711)
 - cohttp: add Uti.t to uri scheme (@brendanlong #707)
