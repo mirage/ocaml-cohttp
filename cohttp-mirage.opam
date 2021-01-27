@@ -30,6 +30,7 @@ depends: [
   "cohttp-lwt" {=version}
   "astring"
   "magic-mime"
+  "ppx_sexp_conv" {>= "v0.13.0"}
 ]
 build: [
   ["dune" "subst"] {pinned}

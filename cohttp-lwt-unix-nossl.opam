@@ -36,6 +36,7 @@ depends: [
   "cohttp-lwt" {=version}
   "lwt" {>= "3.0.0"}
   "base-unix"
+  "ppx_sexp_conv" {>= "v0.13.0"}
   "ounit" {with-test}
 ]
 build: [
