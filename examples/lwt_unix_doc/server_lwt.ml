@@ -12,13 +12,6 @@ let server =
         meth headers body )
     >>= fun body -> Server.respond_string ~status:`OK ~body ()
   in
-  let tcp_config =
-    {
-      Conduit_lwt.TCP.sockaddr = Unix.ADDR_INET (Unix.inet_addr_loopback, 8000);
-      capacity = 40;
-    }
-  in
-  Server.create tcp_config Conduit_lwt.TCP.protocol Conduit_lwt.TCP.service
-    (Server.make ~callback ())
+  Server.create ~mode:(`TCP (`Port 8000)) (Server.make ~callback ())
 
-let _ = Lwt_main.run (server ())
+let () = ignore (Lwt_main.run server)

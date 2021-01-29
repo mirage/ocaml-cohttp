@@ -28,44 +28,24 @@ module Net = struct
         Or_error.return (host, Ipaddr_unix.of_inet_addr addr, port)
       | _ -> Or_error.error "Failed to resolve Uri" uri Uri_sexp.sexp_of_t
 
-  let connect_uri ?ssl_ctx uri =
-    match (Uri.scheme uri, ssl_ctx) with
-    | Some "httpunix", _ ->
+  let connect_uri ?interrupt ?ssl_config uri =
+    (match Uri.scheme uri with
+     | Some "httpunix" ->
       let host = Uri.host_with_default ~default:"localhost" uri in
-      let tcp_cfg = Conduit_async.TCP.Unix (Socket.Address.Unix.create host) in
-      Conduit_async.connect tcp_cfg Conduit_async.TCP.protocol
-    | Some "https", Some ctx ->
-      lookup uri
-      |> Deferred.Or_error.ok_exn
-      >>= fun (_, addr, port) ->
-      let tcp_cfg =
-        let addr = Ipaddr_unix.to_inet_addr addr in
-        Conduit_async.TCP.Inet (Socket.Address.Inet.create addr ~port) in
-      Conduit_async.connect (ctx, tcp_cfg) Conduit_async_ssl.TCP.protocol
-    | Some "https", None ->
+      return @@ `Unix_domain_socket host
+     | _ ->
       lookup uri
       |> Deferred.Or_error.ok_exn
       >>= fun (host, addr, port) ->
-      let tcp_cfg =
-        let addr = Ipaddr_unix.to_inet_addr addr in
-        Conduit_async.TCP.Inet (Socket.Address.Inet.create addr ~port) in
-      let ctx = Conduit_async_ssl.context ~hostname:host () in
-      Conduit_async.connect (ctx, tcp_cfg) Conduit_async_ssl.TCP.protocol
-    | _ ->
-      lookup uri
-      |> Deferred.Or_error.ok_exn
-      >>= fun (_, addr, port) ->
-      let tcp_cfg =
-        let addr = Ipaddr_unix.to_inet_addr addr in
-        Conduit_async.TCP.Inet (Socket.Address.Inet.create addr ~port) in
-      Conduit_async.connect tcp_cfg Conduit_async.TCP.protocol
-
-  let failwith fmt = Stdlib.Format.kasprintf failwith fmt
-
-  let connect_uri ?ssl_ctx uri =
-    connect_uri ?ssl_ctx uri >>= function
-    | Ok flow -> Conduit_async.reader_and_writer_of_flow flow
-    | Error err -> failwith "%a" Conduit_async.pp_error err
+      return @@ match (Uri.scheme uri, ssl_config) with
+        | Some "https", Some config ->
+          `OpenSSL (addr, port, config)
+        | Some "https", None ->
+          let config = Conduit_async.V2.Ssl.Config.create ~hostname:host () in
+          `OpenSSL (addr, port, config)
+        | _ -> `TCP (addr, port))
+    >>= fun mode ->
+    Conduit_async.V2.connect ?interrupt mode
 end
 
 let read_response ic =
@@ -85,13 +65,14 @@ let read_response ic =
         (res, pipe)
     end
 
-let request ?ssl_ctx ?uri ?(body=`Empty) req =
+let request ?interrupt ?ssl_config ?uri ?(body=`Empty) req =
   (* Connect to the remote side *)
   let uri =
     match uri with
     | Some t -> t
     | None -> Request.uri req in
-  Net.connect_uri ?ssl_ctx uri >>= fun (ic, oc) ->
+  Net.connect_uri ?interrupt ?ssl_config uri
+  >>= fun (ic, oc) ->
   try_with (fun () ->
       Request.write (fun writer ->
           Body_raw.write_body Request.write_body body writer) req oc
@@ -116,8 +97,8 @@ module Connection = struct
   (* we can't send concurrent requests over HTTP/1 *)
   type t = t' Sequencer.t
 
-  let connect ?ssl_ctx uri =
-    Net.connect_uri ?ssl_ctx uri
+  let connect ?interrupt ?ssl_config uri =
+    Net.connect_uri ?interrupt ?ssl_config uri
     >>| fun (ic, oc) ->
     let t =
       { ic ; oc }
@@ -154,8 +135,8 @@ module Connection = struct
     Ivar.read res
 end
 
-let callv ?ssl_ctx uri reqs =
-  Connection.connect ?ssl_ctx uri
+let callv ?interrupt ?ssl_config uri reqs =
+  Connection.connect ?interrupt ?ssl_config  uri
   >>| fun connection ->
   let responses =
     Pipe.map' ~max_queue_length:1 reqs ~f:(fun reqs ->
@@ -165,7 +146,7 @@ let callv ?ssl_ctx uri reqs =
   (Pipe.closed responses >>= fun () -> Connection.close connection) |> don't_wait_for;
   responses
 
-let call ?ssl_ctx ?headers ?(chunked=false) ?(body=`Empty) meth uri =
+let call ?interrupt ?ssl_config ?headers ?(chunked=false) ?(body=`Empty) meth uri =
   (* Create a request, then make the request. Figure out an appropriate
      transfer encoding *)
   begin
@@ -180,33 +161,33 @@ let call ?ssl_ctx ?headers ?(chunked=false) ?(body=`Empty) meth uri =
         | false -> (* Use chunked encoding if there is a body *)
           Request.make_for_client ?headers ~chunked:true meth uri, body
       end
-  end >>= fun (req, body) -> request ?ssl_ctx ~body ~uri req
+  end >>= fun (req, body) -> request ?interrupt ?ssl_config ~body ~uri req
 
-let get ?ssl_ctx ?headers uri =
-  call ?ssl_ctx ?headers ~chunked:false `GET uri
+let get ?interrupt ?ssl_config ?headers uri =
+  call ?interrupt ?ssl_config ?headers ~chunked:false `GET uri
 
-let head ?ssl_ctx ?headers uri =
-  call ?ssl_ctx ?headers ~chunked:false `HEAD uri
+let head ?interrupt ?ssl_config ?headers uri =
+  call ?interrupt ?ssl_config ?headers ~chunked:false `HEAD uri
   >>| fun (res, body) ->
   (match body with
    | `Pipe p -> Pipe.close_read p;
    | _ -> ());
   res
 
-let post ?ssl_ctx ?headers ?(chunked=false) ?body uri =
-  call ?ssl_ctx ?headers ~chunked ?body `POST uri
+let post ?interrupt ?ssl_config ?headers ?(chunked=false) ?body uri =
+  call ?interrupt ?ssl_config ?headers ~chunked ?body `POST uri
 
-let post_form ?ssl_ctx ?headers ~params uri =
+let post_form ?interrupt ?ssl_config ?headers ~params uri =
   let headers = Cohttp.Header.add_opt_unless_exists headers
       "content-type" "application/x-www-form-urlencoded" in
   let body = Body.of_string (Uri.encoded_of_query params) in
-  post ?ssl_ctx ~headers ~chunked:false ~body uri
+  post ?interrupt ?ssl_config ~headers ~chunked:false ~body uri
 
-let put ?ssl_ctx ?headers ?(chunked=false) ?body uri =
-  call ?ssl_ctx ?headers ~chunked ?body `PUT uri
+let put ?interrupt ?ssl_config ?headers ?(chunked=false) ?body uri =
+  call ?interrupt ?ssl_config ?headers ~chunked ?body `PUT uri
 
-let patch ?ssl_ctx ?headers ?(chunked=false) ?body uri =
-  call ?ssl_ctx ?headers ~chunked ?body `PATCH uri
+let patch ?interrupt ?ssl_config ?headers ?(chunked=false) ?body uri =
+  call ?interrupt ?ssl_config ?headers ~chunked ?body `PATCH uri
 
-let delete ?ssl_ctx ?headers ?(chunked=false) ?body uri =
-  call ?ssl_ctx ?headers ~chunked ?body `DELETE uri
+let delete ?interrupt ?ssl_config ?headers ?(chunked=false) ?body uri =
+  call ?interrupt ?ssl_config ?headers ~chunked ?body `DELETE uri
