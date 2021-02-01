@@ -35,8 +35,6 @@ jobs:
       - run: |
           opam pin add cohttp-async.dev . --no-action
           opam pin add cohttp-lwt-jsoo.dev . --no-action
-          opam pin add cohttp-lwt-unix-nossl.dev . --no-action
-          opam pin add cohttp-lwt-unix-ssl.dev . --no-action
           opam pin add cohttp-lwt-unix.dev . --no-action
           opam pin add cohttp-lwt.dev . --no-action
           opam pin add cohttp-mirage.dev . --no-action
@@ -50,8 +48,6 @@ jobs:
           cohttp-lwt \
           cohttp-lwt-jsoo \
           cohttp-lwt-unix \
-          cohttp-lwt-unix-nossl \
-          cohttp-lwt-unix-ssl \
           cohttp-mirage \
           cohttp-top \
 

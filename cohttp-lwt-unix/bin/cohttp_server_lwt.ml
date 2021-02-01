@@ -21,27 +21,8 @@ open Cohttp_lwt_unix
 
 open Cohttp_server
 
-let option_bind x f = match x with
-  | Some x -> f x
-  | None -> None
-
 let src = Logs.Src.create "cohttp.lwt.server" ~doc:"Cohttp Lwt server"
 module Log = (val Logs.src_log src : Logs.LOG)
-
-let sockaddr_of_flow
-  : Conduit_lwt.flow -> Unix.sockaddr option
-  = fun flow -> match Conduit_lwt.cast flow Conduit_lwt.TCP.protocol,
-                      Conduit_lwt.cast flow Conduit_lwt_tls.TCP.protocol with
-  | Some flow, None -> Some (Conduit_lwt.TCP.Protocol.sock flow)
-  | None, Some flow ->
-    let flow = Conduit_lwt_tls.underlying flow in
-    Some (Conduit_lwt.TCP.Protocol.sock flow)
-  | _ -> None
-
-let pp_sockaddr ppf = function
-  | Unix.ADDR_UNIX v -> Fmt.pf ppf "<%s>" v
-  | Unix.ADDR_INET (inet_addr, port) ->
-    Fmt.pf ppf "<%s:%d>" (Unix.string_of_inet_addr inet_addr) port
 
 let method_filter meth (res,body) = match meth with
   | `HEAD -> Lwt.return (res,`Empty)
@@ -104,10 +85,10 @@ let handler ~info ~docroot ~index (ch,_conn) req _body =
   let path = Uri.path uri in
   (* Log the request to the console *)
   Log.debug (fun m -> m
-    "%s %s %a"
+    "%s %s %s"
     (Cohttp.(Code.string_of_method (Request.meth req)))
     path
-    Fmt.(option pp_sockaddr) (sockaddr_of_flow ch));
+    (Sexplib0.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch)));
   (* Get a canonical filename from the URL and docroot *)
   match Request.meth req with
   | (`GET | `HEAD) as meth ->
@@ -120,42 +101,22 @@ let handler ~info ~docroot ~index (ch,_conn) req _body =
     Server.respond_string ~headers ~status:`Method_not_allowed
       ~body:(html_of_method_not_allowed meth (String.concat "," allowed) path info) ()
 
-let load_file filename =
-  let ic = open_in filename in
-  let ln = in_channel_length ic in
-  let rs = Bytes.create ln in
-  really_input ic rs 0 ln ; close_in ic ;
-  Cstruct.of_bytes rs
-
-let sockaddr_of_host_and_port host port =
-  let inet_addr = Unix.inet_addr_of_string host in
-  Unix.ADDR_INET (inet_addr, port)
-
-let start_server docroot port host index tls =
+let start_server docroot port host index tls () =
   Log.info (fun m -> m "Listening for HTTP request on: %s %d" host port);
   let info = Printf.sprintf "Served by Cohttp/Lwt listening on %s:%d" host port in
   let conn_closed (ch,_conn) =
-    Log.debug (fun m -> m "connection %a closed"
-                  Fmt.(option pp_sockaddr) (sockaddr_of_flow ch)) in
+    Log.debug (fun m -> m "connection %s closed"
+      (Sexplib0.Sexp.to_string_hum (Conduit_lwt_unix.sexp_of_flow ch))) in
   let callback = handler ~info ~docroot ~index in
   let config = Server.make ~callback ~conn_closed () in
-  let tls_config =
-    match tls with
-    | Some (cert, key) ->
-      let open Rresult in
-      X509.Certificate.decode_pem_multiple (load_file cert) >>= fun certs ->
-      X509.Private_key.decode_pem (load_file key) >>| fun (`RSA key) ->
-      Tls.Config.server ~certificates:(`Single (certs, key)) ()
-    | _ -> Error (`Msg "No TLS certificate") in
-  let tls_config = Rresult.R.to_option tls_config in
-  let tcp_config =
-    { Conduit_lwt.TCP.sockaddr= sockaddr_of_host_and_port host port
-    ; capacity= 40; } in
-  match tls_config with
-  | Some tls_config ->
-    Server.create (tcp_config, tls_config) Conduit_lwt_tls.TCP.protocol Conduit_lwt_tls.TCP.service config
-  | None ->
-    Server.create tcp_config Conduit_lwt.TCP.protocol Conduit_lwt.TCP.service config
+  let mode = match tls with
+    | Some (c, k) -> `TLS (`Crt_file_path c, `Key_file_path k, `No_password, `Port port)
+    | None -> `TCP (`Port port)
+  in
+  Conduit_lwt_unix.init ~src:host ()
+  >>= fun ctx ->
+  let ctx = Cohttp_lwt_unix.Net.init ~ctx () in
+  Server.create ~ctx ~mode config
 
 let lwt_start_server docroot port host index verbose tls =
   if verbose <> None then begin

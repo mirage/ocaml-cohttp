@@ -1,6 +1,7 @@
 (* This file is in the public domain *)
 
 open Base
+open Async_kernel
 open Cohttp_async
 
 (* given filename: hello_world.ml compile with:
@@ -18,13 +19,12 @@ let handler ~body:_ _sock req =
   | _ ->
     Server.respond_string ~status:`Not_found "Route not found"
 
-let start_server port =
+let start_server port () =
   Caml.Printf.eprintf "Listening for HTTP on port %d\n" port;
   Caml.Printf.eprintf "Try 'curl http://localhost:%d/test?hello=xyz'\n%!" port;
-  let _never, server = Cohttp_async.Server.create ~on_handler_error:`Raise
-    ~protocol:Conduit_async.TCP.protocol ~service:Conduit_async.TCP.service
-    (Conduit_async.TCP.Listen (None, Async.Tcp.Where_to_listen.of_port port)) handler in
-  server
+  Cohttp_async.Server.create ~on_handler_error:`Raise
+    (Async.Tcp.Where_to_listen.of_port port) handler
+  >>= fun _ -> Deferred.never ()
 
 let () =
   let module Command = Async_command in

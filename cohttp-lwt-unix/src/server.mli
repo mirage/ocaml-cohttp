@@ -10,30 +10,18 @@ val respond_file :
   fname:string -> unit -> (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
 
 
-(** [create ?timeout ?backlog ?stop ?on_exn cfg protocol service t] is a new
+(** [create ?timeout ?backlog ?stop ?on_exn ?mode t] is a new
    HTTP server.
 
     The user can decide to start a simple HTTP server (without encryption)
-   or one with TLS encryption. It depends on what the user gives as [cfg],
-   [protocol] and [service]. Using [conduit-lwt-tls], the end-user is able
-   to make an encrypted HTTP server with:
+    or one with TLS encryption. It depends on what the user gives as [mode]
+    and how [conduit-unix] is configured.
+
+    To create a simple HTTP server listening on port 8089:
 
     {[
-      let run =
-        create cfg Conduit_lwt_tls.TCP.protocol Conduit_lwt_tls.TCP.service
+      let run = create (`TCP 8080)
     ]}
-
-    A simple HTTP server (with [conduit-lwt]) is:
-
-    {[
-      let run =
-        create cfg Conduit_lwt.TCP.protocol Conduit_lwt.TCP.service
-    ]}
-
-    [cfg] depends on the given [service] - and let the user to define which
-   port the server use, and, in the case of {!Conduit_lwt_tls.TCP.service},
-   which TLS certificate it uses. See [Conduit] for more information about
-   {i protocol} and {i service}.
 
     When provided, the [stop] thread will terminate the server if it
    ever becomes determined.
@@ -50,6 +38,5 @@ val create :
   ?backlog:int ->
   ?stop:unit Lwt.t ->
   ?on_exn:(exn -> unit) ->
-  'cfg ->
-  (_, 'flow) Conduit_lwt.protocol ->
-  ('cfg, 't, 'flow) Conduit_lwt.Service.service -> t -> (unit -> unit Lwt.t)
+  ?ctx:Net.ctx ->
+  ?mode:Conduit_lwt_unix.server -> t -> unit Lwt.t

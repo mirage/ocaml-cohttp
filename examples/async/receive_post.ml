@@ -5,20 +5,19 @@ open Cohttp_async
 
 (* compile with: $ corebuild receive_post.native -pkg cohttp.async *)
 
-let start_server port =
+let start_server port () =
   Caml.Printf.eprintf "Listening for HTTP on port %d\n" port;
   Caml.Printf.eprintf "Try 'curl -X POST -d 'foo bar' http://localhost:%d\n" port;
-  let _never, server = Cohttp_async.Server.create ~on_handler_error:`Raise
-    ~protocol:Conduit_async.TCP.protocol ~service:Conduit_async.TCP.service
-    (Conduit_async.TCP.Listen (None, Async.Tcp.Where_to_listen.of_port port))
-    (fun ~body _ req ->
+  Cohttp_async.Server.create ~on_handler_error:`Raise
+    (Async.Tcp.Where_to_listen.of_port port) (fun ~body _ req ->
       match req |> Cohttp.Request.meth with
       | `POST ->
         (Body.to_string body) >>= (fun body ->
           Caml.Printf.eprintf "Body: %s" body;
           Server.respond `OK)
-      | _ -> Server.respond `Method_not_allowed) in
-  server
+      | _ -> Server.respond `Method_not_allowed
+    )
+  >>= fun _ -> Deferred.never ()
 
 let () =
   let module Command = Async_command in

@@ -5,6 +5,7 @@
 - lwt_jsoo: Forward exceptions to caller when response is null (@mefyl #738)
 - Remove wrapped false (@rgrinberg #734)
 - Use implicit executable dependency for generate.exe (@TheLortex #735)
+- Revert the changes to adapt to conduit 3.0.0 that were briefly present in cohttp.3.0.0.  We will revisit these in a future release of cohttp, but for now have chosen to preserve better compatibility with existing cohttp users. (#741, @samoht)
 
 ## v3.0.0 (2020-10-02) -- unreleased
 
@@ -44,7 +45,7 @@
   let cfg =
     { Conduit_lwt.TCP.sockaddr= Unix.ADDR_INET (Unix.inet_addr_loopback, 8080)
     ; capacity= 40 }
- 
+
   let run cohttp_config =
     Cohttp_lwt_unix.Server.create cfg Conduit_lwt.TCP.protocol Conduit_lwt.TCP.service
       cohttp_config

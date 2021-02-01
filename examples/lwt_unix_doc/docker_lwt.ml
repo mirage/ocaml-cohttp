@@ -1,18 +1,16 @@
 open Lwt.Infix
+open Cohttp_lwt_unix
 
-let resolve_unix_socket : Conduit_lwt.Endpoint.t -> 'edn option Lwt.t = function
-  | IP _ -> Lwt.return_none
-  | Domain v -> (
-      match Domain_name.to_string v with
-      | "docker" -> Lwt.return_some (Unix.ADDR_UNIX "/var/run/docker.sock")
-      | _ -> Lwt.return_none )
+let ctx =
+  let resolver =
+    let h = Hashtbl.create 1 in
+    Hashtbl.add h "docker" (`Unix_domain_socket "/var/run/docker.sock");
+    Resolver_lwt_unix.static h
+  in
+  Cohttp_lwt_unix.Client.custom_ctx ~resolver ()
 
 let t =
-  let ctx =
-    Conduit_lwt.add ~priority:0 (* highest priority *) Conduit_lwt.TCP.protocol
-      resolve_unix_socket Conduit.empty
-  in
-  Cohttp_lwt_unix.Client.get ~ctx (Uri.of_string "http://docker/version")
+  Client.get (Uri.of_string "http://docker/version")
   >>= fun (resp, body) ->
   let open Cohttp in
   let code = resp |> Response.status |> Code.code_of_status in

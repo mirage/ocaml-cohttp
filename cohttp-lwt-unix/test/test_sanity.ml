@@ -171,7 +171,7 @@ let ts =
       assert_equal ~printer "expert 2" body
     in
     let client_close () =
-      Cohttp_lwt_unix.Net.(connect_uri ~ctx) uri >>= fun (_conn, ic, oc) ->
+      Cohttp_lwt_unix.Net.connect_uri ~ctx uri >>= fun (_conn, ic, oc) ->
       let req = Cohttp.Request.make_for_client ~chunked:false `GET (Uri.with_path uri "/test.html") in
       Request.write (fun _writer -> Lwt.return_unit) req oc
       >>= fun () ->

@@ -19,49 +19,30 @@
 
 open Lwt.Infix
 
-module IO = Cohttp_lwt_unix_nossl.IO
+module IO = Io
 
-type ctx = (Conduit.resolvers[@sexp.opaque]) [@@deriving sexp]
+type ctx = {
+  ctx: Conduit_lwt_unix.ctx;
+  resolver: Resolver_lwt.t;
+} [@@deriving sexp_of]
 
-let authenticator =
-  match Ca_certs.authenticator () with
-  | Ok a -> a
-  | Error (`Msg msg) -> failwith msg
+let init
+      ?(ctx=Conduit_lwt_unix.default_ctx)
+      ?(resolver=Resolver_lwt_unix.system) ()
+  =
+  { ctx; resolver }
 
-let default_ctx = Conduit_lwt.empty
+let default_ctx = {
+  resolver = Resolver_lwt_unix.system;
+  ctx = Conduit_lwt_unix.default_ctx;
+}
 
-let failwith fmt = Format.kasprintf (fun err -> Lwt.fail (Failure err)) fmt
-
-let uri_to_endpoint uri =
-  (match Uri.host uri with
-   | None -> failwith "Invalid uri: no host component in %a" Uri.pp uri
-   | Some h -> Lwt.return h) >>= fun v ->
-  let ( >>= ) x f = match x with Ok x -> f x | Error err -> Error err in
-  match Domain_name.(of_string v >>= host), Ipaddr.of_string v with
-  | Ok domain_name, _ -> Lwt.return (Conduit.Endpoint.domain domain_name)
-  | Error _, Ok v -> Lwt.return (Conduit.Endpoint.ip v)
-  | Error _, Error _ -> failwith "Invalid uri: %a" Uri.pp uri
-
-let connect_uri ~ctx uri =
-  uri_to_endpoint uri >>= fun edn ->
-  let ctx = match Uri.scheme uri with
-    | Some "https" ->
-      let peer_name = Uri.host uri in
-      let tls_config = Tls.Config.client ~authenticator ?peer_name () in
-      let port = Option.value ~default:443 (Uri.port uri) in
-      Conduit_lwt.add
-        Conduit_lwt_tls.TCP.protocol
-        (Conduit_lwt_tls.TCP.resolve ~port ~config:tls_config) ctx
-    | (Some "http" | None) ->
-      let port = Option.value ~default:80 (Uri.port uri) in
-      Conduit_lwt.add Conduit_lwt.TCP.protocol (Conduit_lwt.TCP.resolve ~port) ctx
-    | _ -> ctx in
-  Conduit_lwt.resolve ctx edn >>= function
-  | Ok flow ->
-    let ic, oc = Conduit_lwt.io_of_flow flow in
-    Lwt.return (flow, ic, oc)
-  | Error err ->
-    failwith "%a" Conduit_lwt.pp_error err
+let connect_uri ~ctx:{ctx; resolver} uri =
+  Resolver_lwt.resolve_uri ~uri resolver
+  >>= fun endp ->
+  Conduit_lwt_unix.endp_to_client ~ctx endp
+  >>= fun client ->
+  Conduit_lwt_unix.connect ~ctx client
 
 let close c = Lwt.catch
   (fun () -> Lwt_io.close c)

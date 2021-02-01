@@ -68,7 +68,6 @@ To create a simple request, use one of the methods in `Cohttp_lwt_unix.Client`.
 For example downloading the reddit frontpage:
 
 ```ocaml
-cat - > client_example.ml <<EOF
 open Lwt
 open Cohttp
 open Cohttp_lwt_unix
@@ -85,7 +84,6 @@ let body =
 let () =
   let body = Lwt_main.run body in
   print_endline ("Received body\n" ^ body)
-EOF
 ```
 
 There are a few things to notice:
@@ -132,9 +130,7 @@ findlib (`ocamlfind`) libraries:
 * `cohttp` - Base `Cohttp` module. No platform specific functionality
 * `cohttp-async` - Async backend `Cohttp_async`
 * `cohttp-lwt` - Lwt backend without unix specifics
-* `cohttp-lwt-unix` - Unix based lwt backend with `tls` support
-* `cohttp-lwt-unix-ssl` - Unix based lwt backend with `lwt_ssl` support
-* `cohttp-lwt-unix-nossl` - Unix based lwt backend (only `http`)
+* `cohttp-lwt-unix` - Unix based lwt backend
 * `cohttp-lwt-jsoo` - Jsoo (XHR) client
 * `cohttp-top` - Print cohttp types in the toplevel (`#require "cohttp-top"`)
 
@@ -160,10 +156,8 @@ You can use [`Lwt.pick`](https://ocsigen.org/lwt/4.1.0/api/Lwt) to set a timeout
 on the execution of a thread. For example, say that you want to set a timeout on
 the `Client.get` thread in the example above, then you could modify the get call
 as follows
- 
-```ocaml
-(* [...] *)
 
+```ocaml
 let compute ~time ~f =
   Lwt.pick
     [
@@ -175,9 +169,7 @@ let body =
   let get () = Client.get (Uri.of_string "https://www.reddit.com/") in
   compute ~time:0.1 ~f:get >>= function
   | `Timeout -> Lwt.fail_with "Timeout expired"
-  | `Done (resp, body) ->
-      let code =
-(* [...] *)
+  | `Done (resp, body) -> Lwt.return (resp, body)
 ```
 
 Executing the code, which you can actually try by calling
@@ -211,21 +203,18 @@ to dig in and customise it for their needs. The following is an example of a
 [unix socket client to communicate with Docker](https://discuss.ocaml.org/t/how-to-write-a-simple-socket-based-web-client-for-docker/1760/3).
 
 ```ocaml
-cat - > docker_example.ml <<EOF
 open Lwt.Infix
+open Cohttp
 
-let resolve_unix_socket : Conduit_lwt.Endpoint.t -> 'edn option Lwt.t = function
-  | IP _ -> Lwt.return_none
-  | Domain v -> (
-      match Domain_name.to_string v with
-      | "docker" -> Lwt.return_some (Unix.ADDR_UNIX "/var/run/docker.sock")
-      | _ -> Lwt.return_none )
+let ctx =
+  let resolver =
+    let h = Hashtbl.create 1 in
+    Hashtbl.add h "docker" (`Unix_domain_socket "/var/run/docker.sock");
+    Resolver_lwt_unix.static h
+  in
+  Cohttp_lwt_unix.Client.custom_ctx ~resolver ()
 
 let t =
-  let ctx =
-    Conduit_lwt.add ~priority:0 (* highest priority *) Conduit_lwt.TCP.protocol
-      resolve_unix_socket Conduit.empty
-  in
   Cohttp_lwt_unix.Client.get ~ctx (Uri.of_string "http://docker/version")
   >>= fun (resp, body) ->
   let open Cohttp in
@@ -237,7 +226,6 @@ let t =
   print_endline ("Received body\n" ^ body)
 
 let _ = Lwt_main.run t
-EOF
 ```
 
 The main issue there is there no way to resolve a socket address, so you need to
@@ -245,18 +233,18 @@ create a custom resolver to map a hostname to the Unix domain socket.
 
 To build and execute with `dune`, first create the following `dune` file
 ```
-cat - > dune <<EOF
+$ cat - > dune <<EOF
 (executable
-  ;(public_name docker_example) 
+  ;(public_name docker_example)
   (name docker_example)
   (libraries cohttp-lwt-unix conduit-lwt))
 EOF
 ```
 then run the example with
 ```
-dune exec ./docker_example.exe
+$ dune exec ./docker_example.exe
 ```
-Even though conduit is transitively there, for this example we are explicitly 
+Even though conduit is transitively there, for this example we are explicitly
 mentioning it to emphasize that we are creating a new Conduit resolver. Refer to
 [conduit's README](https://github.com/mirage/ocaml-conduit/) for examples of use and
 links to up-to-date conduit documentation.
@@ -267,7 +255,7 @@ links to up-to-date conduit documentation.
 Implementing a server in cohttp using the Lwt backend (for Async is very similar)
 is mostly equivalent to implementing a function of type :
 
-```ocaml
+```
 conn -> Cohttp.Request.t -> Cohttp_lwt.Body.t -> (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
 ```
 
@@ -283,7 +271,6 @@ Here's an example of a simple cohttp server that outputs back request
 information.
 
 ```ocaml
-cat - > server_example.ml <<EOF
 open Lwt
 open Cohttp
 open Cohttp_lwt_unix
@@ -298,17 +285,7 @@ let server =
         meth headers body )
     >>= fun body -> Server.respond_string ~status:`OK ~body ()
   in
-  let tcp_config =
-    {
-      Conduit_lwt.TCP.sockaddr = Unix.ADDR_INET (Unix.inet_addr_loopback, 8000);
-      capacity = 40;
-    }
-  in
-  Server.create tcp_config Conduit_lwt.TCP.protocol Conduit_lwt.TCP.service
-    (Server.make ~callback ())
-
-let _ = Lwt_main.run (server ())
-EOF
+  Server.create ~mode:(`TCP (`Port 8000)) (Server.make ~callback ())
 ```
 
 ### Compile and execute with ocamlbuild
