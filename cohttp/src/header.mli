@@ -14,52 +14,71 @@
  *
   }}}*)
 
-(** Map of HTTP header key and value(s) associated with them. Since HTTP headers
-    can contain duplicate keys, this structure can return a list of values
-    associated with a single key. *)
-
+(** Associative list of HTTP headers pair of key and value. Order is preserved,
+    meaning duplicated keys are neither removed or concataned by default (see
+    [clean_dup] to do it). *)
 type t [@@deriving sexp]
 (** The type for HTTP headers. *)
 
 val init : unit -> t
-(** Construct a fresh, empty map of HTTP headers. *)
+(** [init ()] constructs a fresh, empty map of HTTP headers. *)
 
 val is_empty : t -> bool
-(** Test whether HTTP headers are empty or not. *)
+(** [is_empty h] tests whether HTTP headers are empty or not. *)
+
+val of_list : (string * string) list -> t
+(** [of_list l] creates an header structure with same content and order than l,
+    meaning the invariant [to_list (of_list l) = l] is true. *)
+
+val to_list : t -> (string * string) list
+(** [to_list h] convert HTTP headers h to a list. Order is preserved. *)
 
 val init_with : string -> string -> t
-(** Construct a fresh map of HTTP headers with a single key and value entry. *)
+(** [init_with k v] construct a fresh map of HTTP headers with a single pair of
+    key and value [(k, v)]. *)
 
 val add : t -> string -> string -> t
-(** Add a key and value to an existing header map. *)
+(** [add h k v] adds a key and value to an existing header list. *)
 
 val add_list : t -> (string * string) list -> t
-(** Add multiple key and value pairs to an existing header map. *)
+(** [add_list h l] adds each key and value pairs in [l] to the header list [h]
+    in order, meaning [to_list (add_list h l) = to_list h @ l] *)
 
 val add_multi : t -> string -> string list -> t
-(** Add multiple values to a key in an existing header map. *)
+(** [add_multi h k vs] add multiple values to a key in an existing header map by
+    calling [add h k v] (without concatenate the values).
+
+    Invariant : [get_multi (add_multi h k vs) k = existing @ vs] if
+    [get_multi h k = existing] *)
 
 val add_opt : t option -> string -> string -> t
-(** Given an optional header, either update the existing one with a key and
-    value, or construct a fresh header with those values if the header is
-    [None]. *)
+(** [add_opt hopt k v] adds the pair [(k, v)] to [h] if [hopt] is [Some h], or
+    constructs a fresh header list with this pair if [hopt] is [None]. *)
 
 val add_unless_exists : t -> string -> string -> t
-(** Given a header, update it with the key and value unless the key is already
-    present in the header. *)
+(** [add_unless_exists h k v] adds [(k, v)] to [h] unless the key is already
+    present in the header.
+
+    Invariant : [add_unless_exists h k _ = h if mem h k = true] *)
 
 val add_opt_unless_exists : t option -> string -> string -> t
-(** [add_opt_unless_exists h k v] updates [h] with the key [k] and value [v]
+(** [add_opt_unless_exists h k v] adds [(k, v)] to [h] if [hopt] is [Some h]
     unless the key is already present in the header. If [h] is [None] then a
-    fresh header is allocated containing the key [k] and the value [v]. *)
+    fresh header is allocated containing the pair [(k,
+   v)]. *)
 
 val remove : t -> string -> t
-(** Remove a key from the header map and return a fresh header set. The original
-    header parameter is not modified. *)
+(** [remove h k] removes every pair with [k] as key from [h] and return a fresh
+    header set. *)
 
 val replace : t -> string -> string -> t
-(** Replace the value of a key from the header map if it exists, otherwise it
-    adds it to the header map. The original header parameter is not modified. *)
+(** [replace h k v] replaces the last added value of [k] from [h] and removed
+    all other occurences of [k] if it exists. Otherwise it adds [(k, v)] to [h].
+
+    Example :
+    [replace (of_list \["a", "a1"; "b", "b1"; "a", "a2"\]) "a" "a3" = of_list \["b", "b1"; "a", "a3"\]] *)
+
+(* TODO *)
 
 val update : t -> string -> (string option -> string option) -> t
 (** [update h k f] returns a map containing the same headers as [h], except for
@@ -76,34 +95,39 @@ val update : t -> string -> (string option -> string option) -> t
     for the return value. The original header parameters are not modified. *)
 
 val mem : t -> string -> bool
-(** Check if a key exists in the header. *)
+(** [mem h k] returns [true] if the header name [k] appears in [h] and [false]
+    otherwise. *)
 
 val compare : t -> t -> int
-(** Structural comparison of two [Header] values. *)
+(** [compare h h'] is the structural comparison of two [Header] values. *)
 
 val get : t -> string -> string option
-(** Retrieve a key from a header. If the header is one of the set of headers
-    defined to have list values, then all of the values are concatenated into a
-    single string separated by commas and returned. If it is a singleton header,
-    then the first value is selected and no concatenation is performed. *)
+(** [get h k] returns [Some v] where [v] is the last added value associated with
+    [k] in [h] if it exists and [None] otherwise *)
 
 val get_multi : t -> string -> string list
-(** Retrieve all of the values associated with a key *)
+(** [get_multi h k] returns a list of all values associated with [k] in the
+    header list [h]. *)
 
-val iter : (string -> string list -> unit) -> t -> unit
-val map : (string -> string list -> string list) -> t -> t
+val iter : (string -> string -> unit) -> t -> unit
+val map : (string -> string -> string) -> t -> t
 val fold : (string -> string -> 'a -> 'a) -> t -> 'a -> 'a
-val of_list : (string * string) list -> t
-val to_list : t -> (string * string) list
 
 val to_lines : t -> string list
-(** Return header fieds as a list of lines. Beware that each line ends with
-    "\r\n" characters. *)
+(** [to_lines h] returns header fieds as a list of lines. Beware that each line
+    ends with "\r\n" characters. *)
 
 val to_frames : t -> string list
-(** Same as {!to_lines} but lines do not end with "\r\n" characters. *)
+(** [to_frames h] returns the same as {!to_lines} but lines do not end with
+    "\r\n" characters. *)
 
 val to_string : t -> string
+
+val clean_dup : t -> t
+(** [clean_dup h] cleans duplicates in h : if the duplicated header can not have
+    multiple values, only the last value is kept. Otherwise, the value are
+    concatenated and place at the first position this header is encountered. *)
+
 val get_content_range : t -> Int64.t option
 val get_media_type : t -> string option
 val get_connection_close : t -> bool

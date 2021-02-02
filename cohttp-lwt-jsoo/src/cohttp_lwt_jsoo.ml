@@ -182,9 +182,7 @@ module Make_client_async (P : Params) = Make_api (struct
             (fun k v ->
               (* some headers lead to errors in the javascript console, should
                  we filter then out here? *)
-              List.iter
-                (fun v -> xml ## (setRequestHeader (Js.string k) (Js.string v)))
-                v)
+              xml ## (setRequestHeader (Js.string k) (Js.string v)))
             headers
     in
 
@@ -278,12 +276,9 @@ module Make_client_sync (P : Params) = Make_api (struct
       | Some headers ->
           C.Header.iter
             (fun k v ->
-              List.iter
-                (* some headers lead to errors in the javascript console, should
-                   we filter then out here? *)
-                  (fun v ->
-                  xml ## (setRequestHeader (Js.string k) (Js.string v)))
-                v)
+              (* some headers lead to errors in the javascript console, should
+                 we filter then out here? *)
+              xml ## (setRequestHeader (Js.string k) (Js.string v)))
             headers
     in
     (* perform call *)
