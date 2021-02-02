@@ -30,12 +30,126 @@ end = struct
   let compare a b = String.compare a b
 end
 
-module StringMap = Map.Make (LString)
+type t = (LString.t * string) list
 
-type t = string list StringMap.t
+let compare = Stdlib.compare
+let init () = []
+let is_empty = function [] -> true | _ -> false
+let init_with k v = [ (LString.of_string k, v) ]
 
-let user_agent = Printf.sprintf "ocaml-cohttp/%s" Conf.version
-let compare = StringMap.compare Stdlib.compare
+let mem h k =
+  let k = LString.of_string k in
+  let rec loop = function
+    | [] -> false
+    | (k', _) :: h' -> if LString.compare k k' = 0 then true else loop h'
+  in
+  loop h
+
+let add h k v : t = (LString.of_string k, v) :: h
+let add_list h l = List.fold_left (fun h (k, v) -> add h k v) h l
+let add_multi h k l = List.fold_left (fun h v -> add h k v) h l
+
+let add_opt h_opt k v =
+  match h_opt with None -> init_with k v | Some h -> add h k v
+
+let add_unless_exists h k v = if mem h k then h else add h k v
+
+let add_opt_unless_exists h k v =
+  match h with None -> init_with k v | Some h -> add_unless_exists h k v
+
+let get h k =
+  let k = LString.of_string k in
+  let rec loop h =
+    match h with
+    | [] -> None
+    | (k', v) :: h' -> if LString.compare k k' = 0 then Some v else loop h'
+  in
+  loop h
+
+let get_multi (h : t) (k : string) =
+  let rec loop h acc =
+    match h with
+    | [] -> acc
+    | (k', v) :: h' ->
+        if LString.compare (LString.of_string k) k' = 0 then loop h' (v :: acc)
+        else loop h' acc
+  in
+  loop h []
+
+let remove h k =
+  let k = LString.of_string k in
+  let rec loop seen = function
+    | [] -> if seen then [] else raise Not_found
+    | (k', _) :: h when LString.compare k k' = 0 -> loop true h
+    | x :: h -> x :: loop seen h
+  in
+  try loop false h with Not_found -> h
+
+(* Same effect than the previous [replace] function *)
+let replace h k v =
+  let k' = LString.of_string k in
+  let rec loop seen = function
+    | [] -> if seen then [] else raise Not_found
+    | (k'', _) :: h when LString.compare k' k'' = 0 ->
+        if not seen then
+          (k', v) :: loop true h (* First occurrence found is replaced *)
+        else loop seen h (* Others are removed *)
+    | x :: h -> x :: loop seen h
+  in
+  try loop false h with Not_found -> add h k v
+
+(* Different effect than previous [update] function : replace the value is *)
+(* Does not make a lot of sens with the possibilities of duplicate header *)
+(* Maybe use "get_multi" instead ? *)
+let update h k f =
+  let vorig = get h k in
+  match (f vorig, vorig) with
+  | None, None -> h
+  | None, _ -> remove h k
+  | Some s, Some s' when s == s' -> h
+  | Some s, _ -> replace h k s
+
+let map (f : string -> string -> string) (h : t) : t =
+  List.map
+    (fun (k, v) ->
+      let vs' = f (LString.to_string k) v in
+      (k, vs'))
+    h
+
+let iter (f : string -> string -> unit) (h : t) : unit =
+  List.iter (fun (k, v) -> f (LString.to_string k) v) h
+
+let fold (f : string -> string -> 'a -> 'a) (h : t) (init : 'a) : 'a =
+  List.fold_left (fun acc (k, v) -> f (LString.to_string k) v acc) init h
+
+let of_list h =
+  List.fold_left (fun acc (k, v) -> (LString.of_string k, v) :: acc) [] h
+
+let to_list h =
+  List.fold_left (fun acc (k, v) -> (LString.to_string k, v) :: acc) [] h
+
+let to_lines (h : t) =
+  let header_line k v = Printf.sprintf "%s: %s\r\n" k v in
+  List.fold_left
+    (fun acc (k, v) -> header_line (LString.to_string k) v :: acc)
+    [] h
+
+let to_frames h =
+  let to_frame k v = Printf.sprintf "%s: %s" k v in
+  List.fold_left
+    (fun acc (k, v) -> to_frame (LString.to_string k) v :: acc)
+    [] h
+
+let to_string h =
+  let b = Buffer.create 128 in
+  to_list h
+  |> List.iter (fun (k, v) ->
+         Buffer.add_string b k;
+         Buffer.add_string b ": ";
+         Buffer.add_string b v;
+         Buffer.add_string b "\r\n");
+  Buffer.add_string b "\r\n";
+  Buffer.contents b
 
 let headers_with_list_values =
   Array.map LString.of_string
@@ -66,101 +180,32 @@ let headers_with_list_values =
       "www-authenticate";
     |]
 
-let is_transfer_encoding =
-  let k = LString.of_string "transfer-encoding" in
-  fun k' -> LString.compare k k' = 0
-
 let is_header_with_list_value =
   let tbl = Hashtbl.create (Array.length headers_with_list_values) in
   headers_with_list_values |> Array.iter (fun h -> Hashtbl.add tbl h ());
   fun h -> Hashtbl.mem tbl h
 
-let init () = StringMap.empty
-let is_empty x = StringMap.is_empty x
-let init_with k v = StringMap.singleton (LString.of_string k) [ v ]
+let clean_dup (h : t) : t =
+  let add h k v =
+    let to_add = ref false in
+    let rec loop = function
+      | [] ->
+          to_add := true;
+          []
+      | (k', v') :: hs ->
+          if LString.compare k k' = 0 then
+            if is_header_with_list_value k then (k, v' ^ ", " ^ v) :: hs
+            else (
+              to_add := true;
+              hs)
+          else (k', v') :: loop hs
+    in
+    let h = loop h in
+    if !to_add then (k, v) :: h else h
+  in
+  List.rev h |> List.fold_left (fun acc (k, v) -> add acc k v) []
 
-let add h k v =
-  let k = LString.of_string k in
-  try
-    if is_transfer_encoding k then
-      StringMap.add k (StringMap.find k h @ [ v ]) h
-    else StringMap.add k (v :: StringMap.find k h) h
-  with Not_found -> StringMap.add k [ v ] h
-
-let add_list h l = List.fold_left (fun h (k, v) -> add h k v) h l
-let add_multi h k l = List.fold_left (fun h v -> add h k v) h l
-let add_opt h k v = match h with None -> init_with k v | Some h -> add h k v
-
-let remove h k =
-  let k = LString.of_string k in
-  StringMap.remove k h
-
-let replace h k v =
-  let k = LString.of_string k in
-  StringMap.add k [ v ] h
-
-let get h k =
-  let k = LString.of_string k in
-  try
-    let v = StringMap.find k h in
-    if is_header_with_list_value k then Some (String.concat "," v)
-    else Some (List.hd v)
-  with Not_found | Failure _ -> None
-
-let update h k f =
-  let vorig = get h k in
-  let k = LString.of_string k in
-  match (f vorig, vorig) with
-  | None, _ -> StringMap.remove k h
-  | Some s, Some s' when s == s' -> h
-  | Some s, _ ->
-      let v' =
-        if is_header_with_list_value k then String.split_on_char ',' s
-        else [ s ]
-      in
-      StringMap.add k v' h
-
-let mem h k = StringMap.mem (LString.of_string k) h
-let add_unless_exists h k v = if mem h k then h else add h k v
-
-let add_opt_unless_exists h k v =
-  match h with None -> init_with k v | Some h -> add_unless_exists h k v
-
-let get_multi h k =
-  let k = LString.of_string k in
-  try StringMap.find k h with Not_found -> []
-
-let map fn h = StringMap.mapi (fun k v -> fn (LString.to_string k) v) h
-let iter fn h = ignore (map fn h)
-
-let fold fn h acc =
-  StringMap.fold
-    (fun k v acc ->
-      List.fold_left (fun acc v -> fn (LString.to_string k) v acc) acc v)
-    h acc
-
-let of_list l = List.fold_left (fun h (k, v) -> add h k v) (init ()) l
-let to_list h = List.rev (fold (fun k v acc -> (k, v) :: acc) h [])
-let header_line k v = Printf.sprintf "%s: %s\r\n" k v
-let to_lines h = List.rev (fold (fun k v acc -> header_line k v :: acc) h [])
-
-let to_frames =
-  let to_frame k v acc = Printf.sprintf "%s: %s" k v :: acc in
-  fun h -> List.rev (fold to_frame h [])
-
-let to_string h =
-  let b = Buffer.create 128 in
-  h
-  |> iter (fun k v ->
-         v
-         |> List.iter (fun v ->
-                Buffer.add_string b k;
-                Buffer.add_string b ": ";
-                Buffer.add_string b v;
-                Buffer.add_string b "\r\n"));
-  Buffer.add_string b "\r\n";
-  Buffer.contents b
-
+(** original content *)
 let parse_content_range s =
   try
     let start, fini, total =
@@ -269,6 +314,8 @@ let get_links headers =
 
 let add_links headers links =
   add_multi headers "link" (List.map Link.to_string links)
+
+let user_agent = Printf.sprintf "ocaml-cohttp/%s" Conf.version
 
 let prepend_user_agent headers user_agent =
   let k = "user-agent" in
