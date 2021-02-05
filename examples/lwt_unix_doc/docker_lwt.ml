@@ -10,8 +10,7 @@ let ctx =
   Cohttp_lwt_unix.Client.custom_ctx ~resolver ()
 
 let t =
-  Client.get (Uri.of_string "http://docker/version")
-  >>= fun (resp, body) ->
+  Client.get (Uri.of_string "http://docker/version") >>= fun (resp, body) ->
   let open Cohttp in
   let code = resp |> Response.status |> Code.code_of_status in
   Printf.printf "Response code: %d\n" code;

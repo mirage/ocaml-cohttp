@@ -2,10 +2,8 @@ open! Base
 open! Async_kernel
 open! Cohttp
 
-type t = [
-  | Cohttp.Body.t
-  | `Pipe of string Pipe.Reader.t
-] [@@deriving sexp_of]
+type t = [ Cohttp.Body.t | `Pipe of string Pipe.Reader.t ] [@@deriving sexp_of]
+
 include Cohttp.S.Body with type t := t
 
 val drain : t -> unit Deferred.t
