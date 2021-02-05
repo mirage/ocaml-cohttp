@@ -28,7 +28,6 @@ jobs:
         uses: actions-ml/setup-ocaml@master
         with:
           ocaml-version: ${{ matrix.ocaml-version }}
-          dune-cache: true
           opam-depext: false
           opam-pin: false
 
