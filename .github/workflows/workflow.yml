@@ -30,6 +30,7 @@ jobs:
           ocaml-version: ${{ matrix.ocaml-version }}
           dune-cache: true
           opam-depext: false
+          opam-disable-sandboxing: true
           opam-pin: false
 
       - run: |
@@ -49,7 +50,7 @@ jobs:
           cohttp-lwt-jsoo \
           cohttp-lwt-unix \
           cohttp-mirage \
-          cohttp-top \
+          cohttp-top
 
       - run: echo "PKG_CONFIG_PATH=$(brew --prefix openssl)/lib/pkgconfig" >>"$GITHUB_ENV"
         if: ${{ matrix.os == 'macos-latest' }}
