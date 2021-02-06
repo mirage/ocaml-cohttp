@@ -1,6 +1,7 @@
 (executable
  (name test_accept)
  (modules test_accept)
+ (forbidden_libraries base)
  (libraries cohttp alcotest fmt))
 
 (rule
@@ -12,6 +13,7 @@
 (executable
  (name test_header)
  (modules test_header)
+ (forbidden_libraries base)
  (libraries cohttp alcotest fmt))
 
 (rule
@@ -23,6 +25,7 @@
 (executable
  (name test_request)
  (modules test_request)
+ (forbidden_libraries base)
  (libraries cohttp alcotest fmt))
 
 (rule
@@ -34,6 +37,7 @@
 (executable
  (name test_body)
  (modules test_body)
+ (forbidden_libraries base)
  (libraries cohttp alcotest fmt))
 
 (rule
