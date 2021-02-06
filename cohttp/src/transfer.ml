@@ -16,9 +16,7 @@
 
 open Sexplib0.Sexp_conv
 
-let compare_int64 = Int64.compare
-
-type encoding = Chunked | Fixed of int64 | Unknown [@@deriving compare, sexp]
+type encoding = Chunked | Fixed of int64 | Unknown [@@deriving sexp]
 type chunk = Chunk of string | Final_chunk of string | Done [@@deriving sexp]
 
 let string_of_encoding = function

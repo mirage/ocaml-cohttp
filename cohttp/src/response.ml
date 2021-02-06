@@ -16,8 +16,6 @@
 
 open Sexplib0.Sexp_conv
 
-let compare_bool = Bool.compare
-
 type t = {
   encoding : Transfer.encoding;
   headers : Header.t;
@@ -25,7 +23,20 @@ type t = {
   status : Code.status_code;
   flush : bool;
 }
-[@@deriving compare, fields, sexp]
+[@@deriving sexp]
+
+let compare x y =
+  match Header.compare x.headers y.headers with
+  | 0 ->
+      let headers = Header.init () in
+      Stdlib.compare { x with headers } { y with headers }
+  | i -> i
+
+let headers t = t.headers
+let encoding t = t.encoding
+let version t = t.version
+let status t = t.status
+let flush t = t.flush
 
 let make ?(version = `HTTP_1_1) ?(status = `OK) ?(flush = false)
     ?(encoding = Transfer.Chunked) ?(headers = Header.init ()) () =

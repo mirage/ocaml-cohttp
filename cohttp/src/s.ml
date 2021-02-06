@@ -86,7 +86,15 @@ module type Request = sig
     version : Code.version;  (** HTTP version, usually 1.1 *)
     encoding : Transfer.encoding;  (** transfer encoding of this HTTP request *)
   }
-  [@@deriving compare, fields, sexp]
+  [@@deriving sexp]
+
+  val headers : t -> Header.t
+  val meth : t -> Code.meth
+  val scheme : t -> string option
+  val resource : t -> string
+  val version : t -> Code.version
+  val encoding : t -> Transfer.encoding
+  val compare : t -> t -> int
 
   val make :
     ?meth:Code.meth ->
@@ -119,14 +127,15 @@ module type Response = sig
     status : Code.status_code;  (** HTTP status code of the response *)
     flush : bool;
   }
-  [@@deriving compare, fields, sexp]
+  [@@deriving sexp]
 
-  (* The response creates by [make ~encoding ~headers ()] has an
-     encoding value determined from the content of [headers] or if no
-     proper header is present, using the value of [encoding]. Checked
-     headers are "content-lenght", "content-range" and
-     "transfer-encoding". The default value of [encoding] is
-     chunked. *)
+  val encoding : t -> Transfer.encoding
+  val headers : t -> Header.t
+  val version : t -> Code.version
+  val status : t -> Code.status_code
+  val flush : t -> bool
+  val compare : t -> t -> int
+
   val make :
     ?version:Code.version ->
     ?status:Code.status_code ->
@@ -135,6 +144,11 @@ module type Response = sig
     ?headers:Header.t ->
     unit ->
     t
+  (** The response creates by [make ~encoding ~headers ()] has an encoding value
+      determined from the content of [headers] or if no proper header is
+      present, using the value of [encoding]. Checked headers are
+      "content-lenght", "content-range" and "transfer-encoding". The default
+      value of [encoding] is chunked. *)
 end
 
 module type Body = sig
