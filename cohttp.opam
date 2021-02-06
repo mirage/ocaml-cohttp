@@ -37,11 +37,8 @@ depends: [
   "re" {>= "1.9.0"}
   "uri" {>= "2.0.0"}
   "uri-sexp"
-  "fieldslib"
   "sexplib0"
-  "ppx_fields_conv" {>= "v0.9.0"}
   "ppx_sexp_conv" {>= "v0.13.0"}
-  "ppx_compare" {>= "v0.13.0"}
   "stringext"
   "base64" {>= "3.1.0"}
   "fmt" {with-test}

@@ -14,7 +14,6 @@
  *
   }}}*)
 
-open Ppx_compare_lib.Builtin
 open Sexplib0.Sexp_conv
 
 type t = {
@@ -25,8 +24,21 @@ type t = {
   version : Code.version;
   encoding : Transfer.encoding;
 }
-[@@deriving compare, fields, sexp]
+[@@deriving sexp]
 
+let compare x y =
+  match Header.compare x.headers y.headers with
+  | 0 ->
+      let headers = Header.init () in
+      Stdlib.compare { x with headers } { y with headers }
+  | i -> i
+
+let headers t = t.headers
+let meth t = t.meth
+let scheme t = t.scheme
+let resource t = t.resource
+let version t = t.version
+let encoding t = t.encoding
 let fixed_zero = Transfer.Fixed Int64.zero
 
 let guess_encoding ?(encoding = fixed_zero) headers =

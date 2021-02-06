@@ -44,7 +44,7 @@ module Set_cookie_hdr : sig
     secure : bool;
     http_only : bool;
   }
-  [@@deriving fields, sexp]
+  [@@deriving sexp]
   (** A header which a server sends to a client to request that the client
       returns the cookie in future requests, under certain conditions. *)
 
@@ -80,6 +80,8 @@ module Set_cookie_hdr : sig
 
   val secure : t -> bool
   (** Has the cookie's secure attribute been set? *)
+
+  val http_only : t -> bool
 end
 
 module Cookie_hdr : sig

@@ -276,7 +276,7 @@ let mutate_simple_req () =
       ~headers:(Header.init_with "foo" "bar")
       (Uri.of_string "/foo/bar")
   in
-  let req = Fieldslib.Field.fset Request.Fields.meth req `POST in
+  let req = { req with Request.meth = `POST } in
   write_req expected req
 
 let make_simple_res () =

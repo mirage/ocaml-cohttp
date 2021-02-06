@@ -29,7 +29,14 @@ module Set_cookie_hdr = struct
     secure : bool;
     http_only : bool;
   }
-  [@@deriving fields, sexp]
+  [@@deriving sexp]
+
+  let cookie t = t.cookie
+  let expiration t = t.expiration
+  let domain t = t.domain
+  let path t = t.path
+  let secure t = t.secure
+  let http_only t = t.http_only
 
   (* Does not check the contents of name or value for ';', ',', '\s', or name[0]='$' *)
   let make ?(expiration = `Session) ?path ?domain ?(secure = false)

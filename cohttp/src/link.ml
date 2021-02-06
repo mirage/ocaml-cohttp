@@ -119,8 +119,11 @@ end
 
 module Ext = struct
   type 'a t = { charset : Charset.t; language : Language.t; value : 'a }
-  [@@deriving sexp, fields]
+  [@@deriving sexp]
 
+  let charset t = t.charset
+  let language t = t.language
+  let value t = t.value
   let make ?(charset = "") ?(language = "") value = { charset; language; value }
   let map f x = { x with value = f x.value }
 end
