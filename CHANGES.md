@@ -1,5 +1,6 @@
 ## current
 
+- Remove dependency to base (@samoht #745)
 - fix opam files and dependencies
 - add GitHub Actions workflow (@smorimoto #739)
 - lwt_jsoo: Forward exceptions to caller when response is null (@mefyl #738)
