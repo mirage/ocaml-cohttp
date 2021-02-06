@@ -19,37 +19,35 @@
 
 (** Configuration parameters for the XmlHttpRequest engines *)
 module type Params = sig
-  (** Should the response body data be chunked? *)
   val chunked_response : bool
+  (** Should the response body data be chunked? *)
 
-  (** Size of chunks *)
   val chunk_size : int
+  (** Size of chunks *)
 
-  (** JavaScript string to OCaml conversion.  [Js.to_bytestring] or
-      [Js.to_string] *)
   val convert_body_string : Js_of_ocaml.Js.js_string Js_of_ocaml.Js.t -> string
+  (** JavaScript string to OCaml conversion. [Js.to_bytestring] or
+      [Js.to_string] *)
 
-  (** Whether withCredentials property of XHR is set. *)
   val with_credentials : bool
+  (** Whether withCredentials property of XHR is set. *)
 end
 
-(** Build an asynchronous engine with chunked/unchucked response data
-    treated as raw bytes or UTF *)
-module Make_client_async(P : Params) : Cohttp_lwt.S.Client
+(** Build an asynchronous engine with chunked/unchucked response data treated as
+    raw bytes or UTF *)
+module Make_client_async (P : Params) : Cohttp_lwt.S.Client
 
-(** Build a synchronous engine with chunked/unchucked response data
-    treated as raw bytes or UTF *)
-module Make_client_sync(P : Params) : Cohttp_lwt.S.Client
+(** Build a synchronous engine with chunked/unchucked response data treated as
+    raw bytes or UTF *)
+module Make_client_sync (P : Params) : Cohttp_lwt.S.Client
 
-(** The [Client] module implements an HTTP client interface
-    using asynchronous XmlHttpRequests. The response body is returned
-    in chucked form with 128Kb / chunk.  Body data is treated as raw bytes.
-    withCredentials property of XHR is set to false.  *)
 module Client : Cohttp_lwt.S.Client
+(** The [Client] module implements an HTTP client interface using asynchronous
+    XmlHttpRequests. The response body is returned in chucked form with 128Kb /
+    chunk. Body data is treated as raw bytes. withCredentials property of XHR is
+    set to false. *)
 
-(** The [Client_sync] module implements an HTTP client interface
-    using synchronous XmlHttpRequests.  The response is not chunked
-    and treated as raw bytes.
-    withCredentials property of XHR is set to false.  *)
 module Client_sync : Cohttp_lwt.S.Client
-
+(** The [Client_sync] module implements an HTTP client interface using
+    synchronous XmlHttpRequests. The response is not chunked and treated as raw
+    bytes. withCredentials property of XHR is set to false. *)

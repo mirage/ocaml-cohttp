@@ -18,27 +18,15 @@ open Sexplib0.Sexp_conv
 
 let compare_int64 = Int64.compare
 
-type encoding =
-  | Chunked
-  | Fixed of int64
-  | Unknown
-[@@deriving compare, sexp]
+type encoding = Chunked | Fixed of int64 | Unknown [@@deriving compare, sexp]
+type chunk = Chunk of string | Final_chunk of string | Done [@@deriving sexp]
 
-type chunk =
-  | Chunk of string
-  | Final_chunk of string
-  | Done [@@deriving sexp]
-
-let string_of_encoding =
-  function
+let string_of_encoding = function
   | Chunked -> "chunked"
   | Fixed i -> Printf.sprintf "fixed[%Ld]" i
   | Unknown -> "unknown"
 
-let has_body =
-  function
+let has_body = function
   | Fixed 0L -> `No
-  | Chunked
-  | Fixed _ -> `Yes
+  | Chunked | Fixed _ -> `Yes
   | Unknown -> `Unknown
-

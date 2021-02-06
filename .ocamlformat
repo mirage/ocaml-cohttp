@@ -1,2 +1,5 @@
-version = 0.15.0
-disable = true
+version = 0.16.0
+profile = conventional
+break-infix = fit-or-vertical
+parse-docstrings = true
+module-item-spacing = compact
