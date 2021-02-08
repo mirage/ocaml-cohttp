@@ -85,29 +85,46 @@ let remove h k =
   in
   try loop false h with Not_found -> h
 
-(* Same effect than the previous [replace] function *)
-let replace h k v =
+let remove_last h k =
+  let k = LString.of_string k in
+  let rec loop seen = function
+    | [] -> raise Not_found
+    | (k', _) :: h when LString.compare k k' = 0 -> h
+    | x :: h -> x :: loop seen h
+  in
+  try loop false h with Not_found -> h
+
+let replace_ last h k v =
   let k' = LString.of_string k in
   let rec loop seen = function
     | [] -> if seen then [] else raise Not_found
     | (k'', _) :: h when LString.compare k' k'' = 0 ->
-        if not seen then
-          (k', v) :: loop true h (* First occurrence found is replaced *)
-        else loop seen h (* Others are removed *)
+       if last then (k'', v) :: h
+       else if not seen then (k', v) :: loop true h
+       else loop seen h
     | x :: h -> x :: loop seen h
   in
   try loop false h with Not_found -> add h k v
 
-(* Different effect than previous [update] function : replace the value is *)
-(* Does not make a lot of sens with the possibilities of duplicate header *)
-(* Maybe use "get_multi" instead ? *)
-let update h k f =
-  let vorig = get h k in
+let replace = replace_ false
+
+let update_ ~all:all h k f =
+  let vorig =
+    if not all then get h k
+    else
+      match get_multi h k with [] -> None | vs -> Some (String.concat "," vs)
+  in
   match (f vorig, vorig) with
   | None, None -> h
-  | None, _ -> remove h k
+  | None, _ -> if all then remove h k else remove_last h k
   | Some s, Some s' when s == s' -> h
-  | Some s, _ -> replace h k s
+  | Some s, _ -> replace_ (not all) h k s
+                 (* if (not all) then only the last value paired
+                     with k is changed *)
+
+let update = update_ ~all:true
+
+let update_last = update_ ~all:false
 
 let map (f : string -> string -> string) (h : t) : t =
   List.map
@@ -205,7 +222,17 @@ let clean_dup (h : t) : t =
   in
   List.rev h |> List.fold_left (fun acc (k, v) -> add acc k v) []
 
-(** original content *)
+let get_multi_concat ?(list_value_only=false) h k : string option =
+  if not (list_value_only) || is_header_with_list_value (LString.of_string k)
+  then
+    (
+      let vs = get_multi h k in
+      match vs with
+      | [] -> None
+      | _ ->  Some (String.concat "," vs))
+  else
+    get h k
+
 let parse_content_range s =
   try
     let start, fini, total =
@@ -255,21 +282,22 @@ let get_media_type headers =
   | None -> None
 
 let get_acceptable_media_ranges headers =
-  Accept.media_ranges (get headers "accept")
+  Accept.media_ranges (get_multi_concat ~list_value_only:true headers "accept")
 
 let get_acceptable_charsets headers =
-  Accept.charsets (get headers "accept-charset")
+  Accept.charsets (get_multi_concat ~list_value_only:true headers "accept-charset")
 
 let get_acceptable_encodings headers =
-  Accept.encodings (get headers "accept-encoding")
+  Accept.encodings (get_multi_concat ~list_value_only:true headers "accept-encoding")
 
 let get_acceptable_languages headers =
-  Accept.languages (get headers "accept-language")
+  Accept.languages (get_multi_concat ~list_value_only:true headers "accept-language")
 
 (* Parse the transfer-encoding and content-length headers to
  * determine how to decode a body *)
 let get_transfer_encoding headers =
-  match get headers "transfer-encoding" with
+  (* It should actually be [get] as the interresting value is actually the last.*)
+  match get_multi_concat ~list_value_only:true headers "transfer-encoding" with
   | Some "chunked" -> Transfer.Chunked
   | Some _ | None -> (
       match get_content_range headers with
