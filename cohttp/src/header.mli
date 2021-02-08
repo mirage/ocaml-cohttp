@@ -73,26 +73,32 @@ val remove : t -> string -> t
 
 val replace : t -> string -> string -> t
 (** [replace h k v] replaces the last added value of [k] from [h] and removed
-    all other occurences of [k] if it exists. Otherwise it adds [(k, v)] to [h].
-
-    Example :
-    [replace (of_list \["a", "a1"; "b", "b1"; "a", "a2"\]) "a" "a3" = of_list \["b", "b1"; "a", "a3"\]] *)
-
-(* TODO *)
+    all other occurences of [k] if it exists. Otherwise it adds [(k, v)] to [h]. *)
 
 val update : t -> string -> (string option -> string option) -> t
-(** [update h k f] returns a map containing the same headers as [h], except for
-    the header [k]. Depending on the value of [v] where [v] is [f (get h k)],
-    the header [k] is added, removed or updated. If [v] is [None], the header is
-    removed if it exists; otherwise, if [v] is [Some z] then [k] is associated
-    to [z] in the resulting headers. If [k] was already associated in [h] to a
-    value that is physically equal to [z], [h] is returned unchanged. Similarly
-    as for [get], if the header is one of the set of headers defined to have
-    list values, then all of the values are concatenated into a single string
-    separated by commas and passed to [f], while the return value of [f] is
-    split on commas and associated to [k]. If it is a singleton header, then the
-    first value is passed to [f] and no concatenation is performed, similarly
-    for the return value. The original header parameters are not modified. *)
+(** [update h k f] returns a associative list containing the same headers as
+    [h], except for the header [k]. Depending on the value of [v] where [v] is
+    [f (get_multi_concat h k)], the header [k] is added, removed or updated.
+
+    - If [v] is [None], every occurences of the header in [h] and all its value
+      is removed;
+
+    - If [v] is [Some z] then [k] is associated to [z] (and only [z]) in the
+      resulting headers;
+
+    - If [k] was already associated in [h] to a value that is physically equal
+      to [z], [h] is returned unchanged.
+
+    In case [k] should not have multiple values, but has multiple occurences in
+    [h], the use of [clean_dup] may be needed before calling this function to
+    prevent the values of this header to get concatenated. *)
+
+val update_last : t -> string -> (string option -> string option) -> t
+(** [update h k f] does the same work than [update h k f] except only the last
+    value [v] associated to [k] is used and affected, meaning [f] is called with
+    [get h k] and only the pair [(k, v)] is potentially removed or updated
+    depending of the result of [f (get h
+   k)]. *)
 
 val mem : t -> string -> bool
 (** [mem h k] returns [true] if the header name [k] appears in [h] and [false]
@@ -123,10 +129,20 @@ val to_frames : t -> string list
 
 val to_string : t -> string
 
+(* Header management functions *)
+
 val clean_dup : t -> t
-(** [clean_dup h] cleans duplicates in h : if the duplicated header can not have
-    multiple values, only the last value is kept. Otherwise, the value are
-    concatenated and place at the first position this header is encountered. *)
+(** [clean_dup h] cleans duplicates in h : if the duplicated headers can not
+    have multiple values, only the last value is kept. Otherwise, the values are
+    concatenated and place at the first position this header is encountered in
+    [h]. *)
+
+val get_multi_concat : ?list_value_only:bool -> t -> string -> string option
+(** [get_multi_concat h k] returns all the values paired with [k] in [h],
+    concatenated and separated by a comma. The optional argument
+    [?list_value_only] is [false] by default. If it is [true], then the returned
+    string can contain multiple values only if the searched header can have
+    multiple values (like transfer-encoding or accept). *)
 
 val get_content_range : t -> Int64.t option
 val get_media_type : t -> string option
