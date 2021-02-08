@@ -247,10 +247,10 @@ let make_simple_req () =
     "POST /foo/bar HTTP/1.1\r\n\
      foo: bar\r\n\
      host: localhost\r\n\
-     transfer-encoding: chunked\r\n\
      user-agent: "
     ^ user_agent
-    ^ "\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n"
+    ^ "\r\ntransfer-encoding: chunked\
+       \r\n\r\n6\r\nfoobar\r\n0\r\n\r\n"
   in
   let req =
     Request.make ~encoding:Transfer.Chunked ~meth:`POST
@@ -266,10 +266,10 @@ let mutate_simple_req () =
     "POST /foo/bar HTTP/1.1\r\n\
      foo: bar\r\n\
      host: localhost\r\n\
-     transfer-encoding: chunked\r\n\
      user-agent: "
     ^ user_agent
-    ^ "\r\n\r\n6\r\nfoobar\r\n0\r\n\r\n"
+    ^ "\r\ntransfer-encoding: chunked\
+       \r\n\r\n6\r\nfoobar\r\n0\r\n\r\n"
   in
   let req =
     Request.make ~encoding:Transfer.Chunked
