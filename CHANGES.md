@@ -1,4 +1,4 @@
-## current
+## v3.1.0 (2021-02-21)
 
 - Remove dependency to base (@samoht #745)
 - fix opam files and dependencies
