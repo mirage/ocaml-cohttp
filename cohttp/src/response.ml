@@ -105,7 +105,7 @@ module Make (IO : S.IO) = struct
 
   let write_header res oc =
     write oc
-      (Printf.sprintf "%s %s\r\n"
+      (Printf.sprintf "%s %s \r\n"
          (Code.string_of_version res.version)
          (Code.string_of_status res.status))
     >>= fun () ->
