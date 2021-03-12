@@ -238,7 +238,8 @@ let output_string_of_status oc ~mli s =
   else (
     append oc "let string_of_status: status_code -> string = function";
     iter (fun c -> append oc "  | %s -> \"%d %s\"" c.constr c.code c.descr) s;
-    append oc "  | `Code cod -> string_of_int cod");
+    (* the response status must include an extra space even if no description is present, cf. #752 *)
+    append oc "  | `Code cod ->  string_of_int cod ^ \" \"");
   append oc ""
 
 let output_reason_phrase_of_code oc ~mli s =
