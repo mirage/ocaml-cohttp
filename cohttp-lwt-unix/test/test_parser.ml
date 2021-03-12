@@ -19,7 +19,7 @@ open OUnit
 let basic_req = "GET /index.html HTTP/1.1\r\nHost: www.example.com\r\n\r\n"
 
 let basic_res =
-  "HTTP/1.1 200 OK\r\n\
+  "HTTP/1.1 200 OK \r\n\
    Date: Mon, 23 May 2005 22:38:34 GMT\r\n\
    Server: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)\r\n\
    Last-Modified: Wed, 08 Jan 2003 23:11:55 GMT\r\n\
@@ -30,7 +30,7 @@ let basic_res =
    Content-Type: text/html; charset=UTF-8"
 
 let basic_res_content =
-  "HTTP/1.1 200 OK\r\n\
+  "HTTP/1.1 200 OK \r\n\
    Date: Mon, 23 May 2005 22:38:34 GMT\r\n\
    Server: Apache/1.3.3.7 (Unix) (Red-Hat/Linux)\r\n\
    Last-Modified: Wed, 08 Jan 2003 23:11:55 GMT\r\n\
@@ -75,7 +75,7 @@ let post_chunked_req =
    \r\n"
 
 let chunked_res =
-  "HTTP/1.1 200 OK\r\n\
+  "HTTP/1.1 200 OK \r\n\
    Date: Fri, 31 Dec 1999 23:59:59 GMT\r\n\
    Content-Type: text/plain\r\n\
    Transfer-Encoding: chunked\r\n\
@@ -283,7 +283,7 @@ let make_simple_res () =
   let open Cohttp in
   let open Cohttp_lwt_unix in
   let expected =
-    "HTTP/1.1 200 OK\r\n\
+    "HTTP/1.1 200 OK \r\n\
      foo: bar\r\n\
      transfer-encoding: chunked\r\n\
      \r\n\
