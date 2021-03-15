@@ -45,3 +45,15 @@
  (package cohttp)
  (action
   (run ./test_body.exe)))
+
+(executable
+ (name test_path)
+ (modules test_path)
+ (forbidden_libraries base)
+ (libraries cohttp alcotest fmt))
+
+(rule
+ (alias runtest)
+ (package cohttp)
+ (action
+  (run ./test_path.exe)))
