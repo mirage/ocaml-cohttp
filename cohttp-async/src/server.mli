@@ -34,8 +34,10 @@ type response_action =
 
 val respond : response respond_t
 
-(** Resolve a URI and a docroot into a concrete local filename. *)
 val resolve_local_file : docroot:string -> uri:Uri.t -> string
+(** Resolve a URI and a docroot into a concrete local filename.
+
+    Deprecated. Please use Cohttp.Path.resolve_local_file. *)
 
 (** Respond with a [string] Pipe that provides the response string
     Pipe.Reader.t. @param code Default is HTTP 200 `OK *)

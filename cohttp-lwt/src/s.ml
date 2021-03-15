@@ -155,8 +155,10 @@ module type Server = sig
     unit ->
     t
 
-  (** Resolve a URI and a docroot into a concrete local filename. *)
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
+  (** Resolve a URI and a docroot into a concrete local filename.
+
+      Deprecated. Please use Cohttp.Path.resolve_local_file. *)
 
   (** [respond ?headers ?flush ~status ~body] will respond to an HTTP
       request with the given [status] code and response [body].  If

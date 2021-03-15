@@ -7,12 +7,8 @@ open Lwt.Infix
 let src = Logs.Src.create "cohttp.lwt.server" ~doc:"Cohttp Lwt server module"
 module Log = (val Logs.src_log src : Logs.LOG)
 
-let blank_uri = Uri.of_string ""
-
-let resolve_file ~docroot ~uri =
-  (* This normalises the Uri and strips out .. characters *)
-  let frag = Uri.path (Uri.resolve "" blank_uri uri) in
-  Filename.concat docroot frag
+(* Deprecated *)
+let resolve_file ~docroot ~uri = Cohttp.Path.resolve_local_file ~docroot ~uri
 
 exception Isnt_a_file
 let respond_file ?headers ~fname () =

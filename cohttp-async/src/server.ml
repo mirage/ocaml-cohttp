@@ -130,10 +130,9 @@ let respond_with_redirect ?headers uri =
   let headers = Cohttp.Header.add_opt_unless_exists headers "location" (Uri.to_string uri) in
   respond ~flush:false ~headers `Found
 
+(* Deprecated *)
 let resolve_local_file ~docroot ~uri =
-  (* This normalises the Uri and strips out .. characters *)
-  Uri.(pct_decode (path (resolve "" (of_string "/") uri)))
-  |> Caml.Filename.concat docroot
+  Cohttp.Path.resolve_local_file ~docroot ~uri
 
 let error_body_default =
   "<html><body><h1>404 Not Found</h1></body></html>"

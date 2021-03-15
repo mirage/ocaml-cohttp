@@ -47,10 +47,9 @@ module Make(IO:S.IO) = struct
 
   module Transfer_IO = Cohttp__Transfer_io.Make(IO)
 
+  (* Deprecated *)
   let resolve_local_file ~docroot ~uri =
-    let path = Uri.(pct_decode (path (resolve "http" (of_string "/") uri))) in
-    let rel_path = String.sub path 1 (String.length path - 1) in
-    Filename.concat docroot rel_path
+    Cohttp.Path.resolve_local_file ~docroot ~uri
 
   let respond ?headers ?(flush=true) ~status ~body () =
     let encoding =

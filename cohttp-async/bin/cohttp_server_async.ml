@@ -27,12 +27,11 @@ let method_filter meth (res,body) = match meth with
   | _ -> return (res,body)
 
 let serve_file ~docroot ~uri =
-  Server.resolve_local_file ~docroot ~uri
-  |> Server.respond_with_file
+  Cohttp.Path.resolve_local_file ~docroot ~uri |> Server.respond_with_file
 
 let serve ~info ~docroot ~index uri path =
   (* Get a canonical filename from the URL and docroot *)
-  let file_name = Server.resolve_local_file ~docroot ~uri in
+  let file_name = Cohttp.Path.resolve_local_file ~docroot ~uri in
   try_with (fun () ->
     Unix.stat file_name
     >>= fun stat ->

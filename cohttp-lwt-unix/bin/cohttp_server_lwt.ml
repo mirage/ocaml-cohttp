@@ -30,7 +30,7 @@ let method_filter meth (res,body) = match meth with
   | _ -> Lwt.return (res,body)
 
 let serve_file ~docroot ~uri =
-  let fname = Server.resolve_local_file ~docroot ~uri in
+  let fname = Cohttp.Path.resolve_local_file ~docroot ~uri in
   Server.respond_file ~fname ()
 
 let ls_dir dir =
@@ -39,7 +39,7 @@ let ls_dir dir =
        (Lwt_unix.files_of_directory dir))
 
 let serve ~info ~docroot ~index uri path =
-  let file_name = Server.resolve_local_file ~docroot ~uri in
+  let file_name = Cohttp.Path.resolve_local_file ~docroot ~uri in
   Lwt.catch (fun () ->
     Lwt_unix.stat file_name
     >>= fun stat ->
