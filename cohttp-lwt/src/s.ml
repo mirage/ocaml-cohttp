@@ -166,7 +166,9 @@ module type Server = sig
     t
 
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
-  (** Resolve a URI and a docroot into a concrete local filename. *)
+  (** Resolve a URI and a docroot into a concrete local filename.
+
+      Deprecated. Please use Cohttp.Path.resolve_local_file. *)
 
   val respond :
     ?headers:Cohttp.Header.t ->
