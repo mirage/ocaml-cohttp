@@ -76,10 +76,10 @@
 
 - `Cohttp_async.resolve_local_file`, `Cohttp_lwt.resolve_local_file` and `Cohttp_lwt_unix.resolve_file`
   are now the same code under the hood (`Cohttp.Path.resolve_local_file`). The old names
-  have been preserved for compatibility, but marked as deprecated. This changes the behavior of
-  `Cohttp_lwt_unix.resolve_file`: it now percent-decodes the paths and blocks escaping from the
-  docroot correctly. This also fixes and tests the corner cases in these methods when the docroot
-  is empty. (#755)
+  have been preserved for compatibility, but will be marked as deprecated in the next release. This
+  changes the behavior of `Cohttp_lwt_unix.resolve_file`: it now percent-decodes the paths and blocks
+  escaping from the docroot correctly. This also fixes and tests the corner cases in these methods
+  when the docroot is empty. (@ewanmellor #755)
 
 ## v2.5.4 (2020-07-21)
 
