@@ -23,32 +23,19 @@
  (modules   test_request)
  (libraries cohttp alcotest fmt))
 
-(rule
- (alias runtest)
+(alias
+ (name runtest)
  (package cohttp)
  (action
   (run ./test_request.exe)))
 
 (executable
- (name test_body)
- (modules test_body)
- (forbidden_libraries base)
- (libraries cohttp alcotest fmt))
-
-(rule
- (alias runtest)
- (package cohttp)
- (action
-  (run ./test_body.exe)))
-
-(executable
  (name test_path)
  (modules test_path)
- (forbidden_libraries base)
  (libraries cohttp alcotest fmt))
 
-(rule
- (alias runtest)
+(alias
+ (name runtest)
  (package cohttp)
  (action
   (run ./test_path.exe)))
