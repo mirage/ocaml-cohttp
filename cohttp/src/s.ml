@@ -147,7 +147,7 @@ module type Response = sig
   (** The response creates by [make ~encoding ~headers ()] has an encoding value
       determined from the content of [headers] or if no proper header is
       present, using the value of [encoding]. Checked headers are
-      "content-lenght", "content-range" and "transfer-encoding". The default
+      "content-length", "content-range" and "transfer-encoding". The default
       value of [encoding] is chunked. *)
 end
 
