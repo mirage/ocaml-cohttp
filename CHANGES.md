@@ -1,5 +1,6 @@
 ## current
 
+- cohttp.response: fix malformed status header for custom status codes (@mseri @aalekseyev #752)
 - Remove dependency to base (@samoht #745)
 - fix opam files and dependencies
 - add GitHub Actions workflow (@smorimoto #739)
