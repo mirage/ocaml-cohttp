@@ -8,7 +8,7 @@
 - Remove wrapped false (@rgrinberg #734)
 - Use implicit executable dependency for generate.exe (@TheLortex #735)
 - cohttp: update HTTP codes (@emillon #711)
-- cohttp: add Uti.t to uri scheme (@brendanlong #707)
+- cohttp: add Uri.scheme to Request.t (@brendanlong #707)
 - cohttp: fix chunked encoding of empty body (@mefyl #715)
 - cohttp-async: fix body not being uploaded with unchunked Async.Pipe (@mefyl #706)
 - cohttp-{async, lwt}: fix suprising behaviours of Body.is_empty (@anuragsoni #714 #712 #713)
