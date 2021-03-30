@@ -99,32 +99,32 @@ let replace_ last h k v =
   let rec loop seen = function
     | [] -> if seen then [] else raise Not_found
     | (k'', _) :: h when LString.compare k' k'' = 0 ->
-       if last then (k'', v) :: h
-       else if not seen then (k', v) :: loop true h
-       else loop seen h
+        if last then (k'', v) :: h
+        else if not seen then (k', v) :: loop true h
+        else loop seen h
     | x :: h -> x :: loop seen h
   in
   try loop false h with Not_found -> add h k v
 
 let replace = replace_ false
 
-let update_ ~all:all h k f =
-  let vorig =
-    if not all then get h k
-    else
-      match get_multi h k with [] -> None | vs -> Some (String.concat "," vs)
-  in
+let update h k f =
+  let vorig = get h k in
   match (f vorig, vorig) with
   | None, None -> h
-  | None, _ -> if all then remove h k else remove_last h k
+  | None, _ -> remove_last h k
   | Some s, Some s' when s == s' -> h
-  | Some s, _ -> replace_ (not all) h k s
-                 (* if (not all) then only the last value paired
-                     with k is changed *)
+  | Some s, _ -> replace_ true h k s
 
-let update = update_ ~all:true
-
-let update_last = update_ ~all:false
+let update_all h k f =
+  let vorig = get_multi h k in
+  match (f vorig, vorig) with
+  | [], [] -> h
+  | [], _ -> remove h k
+  | xs, xs' when xs = xs' -> h
+  | xs, _ ->
+      let h = remove h k in
+      add_multi h k xs
 
 let map (f : string -> string -> string) (h : t) : t =
   List.map
@@ -202,36 +202,40 @@ let is_header_with_list_value =
   headers_with_list_values |> Array.iter (fun h -> Hashtbl.add tbl h ());
   fun h -> Hashtbl.mem tbl h
 
+let is_set_cookie k = LString.(compare k (of_string "set-cookie"))
+
+(* set-cookie is an exception according to
+   {{:https://tools.ietf.org/html/rfc7230#section-3.2.2}
+   RFC7230§3.2.2} and can appear multiple times in a response message.
+*)
 let clean_dup (h : t) : t =
   let add h k v =
-    let to_add = ref false in
-    let rec loop = function
-      | [] ->
-          to_add := true;
-          []
-      | (k', v') :: hs ->
-          if LString.compare k k' = 0 then
-            if is_header_with_list_value k then (k, v' ^ ", " ^ v) :: hs
-            else (
-              to_add := true;
-              hs)
-          else (k', v') :: loop hs
-    in
-    let h = loop h in
-    if !to_add then (k, v) :: h else h
+    if is_set_cookie k = 0 then (k, v) :: h
+    else
+      let to_add = ref false in
+      let rec loop = function
+        | [] ->
+            to_add := true;
+            []
+        | (k', v') :: hs ->
+            if LString.compare k k' = 0 then
+              if is_header_with_list_value k then (k, v' ^ "," ^ v) :: hs
+              else (
+                to_add := true;
+                hs)
+            else (k', v') :: loop hs
+      in
+      let h = loop h in
+      if !to_add then (k, v) :: h else h
   in
   List.rev h |> List.fold_left (fun acc (k, v) -> add acc k v) []
 
-let get_multi_concat ?(list_value_only=false) h k : string option =
-  if not (list_value_only) || is_header_with_list_value (LString.of_string k)
+let get_multi_concat ?(list_value_only = false) h k : string option =
+  if (not list_value_only) || is_header_with_list_value (LString.of_string k)
   then
-    (
-      let vs = get_multi h k in
-      match vs with
-      | [] -> None
-      | _ ->  Some (String.concat "," vs))
-  else
-    get h k
+    let vs = get_multi h k in
+    match vs with [] -> None | _ -> Some (String.concat "," vs)
+  else get h k
 
 let parse_content_range s =
   try
@@ -285,13 +289,16 @@ let get_acceptable_media_ranges headers =
   Accept.media_ranges (get_multi_concat ~list_value_only:true headers "accept")
 
 let get_acceptable_charsets headers =
-  Accept.charsets (get_multi_concat ~list_value_only:true headers "accept-charset")
+  Accept.charsets
+    (get_multi_concat ~list_value_only:true headers "accept-charset")
 
 let get_acceptable_encodings headers =
-  Accept.encodings (get_multi_concat ~list_value_only:true headers "accept-encoding")
+  Accept.encodings
+    (get_multi_concat ~list_value_only:true headers "accept-encoding")
 
 let get_acceptable_languages headers =
-  Accept.languages (get_multi_concat ~list_value_only:true headers "accept-language")
+  Accept.languages
+    (get_multi_concat ~list_value_only:true headers "accept-language")
 
 (* Parse the transfer-encoding and content-length headers to
  * determine how to decode a body *)
