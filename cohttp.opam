@@ -44,6 +44,7 @@ depends: [
   "fmt" {with-test}
   "jsonm" {build}
   "alcotest" {with-test}
+  "crowbar" {with-test}
 ]
 build: [
   ["dune" "subst"] {dev}
