@@ -14,91 +14,74 @@
  *
   }}}*)
 
-(** Associative list of HTTP headers pair of key and value. Order is preserved,
-    meaning duplicated keys are neither removed or concataned by default (see
-    [clean_dup] to do it). *)
+(** Associative list representing HTTP headers. Order of transmission is
+    preserved, which implies that headers with same name are neither removed or
+    concataned by default (see [clean_dup] to do that). *)
 type t [@@deriving sexp]
 (** The type for HTTP headers. *)
 
 val init : unit -> t
-(** [init ()] constructs a fresh, empty map of HTTP headers. *)
+(** [init ()] constructs a fresh, empty list of HTTP headers. *)
 
 val is_empty : t -> bool
-(** [is_empty h] tests whether HTTP headers are empty or not. *)
+(** [is_empty h] tests whether HTTP headers [h] are empty or not. *)
 
 val of_list : (string * string) list -> t
-(** [of_list l] creates an header structure with same content and order than l,
-    meaning the invariant [to_list (of_list l) = l] is true. *)
+(** [of_list l] construct a fresh headers from the content of [l] and in same
+    order. [to_list] and [of_list] are defined such as [to_list (of_list l) = l]
+    is true with case insensitive comparison. *)
 
 val to_list : t -> (string * string) list
-(** [to_list h] convert HTTP headers h to a list. Order is preserved. *)
+(** [to_list h] converts HTTP headers [h] to a list. Order is preserved.
+
+    {e Invariant (with case insensitive comparison):} [to_list (of_list l) = l] *)
 
 val init_with : string -> string -> t
-(** [init_with k v] construct a fresh map of HTTP headers with a single pair of
-    key and value [(k, v)]. *)
+(** [init_with k v] construct a fresh HTTP headers with a single header with
+    name [k] and value [v]. *)
 
 val add : t -> string -> string -> t
-(** [add h k v] adds a key and value to an existing header list. *)
+(** [add h k v] adds the header name [k] and it associated value [v] at the end
+    of header list [h]. *)
 
 val add_list : t -> (string * string) list -> t
-(** [add_list h l] adds each key and value pairs in [l] to the header list [h]
-    in order, meaning [to_list (add_list h l) = to_list h @ l] *)
+(** [add_list h l] adds in order all header pairs contained in [l] to the header
+    list [h].
+
+    {e Invariant (with case insensitive comparison):}
+    [to_list (add_list h l) = to_list h @ l] *)
 
 val add_multi : t -> string -> string list -> t
-(** [add_multi h k vs] add multiple values to a key in an existing header map by
-    calling [add h k v] (without concatenate the values).
+(** [add_multi h k vs] add multiple header pairs with same name [h] and values
+    contained in [vs] in [h]. The new headers are in the same order that in
+    [vs].
 
-    Invariant : [get_multi (add_multi h k vs) k = existing @ vs] if
-    [get_multi h k = existing] *)
+    {e Invariant:} [get_multi (add_multi h k vs) k = (get_multi h k) @ vs] *)
 
 val add_opt : t option -> string -> string -> t
-(** [add_opt hopt k v] adds the pair [(k, v)] to [h] if [hopt] is [Some h], or
-    constructs a fresh header list with this pair if [hopt] is [None]. *)
+(** [add_opt hopt k v] adds the header [(k, v)] to [h] if [hopt] is [Some h], or
+    constructs a fresh header list containing this single header if [hopt] is
+    [None]. *)
 
 val add_unless_exists : t -> string -> string -> t
-(** [add_unless_exists h k v] adds [(k, v)] to [h] unless the key is already
-    present in the header.
-
-    Invariant : [add_unless_exists h k _ = h if mem h k = true] *)
+(** [add_unless_exists h k v] adds [(k, v)] to [h] unless the header name [k] is
+    already present in the header. *)
 
 val add_opt_unless_exists : t option -> string -> string -> t
 (** [add_opt_unless_exists h k v] adds [(k, v)] to [h] if [hopt] is [Some h]
-    unless the key is already present in the header. If [h] is [None] then a
-    fresh header is allocated containing the pair [(k,
-   v)]. *)
+    unless the header name [k] is already present in the headers. If [h] is
+    [None] then a fresh header list is constructed containing the header
+    [(k, v)]. *)
 
 val remove : t -> string -> t
-(** [remove h k] removes every pair with [k] as key from [h] and return a fresh
-    header set. *)
+(** [remove h k] removes every values associated to the header name [k] from
+    [h]. *)
 
 val replace : t -> string -> string -> t
 (** [replace h k v] replaces the last added value of [k] from [h] and removed
-    all other occurences of [k] if it exists. Otherwise it adds [(k, v)] to [h]. *)
+    all other occurences of [k] if it exists. Otherwise it adds [(k, v)] to [h].
 
-val update : t -> string -> (string option -> string option) -> t
-(** [update h k f] returns a associative list containing the same headers as
-    [h], except for the header [k]. Depending on the value of [v] where [v] is
-    [f (get_multi_concat h k)], the header [k] is added, removed or updated.
-
-    - If [v] is [None], every occurences of the header in [h] and all its value
-      is removed;
-
-    - If [v] is [Some z] then [k] is associated to [z] (and only [z]) in the
-      resulting headers;
-
-    - If [k] was already associated in [h] to a value that is physically equal
-      to [z], [h] is returned unchanged.
-
-    In case [k] should not have multiple values, but has multiple occurences in
-    [h], the use of [clean_dup] may be needed before calling this function to
-    prevent the values of this header to get concatenated. *)
-
-val update_last : t -> string -> (string option -> string option) -> t
-(** [update h k f] does the same work than [update h k f] except only the last
-    value [v] associated to [k] is used and affected, meaning [f] is called with
-    [get h k] and only the pair [(k, v)] is potentially removed or updated
-    depending of the result of [f (get h
-   k)]. *)
+    {e Invariant:} [forall h, k, v. get_multi (replace h k v) = \[ v \]] *)
 
 val mem : t -> string -> bool
 (** [mem h k] returns [true] if the header name [k] appears in [h] and [false]
@@ -112,8 +95,51 @@ val get : t -> string -> string option
     [k] in [h] if it exists and [None] otherwise *)
 
 val get_multi : t -> string -> string list
-(** [get_multi h k] returns a list of all values associated with [k] in the
-    header list [h]. *)
+(** [get_multi h k] returns a list of all values associated with [k] in [h] in
+    order they appear in it. *)
+
+val get_multi_concat : ?list_value_only:bool -> t -> string -> string option
+(** [get_multi_concat h k] returns [Some v] if there is at least one value
+    associated with [k] in [h] and [None] otherwise. [v] is the concatenation of
+    all values paired with [k] in [h], separated by a comma and in order they
+    appear in [h].
+
+    The optional argument [?list_value_only] is [false] by default. If it is
+    [true] and there is at least one value associated to [k], the returned value
+    is the concatenated values only if [k] is a header that can have multiple
+    values (like transfer-encoding or accept). Otherwise, the returned value is
+    the last value paired with [k] in [h].
+
+    {e Invariant:}
+    [forall h, k not a list-value header. get_multi_concat ~list-value-only:true h k = get h k] *)
+
+val update : t -> string -> (string option -> string option) -> t
+(** [update h k f] returns an header list containing the same headers as [h],
+    except for the header name [k]. Depending on the value of [v] where [v] is
+    [f (get h k)], the header pair [(k, v)] is added, removed or updated.
+
+    - If [v] is [None], the last occurence of [k] in [h] is removed;
+
+    - If [v] is [Some w] then the last value paired with [k] in [h] is replaced
+      by [w] if it exists. Otherwise, the pair [(k, w)] is added;
+
+    - If [k] was already associated last in [h] to a value that is physically
+      equal to [w], [h] is returned unchanged. *)
+
+val update_all : t -> string -> (string list -> string list) -> t
+(** [update_all h k f] returns an header list containing the same headers as
+    [h], except for the header [k]. Depending on the list of values [vs] where
+    [vs] is [f (get_multi h k)], the values associated to the header [k] are
+    added, removed or updated.
+
+    - If [vs] is an empty list, every occurences of the header [k] in [h] are
+      removed;
+
+    - If [vs] is a non-empty list, all values previously associated to [k] are
+      removed and all values in [vs] are added with [add_multi];
+
+    - If [k] was already associated in [h] to a list that is equal to [vs], [h]
+      is returned unchanged. *)
 
 val iter : (string -> string -> unit) -> t -> unit
 val map : (string -> string -> string) -> t -> t
@@ -129,20 +155,35 @@ val to_frames : t -> string list
 
 val to_string : t -> string
 
-(* Header management functions *)
-
 val clean_dup : t -> t
-(** [clean_dup h] cleans duplicates in h : if the duplicated headers can not
-    have multiple values, only the last value is kept. Otherwise, the values are
-    concatenated and place at the first position this header is encountered in
-    [h]. *)
+(** [clean_dup h] cleans duplicates in h following
+    {{:https://tools.ietf.org/html/rfc7230#section-3.2.2} RFC7230§3.2.2}; if a
+    duplicated header can not have multiple values, only the last value is kept
+    in place. Otherwise, the values are concatenated and place at the first
+    position the header is encountered in [h].
 
-val get_multi_concat : ?list_value_only:bool -> t -> string -> string option
-(** [get_multi_concat h k] returns all the values paired with [k] in [h],
-    concatenated and separated by a comma. The optional argument
-    [?list_value_only] is [false] by default. If it is [true], then the returned
-    string can contain multiple values only if the searched header can have
-    multiple values (like transfer-encoding or accept). *)
+    Already concatenated values (like [anhost.com, anotherhost.com] in the
+    example below) are not affected by [clean_dup]. For example,
+
+    {v
+    transfer-encoding: gzip
+    host: afirsthost.com
+    connection: keep-alive
+    host: anhost.com, anotherhost.com
+    transfer-encoding: chunked
+    v}
+
+    becomes
+
+    {v
+    transfer-encoding: gzip, chunked
+    connection: keep-alive
+    host: anhost.com, anotherhost.com
+    v}
+
+    Finally, following {{:https://tools.ietf.org/html/rfc7230#section-3.2.2}
+    RFC7230§3.2.2}, the header [Set-cookie] is treated as an exception and
+    ignored by [clean_dup]. *)
 
 val get_content_range : t -> Int64.t option
 val get_media_type : t -> string option
