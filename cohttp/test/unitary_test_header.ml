@@ -1,4 +1,4 @@
-(*{{{ Copyright (c) 2020 Carine Morel <carine@tarides.com>
+(*{{{ Copyright (c) 2021 Carine Morel <carine@tarides.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -55,7 +55,6 @@ let is_empty_tests () =
   aeb "is_empty (remove (add (init ()) k v) k)" true
     H.(is_empty (remove (add (init ()) "a" "a1") "a"))
 
-(* [init_with l] *)
 let init_with_tests () =
   aessl "init_with k v"
     [ ("transfer-encoding", "chunked") ]
@@ -86,8 +85,6 @@ let get_tests () =
   aeso "get (add (add h k v') k v) k = v" (Some "a2")
     H.(get (add (add prebuilt "a" "a1") "a" "a2") "a")
 
-(* [add_list h l] is h with l at the end. It is the same than
-   adding each element in l one by one in order. *)
 let add_list_tests () =
   let l = [ ("a", "a1"); ("b", "b1") ] in
   aessl "add_list (init ()) []" [] H.(to_list (add_list (init ()) []));
@@ -177,27 +174,50 @@ let update_tests () =
   let h1 = H.update h "second" (function Some _ -> None | None -> Some "3") in
   let h2 = H.remove h "second" in
   aeh "update remove header" h1 h2;
+  let h1 =
+    H.update h "accept" (function Some _ -> Some "baz" | None -> None)
+  in
+  aesl "update existing header with multiple values"
+    H.(get_multi h1 "accept")
+    [ "foo"; "baz" ];
   let h' = H.update h "third" (function Some _ -> None | None -> Some "3") in
-  aeso "update add new header" (Some "3") (H.get_multi_concat h' "third");
+  aesl "update add new header" (H.get_multi h' "third") [ "3" ];
   let h1 = H.update h "third" (function _ -> None) in
   aeh "update_remove_absent_header" h h1;
-  let h1 =
-    H.update h "accept" (function Some v -> Some (v ^ ",baz") | None -> None)
-  in
-  let h2 = H.add h "accept" "baz" in
-  aeso "update_all_existing_header_multivalued" (H.get h1 "accept")
-    (H.get_multi_concat h2 "accept");
   let h1 = H.update h "third" (function Some _ -> Some "3" | None -> None) in
   aeh "update_new_header: unchanged" h h1;
-  aeso "update_new_header: headers unchanged" None (H.get h "third");
   let h1 = H.update h "accept" (function Some _ -> None | None -> None) in
-  aeh "update_all_existing_header_multivalue : remove all" (H.remove h "accept")
-    h1;
-  let h1 =
-    H.update_last h "accept" (function Some _ -> None | None -> None)
-  in
   aeso "update_existing_header_remove_multivalue: remove last" (Some "foo")
     (H.get h1 "accept")
+
+let update_all_tests () =
+  let h1 = H.update_all h "second" (function [] -> [] | _ -> [ "2a" ]) in
+  let h2 = H.(add (remove h "second") "second" "2a") in
+  aeh "update_all existing header" h1 h2;
+  let h1 = H.update_all h "second" (function [] -> [ "3" ] | _ -> []) in
+  let h2 = H.remove h "second" in
+  aeh "update_all remove header" h1 h2;
+  let h1 = H.update_all h "accept" (function [] -> [] | _ -> [ "baz" ]) in
+  aesl "update_all existing header with multiple values"
+    H.(get_multi h1 "accept")
+    [ "baz" ];
+  let h1 =
+    H.update_all h "accept" (function [] -> [] | xs -> xs @ [ "baz" ])
+  in
+  let h2 = H.add h "accept" "baz" in
+  aeso "update_all_existing_header_multivalued"
+    (H.get_multi_concat h1 "accept")
+    (H.get_multi_concat h2 "accept");
+  let h1 = H.update_all h "accept" (function _ -> []) in
+  aeh "update_all_existing_header_multivalue : remove all" (H.remove h "accept")
+    h1;
+  let h1 = H.update_all h "third" (function [] -> [ "3"; "33" ] | _ -> []) in
+  let h2 = H.add_multi h "third" [ "3"; "33" ] in
+  aeh "update add new header" h1 h2;
+  let h1 = H.update_all h "third" (function _ -> []) in
+  aeh "update_remove_absent_header" h h1;
+  let h1 = H.update_all h "third" (function [] -> [] | _ -> [ "3" ]) in
+  aeh "update_new_header: unchanged" h h1
 
 let get_multi_tests () =
   aesl "get_multi (init ()) k" [] H.(get_multi (init ()) "a");
@@ -340,6 +360,7 @@ let tests =
       ("Header.to_string", `Quick, to_string_tests);
       ("Header.map", `Quick, map_tests);
       ("Header.update", `Quick, update_tests);
+      ("Header.update_all", `Quick, update_all_tests);
       ("many headers", `Slow, many_headers);
       ("transfer encoding is in correct order", `Quick, transfer_encoding_tests);
       (*todo*)
