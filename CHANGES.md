@@ -1,31 +1,31 @@
 ## v4.0.0 (2021-03-24)
 
 - cohttp.response: fix malformed status header for custom status codes (@mseri @aalekseyev #752)
-- Remove dependency to base (@samoht #745)
-- fix opam files and dependencies
+- remove dependency to base (@samoht #745)
 - add GitHub Actions workflow (@smorimoto #739)
-- lwt_jsoo: Forward exceptions to caller when response is null (@mefyl #738)
-- Remove wrapped false (@rgrinberg #734)
+- `cohttp-lwt-jsoo`: Forward exceptions to caller when response is null (@mefyl #738)
 - Use implicit executable dependency for generate.exe (@TheLortex #735)
-- cohttp: update HTTP codes (@emillon #711)
-- cohttp: add Uri.scheme to Request.t (@brendanlong #707)
 - cohttp: fix chunked encoding of empty body (@mefyl #715)
 - cohttp-async: fix body not being uploaded with unchunked Async.Pipe (@mefyl #706)
 - cohttp-{async, lwt}: fix suprising behaviours of Body.is_empty (@anuragsoni #714 #712 #713)
-- cohttp-lwt-jsoo: rename Cohttp_lwt_xhr to Cohttp_lwt_jsoo for consistency (@mseri #717)
 - refactoring of tests (@mseri #709, @dinosaure #692)
 - update documentation (@dinosaure #716, @mseri #720)
+- fix deadlock in logging (@dinosaure #722)
+- improve media type parsing (@seliopou #542, @dinosaure #725)
+- [reverted] breaking changes to client and server API to use conduit 3.0.0 (@dinosaure #692). However, as the design discussion did not reach consensus, these changes were reverted to preserve better compatibility with existing cohttp users. (#741,  @samoht)
+
+**Potentially breaking changes**
+
+- remove `wrapped false` from the codebase (@rgrinberg #734)
+- cohttp: add Uri.scheme to Request.t (@brendanlong #707)
+- cohttp: update HTTP codes (@emillon #711)
+- cohttp-lwt-jsoo: rename Cohttp_lwt_xhr to Cohttp_lwt_jsoo for consistency (@mseri #717)
 - cohttp: fix transfer-encoding ordering in headers (@mseri #721)
 - lower-level support for long-running cohttp-async connections (@brendanlong #704)
-- fix deadlock in logging (@dinosaure #722)
 - add of_form and to_form functions to body (@seliopou #440, @mseri #723)
-- cohttp-lwt: partly inline read_response, fix body stream leak (@madroach @dinosaure #696)
-- improve media type parsing (@seliopou #542, @dinosaure #725)
+- cohttp-lwt: partly inline read_response, fix body stream leak (@madroach @dinosaure #696).
+  Note: there is a new warning that may show up in your logs when bodies are leaked, see also [#730](https://github.com/mirage/ocaml-cohttp/issues/730).
 - add comparison functions for Request.t and Response.t via ppx_compare (@msaffer-js @dinosaure #686)
-- [reverted] breaking changes to client and server API to use conduit
-  3.0.0 (@dinosaure #692). However, as the design discussion did not reach
-  consensus, these changes were reverted to preserve better compatibility with
-  existing cohttp users. (#741,  @samoht)
 
 ## v3.0.0 - aborted
 
