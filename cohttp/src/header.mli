@@ -156,7 +156,7 @@ val to_frames : t -> string list
 val to_string : t -> string
 
 val clean_dup : t -> t
-(** [clean_dup h] cleans duplicates in h following
+(** [clean_dup h] cleans duplicates in [h] following
     {{:https://tools.ietf.org/html/rfc7230#section-3.2.2} RFC7230§3.2.2}; if a
     duplicated header can not have multiple values, only the last value is kept
     in place. Otherwise, the values are concatenated and place at the first
