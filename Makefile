@@ -6,6 +6,9 @@ build:
 test:
 	dune runtest
 
+js-test:
+	dune build @runjstest
+
 clean:
 	dune clean
 
