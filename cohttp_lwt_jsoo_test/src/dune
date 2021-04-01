@@ -6,7 +6,7 @@
   (pps lwt_ppx js_of_ocaml-ppx)))
 
 (rule
- (alias runtest)
+ (alias runjstest)
  (deps test.js cohttp_lwt_jsoo_test.bc.js)
  (action
   (run ./test.js)))
