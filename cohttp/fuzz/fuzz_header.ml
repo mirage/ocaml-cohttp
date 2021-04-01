@@ -445,7 +445,7 @@ let update_all_test () =
     add_test
       ~name:
         "[update_all h k (function _ -> [w])] removes all occurences of k and \
-         add one." [ headers_gen; header_name_gen; word_gen ] (fun h k w ->
+         adds w." [ headers_gen; header_name_gen; word_gen ] (fun h k w ->
         let h1 = H.update_all h k (fun _ -> [ w ]) in
         let r1 = H.get_multi h1 k in
         let r2 = [ w ] in
