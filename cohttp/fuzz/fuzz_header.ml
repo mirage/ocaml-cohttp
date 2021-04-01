@@ -73,7 +73,8 @@ let list_value_header_gen =
   let printer fmt str = pp fmt "%s" str in
   with_printer printer gen
 
-(** Generate a tchar following {{https://tools.ietf.org/html/rfc7230#appendix-B}RFC 7230}.
+(** Generate a tchar following
+    {{:https://tools.ietf.org/html/rfc7230#appendix-B} RFC 7230}.
 
     tchar = "!" / "#" / "$" / "%" / "&" / "'" / "*" / "+" / "-" / "." / "^" /
     "_" / "`" / "|" / "~" / DIGIT / ALPHA *)
