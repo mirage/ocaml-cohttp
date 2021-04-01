@@ -1,3 +1,8 @@
+## current
+
+- lwt_jsoo: Fix `Lwt.wakeup_exn` `Invalid_arg` exception when a js
+  stack overflow happens in the XHR completion handler (@mefyl #762).
+
 ## v4.0.0 (2021-03-24)
 
 - cohttp.response: fix malformed status header for custom status codes (@mseri @aalekseyev #752)
