@@ -28,6 +28,7 @@ depends: [
   "cohttp-lwt" {= version}
   "lwt" {>= "3.0.0"}
   "lwt_ppx" {with-test}
+  "conf-npm" {with-test}
   "js_of_ocaml" {>= "3.3.0"}
   "js_of_ocaml-ppx" {>= "3.3.0"}
   "js_of_ocaml-lwt" {>= "3.5.0"}
