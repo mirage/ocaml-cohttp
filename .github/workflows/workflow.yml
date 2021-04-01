@@ -32,6 +32,7 @@ jobs:
           opam-pin: false
 
       - run: |
+          yarn
           opam pin add cohttp-async.dev . --no-action
           opam pin add cohttp-lwt-jsoo.dev . --no-action
           opam pin add cohttp-lwt-unix.dev . --no-action
