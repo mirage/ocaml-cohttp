@@ -1,4 +1,4 @@
-## ocaml-cohttp -- an OCaml library for HTTP clients and servers
+## ocaml-cohttp -- an OCaml library for HTTP clients and servers [![Main workflow](https://github.com/mirage/ocaml-cohttp/actions/workflows/workflow.yml/badge.svg)](https://github.com/mirage/ocaml-cohttp/actions/workflows/workflow.yml)
 
 Cohttp is an OCaml library for creating HTTP daemons. It has a portable
 HTTP parser, and implementations using various asynchronous programming

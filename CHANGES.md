@@ -1,34 +1,40 @@
-## ? (2021-03-30)
-(@lyrm #747)
+## current
 
-+ New implementation of Header modules using an associative list instead of a map, with one major semantic change (function ```get```, see below), and some new functions (```clean_dup```, ```get_multi_concat```)
-+ More Alcootest tests as well as fuzzing tests for this particular module.
+- lwt_jsoo: Fix `Lwt.wakeup_exn` `Invalid_arg` exception when a js
+  stack overflow happens in the XHR completion handler (@mefyl #762).
 
-### Purpose
+- Revamped Header implementation (@lyrm #747)
 
-The new header implementation uses an associative list instead of a map to represent headers and is focused on predictibility and intuitivity: except for some specific and documented functions, the headers are always kept in transmission order, which makes debugging easier and is also important for [RFC7230§3.2.2](https://tools.ietf.org/html/rfc7230#section-3.2.2) that states that multiple values of a header must be kept in order.
+  + New implementation of Header modules using an associative list instead of a map, with one major semantic change (function ```get```, see below), and some new functions (```clean_dup```, ```get_multi_concat```)
+  + More Alcootest tests as well as fuzzing tests for this particular module.
 
-Also, to get an intuitive function behaviour, no extra work to enforce RFCs is done by the basic functions. For example, RFC7230§3.2.2 requires that a sender does not send multiple values for a non list-value header. This particular rule could require the ```Header.add``` function to remove previous values of non-list-value headers, which means some changes of the headers would be out of control of the user. With the current implementation, an user has to actively call dedicated functions to enforce such RFCs (here ```Header.clean_dup```).
+  ### Purpose
 
-### Semantic changes
-Two functions have a semantic change : ```get``` and ```update```.
+  The new header implementation uses an associative list instead of a map to represent headers and is focused on predictibility and intuitivity: except for some specific and documented functions, the headers are always kept in transmission order, which makes debugging easier and is also important for [RFC7230§3.2.2](https://tools.ietf.org/html/rfc7230#section-3.2.2) that states that multiple values of a header must be kept in order.
 
-#### get
-```get``` was previously doing more than just returns the value associated to a key; it was also checking if the searched header could have multiple values: if not, the last value associated to the header was returned; otherwise, all the associated values were concatenated and returned. This semantics does not match the global idea behind the new header implementation, and would also be very unefficient.
+  Also, to get an intuitive function behaviour, no extra work to enforce RFCs is done by the basic functions. For example, RFC7230§3.2.2 requires that a sender does not send multiple values for a non list-value header. This particular rule could require the ```Header.add``` function to remove previous values of non-list-value headers, which means some changes of the headers would be out of control of the user. With the current implementation, an user has to actively call dedicated functions to enforce such RFCs (here ```Header.clean_dup```).
 
-+ The new ```get``` function only returns the last value associated to the searched header.
-+ ```get_multi_concat``` function has been added to get a result similar to the previous ```get``` function.
+  ### Semantic changes
+  Two functions have a semantic change : ```get``` and ```update```.
 
-#### update
-```update``` is a pretty new function (#703) and changes are minor and related to ```get``` semantic changes.
+  #### get
+  ```get``` was previously doing more than just returns the value associated to a key; it was also checking if the searched header could have multiple values: if not, the last value associated to the header was returned; otherwise, all the associated values were concatenated and returned. This semantics does not match the global idea behind the new header implementation, and would also be very unefficient.
 
-+ ```update h k f``` is now modifying only the last occurences of the header ```k``` instead of all its occurrences.
-+ a new function ```update_all``` function has been added and work on all the occurrences of the updated header.
+  + The new ```get``` function only returns the last value associated to the searched header.
+  + ```get_multi_concat``` function has been added to get a result similar to the previous ```get``` function.
 
-### New functions :
+  #### update
+  ```update``` is a pretty new function (#703) and changes are minor and related to ```get``` semantic changes.
 
-+ ```clean_dup```  enables the user to clean headers that follows the {{:https://tools.ietf.org/html/rfc7230#section-3.2.2} RFC7230§3.2.2} (no duplicate, except ```set-cookie```)
-+ ```get_multi_concat``` has been added to get a result similar to the previous ```get``` function.
+  + ```update h k f``` is now modifying only the last occurences of the header ```k``` instead of all its occurrences.
+  + a new function ```update_all``` function has been added and work on all the occurrences of the updated header.
+
+  ### New functions :
+
+  + ```clean_dup```  enables the user to clean headers that follows the {{:https://tools.ietf.org/html/rfc7230#section-3.2.2} RFC7230§3.2.2} (no duplicate, except ```set-cookie```)
+  + ```get_multi_concat``` has been added to get a result similar to the previous ```get``` function.
+
+
 
 ## v4.0.0 (2021-03-24)
 
