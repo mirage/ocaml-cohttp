@@ -9,4 +9,7 @@
  (alias runjstest)
  (deps test.js cohttp_lwt_jsoo_test.bc.js)
  (action
-  (run ./test.js)))
+  (setenv
+   NODE_PATH
+   "%{project_root}/cohttp_lwt_jsoo_test/node_modules"
+   (run ./test.js))))
