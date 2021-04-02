@@ -30,7 +30,7 @@ module H = Cohttp.Header
       documentation.
 
     - SI (Specific to current Implementation): these tests are here to check the
-      implementation is doing what we thing it is doing but may change
+      implementation is doing what we think it is doing but may change
       accordingly to implementation changes. *)
 
 (* Generators *)
@@ -108,7 +108,7 @@ let tchar_gen =
   in
   Crowbar.(map [ tchar_code_gen ] (fun i -> Char.escaped (Char.chr i)))
 
-(** Generate a non-emoty word of arbitrary length (composed of letters only). *)
+(** Generate a non-empty word of arbitrary length (composed of tchar only). *)
 let word_gen =
   let open Crowbar in
   let gen =
@@ -142,7 +142,7 @@ let header_gen : (string * string) Crowbar.gen =
   let gen_setcookie = pair (const "Set-cookie") word_gen in
   let gen_otherheader = pair header_name_gen word_gen in
   let gen =
-    (* one in ten generate header is a "set-cookie" header *)
+    (* one in ten generated header is a "set-cookie" header *)
     choose (gen_setcookie :: List.init 9 (fun _ -> gen_otherheader))
   in
   with_printer header_printer gen
@@ -515,7 +515,7 @@ let clean_dup_test () =
           H.(get_multi h "set-cookie")
           H.(get_multi (clean_dup h) "set-cookie"));
     (* FS *)
-    (* As the generated header values are only composed of letters (it
+    (* As the generated header values are only composed of tchar (it
        does not generate concatenated values like "gzip,chunked"), the
        only cases where there are commas in a value is if [clean_dup]
        concatenated multiple values.
