@@ -231,7 +231,20 @@ module Make_client_async (P : Params) = Make_api (struct
                  * Remove the type constraint on Lwt.task above and return any old
                  * guff here.  It'll compile and crash in the browser! *)
                 Lwt.wakeup wake (response, body)
-              with e -> Lwt.wakeup_exn wake e)
+              with
+              | e
+              (* If we exhaust the stack, it is possible that
+                 Lwt.wakeup just aboves marks the promise as
+                 completed, but raises Stack_overflow while
+                 running the promise callbacks. In this case
+                 waking calling wakeup_exn on the already
+                 completed promise would raise an Invalid_arg
+                 exception, so although the promise is in a
+                 really bad state we may as well let the actual
+                 Stack_overflow exception go through. *)
+              when Lwt.state res = Lwt.Sleep
+              ->
+                Lwt.wakeup_exn wake e)
           | _ -> ());
 
     (* perform call *)
