@@ -2,6 +2,7 @@
 
 - lwt_jsoo: Fix `Lwt.wakeup_exn` `Invalid_arg` exception when a js
   stack overflow happens in the XHR completion handler (@mefyl #762).
+- lwt_jsoo: Add test suite (@mefyl #764).
 
 ## v4.0.0 (2021-03-24)
 
