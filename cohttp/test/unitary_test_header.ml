@@ -17,6 +17,7 @@ module H = Cohttp.Header
 (** These tests try as much as possible to tests each header functions
     independently. *)
 
+let aei = Alcotest.check Alcotest.int
 let aes = Alcotest.check Alcotest.string
 let aeso = Alcotest.check Alcotest.(option string)
 let aesl = Alcotest.check Alcotest.(list string)
@@ -266,8 +267,33 @@ let map_tests () =
     ]
     H.(to_list (map (fun _k v -> v ^ a) prebuilt))
 
-let fold_tests () = ()
-let iter_tests () = ()
+let fold_tests () =
+  let rev k v acc = H.(add acc k v) in
+  let h1 = H.(fold rev prebuilt (init ())) in
+  aessl
+    "[fold (fun k v acc -> H.(add acc k v)) h (init ())] reverses the header"
+    (List.rev H.(to_list h1))
+    H.(to_list prebuilt);
+  let h1 = H.(fold rev (fold rev prebuilt (init ())) (init ())) in
+  aeh "[fold rev (fold rev h (init ())) (init ()) = h] " h1 prebuilt;
+  let count _ _ acc = acc + 1 in
+  aei "[fold (fun _ _ acc -> acc+1) h 0] returns the length of h"
+    (List.length H.(to_list prebuilt))
+    H.(fold count prebuilt 0)
+
+let iter_tests () =
+  let h = ref H.(init ()) in
+  let rev k v = h := H.(add !h k v) in
+  H.(iter rev prebuilt);
+  aessl "[iter (fun k v -> href := H.(add !href k v)) h] reverses the header"
+    (List.rev H.(to_list !h))
+    H.(to_list prebuilt);
+  let c = ref 0 in
+  let count _ _ = c := !c + 1 in
+  aei "[iter (fun _ _ -> count := !count+1) h] works fine"
+    (List.length H.(to_list prebuilt))
+    (H.(iter count prebuilt);
+     !c)
 
 let to_lines_tests () =
   aesl "to_lines h"
@@ -359,13 +385,12 @@ let tests =
       ("Header.to_frames", `Quick, to_frames_tests);
       ("Header.to_string", `Quick, to_string_tests);
       ("Header.map", `Quick, map_tests);
+      ("Header.fold", `Quick, fold_tests);
+      ("Header.iter", `Quick, iter_tests);
       ("Header.update", `Quick, update_tests);
       ("Header.update_all", `Quick, update_all_tests);
       ("many headers", `Slow, many_headers);
       ("transfer encoding is in correct order", `Quick, transfer_encoding_tests);
-      (*todo*)
-      ("Header.fold", `Quick, fold_tests);
-      ("Header.iter", `Quick, iter_tests);
     ]
     @
     if Sys.word_size = 64 then [ ("large header", `Slow, large_header) ] else []
