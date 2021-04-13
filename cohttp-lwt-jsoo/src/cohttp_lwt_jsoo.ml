@@ -320,14 +320,16 @@ module Make_client_sync (P : Params) = Make_api (struct
             (fun s -> `String s)
         in
         if xhr_response_supported then
-          Js.Opt.case
-            (File.CoerceTo.arrayBuffer xml##.response)
-            (fun () ->
-              Firebug.console##log
-                (Js.string
-                   "XHR Response is not an arrayBuffer; using responseText");
-              respText ())
-            (fun ab -> `ArrayBuffer ab)
+          if Js.Opt.return xml##.response == Js.null then `String (Js.string "")
+          else
+            Js.Opt.case
+              (File.CoerceTo.arrayBuffer xml##.response)
+              (fun () ->
+                Firebug.console##log
+                  (Js.string
+                     "XHR Response is not an arrayBuffer; using responseText");
+                respText ())
+              (fun ab -> `ArrayBuffer ab)
         else respText ()
       in
       Bb.get b
