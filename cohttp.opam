@@ -33,7 +33,7 @@ doc: "https://mirage.github.io/ocaml-cohttp/"
 bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
 depends: [
   "ocaml" {>= "4.08"}
-  "dune" {>= "2.0.0"}
+  "dune" {>= "2.0"}
   "re" {>= "1.9.0"}
   "uri" {>= "2.0.0"}
   "uri-sexp"
@@ -46,7 +46,7 @@ depends: [
   "alcotest" {with-test}
 ]
 build: [
-  ["dune" "subst"] {pinned}
+  ["dune" "subst"] {dev}
   ["dune" "build" "-p" name "-j" jobs]
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
