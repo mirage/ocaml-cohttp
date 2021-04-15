@@ -16,6 +16,18 @@
 
 (** Debugging output for Cohttp Unix *)
 
+val default_reporter : Lwt_unix.file_descr -> Format.formatter -> Logs.reporter
+(** [default_reporter fd formatter] provides a reporter that sends the logging
+    output to a specified file descriptor [fd] with a specified formatter
+    [formatter]. For example, the code below enables logging at level [level] to
+    stderr, using coloured output if possible.
+
+    {[
+      Fmt_tty.setup_std_outputs ();
+      Logs.set_level ~all:true (Some level);
+      Logs.set_reporter (Debug.default_reporter Lwt_unix.stderr Fmt.stderr)
+    ]} *)
+
 val activate_debug : unit -> unit
 (** [activate_debug] enables debugging output that will be sent to standard
     error. *)
