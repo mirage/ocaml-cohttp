@@ -34,3 +34,19 @@ val activate_debug : unit -> unit
 val debug_active : unit -> bool
 (** [debug_active] returns true if [activate_debug] has been called and false
     otherwise *)
+
+(** {2 Selectively disable cohttp logging} *)
+
+(** It is possible to selectively disable cohttp internal logginb by filtering
+    over the various modules logs names as follows.
+
+    {[
+      (* Set log level v for all loggers, this does also affect cohttp internal loggers *)
+      Logs.set_level ~all:true level;
+      (* Disable all cohttp-lwt and cohttp-lwt-unix logs *)
+      List.iter (fun src ->
+          match Logs.Src.name src with
+          | "cohttp.lwt.io" | "cohttp.lwt.server" -> Logs.Src.set_level src None
+          | _ -> ())
+      @@ Logs.Src.list ()
+    ]} *)
