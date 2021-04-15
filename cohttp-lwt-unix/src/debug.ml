@@ -19,7 +19,7 @@ let debug_active () = !_debug_active
 
 open Lwt.Infix
 
-let default_reporter file_descr ppf =
+let reporter file_descr ppf =
   let ppf, flush =
     let buf = Buffer.create 0x100 in
     ( Fmt.with_buffer ~like:ppf buf,
@@ -62,13 +62,15 @@ let default_reporter file_descr ppf =
   in
   { Logs.report }
 
+let default_reporter = reporter Lwt_unix.stderr Fmt.stderr
+
 let set_logger =
   lazy
     (if
      (* If no reporter has been set by the application, set default one
         that prints to stderr *)
      Logs.reporter () == Logs.nop_reporter
-    then Logs.set_reporter (default_reporter Lwt_unix.stderr Fmt.stderr))
+    then Logs.set_reporter default_reporter)
 
 let activate_debug () =
   if not !_debug_active then (

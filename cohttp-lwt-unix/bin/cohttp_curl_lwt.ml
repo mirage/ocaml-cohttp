@@ -48,15 +48,12 @@ let client uri ofile meth' =
       | None -> output_body Lwt_io.stdout
       | Some fname -> Lwt_io.with_file ~mode:Lwt_io.output fname output_body)
 
-let run_client verbose ofile uri meth =
-  Lwt_main.run
-    ( (if verbose then (
-       (* activate debug sets the reporter *)
-       Cohttp_lwt_unix.Debug.activate_debug ();
-       Log.debug (fun d -> d ">>> Debug active");
-       return ())
-      else return ())
-    >>= fun () -> client uri ofile meth )
+let run_client level ofile uri meth =
+  if not @@ Debug.debug_active () then (
+    Fmt_tty.setup_std_outputs ();
+    Logs.set_level ~all:true level;
+    Logs.set_reporter Debug.default_reporter);
+  Lwt_main.run (client uri ofile meth)
 
 open Cmdliner
 
