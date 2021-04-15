@@ -108,7 +108,7 @@ module Body_builder (P : Params) = struct
           (fun s -> `String s)
       in
       match xhr_response_supported with
-      | true when Js.Opt.return xml##.response = Js.null ->
+      | true when Js.Opt.return xml##.response == Js.null ->
           Firebug.console##log
             (Js.string "XHR Response is null; using empty string");
           `String (Js.string "")
