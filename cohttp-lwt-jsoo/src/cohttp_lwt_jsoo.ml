@@ -107,12 +107,12 @@ module Body_builder (P : Params) = struct
           (fun () -> `String (Js.string ""))
           (fun s -> `String s)
       in
-      if xhr_response_supported then
-        if Js.Opt.return xml##.response == Js.null then (
+      match xhr_response_supported with
+      | true when Js.Opt.return xml##.response == Js.null ->
           Firebug.console##log
             (Js.string "XHR Response is null; using empty string");
-          `String (Js.string ""))
-        else
+          `String (Js.string "")
+      | true ->
           Js.Opt.case
             (File.CoerceTo.arrayBuffer xml##.response)
             (fun () ->
@@ -121,7 +121,7 @@ module Body_builder (P : Params) = struct
                    "XHR Response is not an arrayBuffer; using responseText");
               respText ())
             (fun ab -> `ArrayBuffer ab)
-      else respText ()
+      | false -> respText ()
     in
     get b
 end
