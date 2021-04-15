@@ -74,6 +74,10 @@ let start_proxy port host verbose cert key () =
   Server.create ~mode config
 
 let lwt_start_proxy port host verbose cert key =
+  if not @@ Debug.debug_active () then (
+    Fmt_tty.setup_std_outputs ();
+    Logs.set_level ~all:true verbose;
+    Logs.set_reporter Debug.default_reporter);
   Lwt_main.run (start_proxy port host verbose cert key ())
 
 open Cmdliner

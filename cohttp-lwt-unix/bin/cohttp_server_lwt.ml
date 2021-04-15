@@ -132,7 +132,7 @@ let lwt_start_server docroot port host index level tls =
   if not @@ Debug.debug_active () then (
     Fmt_tty.setup_std_outputs ();
     Logs.set_level ~all:true level;
-    Logs.set_reporter (Debug.default_reporter Lwt_unix.stderr Fmt.stderr));
+    Logs.set_reporter Debug.default_reporter);
   Lwt_main.run (start_server docroot port host index tls ())
 
 open Cmdliner
