@@ -33,6 +33,7 @@ You can find help from cohttp users and maintainers at the
 - [Managing sessions](#managing-sessions)
 - [Multipart form data](#multipart-form-data)
 - [Creating custom resolver: a Docker Socket Client example](#creating-custom-resolver--a-docker-socket-client-example)
+- [Dealing with redirects](#dealing-with-redirects)
 - [Basic Server Tutorial](#basic-server-tutorial)
   * [Compile and execute with ocamlbuild](#compile-and-execute-with-ocamlbuild-1)
   * [Compile and execute with dune](#compile-and-execute-with-dune-1)
@@ -249,6 +250,54 @@ mentioning it to emphasize that we are creating a new Conduit resolver. Refer to
 [conduit's README](https://github.com/mirage/ocaml-conduit/) for examples of use and
 links to up-to-date conduit documentation.
 
+## Dealing with redirects
+
+This examples has been adapted from a script on the [ocaml.org](https://github.com/ocaml/ocaml.org/blob/master/script/http.ml) website, and shows an explicit way to deal with redirects.
+
+```ocaml
+let rec http_get_and_follow ~max_redirects uri =
+  let open Lwt.Syntax in
+  let* ans = Cohttp_lwt_unix.Client.get uri in
+  follow_redirect ~max_redirects uri ans
+
+and follow_redirect ~max_redirects request_uri (response, body) =
+  let open Lwt.Syntax in
+  let status = Cohttp.Response.status response in
+  (* The unconsumed body would otherwise leak memory *)
+  let* () =
+    if status <> `OK then Cohttp_lwt.Body.drain_body body else Lwt.return_unit
+  in
+  match status with
+  | `OK -> Lwt.return (response, body)
+  | `Permanent_redirect | `Moved_permanently ->
+      handle_redirect ~permanent:true ~max_redirects request_uri response
+  | `Found | `Temporary_redirect ->
+      handle_redirect ~permanent:false ~max_redirects request_uri response
+  | `Not_found | `Gone -> Lwt.fail_with "Not found"
+  | status ->
+      Lwt.fail_with
+        (Printf.sprintf "Unhandled status: %s"
+           (Cohttp.Code.string_of_status status))
+
+and handle_redirect ~permanent ~max_redirects request_uri response =
+  if max_redirects <= 0 then Lwt.fail_with "Too many redirects"
+  else
+    let headers = Cohttp.Response.headers response in
+    let location = Cohttp.Header.get headers "location" in
+    match location with
+    | None -> Lwt.fail_with "Redirection without Location header"
+    | Some url ->
+        let open Lwt.Syntax in
+        let uri = Uri.of_string url in
+        let* () =
+          if permanent then
+            Lwt_io.eprintf "Warning: permanent redirection from %s to %s\n"
+              (Uri.to_string request_uri)
+              url
+          else Lwt.return_unit
+        in
+        http_get_and_follow uri ~max_redirects:(max_redirects - 1)
+```
 
 ## Basic Server Tutorial
 
