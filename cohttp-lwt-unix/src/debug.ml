@@ -64,11 +64,11 @@ let default_reporter (file_descr, ppf) =
 
 let set_log =
   lazy
-    ((* If no reporter has been set by the application, set default one
+    (Logs.set_level @@ Some Logs.Debug;
+     (* If no reporter has been set by the application, set default one
         that prints to stderr *)
      if Logs.reporter () == Logs.nop_reporter then
-       Logs.set_level @@ Some Logs.Debug;
-     Logs.set_reporter (default_reporter (Lwt_unix.stderr, Fmt.stderr)))
+       Logs.set_reporter (default_reporter (Lwt_unix.stderr, Fmt.stderr)))
 
 let activate_debug () =
   Lazy.force set_log;
