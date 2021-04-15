@@ -31,7 +31,7 @@ depends: [
   "base" {>= "v0.11.0"}
   "core" {with-test}
   "cohttp" {= version}
-  "conduit-async" {>= "1.2.0" & < "3.0.0"}
+  "conduit-async" {>= "4.0.0"}
   "magic-mime"
   "mirage-crypto" {with-test}
   "logs"
@@ -49,3 +49,8 @@ build: [
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 dev-repo: "git+https://github.com/mirage/ocaml-cohttp.git"
+pin-depends: [
+  [ "conduit.4.0.0" "git+https://github.com/mirage/ocaml-conduit.git#ef052fa164144d666c7785ab902412e156a03d22" ]
+  [ "conduit-async.4.0.0" "git+https://github.com/mirage/ocaml-conduit.git#ef052fa164144d666c7785ab902412e156a03d22" ]
+]
+

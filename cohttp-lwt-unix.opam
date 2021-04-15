@@ -27,8 +27,8 @@ bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
 depends: [
   "ocaml" {>= "4.08"}
   "dune" {>= "2.0"}
-  "conduit-lwt" {>= "1.0.3" & < "3.0.0"}
-  "conduit-lwt-unix" {>= "1.0.3" & < "3.0.0"}
+  "conduit-lwt" {>= "4.0.0"}
+  "conduit-lwt-unix" {>= "4.0.0"}
   "cmdliner"
   "magic-mime"
   "logs"
@@ -45,3 +45,10 @@ build: [
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 dev-repo: "git+https://github.com/mirage/ocaml-cohttp.git"
+pin-depends: [
+  [ "conduit.4.0.0" "git+https://github.com/mirage/ocaml-conduit.git#ef052fa164144d666c7785ab902412e156a03d22" ]
+  [ "conduit-lwt.4.0.0" "git+https://github.com/mirage/ocaml-conduit.git#ef052fa164144d666c7785ab902412e156a03d22" ]
+  [ "conduit-lwt-unix.4.0.0" "git+https://github.com/mirage/ocaml-conduit.git#ef052fa164144d666c7785ab902412e156a03d22" ]
+  [ "tls.0.13.0" "git+https://github.com/mirleft/ocaml-tls.git#f9dd61f556d3f2790aa9eedcf2b6b3c8c99cb338" ]
+  [ "tls-mirage.0.13.0" "git+https://github.com/mirleft/ocaml-tls.git#f9dd61f556d3f2790aa9eedcf2b6b3c8c99cb338" ]
+]

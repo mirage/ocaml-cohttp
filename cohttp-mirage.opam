@@ -22,8 +22,8 @@ depends: [
   "dune" {>= "2.0"}
   "mirage-flow" {>= "2.0.0"}
   "mirage-channel" {>= "4.0.0"}
-  "conduit" {>= "2.0.2" & < "3.0.0"}
-  "conduit-mirage" {>= "2.0.2" & < "3.0.0"}
+  "conduit" {>= "4.0.0"}
+  "conduit-mirage" {>= "4.0.0"}
   "mirage-kv" {>= "3.0.0"}
   "lwt" {>= "2.4.3"}
   "cohttp" {= version}
@@ -38,3 +38,13 @@ build: [
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 dev-repo: "git+https://github.com/mirage/ocaml-cohttp.git"
+pin-depends: [
+  [ "conduit.4.0.0" "git+https://github.com/mirage/ocaml-conduit.git#ef052fa164144d666c7785ab902412e156a03d22" ]
+  [ "conduit-lwt.4.0.0" "git+https://github.com/mirage/ocaml-conduit.git#ef052fa164144d666c7785ab902412e156a03d22" ]
+  [ "conduit-mirage.4.0.0" "git+https://github.com/mirage/ocaml-conduit.git#ef052fa164144d666c7785ab902412e156a03d22" ]
+  [ "dns-client.5.0.0" "git+https://github.com/mirage/ocaml-dns.git#29168a8c464796fda77b50d721176f122ee724ae" ]
+  [ "dns.5.0.0" "git+https://github.com/mirage/ocaml-dns.git#29168a8c464796fda77b50d721176f122ee724ae" ]
+  [ "x509.0.12.0" "git+https://github.com/mirleft/ocaml-x509.git#02f662eaf7a549ff071a939b86a2e0bfaabc5890" ]
+  [ "tls.0.13.0" "git+https://github.com/mirleft/ocaml-tls.git#f9dd61f556d3f2790aa9eedcf2b6b3c8c99cb338" ]
+  [ "tls-mirage.0.13.0" "git+https://github.com/mirleft/ocaml-tls.git#f9dd61f556d3f2790aa9eedcf2b6b3c8c99cb338" ]
+]
