@@ -74,9 +74,7 @@ let meth =
   let doc = "Set http method" in
   Arg.(value & opt string "GET" & info [ "X"; "request" ] ~doc)
 
-let verb =
-  let doc = "Display additional debugging to standard error." in
-  Arg.(value & flag & info [ "v"; "verbose" ] ~doc)
+let verb = Logs_cli.level ()
 
 let ofile =
   let doc = "Output filename to store the URI into." in
