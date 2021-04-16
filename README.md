@@ -423,9 +423,24 @@ let reporter ppf =
     msgf @@ fun ?header ?tags fmt -> with_metadata header tags k ppf fmt in
   { Logs.report }
 
-let () = Fmt_tty.setup_std_outputs ~style_renderer:`Ansi_tty ~utf_8:true ()
-let () = Logs.set_reporter (reporter Fmt.stderr)
-let () = Logs.set_level ~all:true (Some Logs.Debug)
+let () =
+  Fmt_tty.setup_std_outputs ~style_renderer:`Ansi_tty ~utf_8:true ();
+  Logs.set_reporter (reporter Fmt.stderr);
+  Logs.set_level ~all:true (Some Logs.Debug)
+```
+
+Note that you can selectively filter out the logs produced by `cohttp-lwt` and `cohttp-lwt-unix` internals as follows.
+
+```ocaml
+let () =
+  (* Set log level v for all loggers, this does also affect cohttp internal loggers *)
+  Logs.set_level ~all:true level;
+  (* Disable all cohttp-lwt and cohttp-lwt-unix logs *)
+  List.iter (fun src ->
+      match Logs.Src.name src with
+      | "cohttp.lwt.io" | "cohttp.lwt.server" -> Logs.Src.set_level src None
+      | _ -> ())
+  @@ Logs.Src.list ()
 ```
 
 ## Important Links
