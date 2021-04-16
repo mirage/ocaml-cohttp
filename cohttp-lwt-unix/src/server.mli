@@ -1,7 +1,7 @@
 (** The [Server] module implements the full UNIX HTTP server interface,
-    including the UNIX-specific functions defined in {!S}. 
-    
-    The {!Logs} source name for this module logger is {"cohttp.lwt.server"}.
+    including the UNIX-specific functions defined in {!S}.
+
+    The {!Logs} source name for this module logger is ["cohttp.lwt.server"].
     Refer to the {!Debug} module for further details. *)
 
 include Cohttp_lwt.S.Server with module IO = Io
