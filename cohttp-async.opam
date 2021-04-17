@@ -31,7 +31,7 @@ depends: [
   "base" {>= "v0.11.0"}
   "core" {with-test}
   "cohttp" {= version}
-  "conduit-async" {>= "1.2.0" & < "3.0.0"}
+  "conduit-async" {>= "1.2.0"}
   "magic-mime"
   "mirage-crypto" {with-test}
   "logs"
