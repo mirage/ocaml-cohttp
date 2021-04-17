@@ -1,5 +1,6 @@
 ## current
 
+- lwt, lwt_unix: Improve use of logs and the documentation, fix bug in the Debug.enable_debug function (mseri #772)
 - lwt_jsoo: Fix exception on connection errors in chrome (mefyl #761)
 - lwt_jsoo: Fix `Lwt.wakeup_exn` `Invalid_arg` exception when a js
   stack overflow happens in the XHR completion handler (mefyl #762).
