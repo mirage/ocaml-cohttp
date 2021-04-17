@@ -1,5 +1,6 @@
 ## current
 
+- lwt_jsoo: Use logs for the warnings and document it (mseri #776)
 - lwt, lwt_unix: Improve use of logs and the documentation, fix bug in the Debug.enable_debug function (mseri #772)
 - lwt_jsoo: Fix exception on connection errors in chrome (mefyl #761)
 - lwt_jsoo: Fix `Lwt.wakeup_exn` `Invalid_arg` exception when a js
