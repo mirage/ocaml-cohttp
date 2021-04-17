@@ -51,6 +51,10 @@ module IO = Cohttp_lwt__String_io
 module Header_io = Cohttp__Header_io.Make (IO)
 
 module Body_builder (P : Params) = struct
+  let src = Logs.Src.create "cohttp.lwt.jsoo" ~doc:"Cohttp Lwt JSOO module"
+
+  module Log = (val Logs.src_log src : Logs.LOG)
+
   (* perform the body transfer in chunks from string. *)
   let chunked_body_str text =
     let body_len = text##.length in
@@ -109,16 +113,14 @@ module Body_builder (P : Params) = struct
       in
       match xhr_response_supported with
       | true when Js.Opt.return xml##.response == Js.null ->
-          Firebug.console##log
-            (Js.string "XHR Response is null; using empty string");
+          Log.warn (fun m -> m "XHR Response is null; using empty string");
           `String (Js.string "")
       | true ->
           Js.Opt.case
             (File.CoerceTo.arrayBuffer xml##.response)
             (fun () ->
-              Firebug.console##log
-                (Js.string
-                   "XHR Response is not an arrayBuffer; using responseText");
+              Log.warn (fun m ->
+                  m "XHR Response is not an arrayBuffer; using responseText");
               respText ())
             (fun ab -> `ArrayBuffer ab)
       | false -> respText ()
