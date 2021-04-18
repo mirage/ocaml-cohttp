@@ -252,7 +252,7 @@ links to up-to-date conduit documentation.
 
 ## Dealing with redirects
 
-This examples has been adapted from a script on the [ocaml.org](https://github.com/ocaml/ocaml.org/blob/master/script/http.ml) website, and shows an explicit way to deal with redirects.
+This examples has been adapted from a script on the [ocaml.org](https://github.com/ocaml/ocaml.org/blob/master/script/http.ml) website, and shows an explicit way to deal with redirects in `cohttp-lwt-unix`.
 
 ```ocaml
 let rec http_get_and_follow ~max_redirects uri =
@@ -291,13 +291,54 @@ and handle_redirect ~permanent ~max_redirects request_uri response =
         let uri = Uri.of_string url in
         let* () =
           if permanent then
-            Lwt_io.eprintf "Warning: permanent redirection from %s to %s\n"
-              (Uri.to_string request_uri)
-              url
+            Logs.warn (fun m ->
+                m "Permanent redirection from %s to %s"
+                  (Uri.to_string request_uri)
+                  url)
           else Lwt.return_unit
         in
         http_get_and_follow uri ~max_redirects:(max_redirects - 1)
 ```
+
+The following example, adapted from [blue-http](https://github.com/brendanlong/blue-http/blob/master/src/redirect.ml), does a similar thing with `cohttp-async` (and [ppx_let](https://github.com/janestreet/ppx_let)).
+
+```ocaml
+open Core_kernel
+open Async_kernel
+
+let with_redirects ~max_redirects uri f =
+  let seen_uris = Hash_set.create (module String) in
+  let rec loop ~max_redirects uri =
+    Hash_set.add seen_uris (Uri.to_string uri);
+    let%bind ((response, response_body) as res) = f uri in
+    let status_code =
+      Cohttp.(Response.status response |> Code.code_of_status)
+    in
+    if Cohttp.Code.is_redirection status_code then (
+      match Cohttp.(Response.headers response |> Header.get_location) with
+      | Some new_uri when Uri.to_string new_uri |> Hash_set.mem seen_uris ->
+          return res
+      | Some new_uri ->
+          if max_redirects > 0 then
+            (* Cohttp leaks connections if we don't drain the response body *)
+            Cohttp_async.Body.drain response_body >>= fun () ->
+            loop ~max_redirects:(max_redirects - 1) new_uri
+          else (
+            Log.Global.debug ~tags:[]
+              "Ignoring %d redirect from %s to %s: redirect limit exceeded"
+              status_code (Uri.to_string uri) (Uri.to_string new_uri);
+            return res)
+      | None ->
+          Log.Global.debug ~tags:[]
+            "Ignoring %d redirect from %s: there is no Location header"
+            status_code (Uri.to_string uri);
+          return res)
+    else return res
+  in
+  loop ~max_redirects uri
+```
+
+You can read a bit more on the rationale behind the absence of this functionality in the API [here](https://github.com/mirage/ocaml-cohttp/issues/76).
 
 ## Basic Server Tutorial
 
