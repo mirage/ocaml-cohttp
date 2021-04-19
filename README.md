@@ -195,8 +195,9 @@ which is compatible with `cohttp`.
 ## Multipart form data
 
 Multipart form data is not supported out of the box but is provided by external libraries:
-- [`multipart_form`](https://github.com/dinosaure/multipart_form)
-- [`multipart-form-data`](https://github.com/cryptosense/multipart-form-data).
+- [`multipart_form`](https://github.com/dinosaure/multipart_form) which has bounded memory consumption even when transferring large amount of data
+- [`multipart-form-data`](https://github.com/cryptosense/multipart-form-data)
+- [`http-multipart-formdata`](https://github.com/lemaetech/http-multipart-formdata) which however does not support streaming
 
 ## Creating custom resolver: a Docker Socket Client example
 
