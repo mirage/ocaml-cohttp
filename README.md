@@ -184,6 +184,21 @@ Fatal error: exception (Failure "Timeout expired")
 
 Similarly, in the case of `cohttp-async` you can directly use Async's
 [`with_timeout`](https://ocaml.janestreet.com/ocaml-core/latest/doc/async_unix/Async_unix/Clock/index.html#val-with_timeout) function.
+For example,
+
+```ocaml
+let get_body ~uri ~timeout =
+    let%bind _, body = Cohttp_async.Client.get ~interrupt:(after (sec timeout)) uri in
+    Body.to_string body    
+
+let body =
+  let uri = Uri.of_string "https://www.reddit.com/" in
+  let timeout = 0.1 in
+  Clock.with_timeout (sec timeout) (get_body ~uri ~timeout)
+  >>| function
+  | `Result body -> Log.debug logger "body: %s" body
+  | `Timeout  -> Log.debug logger "Timeout with url:%s" url
+```
 
 ## Managing sessions
 
