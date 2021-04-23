@@ -21,13 +21,26 @@ module LString : sig
 
   val of_string : string -> t
   val to_string : t -> string
-  val compare : t -> t -> int
+  val equal : t -> t -> bool
 end = struct
   type t = string
 
   let of_string x = String.lowercase_ascii x
   let to_string x = x
-  let compare a b = String.compare a b
+
+  let equal x y =
+    let len = String.length x in
+    len = String.length y
+    &&
+    let equal_so_far = ref true in
+    let i = ref 0 in
+    while !equal_so_far && !i < len do
+      let c1 = String.unsafe_get x !i in
+      let c2 = String.unsafe_get y !i in
+      equal_so_far := c1 = c2;
+      incr i
+    done;
+    !equal_so_far
 end
 
 type t = (LString.t * string) list
@@ -41,7 +54,7 @@ let mem h k =
   let k = LString.of_string k in
   let rec loop = function
     | [] -> false
-    | (k', _) :: h' -> if LString.compare k k' = 0 then true else loop h'
+    | (k', _) :: h' -> if LString.equal k k' then true else loop h'
   in
   loop h
 
@@ -62,17 +75,17 @@ let get h k =
   let rec loop h =
     match h with
     | [] -> None
-    | (k', v) :: h' -> if LString.compare k k' = 0 then Some v else loop h'
+    | (k', v) :: h' -> if LString.equal k k' then Some v else loop h'
   in
   loop h
 
 let get_multi (h : t) (k : string) =
+  let k = LString.of_string k in
   let rec loop h acc =
     match h with
     | [] -> acc
     | (k', v) :: h' ->
-        if LString.compare (LString.of_string k) k' = 0 then loop h' (v :: acc)
-        else loop h' acc
+        if LString.equal k k' then loop h' (v :: acc) else loop h' acc
   in
   loop h []
 
@@ -80,7 +93,7 @@ let remove h k =
   let k = LString.of_string k in
   let rec loop seen = function
     | [] -> if seen then [] else raise Not_found
-    | (k', _) :: h when LString.compare k k' = 0 -> loop true h
+    | (k', _) :: h when LString.equal k k' -> loop true h
     | x :: h -> x :: loop seen h
   in
   try loop false h with Not_found -> h
@@ -89,7 +102,7 @@ let remove_last h k =
   let k = LString.of_string k in
   let rec loop seen = function
     | [] -> raise Not_found
-    | (k', _) :: h when LString.compare k k' = 0 -> h
+    | (k', _) :: h when LString.equal k k' -> h
     | x :: h -> x :: loop seen h
   in
   try loop false h with Not_found -> h
@@ -98,7 +111,7 @@ let replace_ last h k v =
   let k' = LString.of_string k in
   let rec loop seen = function
     | [] -> if seen then [] else raise Not_found
-    | (k'', _) :: h when LString.compare k' k'' = 0 ->
+    | (k'', _) :: h when LString.equal k' k'' ->
         if last then (k'', v) :: h
         else if not seen then (k', v) :: loop true h
         else loop seen h
@@ -202,15 +215,17 @@ let is_header_with_list_value =
   headers_with_list_values |> Array.iter (fun h -> Hashtbl.add tbl h ());
   fun h -> Hashtbl.mem tbl h
 
-let is_set_cookie k = LString.(compare k (of_string "set-cookie"))
+let is_set_cookie =
+  let k' = LString.of_string "set-cookie" in
+  fun k -> LString.equal k k'
 
 (* set-cookie is an exception according to
    {{:https://tools.ietf.org/html/rfc7230#section-3.2.2}
-   RFC7230§3.2.2} and can appear multiple times in a response message.
+    RFC7230§3.2.2} and can appear multiple times in a response message.
 *)
 let clean_dup (h : t) : t =
   let add h k v =
-    if is_set_cookie k = 0 then (k, v) :: h
+    if is_set_cookie k then (k, v) :: h
     else
       let to_add = ref false in
       let rec loop = function
@@ -218,7 +233,7 @@ let clean_dup (h : t) : t =
             to_add := true;
             []
         | (k', v') :: hs ->
-            if LString.compare k k' = 0 then
+            if LString.equal k k' then
               if is_header_with_list_value k then (k, v' ^ "," ^ v) :: hs
               else (
                 to_add := true;
