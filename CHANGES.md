@@ -8,7 +8,7 @@
   stack overflow happens in the XHR completion handler (mefyl #762).
 - lwt_jsoo: Add test suite (mefyl #764).
 
-- Cohttp.Header: new implementation (@lyrm #747)
+- Cohttp.Header: new implementation (lyrm #747)
 
   + New implementation of Header modules using an associative list instead of a map, with one major semantic change (function ```get```, see below), and some new functions (```clean_dup```, ```get_multi_concat```)
   + More Alcotest tests as well as fuzzing tests for this particular module.
@@ -38,6 +38,7 @@
 
   + ```clean_dup```  enables the user to clean headers that follows the {{:https://tools.ietf.org/html/rfc7230#section-3.2.2} RFC7230§3.2.2} (no duplicate, except ```set-cookie```)
   + ```get_multi_concat``` has been added to get a result similar to the previous ```get``` function.
+- Cohttp.Header: optimize internal of cohttp.headers (mseri #778)
 
 ## v4.0.0 (2021-03-24)
 
