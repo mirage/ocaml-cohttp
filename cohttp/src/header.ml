@@ -27,20 +27,7 @@ end = struct
 
   let of_string x = String.lowercase_ascii x
   let to_string x = x
-
-  let equal x y =
-    let len = String.length x in
-    len = String.length y
-    &&
-    let equal_so_far = ref true in
-    let i = ref 0 in
-    while !equal_so_far && !i < len do
-      let c1 = String.unsafe_get x !i in
-      let c2 = String.unsafe_get y !i in
-      equal_so_far := c1 = c2;
-      incr i
-    done;
-    !equal_so_far
+  let equal x y = String.equal x y
 end
 
 type t = (LString.t * string) list
