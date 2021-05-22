@@ -32,6 +32,7 @@ jobs:
         uses: ocaml/setup-ocaml@v2
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          dune-cache: ${{ matrix.os == 'ubuntu-latest' }}
 
       - run: yarn --frozen-lockfile
         working-directory: cohttp_lwt_jsoo_test
