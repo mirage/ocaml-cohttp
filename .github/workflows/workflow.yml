@@ -1,8 +1,11 @@
 name: Main workflow
 
 on:
-  - pull_request
-  - push
+  pull_request:
+  push:
+  schedule:
+    # Prime the caches every Monday
+    - cron: 0 1 * * MON
 
 jobs:
   build:
@@ -12,11 +15,12 @@ jobs:
         os:
           - macos-latest
           - ubuntu-latest
-        ocaml-version:
+        ocaml-compiler:
           - 4.08.x
           - 4.09.x
           - 4.10.x
           - 4.11.x
+          - 4.12.x
 
     runs-on: ${{ matrix.os }}
 
@@ -24,37 +28,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Use OCaml ${{ matrix.ocaml-version }}
-        uses: actions-ml/setup-ocaml@master
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v2
         with:
-          ocaml-version: ${{ matrix.ocaml-version }}
-          opam-depext: false
-          opam-pin: false
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          dune-cache: ${{ matrix.os == 'ubuntu-latest' }}
 
-      - run: |
-          (cd cohttp_lwt_jsoo_test && yarn)
-          opam pin add cohttp-async.dev . --no-action
-          opam pin add cohttp-lwt-jsoo.dev . --no-action
-          opam pin add cohttp-lwt-unix.dev . --no-action
-          opam pin add cohttp-lwt.dev . --no-action
-          opam pin add cohttp-mirage.dev . --no-action
-          opam pin add cohttp-top.dev . --no-action
-          opam pin add cohttp.dev . --no-action
-
-      - run: |
-          opam depext --yes \
-          cohttp \
-          cohttp-async \
-          cohttp-lwt \
-          cohttp-lwt-jsoo \
-          cohttp-lwt-unix \
-          cohttp-mirage \
-          cohttp-top \
+      - run: yarn --frozen-lockfile
+        working-directory: cohttp_lwt_jsoo_test
 
       - run: echo "PKG_CONFIG_PATH=$(brew --prefix openssl)/lib/pkgconfig" >>"$GITHUB_ENV"
         if: ${{ matrix.os == 'macos-latest' }}
 
-      - run: opam install . --deps-only --with-doc --with-test --yes
+      - run: opam install . --deps-only --with-test
 
       - run: opam exec -- make build
 
