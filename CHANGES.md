@@ -1,3 +1,7 @@
+## current
+
+- Use package core_unix instead of core, to prepare for core release 0.15 (#791 aalekseyev)
+
 ## v2.5.5 (2021-03-15)
 
 - `Cohttp_async.resolve_local_file`, `Cohttp_lwt.resolve_local_file` and `Cohttp_lwt_unix.resolve_file`
