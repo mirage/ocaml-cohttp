@@ -58,7 +58,7 @@ let is_empty_tests () =
 
 let init_with_tests () =
   aessl "init_with k v"
-    [ ("transfer-encoding", "chunked") ]
+    [ ("traNsfer-eNcoding", "chunked") ]
     H.(to_list (init_with "traNsfer-eNcoding" "chunked"))
 
 let mem_tests () =
