@@ -16,36 +16,37 @@
  *
   }}}*)
 
-module LString : sig
-  type t
+let caseless_equal a b =
+  if a == b then true
+  else
+    let len = String.length a in
+    len = String.length b
+    &&
+    let stop = ref false in
+    let idx = ref 0 in
+    while (not !stop) && !idx < len do
+      let c1 = String.unsafe_get a !idx in
+      let c2 = String.unsafe_get b !idx in
+      if Char.lowercase_ascii c1 <> Char.lowercase_ascii c2 then stop := true;
+      incr idx
+    done;
+    not !stop
 
-  val of_string : string -> t
-  val to_string : t -> string
-  val equal : t -> t -> bool
-end = struct
-  type t = string
-
-  let of_string x = String.lowercase_ascii x
-  let to_string x = x
-  let equal x y = String.equal x y
-end
-
-type t = (LString.t * string) list
+type t = (string * string) list
 
 let compare = Stdlib.compare
 let init () = []
 let is_empty = function [] -> true | _ -> false
-let init_with k v = [ (LString.of_string k, v) ]
+let init_with k v = [ (k, v) ]
 
 let mem h k =
-  let k = LString.of_string k in
   let rec loop = function
     | [] -> false
-    | (k', _) :: h' -> if LString.equal k k' then true else loop h'
+    | (k', _) :: h' -> if caseless_equal k k' then true else loop h'
   in
   loop h
 
-let add h k v : t = (LString.of_string k, v) :: h
+let add h k v : t = (k, v) :: h
 let add_list h l = List.fold_left (fun h (k, v) -> add h k v) h l
 let add_multi h k l = List.fold_left (fun h v -> add h k v) h l
 
@@ -58,11 +59,10 @@ let add_opt_unless_exists h k v =
   match h with None -> init_with k v | Some h -> add_unless_exists h k v
 
 let get h k =
-  let k = LString.of_string k in
   let rec loop h =
     match h with
     | [] -> None
-    | (k', v) :: h' -> if LString.equal k k' then Some v else loop h'
+    | (k', v) :: h' -> if caseless_equal k k' then Some v else loop h'
   in
   loop h
 
@@ -72,35 +72,32 @@ let get_multi (h : t) (k : string) =
     match h with
     | [] -> acc
     | (k', v) :: h' ->
-        if LString.equal k k' then loop h' (v :: acc) else loop h' acc
+        if caseless_equal k k' then loop h' (v :: acc) else loop h' acc
   in
   loop h []
 
 let remove h k =
-  let k = LString.of_string k in
   let rec loop seen = function
     | [] -> if seen then [] else raise Not_found
-    | (k', _) :: h when LString.equal k k' -> loop true h
+    | (k', _) :: h when caseless_equal k k' -> loop true h
     | x :: h -> x :: loop seen h
   in
   try loop false h with Not_found -> h
 
 let remove_last h k =
-  let k = LString.of_string k in
   let rec loop seen = function
     | [] -> raise Not_found
-    | (k', _) :: h when LString.equal k k' -> h
+    | (k', _) :: h when caseless_equal k k' -> h
     | x :: h -> x :: loop seen h
   in
   try loop false h with Not_found -> h
 
 let replace_ last h k v =
-  let k' = LString.of_string k in
   let rec loop seen = function
     | [] -> if seen then [] else raise Not_found
-    | (k'', _) :: h when LString.equal k' k'' ->
+    | (k'', _) :: h when caseless_equal k k'' ->
         if last then (k'', v) :: h
-        else if not seen then (k', v) :: loop true h
+        else if not seen then (k, v) :: loop true h
         else loop seen h
     | x :: h -> x :: loop seen h
   in
@@ -129,33 +126,26 @@ let update_all h k f =
 let map (f : string -> string -> string) (h : t) : t =
   List.map
     (fun (k, v) ->
-      let vs' = f (LString.to_string k) v in
+      let vs' = f k v in
       (k, vs'))
     h
 
 let iter (f : string -> string -> unit) (h : t) : unit =
-  List.iter (fun (k, v) -> f (LString.to_string k) v) h
+  List.iter (fun (k, v) -> f k v) h
 
 let fold (f : string -> string -> 'a -> 'a) (h : t) (init : 'a) : 'a =
-  List.fold_left (fun acc (k, v) -> f (LString.to_string k) v acc) init h
+  List.fold_left (fun acc (k, v) -> f k v acc) init h
 
-let of_list h =
-  List.fold_left (fun acc (k, v) -> (LString.of_string k, v) :: acc) [] h
-
-let to_list h =
-  List.fold_left (fun acc (k, v) -> (LString.to_string k, v) :: acc) [] h
+let of_list h = List.rev h
+let to_list h = List.rev h
 
 let to_lines (h : t) =
   let header_line k v = Printf.sprintf "%s: %s\r\n" k v in
-  List.fold_left
-    (fun acc (k, v) -> header_line (LString.to_string k) v :: acc)
-    [] h
+  List.fold_left (fun acc (k, v) -> header_line k v :: acc) [] h
 
 let to_frames h =
   let to_frame k v = Printf.sprintf "%s: %s" k v in
-  List.fold_left
-    (fun acc (k, v) -> to_frame (LString.to_string k) v :: acc)
-    [] h
+  List.fold_left (fun acc (k, v) -> to_frame k v :: acc) [] h
 
 let to_string h =
   let b = Buffer.create 128 in
@@ -169,42 +159,39 @@ let to_string h =
   Buffer.contents b
 
 let headers_with_list_values =
-  Array.map LString.of_string
-    [|
-      "accept";
-      "accept-charset";
-      "accept-encoding";
-      "accept-language";
-      "accept-ranges";
-      "allow";
-      "cache-control";
-      "connection";
-      "content-encoding";
-      "content-language";
-      "expect";
-      "if-match";
-      "if-none-match";
-      "link";
-      "pragma";
-      "proxy-authenticate";
-      "te";
-      "trailer";
-      "transfer-encoding";
-      "upgrade";
-      "vary";
-      "via";
-      "warning";
-      "www-authenticate";
-    |]
+  [|
+    "accept";
+    "accept-charset";
+    "accept-encoding";
+    "accept-language";
+    "accept-ranges";
+    "allow";
+    "cache-control";
+    "connection";
+    "content-encoding";
+    "content-language";
+    "expect";
+    "if-match";
+    "if-none-match";
+    "link";
+    "pragma";
+    "proxy-authenticate";
+    "te";
+    "trailer";
+    "transfer-encoding";
+    "upgrade";
+    "vary";
+    "via";
+    "warning";
+    "www-authenticate";
+  |]
 
 let is_header_with_list_value =
   let tbl = Hashtbl.create (Array.length headers_with_list_values) in
   headers_with_list_values |> Array.iter (fun h -> Hashtbl.add tbl h ());
   fun h -> Hashtbl.mem tbl h
 
-let is_set_cookie =
-  let k' = LString.of_string "set-cookie" in
-  fun k -> LString.equal k k'
+let is_set_cookie k = caseless_equal k "set-cookie"
 
 (* set-cookie is an exception according to
    {{:https://tools.ietf.org/html/rfc7230#section-3.2.2}
@@ -220,7 +207,7 @@ let clean_dup (h : t) : t =
             to_add := true;
             []
         | (k', v') :: hs ->
-            if LString.equal k k' then
+            if caseless_equal k k' then
               if is_header_with_list_value k then (k, v' ^ "," ^ v) :: hs
               else (
                 to_add := true;
@@ -233,8 +220,7 @@ let clean_dup (h : t) : t =
   List.rev h |> List.fold_left (fun acc (k, v) -> add acc k v) []
 
 let get_multi_concat ?(list_value_only = false) h k : string option =
-  if (not list_value_only) || is_header_with_list_value (LString.of_string k)
-  then
+  if (not list_value_only) || is_header_with_list_value k then
     let vs = get_multi h k in
     match vs with [] -> None | _ -> Some (String.concat "," vs)
   else get h k
