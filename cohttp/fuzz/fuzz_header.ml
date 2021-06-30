@@ -189,10 +189,10 @@ let is_empty_test () =
 let init_with_test () =
   Crowbar.(
     (* FS *)
-    (* forall k v. to_list (init_with k v) = [String.lowercase k, v] *)
+    (* forall k v. to_list (init_with k v) = [k, v] *)
     add_test ~name:"[init_list k v] is [k, v]" [ header_name_gen; word_gen ]
       (fun k v ->
-        check_eq H.(to_list (init_with k v)) [ (String.lowercase_ascii k, v) ]))
+        check_eq H.(to_list (init_with k v)) [ (k, v) ]))
 
 let mem_test () =
   Crowbar.(
@@ -206,7 +206,7 @@ let mem_test () =
       [ headers_gen; header_name_gen ] (fun h k ->
         check_eq
           H.(mem h k)
-          List.(mem_assoc (String.lowercase_ascii k) (H.to_list h))))
+          List.(mem_assoc k (H.to_list h))))
 
 let add_test () =
   Crowbar.(
@@ -221,7 +221,7 @@ let add_test () =
       ~name:"[add] adds a value at the header end"
       [ headers_gen; header_name_gen; word_gen ] (fun h k v ->
         check_eq
-          (H.to_list h @ [ (String.lowercase_ascii k, v) ])
+          (H.to_list h @ [ (k, v) ])
           H.(to_list (add h k v))))
 
 let to_list_of_list_test () =
