@@ -15,6 +15,9 @@
   + New implementation of Header modules using an associative list instead of a map, with one major semantic change (function ```get```, see below), and some new functions (```clean_dup```, ```get_multi_concat```)
   + More Alcotest tests as well as fuzzing tests for this particular module.
 
+- Cohttp.Header: performance improvement (mseri, anuragsoni #778)
+  **Breaking** the headers are no-longer lowercased when parsed, the headers key comparison is case insensitive instead.
+
   ### Purpose
 
   The new header implementation uses an associative list instead of a map to represent headers and is focused on predictability and intuitivity: except for some specific and documented functions, the headers are always kept in transmission order, which makes debugging easier and is also important for [RFC7230§3.2.2](https://tools.ietf.org/html/rfc7230#section-3.2.2) that states that multiple values of a header must be kept in order.
