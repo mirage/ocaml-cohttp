@@ -32,7 +32,8 @@ val of_list : (string * string) list -> t
     is true with case insensitive comparison. *)
 
 val to_list : t -> (string * string) list
-(** [to_list h] converts HTTP headers [h] to a list. Order is preserved.
+(** [to_list h] converts HTTP headers [h] to a list. Order and case is
+    preserved.
 
     {e Invariant (with case insensitive comparison):} [to_list (of_list l) = l] *)
 
