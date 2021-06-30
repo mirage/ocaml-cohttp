@@ -67,7 +67,6 @@ let get h k =
   loop h
 
 let get_multi (h : t) (k : string) =
-  let k = LString.of_string k in
   let rec loop h acc =
     match h with
     | [] -> acc
