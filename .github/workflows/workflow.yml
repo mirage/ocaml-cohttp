@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Use OCaml ${{ matrix.ocaml-version }}
-        uses: actions-ml/setup-ocaml@master
+        uses: ocaml/setup-ocaml@v2
         with:
           ocaml-version: ${{ matrix.ocaml-version }}
           opam-depext: false
