@@ -206,7 +206,7 @@ let mem_test () =
       [ headers_gen; header_name_gen ] (fun h k ->
         check_eq
           H.(mem h k)
-          List.(mem_assoc k (H.to_list h))))
+          List.(exists (fun (x, _) -> String.lowercase_ascii x = String.lowercase_ascii k) (H.to_list h))))
 
 let add_test () =
   Crowbar.(
