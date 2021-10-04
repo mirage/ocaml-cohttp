@@ -121,7 +121,7 @@ available on the [repository github pages](https://mirage.github.io/ocaml-cohttp
 Build and execute with:
 
 ```
-$ ocamlbuild -pkg cohttp-lwt-unix client_example.native
+$ ocamlbuild -use-ocamlfind -tag thread -pkg cohttp-lwt-unix client_example.native
 $ ./client_example.native
 ```
 
@@ -399,7 +399,7 @@ let server =
 
 Build and execute with:
 ```
-$ ocamlbuild -pkg cohttp-lwt-unix server_example.native
+$ ocamlbuild -use-ocamlfind -tag thread -pkg cohttp-lwt-unix server_example.native
 $ ./server_example.native
 ```
 
