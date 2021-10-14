@@ -23,7 +23,7 @@ module HTTP (FS : Mirage_kv.RO) (S : Cohttp_lwt.S.Server) = struct
   open Lwt.Infix
   open Astring
 
-  let failf fmt = Fmt.kstrf Lwt.fail_with fmt
+  let failf fmt = Fmt.kstr Lwt.fail_with fmt
 
   let read_fs t name =
     FS.get t (Key.v name) >>= function
@@ -59,7 +59,7 @@ module HTTP (FS : Mirage_kv.RO) (S : Cohttp_lwt.S.Server) = struct
               in
               S.respond_string ~status:`OK ~body ~headers ())
             (fun _exn ->
-              let with_index = Fmt.strf "%s/index.html" path in
+              let with_index = Fmt.str "%s/index.html" path in
               exists fs with_index >>= function
               | true -> fn fs (Uri.with_path uri with_index)
               | false -> S.respond_not_found ())
