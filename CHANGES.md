@@ -1,5 +1,6 @@
 ## current
 
+- cohttp-mirage: fix deprecated fmt usage (tmcgilchrist #783)
 - lwt_jsoo: Use logs for the warnings and document it (mseri #776)
 - lwt: Use logs to warn users about leaked bodies and document it (mseri #771)
 - lwt, lwt_unix: Improve use of logs and the documentation, fix bug in the Debug.enable_debug function (mseri #772)

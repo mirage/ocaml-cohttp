@@ -28,6 +28,7 @@ depends: [
   "lwt" {>= "2.4.3"}
   "cohttp" {= version}
   "cohttp-lwt" {= version}
+  "fmt" {>= "0.8.7"}
   "astring"
   "magic-mime"
   "ppx_sexp_conv" {>= "v0.13.0"}
