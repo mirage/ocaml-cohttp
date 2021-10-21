@@ -1,5 +1,6 @@
 ## current
 
+- cohttp-lwt-unix: Adopt ocaml-conduit 5.0.0 (smorimoto #787)
 - cohttp-mirage: fix deprecated fmt usage (tmcgilchrist #783)
 - lwt_jsoo: Use logs for the warnings and document it (mseri #776)
 - lwt: Use logs to warn users about leaked bodies and document it (mseri #771)
