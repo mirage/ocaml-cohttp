@@ -1,4 +1,4 @@
-.PHONY: build clean test clean all-supported-ocaml-versions
+.PHONY: build clean test clean
 
 build:
 	dune build
@@ -11,6 +11,3 @@ js-test:
 
 clean:
 	dune clean
-
-all-supported-ocaml-versions:
-	dune build @install @runtest --workspace jbuild-workspace.dev
