@@ -48,5 +48,5 @@ build: [
   ["dune" "build" "-p" name "-j" jobs]
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
-available: arch != "s360"
+available: arch != "s390x"
 dev-repo: "git+https://github.com/mirage/ocaml-cohttp.git"
