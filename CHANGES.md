@@ -1,14 +1,4 @@
-## v4.1.0 (2021-11-05)
-
-- cohttp-lwt-unix: Adopt ocaml-conduit 5.0.0 (smorimoto #787)
-- cohttp-mirage: fix deprecated fmt usage (tmcgilchrist #783)
-- lwt_jsoo: Use logs for the warnings and document it (mseri #776)
-- lwt: Use logs to warn users about leaked bodies and document it (mseri #771)
-- lwt, lwt_unix: Improve use of logs and the documentation, fix bug in the Debug.enable_debug function (mseri #772)
-- lwt_jsoo: Fix exception on connection errors in chrome (mefyl #761)
-- lwt_jsoo: Fix `Lwt.wakeup_exn` `Invalid_arg` exception when a js
-  stack overflow happens in the XHR completion handler (mefyl #762).
-- lwt_jsoo: Add test suite (mefyl #764).
+## current
 
 - Cohttp.Header: new implementation (lyrm #747)
 
@@ -44,6 +34,19 @@
   + ```clean_dup```  enables the user to clean headers that follows the {{:https://tools.ietf.org/html/rfc7230#section-3.2.2} RFC7230§3.2.2} (no duplicate, except ```set-cookie```)
   + ```get_multi_concat``` has been added to get a result similar to the previous ```get``` function.
 - Cohttp.Header: optimize internal of cohttp.headers (mseri #778)
+
+
+## v4.1.0 (2021-11-05)
+
+- cohttp-lwt-unix: Adopt ocaml-conduit 5.0.0 (smorimoto #787)
+- cohttp-mirage: fix deprecated fmt usage (tmcgilchrist #783)
+- lwt_jsoo: Use logs for the warnings and document it (mseri #776)
+- lwt: Use logs to warn users about leaked bodies and document it (mseri #771)
+- lwt, lwt_unix: Improve use of logs and the documentation, fix bug in the Debug.enable_debug function (mseri #772)
+- lwt_jsoo: Fix exception on connection errors in chrome (mefyl #761)
+- lwt_jsoo: Fix `Lwt.wakeup_exn` `Invalid_arg` exception when a js
+  stack overflow happens in the XHR completion handler (mefyl #762).
+- lwt_jsoo: Add test suite (mefyl #764).
 
 ## v4.0.0 (2021-03-24)
 
