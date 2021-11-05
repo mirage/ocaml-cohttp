@@ -1,4 +1,4 @@
-## current
+## v4.1.0 (2021-11-05)
 
 - cohttp-lwt-unix: Adopt ocaml-conduit 5.0.0 (smorimoto #787)
 - cohttp-mirage: fix deprecated fmt usage (tmcgilchrist #783)
