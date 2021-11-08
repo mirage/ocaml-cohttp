@@ -5,9 +5,6 @@
   + New implementation of Header modules using an associative list instead of a map, with one major semantic change (function ```get```, see below), and some new functions (```clean_dup```, ```get_multi_concat```)
   + More Alcotest tests as well as fuzzing tests for this particular module.
 
-- Cohttp.Header: performance improvement (mseri, anuragsoni #778)
-  **Breaking** the headers are no-longer lowercased when parsed, the headers key comparison is case insensitive instead.
-
   ### Purpose
 
   The new header implementation uses an associative list instead of a map to represent headers and is focused on predictability and intuitivity: except for some specific and documented functions, the headers are always kept in transmission order, which makes debugging easier and is also important for [RFC7230§3.2.2](https://tools.ietf.org/html/rfc7230#section-3.2.2) that states that multiple values of a header must be kept in order.
@@ -33,12 +30,13 @@
 
   + ```clean_dup```  enables the user to clean headers that follows the {{:https://tools.ietf.org/html/rfc7230#section-3.2.2} RFC7230§3.2.2} (no duplicate, except ```set-cookie```)
   + ```get_multi_concat``` has been added to get a result similar to the previous ```get``` function.
-- Cohttp.Header: optimize internal of cohttp.headers (mseri #778)
 
+- Cohttp.Header: performance improvement (mseri, anuragsoni #778) 
+  **Breaking** the headers are no-longer lowercased when parsed, the headers key comparison is case insensitive instead.
 
-## v4.1.0 (2021-11-05)
+- cohttp-lwt-unix: Adopt ocaml-conduit 5.0.0 (smorimoto #787) 
+  **Breaking** `Conduit_lwt_unix.connect`'s `ctx` param type chaged from `ctx` to  `ctx Lazy.t`
 
-- cohttp-lwt-unix: Adopt ocaml-conduit 5.0.0 (smorimoto #787)
 - cohttp-mirage: fix deprecated fmt usage (tmcgilchrist #783)
 - lwt_jsoo: Use logs for the warnings and document it (mseri #776)
 - lwt: Use logs to warn users about leaked bodies and document it (mseri #771)
