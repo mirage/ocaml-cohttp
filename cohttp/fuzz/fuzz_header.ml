@@ -249,7 +249,8 @@ let add_opt_test () =
               add_opt hopt k v = | add h k v     if hopt = Some h
                                  | init_with k v if hopt = None *)
     add_test ~name:"add_opt (Some h) = add and add_opt None = init_with"
-      [ option headers_gen; header_name_gen; word_gen ] (fun hopt k v ->
+      [ option headers_gen; header_name_gen; word_gen ]
+      (fun hopt k v ->
         check_eq
           H.(match hopt with None -> init_with k v | Some h -> add h k v)
           H.(add_opt hopt k v)))
@@ -287,14 +288,16 @@ let add_multi () =
     (* FS *)
     (* forall h, k, vs. add_multi h k vs = add_list h (List.map (fun v -> k, v) vs) *)
     add_test ~name:"[add_list] and [add_multi] have compatible semantics"
-      [ headers_gen; header_name_gen; list word_gen ] (fun h k vs ->
+      [ headers_gen; header_name_gen; list word_gen ]
+      (fun h k vs ->
         check_eq
           H.(add_multi h k vs)
           H.(add_list h (List.map (fun v -> (k, v)) vs)));
     (* FS *)
     (* forall h, k, l. get_multi (add_multi h k l) k = get_multi h k @ l *)
     add_test ~name:"get_multi (add_multi h k l) k = get_multi h k @ l"
-      [ headers_gen; header_name_gen; Crowbar.list word_gen ] (fun h k l ->
+      [ headers_gen; header_name_gen; Crowbar.list word_gen ]
+      (fun h k l ->
         check_eq H.(get_multi (add_multi h k l) k) H.(get_multi h k @ l)))
 
 let get_test () =

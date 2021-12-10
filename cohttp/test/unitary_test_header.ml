@@ -46,7 +46,8 @@ let to_list_rev h = List.rev (H.to_list h)
 
 let to_list_tests () =
   aessl "to_list (init ())" [] H.(to_list (init ()));
-  aessl "to_list (add (init ()) k v" [ ("a", "a1") ]
+  aessl "to_list (add (init ()) k v"
+    [ ("a", "a1") ]
     H.(to_list (add (init ()) "a" "a1"));
   aessl "to_list (of_list h) = h" hstr H.(to_list prebuilt)
 
@@ -108,7 +109,8 @@ let add_unless_exists_tests () =
   let k, v = ("a", "a1") in
   let k', v' = ("transfer-encoding", "chunked") in
   let k'', v'' = ("accept", "text/*") in
-  aessl "add_unless_exists (init ()) k v" [ (k, v) ]
+  aessl "add_unless_exists (init ()) k v"
+    [ (k, v) ]
     H.(to_list (add_unless_exists (init ()) k v));
   aessl "add_unless_exists h k v when mem h k = false"
     (hstr @ [ (k, v) ])
@@ -137,9 +139,11 @@ let remove_tests () =
 let replace_tests () =
   let k, v, v' = ("a", "a1", "a2") in
   aessl "replace (init ()) k v" [ (k, v) ] H.(to_list (replace (init ()) k v));
-  aessl "replace (add (init ()) k v) k v" [ (k, v) ]
+  aessl "replace (add (init ()) k v) k v"
+    [ (k, v) ]
     H.(to_list (replace (add (init ()) k v) k v));
-  aessl "replace (add (init ()) k v) k v'" [ (k, v') ]
+  aessl "replace (add (init ()) k v) k v'"
+    [ (k, v') ]
     H.(to_list (replace (add (init ()) k v) k v'));
   aessl "replace h k v when mem h k = false"
     (hstr @ [ (k, v) ])
