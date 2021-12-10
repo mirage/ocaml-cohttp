@@ -52,4 +52,4 @@ let _ =
            (optional_with_default "" string)
            ~doc:" Data to send when using POST")
     make_net_req
-  |> run
+  |> Command_unix.run
