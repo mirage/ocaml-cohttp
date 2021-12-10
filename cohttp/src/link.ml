@@ -382,7 +382,7 @@ let rec params_of_string s i ps =
           let charset, language, v, i = star_of_string s i in
           params_of_string s i
             (Star { Ext.charset; language; value = Link_extension (main, v) }
-             :: ps)
+            :: ps)
         else
           let v, i = quoted_string_of_string s i in
           params_of_string s i (Link_extension (other, v) :: ps)
