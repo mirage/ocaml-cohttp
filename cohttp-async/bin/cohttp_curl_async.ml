@@ -49,4 +49,4 @@ let _ =
         ~doc:" Data to send when using POST"
     )
     make_net_req
-  |> run
+  |> Command_unix.run

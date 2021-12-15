@@ -126,7 +126,6 @@ let start_server docroot port index cert_file key_file verbose () =
 
 let () =
   let open Async_command in
-  run @@
   async_spec ~summary:"Serve the local directory contents via HTTP or HTTPS"
     Spec.(
       empty
@@ -137,3 +136,4 @@ let () =
       +> flag "-key-file" (optional string) ~doc:"File of private key for https"
       +> flag "-v" no_arg ~doc:" Verbose logging output to console"
     ) start_server
+  |> Command_unix.run
