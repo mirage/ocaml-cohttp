@@ -1,4 +1,4 @@
-## current
+## v2.5.6 (2021-12-15)
 
 - cohttp-async: use package core_unix instead of core, to prepare for core release 0.15 (aalekseyev #791 - backport)
 - cohttp-mirage: fix deprecated fmt usage (tmcgilchrist #791 - backport)
