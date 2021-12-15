@@ -28,13 +28,13 @@ depends: [
   "ocaml" {>= "4.04.1"}
   "dune" {>= "1.1.0"}
   "cohttp" {=version}
-  "lwt" {>= "2.5.0"}
+  "lwt" {>= "2.0.0"}
   "sexplib0"
   "ppx_sexp_conv" {>= "v0.13.0"}
   "logs"
 ]
 build: [
-  ["dune" "subst"] {pinned}
+  ["dune" "subst"] {dev}
   ["dune" "build" "-p" name "-j" jobs]
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
