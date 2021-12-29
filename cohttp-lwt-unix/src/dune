@@ -4,5 +4,14 @@
  (synopsis "Lwt/Unix backend for Cohttp")
  (preprocess
   (pps ppx_sexp_conv))
- (libraries fmt logs logs.lwt conduit-lwt magic-mime lwt.unix
-   conduit-lwt-unix cohttp cohttp-lwt logs.fmt))
+ (libraries
+  fmt
+  logs
+  logs.lwt
+  conduit-lwt
+  magic-mime
+  lwt.unix
+  conduit-lwt-unix
+  cohttp
+  cohttp-lwt
+  logs.fmt))
