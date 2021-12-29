@@ -7,9 +7,11 @@
  (targets code.ml code.mli)
  (deps
   (source_tree "../scripts/codes"))
+ (mode promote)
+ (alias runtest)
  (action
   (chdir
-   "../scripts"
+   ../scripts
    (run ./generate.exe))))
 
 (library
