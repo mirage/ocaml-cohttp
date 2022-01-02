@@ -13,7 +13,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *}}}*)
 
-module String_io = Cohttp__String_io
+module String_io = Cohttp.Private.String_io
 module StringResponse = Cohttp.Response.Make (String_io.M)
 module H = Cohttp.Header
 

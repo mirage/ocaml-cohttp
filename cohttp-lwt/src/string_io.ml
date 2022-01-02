@@ -20,7 +20,7 @@ type 'a t = 'a Lwt.t
 let return = Lwt.return
 let ( >>= ) = Lwt.bind
 
-module Sio = Cohttp__String_io
+module Sio = Cohttp.Private.String_io
 
 type ic = Sio.M.ic
 type oc = Sio.M.oc

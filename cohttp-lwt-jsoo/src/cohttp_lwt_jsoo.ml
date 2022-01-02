@@ -46,9 +46,9 @@ let binary_string str =
 let string_of_uint8array u8a offset len =
   String.init len (fun i -> Char.chr (Typed_array.unsafe_get u8a (offset + i)))
 
-module String_io = Cohttp__String_io
-module IO = Cohttp_lwt__String_io
-module Header_io = Cohttp__Header_io.Make (IO)
+module String_io = Cohttp.Private.String_io
+module IO = Cohttp_lwt.Private.String_io
+module Header_io = Cohttp.Private.Header_io.Make (IO)
 
 module Body_builder (P : Params) = struct
   let src = Logs.Src.create "cohttp.lwt.jsoo" ~doc:"Cohttp Lwt JSOO module"
