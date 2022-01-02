@@ -1,7 +1,8 @@
 open Base
 open Async_kernel
 open OUnit
-open Cohttp_async
+module Server = Cohttp_async.Server
+module Body = Cohttp_async.Body
 
 type 'a io = 'a Deferred.t
 type ic = Async_unix.Reader.t
@@ -12,7 +13,7 @@ type response_action =
   [ `Expert of Cohttp.Response.t * (ic -> oc -> unit io)
   | `Response of Cohttp.Response.t * body ]
 
-type spec = Request.t -> body -> response_action io
+type spec = Cohttp.Request.t -> body -> response_action io
 type async_test = unit -> unit io
 
 let response rsp = `Response rsp

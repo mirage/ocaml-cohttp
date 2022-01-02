@@ -7,7 +7,7 @@ val close_finished : (_, _) t -> unit Async_kernel.Deferred.t
 val is_closed : (_, _) t -> bool
 val listening_on : (_, 'listening_on) t -> 'listening_on
 
-type response = Response.t * Body.t [@@deriving sexp_of]
+type response = Cohttp.Response.t * Body.t [@@deriving sexp_of]
 
 type 'r respond_t =
   ?flush:bool ->
@@ -25,14 +25,14 @@ type response_action =
   | `Response of response ]
 (** A request handler can respond in two ways:
 
-    - Using [`Response], with a {!Response.t} and a {!Body.t}.
-    - Using [`Expert], with a {!Response.t} and an IO function that is expected
-      to write the response body. The IO function has access to the underlying
-      {!Async_unix.Reader.t} and {!Async_unix.Writer.t}, which allows writing a
-      response body more efficiently, stream a response or to switch protocols
-      entirely (e.g. websockets). Processing of pipelined requests continue
-      after the {!unit Async_kernel.Deferred.t} is resolved. The connection can
-      be closed by closing the {!Async_unix.Reader.t}. *)
+    - Using [`Response], with a {!Cohttp.Response.t} and a {!Body.t}.
+    - Using [`Expert], with a {!Cohttp.Response.t} and an IO function that is
+      expected to write the response body. The IO function has access to the
+      underlying {!Async_unix.Reader.t} and {!Async_unix.Writer.t}, which allows
+      writing a response body more efficiently, stream a response or to switch
+      protocols entirely (e.g. websockets). Processing of pipelined requests
+      continue after the {!unit Async_kernel.Deferred.t} is resolved. The
+      connection can be closed by closing the {!Async_unix.Reader.t}. *)
 
 val respond : response respond_t
 
@@ -84,7 +84,7 @@ val create_expert :
   ('address, 'listening_on) Async.Tcp.Where_to_listen.t ->
   (body:Body.t ->
   'address ->
-  Request.t ->
+  Cohttp.Request.t ->
   response_action Async_kernel.Deferred.t) ->
   ('address, 'listening_on) t Async_kernel.Deferred.t
 (** Build a HTTP server and expose the [IO.ic] and [IO.oc]s, based on the
@@ -97,6 +97,9 @@ val create :
   ?mode:Conduit_async.server ->
   on_handler_error:[ `Call of 'address -> exn -> unit | `Ignore | `Raise ] ->
   ('address, 'listening_on) Async.Tcp.Where_to_listen.t ->
-  (body:Body.t -> 'address -> Request.t -> response Async_kernel.Deferred.t) ->
+  (body:Body.t ->
+  'address ->
+  Cohttp.Request.t ->
+  response Async_kernel.Deferred.t) ->
   ('address, 'listening_on) t Async_kernel.Deferred.t
 (** Build a HTTP server, based on the [Tcp.Server] interface *)

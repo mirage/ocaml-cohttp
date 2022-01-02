@@ -87,7 +87,7 @@ let handler ~info ~docroot ~index ~body:_ _sock req =
   let path = Uri.path uri in
   (* Log the request to the console *)
   printf "%s %s%!" Cohttp.(Code.string_of_method (Request.meth req)) path;
-  match Request.meth req with
+  match Cohttp.Request.meth req with
   | (`GET | `HEAD) as meth ->
       serve ~info ~docroot ~index uri path >>= method_filter meth
   | meth ->
