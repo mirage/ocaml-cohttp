@@ -7,7 +7,6 @@ let src =
 
 module Log = (val Logs.src_log src : Logs.LOG)
 
-(* Deprecated *)
 let resolve_file ~docroot ~uri = Cohttp.Path.resolve_local_file ~docroot ~uri
 
 exception Isnt_a_file

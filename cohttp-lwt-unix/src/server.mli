@@ -7,7 +7,7 @@
 include Cohttp_lwt.S.Server with module IO = Io
 
 val resolve_file : docroot:string -> uri:Uri.t -> string
-(** Deprecated. Please use Cohttp.Path.resolve_local_file. *)
+  [@@deprecated "Please use Cohttp.Path.resolve_local_file. "]
 
 val respond_file :
   ?headers:Cohttp.Header.t ->
