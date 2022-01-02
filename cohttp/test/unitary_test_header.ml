@@ -353,8 +353,8 @@ let transfer_encoding_tests () =
   let sh = H.get_multi_concat h "transfer-encoding" in
   aeso "transfer_encoding_get_is_ordered" (Some "gzip,chunked") sh
 
-module String_io = Cohttp__String_io
-module HIO = Cohttp__Header_io.Make (String_io.M)
+module String_io = Cohttp.Private.String_io
+module HIO = Cohttp.Private.Header_io.Make (String_io.M)
 
 let large_header () =
   let sz = 1024 * 1024 * 100 in

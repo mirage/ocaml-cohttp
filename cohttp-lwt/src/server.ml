@@ -36,7 +36,7 @@ module Make (IO : S.IO) = struct
     in
     make_response_action ?conn_closed ~callback ()
 
-  module Transfer_IO = Cohttp__Transfer_io.Make (IO)
+  module Transfer_IO = Cohttp.Private.Transfer_io.Make (IO)
 
   (* Deprecated *)
   let resolve_local_file ~docroot ~uri =

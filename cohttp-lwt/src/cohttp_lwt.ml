@@ -22,3 +22,7 @@ module Make_client = Client.Make
 module Make_server = Server.Make
 module S = S
 module Body = Body
+
+module Private = struct
+  module String_io = String_io
+end
