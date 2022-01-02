@@ -28,5 +28,9 @@ include S.Request
 val pp_hum : Format.formatter -> t -> unit
 (** Human-readable output, used by the toplevel printer *)
 
-(** Functor to construct the IO-specific HTTP request handling functions *)
 module Make (IO : S.IO) : S.Http_io with type t = t and module IO = IO
+[@@deprecated "This functor is not part of the public API."]
+
+module Private : sig
+  module Make (IO : S.IO) : S.Http_io with type t = t and module IO = IO
+end

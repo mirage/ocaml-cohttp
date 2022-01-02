@@ -7,7 +7,9 @@ module IO = Cohttp_lwt_unix.IO
 
 module Request = struct
   include Cohttp.Request
-  include (Make (IO) : module type of Make (IO) with type t := t)
+
+  include (
+    Private.Make (IO) : module type of Private.Make (IO) with type t := t)
   end
 
 let message = "Hello sanity!"
