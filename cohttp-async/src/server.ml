@@ -125,7 +125,6 @@ let respond_with_redirect ?headers uri =
   in
   respond ~flush:false ~headers `Found
 
-(* Deprecated *)
 let resolve_local_file ~docroot ~uri =
   Cohttp.Path.resolve_local_file ~docroot ~uri
 

@@ -38,7 +38,6 @@ module Make (IO : S.IO) = struct
 
   module Transfer_IO = Cohttp__Transfer_io.Make (IO)
 
-  (* Deprecated *)
   let resolve_local_file ~docroot ~uri =
     Cohttp.Path.resolve_local_file ~docroot ~uri
 

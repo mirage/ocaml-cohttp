@@ -37,9 +37,8 @@ type response_action =
 val respond : response respond_t
 
 val resolve_local_file : docroot:string -> uri:Uri.t -> string
-(** Resolve a URI and a docroot into a concrete local filename.
-
-    Deprecated. Please use Cohttp.Path.resolve_local_file. *)
+  [@@deprecated "Please use Cohttp.Path.resolve_local_file. "]
+(** Resolve a URI and a docroot into a concrete local filename. *)
 
 val respond_with_pipe :
   ?flush:bool ->
