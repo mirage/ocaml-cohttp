@@ -93,7 +93,7 @@ module Set_cookie_hdr = struct
     let attrs =
       List.map
         (fun attr ->
-          match Stringext.split ~on:'=' attr with
+          match String.split_on_char '=' attr with
           | [] -> ("", "")
           | n :: v -> (n, String.concat "=" v))
         attrs
