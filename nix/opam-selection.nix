@@ -781,6 +781,7 @@ in
       version = "1";
       src = null;
       opamInputs = {
+                     inherit (selection) conf-pkg-config;
       };
       opamSrc = repoPath (repos.opam-repository.src) 
       {

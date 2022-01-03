@@ -1,5 +1,8 @@
 ## Unreleased
 
+- New curl based clients (@rgrinberg #813)
+  + cohttp-curl-lwt for an Lwt backend
+  + cohttp-curl-async for an Async backend
 - Completely new Parsing layers for servers (@anuragsoni #819)
   + Cohttp now uses an optimized parser for requests.
   + The new parser produces much less temporary buffers during read operations in servers.

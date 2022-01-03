@@ -29,6 +29,8 @@ val init : unit -> t
 val is_empty : t -> bool
 (** [is_empty h] tests whether HTTP headers [h] are empty or not. *)
 
+val of_list_rev : (string * string) list -> t
+
 val of_list : (string * string) list -> t
 (** [of_list l] construct a fresh headers from the content of [l] and in same
     order. [to_list] and [of_list] are defined such as [to_list (of_list l) = l]
