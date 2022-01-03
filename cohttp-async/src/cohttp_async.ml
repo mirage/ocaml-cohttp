@@ -1,5 +1,5 @@
 module Body = Body
-module Body_raw = Body_raw
+module Body_raw = Body_raw [@@deprecated "Use Body"]
 module Client = Client
 module Io = Io
 module Request = Request
