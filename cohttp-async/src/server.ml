@@ -4,12 +4,16 @@ open Async_unix
 
 module Request = struct
   include Cohttp.Request
-  include (Make (Io) : module type of Make (Io) with type t := t)
+
+  include (
+    Private.Make (Io) : module type of Private.Make (Io) with type t := t)
   end
 
 module Response = struct
   include Cohttp.Response
-  include (Make (Io) : module type of Make (Io) with type t := t)
+
+  include (
+    Private.Make (Io) : module type of Private.Make (Io) with type t := t)
   end
 
 type ('address, 'listening_on) t = {

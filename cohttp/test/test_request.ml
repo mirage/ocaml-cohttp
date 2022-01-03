@@ -1,6 +1,6 @@
 open Cohttp
 module String_io = Cohttp.Private.String_io
-module StringRequest = Request.Make (String_io.M)
+module StringRequest = Request.Private.Make (String_io.M)
 
 let uri_userinfo = Uri.of_string "http://foo:bar%2525@ocaml.org"
 

@@ -140,3 +140,7 @@ module Make (IO : S.IO) = struct
     let writer = make_body_writer ?flush req oc in
     fn writer >>= fun () -> write_footer req oc
 end
+
+module Private = struct
+  module Make = Make
+end

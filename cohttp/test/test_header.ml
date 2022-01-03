@@ -14,7 +14,7 @@
  *}}}*)
 
 module String_io = Cohttp.Private.String_io
-module StringResponse = Cohttp.Response.Make (String_io.M)
+module StringResponse = Cohttp.Response.Private.Make (String_io.M)
 module H = Cohttp.Header
 
 let aes = Alcotest.check Alcotest.string
