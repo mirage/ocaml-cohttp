@@ -233,6 +233,56 @@ interoperate with Cohttp.")
   (sexplib0 :with-test)))
 
 (package
+ (name cohttp-curl)
+ (synopsis "Shared code between the individual cohttp-curl clients")
+ (description "Use cohttp-curl-lwt or cohttp-curl-async")
+ (depends
+  (ocaml (>= 4.08))
+  ocurl
+  (http (= :version))
+  stringext))
+
+(package
+ (name cohttp-curl-lwt)
+ (synopsis "Cohttp client using Curl & Lwt as the backend")
+ (description "\
+An HTTP client that relies on Curl + Lwt for the backend. Does not require
+conduit for SSL.")
+ (depends
+  (ocaml (>= 4.08))
+  ocurl
+  (http (= :version))
+  cohttp-curl
+  stringext
+  lwt
+  (uri (and :with-test (>= 4.2.0)))
+  (alcotest :with-test)
+  (cohttp-lwt-unix :with-test)
+  (cohttp :with-test)
+  (cohttp-lwt :with-test)
+  (conduit-lwt :with-test)
+  (ounit :with-test)))
+
+(package
+ (name cohttp-curl-async)
+ (synopsis "Cohttp client using Curl & Async as the backend")
+ (description "\
+An HTTP client that relies on Curl + Async for the backend. Does not require
+conduit for SSL.")
+ (depends
+  ocurl
+  (http (= :version))
+  stringext
+  core_kernel
+  async_kernel
+  async_unix
+  (cohttp-async :with-test)
+  (uri (and :with-test (>= 4.2.0)))
+  (fmt :with-test)
+  (ounit :with-test)
+  (alcotest :with-test)))
+
+(package
  (name cohttp-bench)
  (synopsis "Benchmarks binaries for Cohttp")
  (description "\

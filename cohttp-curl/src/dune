@@ -1,0 +1,4 @@
+(library
+ (name cohttp_curl)
+ (public_name cohttp-curl)
+ (libraries http curl stringext))

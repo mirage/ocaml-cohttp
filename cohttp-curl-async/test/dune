@@ -1,0 +1,12 @@
+(test
+ (name cohttp_curl_async_tests)
+ (libraries
+  http
+  core_kernel
+  async_unix
+  uri
+  async_kernel
+  alcotest
+  cohttp_async_test
+  cohttp_curl_async)
+ (package cohttp-curl-async))

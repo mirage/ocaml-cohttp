@@ -29,6 +29,9 @@ pkgs.mkShell {
     cohttp-async
     cohttp-bench
     cohttp-mirage
+    cohttp-curl
+    cohttp-curl-lwt
+    cohttp-curl-async
   ];
   buildInputs = (with pkgs; [
     yarn

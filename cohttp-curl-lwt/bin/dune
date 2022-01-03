@@ -1,0 +1,13 @@
+(executable
+ (name curl)
+ (libraries
+  sexplib0
+  cohttp
+  cohttp_curl_lwt
+  lwt.unix
+  lwt
+  logs
+  logs.cli
+  uri
+  fmt.tty
+  cmdliner))

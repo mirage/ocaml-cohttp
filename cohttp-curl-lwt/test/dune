@@ -1,0 +1,4 @@
+(test
+ (name cohttp_curl_lwt_tests)
+ (libraries http alcotest uri cohttp_lwt_unix_test cohttp_curl_lwt)
+ (package cohttp-curl-lwt))
