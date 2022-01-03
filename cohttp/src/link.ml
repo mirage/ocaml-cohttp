@@ -299,7 +299,7 @@ let quoted_string_of_string s q =
 
 let rels_of_string_ s q =
   let qs, i = quoted_string_of_string s q in
-  let rels = Stringext.split qs ~on:' ' in
+  let rels = String.split_on_char ' ' qs in
   (List.map rel_of_string (List.filter (fun s -> String.length s > 0) rels), i)
 
 let rels_of_string s i =

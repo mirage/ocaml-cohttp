@@ -68,7 +68,7 @@ module Make (IO : S.IO) = struct
     let open Code in
     read_line ic >>= function
     | Some response_line -> (
-        match Stringext.split response_line ~on:' ' with
+        match String.split_on_char ' ' response_line with
         | version_raw :: code_raw :: _ -> (
             match version_of_string version_raw with
             | (`HTTP_1_0 | `HTTP_1_1) as v ->

@@ -94,7 +94,7 @@ encodings :
 
 language :
 | TOK params {
-  (get_q $2, Language (Stringext.split ~on:'-' (String.lowercase_ascii $1)))
+  (get_q $2, Language (String.split_on_char '-' (String.lowercase_ascii $1)))
 }
 | STAR params { (get_q $2, AnyLanguage) }
 

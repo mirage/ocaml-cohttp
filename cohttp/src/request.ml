@@ -174,7 +174,7 @@ module Make (IO : S.IO) = struct
     let open Code in
     read_line ic >>= function
     | Some request_line -> (
-        match Stringext.split request_line ~on:' ' with
+        match String.split_on_char ' ' request_line with
         | [ meth_raw; path; http_ver_raw ] -> (
             let m = method_of_string meth_raw in
             match version_of_string http_ver_raw with
