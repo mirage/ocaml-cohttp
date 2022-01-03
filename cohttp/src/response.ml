@@ -25,11 +25,18 @@ type t = {
 }
 [@@deriving sexp]
 
-let compare x y =
-  match Header.compare x.headers y.headers with
-  | 0 ->
-      let headers = Header.init () in
-      Stdlib.compare { x with headers } { y with headers }
+let compare { headers; flush; version; encoding; status } y =
+  match Header.compare headers y.headers with
+  | 0 -> (
+      match Bool.compare flush y.flush with
+      | 0 -> (
+          match Stdlib.compare status y.status with
+          | 0 -> (
+              match Code.compare_version version y.version with
+              | 0 -> Stdlib.compare encoding y.encoding
+              | i -> i)
+          | i -> i)
+      | i -> i)
   | i -> i
 
 let headers t = t.headers
