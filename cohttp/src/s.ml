@@ -84,7 +84,8 @@ module type Request = sig
     scheme : string option;  (** URI scheme (http or https) *)
     resource : string;  (** Request path and query *)
     version : Code.version;  (** HTTP version, usually 1.1 *)
-    encoding : Transfer.encoding;  (** transfer encoding of this HTTP request *)
+    encoding : Transfer.encoding;
+        [@deprecated "this field will be removed in the future"]
   }
   [@@deriving sexp]
 
@@ -121,7 +122,7 @@ end
 module type Response = sig
   type t = {
     encoding : Transfer.encoding;
-        (** Transfer encoding of this HTTP response *)
+        [@deprecated "this field will be removed in the future"]
     headers : Header.t;  (** response HTTP headers *)
     version : Code.version;  (** (** HTTP version, usually 1.1 *) *)
     status : Code.status_code;  (** HTTP status code of the response *)
