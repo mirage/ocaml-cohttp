@@ -43,7 +43,8 @@ open Base
 open Core
 open Async
 open Cohttp
-open Cohttp_async
+module Client = Cohttp_async.Client
+module Body = Cohttp_async.Body
 
 let ksrt (k, _) (k', _) = String.compare k k'
 
@@ -185,7 +186,7 @@ module Auth = struct
       ],
       hashed_payload )
 
-  let canonical_request hashed_payload (request : Cohttp_async.Request.t) =
+  let canonical_request hashed_payload (request : Request.t) =
     (* This corresponds to p.21 of the s3 api doc
        we're making:
        <HTTPMethod>\n

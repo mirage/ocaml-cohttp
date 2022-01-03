@@ -2,8 +2,10 @@ open Base
 open Async_kernel
 open OUnit
 open Cohttp
-open Cohttp_async
 open Cohttp_async_test
+module Server = Cohttp_async.Server
+module Client = Cohttp_async.Client
+module Body = Cohttp_async.Body
 
 let chunk_body = [ "one"; ""; " "; "bar"; "" ]
 let large_string = String.make (Int.pow 2 16) 'A'

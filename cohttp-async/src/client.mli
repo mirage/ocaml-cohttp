@@ -98,7 +98,7 @@ val put :
   ?chunked:bool ->
   ?body:Body.t ->
   Uri.t ->
-  (Response.t * Body.t) Async_kernel.Deferred.t
+  (Cohttp.Response.t * Body.t) Async_kernel.Deferred.t
 (** Send an HTTP PUT request. [chunked] encoding is off by default as not many
     servers support it *)
 
@@ -109,7 +109,7 @@ val patch :
   ?chunked:bool ->
   ?body:Body.t ->
   Uri.t ->
-  (Response.t * Body.t) Async_kernel.Deferred.t
+  (Cohttp.Response.t * Body.t) Async_kernel.Deferred.t
 (** Send an HTTP PATCH request. [chunked] encoding is off by default as not many
     servers support it *)
 
@@ -119,5 +119,5 @@ val post_form :
   ?headers:Cohttp.Header.t ->
   params:(string * string list) list ->
   Uri.t ->
-  (Response.t * Body.t) Async_kernel.Deferred.t
+  (Cohttp.Response.t * Body.t) Async_kernel.Deferred.t
 (** Send an HTTP POST request in form format *)
