@@ -16,7 +16,7 @@
 
 open Sexplib0.Sexp_conv
 
-type t = {
+type t = Http.Response.t = {
   encoding : Transfer.encoding;
   headers : Header.t;
   version : Code.version;

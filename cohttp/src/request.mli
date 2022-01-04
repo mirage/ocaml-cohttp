@@ -16,7 +16,7 @@
 
 (** HTTP/1.1 request handling *)
 
-include S.Request
+include S.Request with type t = Http.Request.t
 (** This contains the metadata for a HTTP/1.1 request header, including the
     {!headers}, {!version}, {!meth} and {!uri}. The body is handled by the
     separate {!S} module type, as it is dependent on the IO implementation.

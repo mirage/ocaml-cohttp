@@ -16,7 +16,7 @@
 
 (** HTTP/1.1 response handling *)
 
-include S.Response
+include S.Response with type t = Http.Response.t
 (** This contains the metadata for a HTTP/1.1 response header, including the
     {!encoding}, {!headers}, {!version}, {!status} code and whether to {!flush}
     the connection after every body chunk (useful for server-side events and

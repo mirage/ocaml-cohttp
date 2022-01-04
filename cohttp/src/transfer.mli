@@ -19,7 +19,7 @@
 
 (** The encoding format detected from the [transfer-encoding] and
     [content-length] headers *)
-type encoding =
+type encoding = Http.Transfer.encoding =
   | Chunked  (** dynamic chunked encoding *)
   | Fixed of int64  (** fixed size content *)
   | Unknown  (** unknown body size, which leads to best-effort *)
