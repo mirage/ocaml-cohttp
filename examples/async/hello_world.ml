@@ -1,6 +1,6 @@
 (* This file is in the public domain *)
 
-open Base
+open Core_kernel
 open Async_kernel
 open Cohttp_async
 
@@ -24,7 +24,12 @@ let start_server port () =
   Cohttp_async.Server.create ~on_handler_error:`Raise
     (Async.Tcp.Where_to_listen.of_port port)
     handler
-  >>= fun _ -> Deferred.never ()
+  >>= fun server ->
+  Deferred.forever () (fun () ->
+      after Time_ns.Span.(of_sec 0.5) >>| fun () ->
+      Async.Log.Global.printf "Active connections: %d"
+        (Server.num_connections server));
+  Deferred.never ()
 
 let () =
   let module Command = Async_command in

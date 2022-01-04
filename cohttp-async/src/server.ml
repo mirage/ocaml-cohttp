@@ -21,6 +21,8 @@ type ('address, 'listening_on) t = {
 }
 [@@deriving sexp_of]
 
+let num_connections t = Tcp.Server.num_connections t.server
+
 type response = Response.t * Body.t [@@deriving sexp_of]
 
 type response_action =

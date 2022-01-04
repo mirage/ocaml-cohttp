@@ -6,6 +6,7 @@ val close : (_, _) t -> unit Async_kernel.Deferred.t
 val close_finished : (_, _) t -> unit Async_kernel.Deferred.t
 val is_closed : (_, _) t -> bool
 val listening_on : (_, 'listening_on) t -> 'listening_on
+val num_connections : (_, _) t -> int
 
 type response = Cohttp.Response.t * Body.t [@@deriving sexp_of]
 
