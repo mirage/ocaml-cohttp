@@ -190,3 +190,13 @@ and instructions on how to use this library.")
   magic-mime
   (ppx_sexp_conv (>= v0.13.0))
   (cohttp (= :version))))
+
+(package
+ (name http)
+ (synopsis "Type definitions of HTTP essentials")
+ (description "\
+This package contains essential type definitions used in Cohttp. It is designed
+to have no dependencies and make it easy for other packages to easily
+interoperate with Cohttp.")
+ (depends
+  (ocaml (>= 4.08))))

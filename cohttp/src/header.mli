@@ -17,8 +17,11 @@
 (** Associative list representing HTTP headers. Order of transmission is
     preserved, which implies that headers with same name are neither removed or
     concataned by default (see [clean_dup] to do that). *)
-type t [@@deriving sexp]
+include module type of Http.Header with type t = Http.Header.t
 (** The type for HTTP headers. *)
+
+val sexp_of_t : t -> Sexplib0.Sexp.t
+val t_of_sexp : Sexplib0.Sexp.t -> t
 
 val init : unit -> t
 (** [init ()] constructs a fresh, empty list of HTTP headers. *)

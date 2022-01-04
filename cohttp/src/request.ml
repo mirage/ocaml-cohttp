@@ -16,7 +16,7 @@
 
 open Sexplib0.Sexp_conv
 
-type t = {
+type t = Http.Request.t = {
   headers : Header.t;
   meth : Code.meth;
   scheme : string option;
