@@ -12,7 +12,8 @@ let num_connections t = Tcp.Server.num_connections t.server
 type response = Cohttp.Response.t * Body.t [@@deriving sexp_of]
 
 type response_action =
-  [ `Expert of Cohttp.Response.t * (Reader.t -> Writer.t -> unit Deferred.t)
+  [ `Expert of
+    Cohttp.Response.t * (Input_channel.t -> Writer.t -> unit Deferred.t)
   | `Response of response ]
 
 type 'r respond_t =
@@ -30,12 +31,12 @@ let listening_on t = Tcp.Server.listening_on t.server
 let read_body req rd =
   match Io.Request.has_body req with
   (* TODO maybe attempt to read body *)
-  | `No | `Unknown -> (`Empty, Deferred.unit)
+  | `No | `Unknown -> `Empty
   | `Yes ->
       (* Create a Pipe for the body *)
       let reader = Io.Request.make_body_reader req rd in
       let pipe = Body_raw.pipe_of_body Io.Request.read_body_chunk reader in
-      (`Pipe pipe, Pipe.closed pipe)
+      `Pipe pipe
 
 let collect_errors writer ~f =
   let monitor = Writer.monitor writer in
@@ -50,54 +51,40 @@ let collect_errors writer ~f =
 
 let handle_client handle_request sock rd wr =
   collect_errors wr ~f:(fun () ->
-      let last_body_pipe_drained = ref Deferred.unit in
-      let requests_pipe =
-        Reader.read_all rd (fun rd ->
-            !last_body_pipe_drained >>= fun () ->
-            (* [`Expert] responses may close the [Reader.t] *)
-            if Reader.is_closed rd then return `Eof
-            else
-              Io.Request.read rd >>= function
-              | `Eof | `Invalid _ -> return `Eof
-              | `Ok req -> (
-                  let body, finished = read_body req rd in
-                  handle_request ~body sock req >>| function
-                  | `Expert (headers, io_handler) ->
-                      let expert_finished = Ivar.create () in
-                      last_body_pipe_drained :=
-                        Deferred.all_unit
-                          [ Ivar.read expert_finished; finished ];
-                      `Ok (`Expert (headers, io_handler, body, expert_finished))
-                  | `Response r ->
-                      last_body_pipe_drained := finished;
-                      `Ok (`Response (req, body, r))))
+      let rd = Input_channel.create rd in
+      let rec loop rd wr sock handle_request =
+        if Input_channel.is_closed rd then Deferred.unit
+        else
+          Io.Request.read rd >>= function
+          | `Eof | `Invalid _ -> Deferred.unit
+          | `Ok req -> (
+              let req_body = read_body req rd in
+              handle_request ~body:req_body sock req >>= function
+              | `Expert (res, handler) ->
+                  Io.Response.write_header res wr >>= fun () ->
+                  handler rd wr >>= fun () -> loop rd wr sock handle_request
+              | `Response (res, res_body) ->
+                  let keep_alive = Cohttp.Request.is_keep_alive req in
+                  let flush = Cohttp.Response.flush res in
+                  let res =
+                    let headers =
+                      Cohttp.Header.add_unless_exists
+                        (Cohttp.Response.headers res)
+                        "connection"
+                        (if keep_alive then "keep-alive" else "close")
+                    in
+                    { res with Cohttp.Response.headers }
+                  in
+                  Io.Response.write ~flush
+                    (Body_raw.write_body Io.Response.write_body res_body)
+                    res wr
+                  >>= fun () ->
+                  Body_raw.drain req_body >>= fun () ->
+                  if keep_alive then loop rd wr sock handle_request
+                  else Deferred.unit)
       in
-      Pipe.iter ~continue_on_error:false requests_pipe ~f:(function
-        | `Expert (response, io_handler, body, finished) ->
-            Io.Response.write_header response wr >>= fun () ->
-            io_handler rd wr >>= fun () ->
-            Body.drain body >>| fun () -> Ivar.fill_if_empty finished ()
-        | `Response (req, body, (res, res_body)) ->
-            let keep_alive = Cohttp.Request.is_keep_alive req in
-            let flush = Cohttp.Response.flush res in
-            let res =
-              let headers =
-                Cohttp.Header.add_unless_exists
-                  (Cohttp.Response.headers res)
-                  "connection"
-                  (if keep_alive then "keep-alive" else "close")
-              in
-              { res with Cohttp.Response.headers }
-            in
-            Io.Response.write ~flush
-              (Body_raw.write_body Io.Response.write_body res_body)
-              res wr
-            >>= fun () ->
-            Writer.(if keep_alive then flushed else close ?force_close:None) wr
-            >>= fun () -> Body.drain body))
-  >>= fun res ->
-  Writer.close wr >>= fun () ->
-  Reader.close rd >>| fun () -> Result.ok_exn res
+      loop rd wr sock handle_request)
+  >>| fun res -> Result.ok_exn res
 
 let respond ?(flush = true) ?(headers = Cohttp.Header.init ()) ?(body = `Empty)
     status : response Deferred.t =

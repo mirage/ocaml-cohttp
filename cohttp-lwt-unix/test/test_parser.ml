@@ -93,7 +93,11 @@ let chunked_res =
 
 let user_agent = Cohttp.Header.user_agent
 let basic_res_plus_crlf = basic_res ^ "\r\n\r\n"
-let ic_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.input buf
+
+let ic_of_buffer buf =
+  Cohttp_lwt_unix.Private.Input_channel.create
+    (Lwt_io.of_bytes ~mode:Lwt_io.input buf)
+
 let oc_of_buffer buf = Lwt_io.of_bytes ~mode:Lwt_io.output buf
 
 open Lwt

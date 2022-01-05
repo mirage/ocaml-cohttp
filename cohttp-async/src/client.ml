@@ -33,7 +33,9 @@ module Net = struct
             let config = Conduit_async.V2.Ssl.Config.create ~hostname:host () in
             `OpenSSL (addr, port, config)
         | _ -> `TCP (addr, port)))
-    >>= fun mode -> Conduit_async.V2.connect ?interrupt mode
+    >>= fun mode ->
+    Conduit_async.V2.connect ?interrupt mode >>| fun (r, w) ->
+    (Input_channel.create r, w)
 end
 
 let read_response ic =
@@ -63,17 +65,17 @@ let request ?interrupt ?ssl_config ?uri ?(body = `Empty) req =
       read_response ic >>| fun (resp, body) ->
       don't_wait_for
         ( Pipe.closed body >>= fun () ->
-          Deferred.all_unit [ Reader.close ic; Writer.close oc ] );
+          Deferred.all_unit [ Input_channel.close ic; Writer.close oc ] );
       (resp, `Pipe body))
   >>= function
   | Ok res -> return res
   | Error e ->
-      don't_wait_for (Reader.close ic);
+      don't_wait_for (Input_channel.close ic);
       don't_wait_for (Writer.close oc);
       raise e
 
 module Connection = struct
-  type t' = { ic : Reader.t; oc : Writer.t }
+  type t' = { ic : Input_channel.t; oc : Writer.t }
 
   (* we can't send concurrent requests over HTTP/1 *)
   type t = t' Sequencer.t
@@ -82,8 +84,9 @@ module Connection = struct
     Net.connect_uri ?interrupt ?ssl_config uri >>| fun (ic, oc) ->
     let t = { ic; oc } |> Sequencer.create ~continue_on_error:false in
     Throttle.at_kill t (fun { ic; oc } ->
-        Deferred.both (Writer.close oc) (Reader.close ic) >>| fun ((), ()) -> ());
-    Deferred.any [ Writer.consumer_left oc; Reader.close_finished ic ]
+        Deferred.both (Writer.close oc) (Input_channel.close ic)
+        >>| fun ((), ()) -> ());
+    Deferred.any [ Writer.consumer_left oc; Input_channel.close_finished ic ]
     >>| (fun () -> Throttle.kill t)
     |> don't_wait_for;
     t

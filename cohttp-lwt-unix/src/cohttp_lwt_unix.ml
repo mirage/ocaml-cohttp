@@ -33,3 +33,7 @@ module Server = Server
 module Debug = Debug
 module Net = Net
 module IO = Io
+
+module Private = struct
+  module Input_channel = Input_channel
+end

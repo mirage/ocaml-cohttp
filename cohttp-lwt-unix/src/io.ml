@@ -27,7 +27,7 @@ type 'a t = 'a Lwt.t
 let ( >>= ) = Lwt.bind
 let return = Lwt.return
 
-type ic = Lwt_io.input_channel
+type ic = Input_channel.t
 type oc = Lwt_io.output_channel
 type conn = Conduit_lwt_unix.flow
 
@@ -50,7 +50,7 @@ let wrap_write f =
 
 let read_line ic =
   wrap_read ~if_closed:None (fun () ->
-      Lwt_io.read_line_opt ic >>= function
+      Input_channel.read_line_opt ic >>= function
       | None ->
           Log.debug (fun f -> f "<<< EOF");
           Lwt.return_none
@@ -61,9 +61,12 @@ let read_line ic =
 let read ic count =
   let count = min count Sys.max_string_length in
   wrap_read ~if_closed:"" (fun () ->
-      Lwt_io.read ~count ic >>= fun buf ->
+      Input_channel.read ic count >>= fun buf ->
       Log.debug (fun f -> f "<<<[%d] %s" count buf);
       Lwt.return buf)
+
+let refill ic = Input_channel.refill ic
+let with_input_buffer ic = Input_channel.with_input_buffer ic
 
 let write oc buf =
   wrap_write @@ fun () ->

@@ -180,33 +180,22 @@ module Make (IO : S.IO) = struct
 
   open IO
 
-  let parse_request_fst_line ic =
-    let open Code in
-    read_line ic >>= function
-    | Some request_line -> (
-        match String.split_on_char ' ' request_line with
-        | [ meth_raw; path; http_ver_raw ] -> (
-            let m = method_of_string meth_raw in
-            match version_of_string http_ver_raw with
-            | (`HTTP_1_1 | `HTTP_1_0) as v -> return (`Ok (m, path, v))
-            | `Other _ ->
-                return
-                  (`Invalid ("Malformed request HTTP version: " ^ http_ver_raw))
-            )
-        | _ -> return (`Invalid ("Malformed request header: " ^ request_line)))
-    | None -> return `Eof
-
-  let read ic =
-    parse_request_fst_line ic >>= function
-    | `Eof -> return `Eof
-    | `Invalid _reason as r -> return r
-    | `Ok (meth, resource, version) ->
-        if is_valid_uri resource meth then
-          Header_IO.parse ic >>= fun headers ->
-          let encoding = Header.get_transfer_encoding headers in
-          return
-            (`Ok { headers; meth; scheme = None; resource; version; encoding })
+  let rec read ic =
+    let result =
+      IO.with_input_buffer ic ~f:(fun buf ~pos ~len ->
+          match Http.Private.Parser.parse_request ~pos ~len buf with
+          | Ok (req, consumed) -> (`Ok req, consumed)
+          | Error Partial -> (`Partial, 0)
+          | Error (Msg msg) -> (`Invalid msg, 0))
+    in
+    match result with
+    | `Partial -> (
+        IO.refill ic >>= function `Ok -> read ic | `Eof -> return `Eof)
+    | `Ok req ->
+        if is_valid_uri (Http.Request.resource req) (Http.Request.meth req) then
+          return (`Ok req)
         else return (`Invalid "bad request URI")
+    | `Invalid msg -> return (`Invalid msg)
 
   (* Defined for method types in RFC7231 *)
   let has_body req =

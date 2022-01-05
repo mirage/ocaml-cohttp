@@ -218,7 +218,7 @@ let parse_request_uri_host_query_no_slash _ =
   parse_request_uri_ r bad_request "parse_request_uri_host_query_no_slash"
 
 let parse_request_connect _ =
-  let r = "CONNECT vpn.example.net:443 HTTP/1.1\r\n" in
+  let r = "CONNECT vpn.example.net:443 HTTP/1.1\r\n\r\n" in
   let uri = `Ok (Uri.of_string "//vpn.example.net:443") in
   parse_request_uri_ r uri "parse_request_connect"
 

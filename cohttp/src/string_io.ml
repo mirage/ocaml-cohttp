@@ -66,6 +66,13 @@ module M = struct
       x.pos <- x.pos + n;
       Some s
 
+  let refill _ = `Eof
+
+  let with_input_buffer t ~f =
+    let res, count = f t.str ~pos:t.pos ~len:(t.len - t.pos) in
+    t.pos <- t.pos + count;
+    res
+
   let read x n =
     match read_exactly' x n with
     | None when x.pos >= x.len -> raise End_of_file

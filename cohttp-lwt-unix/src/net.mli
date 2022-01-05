@@ -36,10 +36,7 @@ val init : ?ctx:Conduit_lwt_unix.ctx -> ?resolver:Resolver_lwt.t -> unit -> ctx
 val connect_uri :
   ctx:ctx ->
   Uri.t ->
-  (Conduit_lwt_unix.flow
-  * Lwt_io.input Lwt_io.channel
-  * Lwt_io.output Lwt_io.channel)
-  Lwt.t
+  (Conduit_lwt_unix.flow * Input_channel.t * Lwt_io.output Lwt_io.channel) Lwt.t
 (** [connect_uri ~ctx uri] starts a {i flow} on the given [uri]. The choice of
     the protocol (with or without encryption) is done by the {i scheme} of the
     given [uri]:
@@ -55,6 +52,6 @@ val connect_uri :
     able to fill its own [ctx] and we don't overlap resolution functions from
     the given [ctx]. *)
 
-val close_in : 'a Lwt_io.channel -> unit
+val close_in : Input_channel.t -> unit
 val close_out : 'a Lwt_io.channel -> unit
-val close : 'a Lwt_io.channel -> 'b Lwt_io.channel -> unit
+val close : Input_channel.t -> 'b Lwt_io.channel -> unit

@@ -16,7 +16,7 @@
 module IO :
   Cohttp.S.IO
     with type 'a t = 'a Async_kernel.Deferred.t
-     and type ic = Async_unix.Reader.t
+     and type ic = Input_channel.t
      and type oc = Async_unix.Writer.t
 
 module Request :

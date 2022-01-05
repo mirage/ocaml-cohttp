@@ -1,3 +1,9 @@
+## Unreelased
+
+- Completely new IO & Parsing layers (@anuragsoni #819)
+  + Cohttp now uses an optimized parser for requests and responses.
+  + The new IO layer produces much less temporary buffers.
+
 ## v5.0.0 (2021-12-15)
 
 - Cohttp.Header: new implementation (lyrm #747)
