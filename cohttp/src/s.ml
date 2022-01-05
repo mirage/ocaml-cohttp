@@ -39,6 +39,11 @@ module type IO = sig
   type conn
   (** [conn] represents the underlying network flow *)
 
+  val refill : ic -> [ `Ok | `Eof ] t
+
+  val with_input_buffer :
+    ic -> f:(string -> pos:int -> len:int -> 'a * int) -> 'a
+
   val read_line : ic -> string option t
   (** [read_line ic] will read a single line terminated by CR or CRLF from the
       input channel [ic]. It returns {!None} if EOF or other error condition is

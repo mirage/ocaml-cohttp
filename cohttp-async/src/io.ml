@@ -69,28 +69,23 @@ module IO = struct
   let ( >>= ) = Deferred.( >>= )
   let return = Deferred.return
 
-  type ic = Reader.t
+  type ic = Input_channel.t
   type oc = Writer.t
   type conn = unit
 
   let read_line =
     check_debug
+      (fun ic -> Input_channel.read_line_opt ic)
       (fun ic ->
-        Reader.read_line ic >>| function `Ok s -> Some s | `Eof -> None)
-      (fun ic ->
-        Reader.read_line ic >>| function
-        | `Ok s ->
+        Input_channel.read_line_opt ic >>| function
+        | Some s ->
             Log.debug (fun fmt -> fmt "<<< %s" s);
             Some s
-        | `Eof ->
+        | None ->
             Log.debug (fun fmt -> fmt "<<<EOF");
             None)
 
-  let read ic len =
-    let buf = Bytes.create len in
-    Reader.read ic ~len buf >>| function
-    | `Ok len' -> Bytes.To_string.sub buf ~pos:0 ~len:len'
-    | `Eof -> ""
+  let read ic len = Input_channel.read ic len
 
   let write =
     check_debug
@@ -102,6 +97,8 @@ module IO = struct
         Writer.write oc buf;
         return ())
 
+  let refill ic = Input_channel.refill ic
+  let with_input_buffer ic = Input_channel.with_input_buffer ic
   let flush = Writer.flushed
 end
 

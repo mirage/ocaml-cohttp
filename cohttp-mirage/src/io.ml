@@ -20,6 +20,8 @@
 open Lwt.Infix
 
 module Make (Channel : Mirage_channel.S) = struct
+  module Input_channel = Input_channel.Make (Channel)
+
   type error =
     | Read_error of Channel.error
     | Write_error of Channel.write_error
@@ -29,33 +31,24 @@ module Make (Channel : Mirage_channel.S) = struct
     | Write_error e -> Channel.pp_write_error f e
 
   type 'a t = 'a Lwt.t
-  type ic = Channel.t
+  type ic = Input_channel.t
   type oc = Channel.t
   type conn = Channel.flow
 
-  exception Read_exn of Channel.error
   exception Write_exn of Channel.write_error
 
   let () =
     Printexc.register_printer (function
-      | Read_exn e ->
+      | Input_channel.Read_exn e ->
           Some (Format.asprintf "IO read error: %a" Channel.pp_error e)
       | Write_exn e ->
           Some (Format.asprintf "IO write error: %a" Channel.pp_write_error e)
       | _ -> None)
 
-  let read_line ic =
-    Channel.read_line ic >>= function
-    | Ok (`Data []) -> Lwt.return_none
-    | Ok `Eof -> Lwt.return_none
-    | Ok (`Data bufs) -> Lwt.return_some (Cstruct.copyv bufs)
-    | Error e -> Lwt.fail (Read_exn e)
-
-  let read ic len =
-    Channel.read_some ~len ic >>= function
-    | Ok (`Data buf) -> Lwt.return (Cstruct.to_string buf)
-    | Ok `Eof -> Lwt.return ""
-    | Error e -> Lwt.fail (Read_exn e)
+  let read_line ic = Input_channel.read_line_opt ic
+  let read ic len = Input_channel.read ic len
+  let refill ic = Input_channel.refill ic
+  let with_input_buffer ic ~f = Input_channel.with_input_buffer ic ~f
 
   let write oc buf =
     Channel.write_string oc buf 0 (String.length buf);
@@ -73,7 +66,7 @@ module Make (Channel : Mirage_channel.S) = struct
 
   let catch f =
     Lwt.try_bind f Lwt.return_ok (function
-      | Read_exn e -> Lwt.return_error (Read_error e)
+      | Input_channel.Read_exn e -> Lwt.return_error (Read_error e)
       | Write_exn e -> Lwt.return_error (Write_error e)
       | ex -> Lwt.fail ex)
 end

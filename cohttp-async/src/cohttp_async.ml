@@ -5,3 +5,7 @@ module Io = Io [@@deprecated "This module is not for public consumption"]
 module Request = Cohttp.Request [@@deprecated "Use Cohttp.Request directly"]
 module Response = Cohttp.Response [@@deprecated "Use Cohttp.Response directly"]
 module Server = Server
+
+module Private = struct
+  module Input_channel = Input_channel
+end

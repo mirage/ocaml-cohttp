@@ -21,7 +21,7 @@
 
 include
   Cohttp_lwt.S.IO
-    with type ic = Lwt_io.input_channel
+    with type ic = Input_channel.t
      and type oc = Lwt_io.output_channel
      and type conn = Conduit_lwt_unix.flow
      and type error = exn

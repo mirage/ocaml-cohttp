@@ -3,7 +3,7 @@ open OUnit
 open Cohttp_lwt_unix
 
 type 'a io = 'a Lwt.t
-type ic = Lwt_io.input_channel
+type ic = Cohttp_lwt_unix.Private.Input_channel.t
 type oc = Lwt_io.output_channel
 type body = Cohttp_lwt.Body.t
 

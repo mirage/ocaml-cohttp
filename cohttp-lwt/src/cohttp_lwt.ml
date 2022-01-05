@@ -24,5 +24,6 @@ module S = S
 module Body = Body
 
 module Private = struct
+  module Bytebuffer = Bytebuffer
   module String_io = String_io
 end

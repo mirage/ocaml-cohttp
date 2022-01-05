@@ -67,4 +67,6 @@ let log_on_exn = function
 let create ?timeout ?backlog ?stop ?(on_exn = log_on_exn)
     ?(ctx = Net.default_ctx) ?(mode = `TCP (`Port 8080)) spec =
   Conduit_lwt_unix.serve ?backlog ?timeout ?stop ~on_exn ~ctx:ctx.Net.ctx ~mode
-    (callback spec)
+    (fun flow ic oc ->
+      let ic = Input_channel.create ic in
+      callback spec flow ic oc)

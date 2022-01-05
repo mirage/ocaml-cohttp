@@ -63,7 +63,8 @@ let server =
             ( Cohttp.Response.make (),
               fun ic oc ->
                 Lwt_io.write oc "8\r\nexpert 2\r\n0\r\n\r\n" >>= fun () ->
-                Lwt_io.flush oc >>= fun () -> Lwt_io.close ic )));
+                Lwt_io.flush oc >>= fun () ->
+                Cohttp_lwt_unix.Private.Input_channel.close ic )));
     ]
   @ (* client_close *)
   [

@@ -18,6 +18,7 @@ authors: [
   "David Scott"
   "Rudi Grinberg"
   "Andy Ray"
+  "Anurag Soni"
 ]
 license: "ISC"
 homepage: "https://github.com/mirage/ocaml-cohttp"

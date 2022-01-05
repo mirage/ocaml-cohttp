@@ -9,12 +9,13 @@ end
 module Flow (F : Mirage_flow.S) = struct
   module Channel = Mirage_channel.Make (F)
   module HTTP_IO = Io.Make (Channel)
+  module Input_channel = Input_channel.Make (Channel)
   include Cohttp_lwt.Make_server (HTTP_IO)
 
   let callback spec flow =
     let ch = Channel.create flow in
     Lwt.finalize
-      (fun () -> callback spec flow ch ch)
+      (fun () -> callback spec flow (Input_channel.create ch) ch)
       (fun () -> Channel.close ch >|= fun _ -> ())
 end
 

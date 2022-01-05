@@ -9,3 +9,16 @@
  (package http)
  (action
   (run ./test_header.exe)))
+
+(test
+ (name test_parser)
+ (modules test_parser)
+ (package http)
+ (preprocess
+  (pps
+   base_quickcheck.ppx_quickcheck
+   ppx_assert
+   ppx_sexp_conv
+   ppx_compare
+   ppx_here))
+ (libraries http core base_quickcheck alcotest))

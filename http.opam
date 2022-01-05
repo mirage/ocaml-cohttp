@@ -14,6 +14,7 @@ authors: [
   "David Scott"
   "Rudi Grinberg"
   "Andy Ray"
+  "Anurag Soni"
 ]
 license: "ISC"
 homepage: "https://github.com/mirage/ocaml-cohttp"
@@ -23,6 +24,11 @@ depends: [
   "dune" {>= "2.9"}
   "ocaml" {>= "4.08"}
   "alcotest" {with-test}
+  "base_quickcheck" {with-test}
+  "ppx_assert" {with-test}
+  "ppx_sexp_conv" {with-test}
+  "ppx_compare" {with-test}
+  "ppx_here" {with-test}
   "core" {with-test & >= "v0.13.0"}
   "core_bench" {with-test}
   "crowbar" {with-test}

@@ -26,6 +26,8 @@ type ic = Sio.M.ic
 type oc = Sio.M.oc
 type conn = Sio.M.conn
 
+let refill ic = return (Sio.M.refill ic)
+let with_input_buffer ic ~f = Sio.M.with_input_buffer ic ~f
 let read_line ic = return (Sio.M.read_line ic)
 let read ic n = return (Sio.M.read ic n)
 let write oc str = return (Sio.M.write oc str)

@@ -405,3 +405,19 @@ module Response : sig
       "content-length", "content-range" and "transfer-encoding". The default
       value of [encoding] is chunked. *)
 end
+
+module Private : sig
+  module Parser : sig
+    (** Attempts to parse a buffer into a HTTP request. If successful, it
+        returns the parsed request and an offset value that indicates the
+        starting point of unconsumed content left in the buffer. *)
+
+    type error = Partial | Msg of string
+
+    val parse_request :
+      ?pos:int -> ?len:int -> string -> (Request.t * int, error) result
+
+    val parse_chunk_length :
+      ?pos:int -> ?len:int -> string -> (int64 * int, error) result
+  end
+end

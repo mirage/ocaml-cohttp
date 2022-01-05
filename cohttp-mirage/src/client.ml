@@ -26,6 +26,7 @@ module Make
 struct
   module Channel = Mirage_channel.Make (S.Flow)
   module HTTP_IO = Io.Make (Channel)
+  module Input_channel = Input_channel.Make (Channel)
   module Endpoint = Conduit_mirage.Endpoint (P)
 
   module Net_IO = struct
@@ -50,7 +51,7 @@ struct
       | Some c ->
           S.connect c client >>= fun flow ->
           let ch = Channel.create flow in
-          Lwt.return (flow, ch, ch)
+          Lwt.return (flow, Input_channel.create ch, ch)
 
     let close_in _ = ()
     let close_out _ = ()
@@ -58,7 +59,7 @@ struct
     let close ic _oc =
       Lwt.ignore_result
       @@ Lwt.catch
-           (fun () -> Channel.close ic)
+           (fun () -> Input_channel.close ic)
            (fun e ->
              Logs.warn (fun f ->
                  f "Closing channel failed: %s" (Printexc.to_string e));

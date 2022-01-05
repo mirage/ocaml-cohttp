@@ -10,7 +10,8 @@
   "Thomas Gazagnaire"
   "David Scott"
   "Rudi Grinberg"
-  "Andy Ray")
+  "Andy Ray"
+  "Anurag Soni")
 (source (github mirage/ocaml-cohttp))
 (documentation "https://mirage.github.io/ocaml-cohttp/")
 
@@ -200,6 +201,11 @@ interoperate with Cohttp.")
  (depends
   (ocaml (>= 4.08))
   (alcotest :with-test)
+  (base_quickcheck :with-test)
+  (ppx_assert :with-test)
+  (ppx_sexp_conv :with-test)
+  (ppx_compare :with-test)
+  (ppx_here :with-test)
   (core (and :with-test (>= v0.13.0)))
   (core_bench :with-test)
   (crowbar :with-test)
