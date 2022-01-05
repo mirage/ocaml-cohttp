@@ -18,6 +18,7 @@
  *)
 
 module Key = Mirage_kv.Key
+module Connection = Cohttp.Connection [@@warning "-3"]
 
 module HTTP (FS : Mirage_kv.RO) (S : Cohttp_lwt.S.Server) = struct
   open Lwt.Infix
@@ -69,12 +70,12 @@ module HTTP (FS : Mirage_kv.RO) (S : Cohttp_lwt.S.Server) = struct
   let start ~http_port ?request_fn fs http =
     let callback (_, cid) request _body =
       let uri = Cohttp.Request.uri request in
-      let cid = Cohttp.Connection.to_string cid in
+      let cid = Connection.to_string cid in
       Logs.info (fun f -> f "[%s] serving %s" cid (Uri.to_string uri));
       dispatcher request_fn fs uri
     in
     let conn_closed (_, cid) =
-      let cid = Cohttp.Connection.to_string cid in
+      let cid = Connection.to_string cid in
       Logs.info (fun f -> f "[%s] closing" cid)
     in
     Logs.info (fun f -> f "listening on %d/TCP" http_port);

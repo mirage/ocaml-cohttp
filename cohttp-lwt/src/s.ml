@@ -135,7 +135,7 @@ end
 module type Server = sig
   module IO : IO
 
-  type conn = IO.conn * Cohttp.Connection.t
+  type conn = IO.conn * Cohttp.Connection.t [@@warning "-3"]
 
   type response_action =
     [ `Expert of Cohttp.Response.t * (IO.ic -> IO.oc -> unit Lwt.t)

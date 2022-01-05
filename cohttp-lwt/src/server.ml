@@ -1,5 +1,6 @@
 open Lwt.Infix
 module Header = Cohttp.Header
+module Connection = Cohttp.Connection [@@warning "-3"]
 
 module Make (IO : S.IO) = struct
   module IO = IO
@@ -10,7 +11,7 @@ module Make (IO : S.IO) = struct
 
   module Log = (val Logs.src_log src : Logs.LOG)
 
-  type conn = IO.conn * Cohttp.Connection.t
+  type conn = IO.conn * Connection.t
 
   type response_action =
     [ `Expert of Cohttp.Response.t * (IO.ic -> IO.oc -> unit Lwt.t)
@@ -132,7 +133,7 @@ module Make (IO : S.IO) = struct
             io_handler ic oc >>= fun () -> handle_client ic oc conn callback)
 
   let callback spec io_id ic oc =
-    let conn_id = Cohttp.Connection.create () in
+    let conn_id = Connection.create () in
     let conn_closed () = spec.conn_closed (io_id, conn_id) in
     Lwt.finalize
       (fun () ->
