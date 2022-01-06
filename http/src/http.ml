@@ -234,7 +234,7 @@ module Header = struct
      number of bytes we attempt to read *)
   let get_content_range headers =
     match get headers "content-length" with
-    | Some clen -> ( try Some (Int64.of_string clen) with _ -> None)
+    | Some clen -> Int64.of_string_opt clen
     | None -> (
         match get headers "content-range" with
         | Some range_s -> (
