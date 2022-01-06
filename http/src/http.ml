@@ -73,7 +73,7 @@ module Header = struct
 
   let remove h k =
     let rec loop seen = function
-      | [] -> if seen then [] else raise Not_found
+      | [] -> if seen then [] else raise_notrace Not_found
       | (k', _) :: h when caseless_equal k k' -> loop true h
       | x :: h -> x :: loop seen h
     in
@@ -81,7 +81,7 @@ module Header = struct
 
   let remove_last h k =
     let rec loop seen = function
-      | [] -> raise Not_found
+      | [] -> raise_notrace Not_found
       | (k', _) :: h when caseless_equal k k' -> h
       | x :: h -> x :: loop seen h
     in
@@ -89,7 +89,7 @@ module Header = struct
 
   let replace_ last h k v =
     let rec loop seen = function
-      | [] -> if seen then [] else raise Not_found
+      | [] -> if seen then [] else raise_notrace Not_found
       | (k'', _) :: h when caseless_equal k k'' ->
           if last then (k'', v) :: h
           else if not seen then (k, v) :: loop true h
