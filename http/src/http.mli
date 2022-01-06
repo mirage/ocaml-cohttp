@@ -159,6 +159,8 @@ module Transfer : sig
     | Chunked  (** dynamic chunked encoding *)
     | Fixed of int64  (** fixed size content *)
     | Unknown  (** unknown body size, which leads to best-effort *)
+
+  val compare_encoding : encoding -> encoding -> int
 end
 
 module Header : sig

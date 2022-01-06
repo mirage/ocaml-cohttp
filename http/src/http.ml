@@ -1,5 +1,7 @@
 module Transfer = struct
   type encoding = Chunked | Fixed of int64 | Unknown
+
+  let compare_encoding (x : encoding) (y : encoding) = Stdlib.compare x y
 end
 
 module Header = struct
@@ -633,7 +635,7 @@ module Method = struct
     | "CONNECT" -> `CONNECT
     | s -> `Other s
 
-  let compare a b = String.compare (to_string a) (to_string b)
+  let compare (a : t) (b : t) = Stdlib.compare a b
 end
 
 module Version = struct
@@ -649,7 +651,7 @@ module Version = struct
     | "HTTP/1.1" -> `HTTP_1_1
     | s -> `Other s
 
-  let compare a b = String.compare (to_string a) (to_string b)
+  let compare (a : t) (b : t) = Stdlib.compare a b
 end
 
 module Request = struct
@@ -679,7 +681,7 @@ module Request = struct
                 match String.compare resource y.resource with
                 | 0 -> (
                     match Version.compare version y.version with
-                    | 0 -> Stdlib.compare encoding y.encoding
+                    | 0 -> Transfer.compare_encoding encoding y.encoding
                     | i -> i)
                 | i -> i)
             | i -> i)
@@ -709,7 +711,7 @@ module Response = struct
             match Stdlib.compare status y.status with
             | 0 -> (
                 match Version.compare version y.version with
-                | 0 -> Stdlib.compare encoding y.encoding
+                | 0 -> Transfer.compare_encoding encoding y.encoding
                 | i -> i)
             | i -> i)
         | i -> i)
