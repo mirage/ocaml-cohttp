@@ -2,20 +2,6 @@ open Base
 open Async_kernel
 open Async_unix
 
-module Request = struct
-  include Cohttp.Request
-
-  include (
-    Private.Make (Io) : module type of Private.Make (Io) with type t := t)
-  end
-
-module Response = struct
-  include Cohttp.Response
-
-  include (
-    Private.Make (Io) : module type of Private.Make (Io) with type t := t)
-  end
-
 module Net = struct
   let lookup uri =
     let host = Uri.host_with_default ~default:"localhost" uri in
@@ -51,15 +37,15 @@ module Net = struct
 end
 
 let read_response ic =
-  Response.read ic >>| function
+  Io.Response.read ic >>| function
   | `Eof -> failwith "Connection closed by remote host"
   | `Invalid reason -> failwith reason
   | `Ok res -> (
-      match Response.has_body res with
+      match Io.Response.has_body res with
       | `Yes | `Unknown ->
           (* Build a response pipe for the body *)
-          let reader = Response.make_body_reader res ic in
-          let pipe = Body_raw.pipe_of_body Response.read_body_chunk reader in
+          let reader = Io.Response.make_body_reader res ic in
+          let pipe = Body_raw.pipe_of_body Io.Response.read_body_chunk reader in
           (res, pipe)
       | `No ->
           let pipe = Pipe.of_list [] in
@@ -67,11 +53,11 @@ let read_response ic =
 
 let request ?interrupt ?ssl_config ?uri ?(body = `Empty) req =
   (* Connect to the remote side *)
-  let uri = match uri with Some t -> t | None -> Request.uri req in
+  let uri = match uri with Some t -> t | None -> Cohttp.Request.uri req in
   Net.connect_uri ?interrupt ?ssl_config uri >>= fun (ic, oc) ->
   try_with (fun () ->
-      Request.write
-        (fun writer -> Body_raw.write_body Request.write_body body writer)
+      Io.Request.write
+        (fun writer -> Body_raw.write_body Io.Request.write_body body writer)
         req oc
       >>= fun () ->
       read_response ic >>| fun (resp, body) ->
@@ -111,8 +97,8 @@ module Connection = struct
   let request ?(body = Body.empty) t req =
     let res = Ivar.create () in
     Throttle.enqueue t (fun { ic; oc } ->
-        Request.write
-          (fun writer -> Body_raw.write_body Request.write_body body writer)
+        Io.Request.write
+          (fun writer -> Body_raw.write_body Io.Request.write_body body writer)
           req oc
         >>= fun () ->
         read_response ic >>= fun (resp, body) ->
@@ -142,17 +128,19 @@ let call ?interrupt ?ssl_config ?headers ?(chunked = false) ?(body = `Empty)
   (match chunked with
   | false ->
       Body_raw.disable_chunked_encoding body >>| fun (body, body_length) ->
-      (Request.make_for_client ?headers ~chunked ~body_length meth uri, body)
+      ( Cohttp.Request.make_for_client ?headers ~chunked ~body_length meth uri,
+        body )
   | true -> (
       Body.is_empty body >>| function
       | true ->
           (* Don't used chunked encoding with an empty body *)
-          ( Request.make_for_client ?headers ~chunked:false ~body_length:0L meth
-              uri,
+          ( Cohttp.Request.make_for_client ?headers ~chunked:false
+              ~body_length:0L meth uri,
             body )
       | false ->
           (* Use chunked encoding if there is a body *)
-          (Request.make_for_client ?headers ~chunked:true meth uri, body)))
+          (Cohttp.Request.make_for_client ?headers ~chunked:true meth uri, body)
+      ))
   >>= fun (req, body) -> request ?interrupt ?ssl_config ~body ~uri req
 
 let get ?interrupt ?ssl_config ?headers uri =

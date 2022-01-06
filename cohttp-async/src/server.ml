@@ -2,20 +2,6 @@ open Base
 open Async_kernel
 open Async_unix
 
-module Request = struct
-  include Cohttp.Request
-
-  include (
-    Private.Make (Io) : module type of Private.Make (Io) with type t := t)
-  end
-
-module Response = struct
-  include Cohttp.Response
-
-  include (
-    Private.Make (Io) : module type of Private.Make (Io) with type t := t)
-  end
-
 type ('address, 'listening_on) t = {
   server : ('address, 'listening_on) Tcp.Server.t; [@sexp.opaque]
 }
@@ -23,10 +9,10 @@ type ('address, 'listening_on) t = {
 
 let num_connections t = Tcp.Server.num_connections t.server
 
-type response = Response.t * Body.t [@@deriving sexp_of]
+type response = Cohttp.Response.t * Body.t [@@deriving sexp_of]
 
 type response_action =
-  [ `Expert of Cohttp.Response.t * (Io.ic -> Io.oc -> unit Deferred.t)
+  [ `Expert of Cohttp.Response.t * (Reader.t -> Writer.t -> unit Deferred.t)
   | `Response of response ]
 
 type 'r respond_t =
@@ -42,13 +28,13 @@ let is_closed t = Tcp.Server.is_closed t.server
 let listening_on t = Tcp.Server.listening_on t.server
 
 let read_body req rd =
-  match Request.has_body req with
+  match Io.Request.has_body req with
   (* TODO maybe attempt to read body *)
   | `No | `Unknown -> (`Empty, Deferred.unit)
   | `Yes ->
       (* Create a Pipe for the body *)
-      let reader = Request.make_body_reader req rd in
-      let pipe = Body_raw.pipe_of_body Request.read_body_chunk reader in
+      let reader = Io.Request.make_body_reader req rd in
+      let pipe = Body_raw.pipe_of_body Io.Request.read_body_chunk reader in
       (`Pipe pipe, Pipe.closed pipe)
 
 let collect_errors writer ~f =
@@ -71,7 +57,7 @@ let handle_client handle_request sock rd wr =
             (* [`Expert] responses may close the [Reader.t] *)
             if Reader.is_closed rd then return `Eof
             else
-              Request.read rd >>= function
+              Io.Request.read rd >>= function
               | `Eof | `Invalid _ -> return `Eof
               | `Ok req -> (
                   let body, finished = read_body req rd in
@@ -88,12 +74,12 @@ let handle_client handle_request sock rd wr =
       in
       Pipe.iter ~continue_on_error:false requests_pipe ~f:(function
         | `Expert (response, io_handler, body, finished) ->
-            Response.write_header response wr >>= fun () ->
+            Io.Response.write_header response wr >>= fun () ->
             io_handler rd wr >>= fun () ->
             Body.drain body >>| fun () -> Ivar.fill_if_empty finished ()
         | `Response (req, body, (res, res_body)) ->
-            let keep_alive = Request.is_keep_alive req in
-            let flush = Response.flush res in
+            let keep_alive = Cohttp.Request.is_keep_alive req in
+            let flush = Cohttp.Response.flush res in
             let res =
               let headers =
                 Cohttp.Header.add_unless_exists
@@ -101,10 +87,10 @@ let handle_client handle_request sock rd wr =
                   "connection"
                   (if keep_alive then "keep-alive" else "close")
               in
-              { res with Response.headers }
+              { res with Cohttp.Response.headers }
             in
-            Response.write ~flush
-              (Body_raw.write_body Response.write_body res_body)
+            Io.Response.write ~flush
+              (Body_raw.write_body Io.Response.write_body res_body)
               res wr
             >>= fun () ->
             Writer.(if keep_alive then flushed else close ?force_close:None) wr
@@ -116,7 +102,7 @@ let handle_client handle_request sock rd wr =
 let respond ?(flush = true) ?(headers = Cohttp.Header.init ()) ?(body = `Empty)
     status : response Deferred.t =
   let encoding = Body.transfer_encoding body in
-  let resp = Response.make ~status ~flush ~encoding ~headers () in
+  let resp = Cohttp.Response.make ~status ~flush ~encoding ~headers () in
   return (resp, body)
 
 let respond_with_pipe ?flush ?headers ?(code = `OK) body =
