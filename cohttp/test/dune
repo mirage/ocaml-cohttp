@@ -12,9 +12,9 @@
 
 (executable
  (name test_header)
- (modules unitary_test_header test_header)
+ (modules test_header)
  (forbidden_libraries base)
- (libraries cohttp alcotest fmt))
+ (libraries cohttp alcotest sexplib0))
 
 (rule
  (alias runtest)
