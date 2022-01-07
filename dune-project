@@ -199,4 +199,6 @@ to have no dependencies and make it easy for other packages to easily
 interoperate with Cohttp.")
  (depends
   (ocaml (>= 4.08))
-  (crowbar :with-test)))
+  (alcotest :with-test)
+  (crowbar :with-test)
+  (sexplib0 :with-test)))

@@ -1,0 +1,12 @@
+(executable
+ (name test_header)
+ (modules test_header)
+ (forbidden_libraries base)
+ (libraries http alcotest sexplib0))
+
+(rule
+ (alias runtest)
+ (package http)
+ (action
+  (run ./test_header.exe)))
+
