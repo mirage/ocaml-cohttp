@@ -47,8 +47,7 @@ to any value.
   (base64 (>= 3.1.0))
   (fmt :with-test)
   jsonm
-  (alcotest :with-test)
-  ))
+  (alcotest :with-test)))
 
 (package
  (name cohttp-top)
@@ -199,4 +198,5 @@ This package contains essential type definitions used in Cohttp. It is designed
 to have no dependencies and make it easy for other packages to easily
 interoperate with Cohttp.")
  (depends
-  (ocaml (>= 4.08))(crowbar :with-test)))
+  (ocaml (>= 4.08))
+  (crowbar :with-test)))
