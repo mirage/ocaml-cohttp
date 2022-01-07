@@ -200,5 +200,7 @@ interoperate with Cohttp.")
  (depends
   (ocaml (>= 4.08))
   (alcotest :with-test)
+  (core (and :with-test (>= v0.13.0)))
+  (core_bench :with-test)
   (crowbar :with-test)
   (sexplib0 :with-test)))

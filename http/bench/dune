@@ -1,3 +1,9 @@
 (executable
  (name bench)
  (libraries http core core_bench))
+
+(rule
+ (alias runtest)
+ (package http)
+ (action
+  (run ./bench.exe)))

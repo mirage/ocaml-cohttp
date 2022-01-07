@@ -23,6 +23,8 @@ depends: [
   "dune" {>= "2.9"}
   "ocaml" {>= "4.08"}
   "alcotest" {with-test}
+  "core" {with-test & >= "v0.13.0"}
+  "core_bench" {with-test}
   "crowbar" {with-test}
   "sexplib0" {with-test}
   "odoc" {with-doc}
