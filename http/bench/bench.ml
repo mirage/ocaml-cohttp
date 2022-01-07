@@ -9,6 +9,7 @@ let header_mem =
       [ ("transfer-encoding", "bar") ];
       [ ("traNsfer-eNcoding", "bar") ];
       [ ("traNsfer eNcoding", "bar") ];
+      [ ("traNsfer-eNcodkng", "bar") ];
     ]
   in
   let key = "transfer-encoding" in
