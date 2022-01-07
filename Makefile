@@ -1,7 +1,7 @@
 .PHONY: build clean test clean
 
 build:
-	dune build
+	dune build @install
 
 test:
 	dune runtest
