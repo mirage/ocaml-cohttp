@@ -25,8 +25,11 @@ module Header = struct
           (* If [i' > len], what remains to be compared is strictly
              less than a word long, use byte-per-byte comparison. *)
           if i' > len then byte_loop a b i len
-          else if String.get_int64_ne a i = String.get_int64_ne b i then
-            word_loop a b i' len
+          else if
+            Bytes.(
+              get_int64_ne (unsafe_of_string a) i
+              = get_int64_ne (unsafe_of_string b) i)
+          then word_loop a b i' len
           else
             (* If the words at [i] differ, it may due to a case
                difference; we check the individual bytes of this
