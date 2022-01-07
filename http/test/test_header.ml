@@ -396,5 +396,4 @@ let tests =
     if Sys.word_size = 64 then [ ("large header", `Slow, large_header) ] else []
   )
 
-let () =
-  Alcotest.run "test_header" [tests]
+let () = Alcotest.run "test_header" [ tests ]
