@@ -5,6 +5,7 @@ module Transfer = struct
 end
 
 module Header = struct
+  external string_unsafe_get64 : string -> int -> int64 = "%caml_string_get64u"
   (* [caseless_equal a b] must be equivalent to
      [String.equal (String.lowercase_ascii a) (String.lowercase_ascii b)]. *)
   let caseless_equal a b =
@@ -25,10 +26,7 @@ module Header = struct
           (* If [i' > len], what remains to be compared is strictly
              less than a word long, use byte-per-byte comparison. *)
           if i' > len then byte_loop a b i len
-          else if
-            Bytes.(
-              get_int64_ne (unsafe_of_string a) i
-              = get_int64_ne (unsafe_of_string b) i)
+          else if string_unsafe_get64 a i = string_unsafe_get64 b i
           then word_loop a b i' len
           else
             (* If the words at [i] differ, it may due to a case
