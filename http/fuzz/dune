@@ -1,10 +1,10 @@
 (executable
  (name fuzz_header)
- (libraries crowbar cohttp))
+ (libraries crowbar http))
 
 (rule
  (alias runtest)
- (package cohttp)
+ (package http)
  (action
   (run ./fuzz_header.exe)))
 
