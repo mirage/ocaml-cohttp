@@ -45,7 +45,6 @@ depends: [
   "fmt" {with-test}
   "jsonm"
   "alcotest" {with-test}
-  "crowbar" {with-test}
   "odoc" {with-doc}
 ]
 build: [

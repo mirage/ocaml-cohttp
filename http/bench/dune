@@ -1,0 +1,11 @@
+(executable
+ (name bench)
+ (libraries http core core_bench))
+
+(rule
+ (alias runtest)
+ (package http)
+ (enabled_if
+  (= %{ocaml-config:word_size} 64))
+ (action
+  (run ./bench.exe)))

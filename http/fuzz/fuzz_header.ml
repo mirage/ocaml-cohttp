@@ -13,7 +13,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *}}}*)
 
-module H = Cohttp.Header
+module H = Http.Header
 
 (** Here, we test the Header module with fuzzing. Some of these tests may be
     redundant with Alcotest tests.
@@ -154,7 +154,7 @@ let header_list_gen : (string * string) list Crowbar.gen =
   let printer = pp_list header_printer in
   with_printer printer gen
 
-(** Generate a [Cohttp.Header.t] headers. *)
+(** Generate a [Http.Header.t] headers. *)
 let headers_gen : H.t Crowbar.gen =
   let open Crowbar in
   let gen =

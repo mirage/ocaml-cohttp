@@ -13,7 +13,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *}}}*)
 
-module H = Cohttp.Header
+module H = Http.Header
 (** These tests try as much as possible to tests each header functions
     independently. *)
 
@@ -25,11 +25,15 @@ let aessl = Alcotest.check Alcotest.(list (pair string string))
 let aeb = Alcotest.check Alcotest.bool
 
 let t_header =
+  let open Sexplib0.Sexp_conv in
+  let sexp_of_t t =
+    sexp_of_list (sexp_of_pair sexp_of_string sexp_of_string) (H.to_list t)
+  in
   Alcotest.testable
     (fun fmt h ->
-      let sexp = Cohttp.Header.sexp_of_t h in
+      let sexp = sexp_of_t h in
       Sexplib0.Sexp.pp_hum fmt sexp)
-    (fun x y -> Cohttp.Header.compare x y = 0)
+    (fun x y -> H.compare x y = 0)
 
 let aeh = Alcotest.check t_header
 
@@ -353,21 +357,13 @@ let transfer_encoding_tests () =
   let sh = H.get_multi_concat h "transfer-encoding" in
   aeso "transfer_encoding_get_is_ordered" (Some "gzip,chunked") sh
 
-module String_io = Cohttp.Private.String_io
-module HIO = Cohttp.Private.Header_io.Make (String_io.M)
-
 let large_header () =
   let sz = 1024 * 1024 * 100 in
   let h = H.init () in
   let v1 = String.make sz 'a' in
   let h = H.add h "x-large" v1 in
   let h = H.add h v1 "foo" in
-  aeso "x-large" (H.get h "x-large") (Some v1);
-  let obuf = Buffer.create (sz + 1024) in
-  HIO.write h obuf;
-  let ibuf = Buffer.contents obuf in
-  let sbuf = String_io.open_in ibuf in
-  Alcotest.check t_header "large_header" (HIO.parse sbuf) h
+  aeso "x-large" (H.get h "x-large") (Some v1)
 
 let tests =
   ( "Unitary Header tests",
@@ -399,3 +395,5 @@ let tests =
     @
     if Sys.word_size = 64 then [ ("large header", `Slow, large_header) ] else []
   )
+
+let () = Alcotest.run "test_header" [ tests ]

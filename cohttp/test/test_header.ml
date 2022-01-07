@@ -451,6 +451,28 @@ let test_cachecontrol_concat () =
   aeso "test_cachecontrol_concat" (Some "public,max-age:86400")
     (H.get_multi_concat h "Cache-Control")
 
+module HIO = Cohttp.Private.Header_io.Make (String_io.M)
+
+let t_header =
+  Alcotest.testable
+    (fun fmt h ->
+      let sexp = H.sexp_of_t h in
+      Sexplib0.Sexp.pp_hum fmt sexp)
+    (fun x y -> H.compare x y = 0)
+
+let large_header () =
+  let sz = 1024 * 1024 * 100 in
+  let h = H.init () in
+  let v1 = String.make sz 'a' in
+  let h = H.add h "x-large" v1 in
+  let h = H.add h v1 "foo" in
+  aeso "x-large" (H.get h "x-large") (Some v1);
+  let obuf = Buffer.create (sz + 1024) in
+  HIO.write h obuf;
+  let ibuf = Buffer.contents obuf in
+  let sbuf = String_io.open_in ibuf in
+  Alcotest.check t_header "large_header" (HIO.parse sbuf) h
+
 let () = Printexc.record_backtrace true
 
 let () =
@@ -490,5 +512,7 @@ let () =
           ("content-range", `Quick, Content_range.content_range);
         ] );
       ("Cache Control", [ ("concat", `Quick, test_cachecontrol_concat) ]);
-      Unitary_test_header.tests;
+      ( "Serialization/Deserialization",
+        if Sys.word_size = 64 then [ ("large header", `Slow, large_header) ]
+        else [] );
     ]
