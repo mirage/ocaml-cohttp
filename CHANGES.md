@@ -3,6 +3,21 @@
 - Completely new Parsing layers for servers (@anuragsoni #819)
   + Cohttp now uses an optimized parser for requests.
   + The new parser produces much less temporary buffers during read operations in servers.
+- Faster header comparison (gasche #818)
+- Introduce http package containing common signatures and structures useful for compatibility with cohttp - and no dependencies (rgrinberg #812)
+- Faster Request/Response comparison (rgrinberg #814)
+- Use raise_notrace in header short circuiting exceptions (rgrinberg #802)
+- async(server): allow reading number of active connections (anuragsoni #809)
+- Various internal refactors (rgrinberg, mseri #820, #800, #799, #797)
+- *Breaking changes*
+  + refactor: move opam metadata to dune-project (rgrinberg #811)
+  + refactor: deprecate Cohttp_async.Io (rgrinberg #807)
+  + fix: move more internals to Private (rgrinberg #806)
+  + fix: deprecate transfer encoding field (rgrinberg #805)
+  + refactor: deprecate Cohttp_async.Body_raw (rgrinberg #804)
+  + fix: deprecate more aliases (rgrinberg #803)
+  + refactor: deprecate connection value(rgrinberg #798)
+  + refactor: deprecate using attributes (rgrinberg #796)
 
 ## v5.0.0 (2021-12-15)
 
