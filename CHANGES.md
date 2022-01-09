@@ -1,8 +1,8 @@
-## Unreelased
+## Unreleased
 
-- Completely new IO & Parsing layers (@anuragsoni #819)
-  + Cohttp now uses an optimized parser for requests and responses.
-  + The new IO layer produces much less temporary buffers.
+- Completely new Parsing layers for servers (@anuragsoni #819)
+  + Cohttp now uses an optimized parser for requests.
+  + The new parser produces much less temporary buffers during read operations in servers.
 
 ## v5.0.0 (2021-12-15)
 
