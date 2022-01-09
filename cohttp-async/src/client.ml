@@ -47,7 +47,9 @@ let read_response ic =
       | `Yes | `Unknown ->
           (* Build a response pipe for the body *)
           let reader = Io.Response.make_body_reader res ic in
-          let pipe = Body_raw.pipe_of_body Io.Response.read_body_chunk reader in
+          let pipe =
+            Body.Private.pipe_of_body Io.Response.read_body_chunk reader
+          in
           (res, pipe)
       | `No ->
           let pipe = Pipe.of_list [] in
@@ -59,7 +61,8 @@ let request ?interrupt ?ssl_config ?uri ?(body = `Empty) req =
   Net.connect_uri ?interrupt ?ssl_config uri >>= fun (ic, oc) ->
   try_with (fun () ->
       Io.Request.write
-        (fun writer -> Body_raw.write_body Io.Request.write_body body writer)
+        (fun writer ->
+          Body.Private.write_body Io.Request.write_body body writer)
         req oc
       >>= fun () ->
       read_response ic >>| fun (resp, body) ->
@@ -101,7 +104,8 @@ module Connection = struct
     let res = Ivar.create () in
     Throttle.enqueue t (fun { ic; oc } ->
         Io.Request.write
-          (fun writer -> Body_raw.write_body Io.Request.write_body body writer)
+          (fun writer ->
+            Body.Private.write_body Io.Request.write_body body writer)
           req oc
         >>= fun () ->
         read_response ic >>= fun (resp, body) ->
@@ -130,7 +134,7 @@ let call ?interrupt ?ssl_config ?headers ?(chunked = false) ?(body = `Empty)
      transfer encoding *)
   (match chunked with
   | false ->
-      Body_raw.disable_chunked_encoding body >>| fun (body, body_length) ->
+      Body.Private.disable_chunked_encoding body >>| fun (body, body_length) ->
       ( Cohttp.Request.make_for_client ?headers ~chunked ~body_length meth uri,
         body )
   | true -> (
