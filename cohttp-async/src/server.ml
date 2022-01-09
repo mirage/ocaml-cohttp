@@ -35,7 +35,7 @@ let read_body req rd =
   | `Yes ->
       (* Create a Pipe for the body *)
       let reader = Io.Request.make_body_reader req rd in
-      let pipe = Body_raw.pipe_of_body Io.Request.read_body_chunk reader in
+      let pipe = Body.Private.pipe_of_body Io.Request.read_body_chunk reader in
       `Pipe pipe
 
 let collect_errors writer ~f =
@@ -76,10 +76,10 @@ let handle_client handle_request sock rd wr =
                     { res with Cohttp.Response.headers }
                   in
                   Io.Response.write ~flush
-                    (Body_raw.write_body Io.Response.write_body res_body)
+                    (Body.Private.write_body Io.Response.write_body res_body)
                     res wr
                   >>= fun () ->
-                  Body_raw.drain req_body >>= fun () ->
+                  Body.Private.drain req_body >>= fun () ->
                   if keep_alive then loop rd wr sock handle_request
                   else Deferred.unit)
       in
