@@ -3,14 +3,7 @@ open OUnit
 open Cohttp_lwt_unix
 open Cohttp_lwt_unix_test
 module Body = Cohttp_lwt.Body
-module IO = Cohttp_lwt_unix.IO
-
-module Request = struct
-  include Cohttp.Request
-
-  include (
-    Private.Make (IO) : module type of Private.Make (IO) with type t := t)
-  end
+module IO = Cohttp_lwt_unix.Private.IO
 
 let message = "Hello sanity!"
 let chunk_body = [ "one"; ""; " "; "bar"; "" ]

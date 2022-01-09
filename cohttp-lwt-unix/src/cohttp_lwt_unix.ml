@@ -32,8 +32,9 @@ module Client = Client
 module Server = Server
 module Debug = Debug
 module Net = Net
-module IO = Io
+module IO = Io [@@deprecated "This module is not for public consumption"]
 
 module Private = struct
   module Input_channel = Input_channel
+  module IO = Io
 end
