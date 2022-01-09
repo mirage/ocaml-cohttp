@@ -47,7 +47,6 @@ to any value.
   stringext
   (base64 (>= 3.1.0))
   (fmt :with-test)
-  jsonm
   (alcotest :with-test)))
 
 (package
