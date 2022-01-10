@@ -1,9 +1,11 @@
 open Cohttp_lwt_unix
 
-let text = String.make 2053 'a'
+let length = 2053
+let text = String.make length 'a'
+let headers = Cohttp.Header.of_list [ ("content-length", Int.to_string length) ]
 
 let server_callback _conn _req _body =
-  Server.respond_string ~status:`OK ~body:text ()
+  Server.respond_string ~headers ~status:`OK ~body:text ()
 
 let main () =
   Server.create ~backlog:11_000 (Server.make ~callback:server_callback ())
