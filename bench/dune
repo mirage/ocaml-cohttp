@@ -1,0 +1,28 @@
+(executable
+ (name bench)
+ (modules bench)
+ (libraries http core core_bench))
+
+(executable
+ (name lwt_unix_server)
+ (modules lwt_unix_server)
+ (libraries cohttp-lwt-unix logs.fmt fmt.tty))
+
+(executable
+ (name async_server)
+ (modules async_server)
+ (libraries cohttp-async logs.fmt fmt.tty))
+
+(rule
+ (alias bench)
+ (package cohttp-bench)
+ (enabled_if %{arch_sixtyfour})
+ (action
+  (run ./bench.exe time cycles)))
+
+(rule
+ (alias latency)
+ (deps lwt_unix_server.exe async_server.exe)
+ (package cohttp-bench)
+ (action
+  (run ./latency.sh)))

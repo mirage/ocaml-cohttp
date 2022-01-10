@@ -1,9 +1,0 @@
-(executable
- (name lwt_unix_server)
- (modules lwt_unix_server)
- (libraries cohttp-lwt-unix logs.fmt fmt.tty))
-
-(executable
- (name async_server)
- (modules async_server)
- (libraries cohttp-async logs.fmt fmt.tty))

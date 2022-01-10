@@ -209,3 +209,19 @@ interoperate with Cohttp.")
   (core_bench :with-test)
   (crowbar :with-test)
   (sexplib0 :with-test)))
+
+(package
+ (name cohttp-bench)
+ (synopsis "Benchmarks binaries for Cohttp")
+ (description "\
+This package contains some benchmarks for http and cohttp.
+The benchmarks for the server latency will require wrk2
+(https://github.com/giltene/wrk2) to run. The latency graphs
+can then be generated with HdrHistogram plotter, also available
+online at https://hdrhistogram.github.io/HdrHistogram/plotFiles.html.")
+ (depends
+  (core (>= v0.13.0))
+  core_bench
+  (http (= :version))
+  (cohttp-lwt-unix (= :version))
+  (cohttp-async (= :version))))

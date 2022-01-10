@@ -2,8 +2,10 @@ open Core
 open Async
 open Cohttp_async
 
-let text = String.make 2053 'a'
-let handler ~body:_ _sock _req = Server.respond_string text
+let length = 2053
+let text = String.make length 'a'
+let headers = Cohttp.Header.of_list [ ("content-length", Int.to_string length) ]
+let handler ~body:_ _sock _req = Server.respond_string ~headers text
 
 let start_server port () =
   Cohttp_async.Server.create ~on_handler_error:`Raise
