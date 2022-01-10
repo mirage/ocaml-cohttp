@@ -382,13 +382,22 @@ module Response : sig
     version : Version.t;  (** (** HTTP version, usually 1.1 *) *)
     status : Status.t;  (** HTTP status code of the response *)
     flush : bool;
+        [@deprecated
+          "this field will be removed in the future. Provide flush in the \
+           [respond_*] function instead."]
   }
 
   val encoding : t -> Transfer.encoding
   val headers : t -> Header.t
   val version : t -> Version.t
   val status : t -> Status.t
-  val flush : t -> bool
+
+  val flush :
+    (t -> bool
+    [@deprecated
+      "this field will be removed in the future. Provide flush in the \
+       [respond_*] function instead."])
+
   val compare : t -> t -> int
 
   val make :
