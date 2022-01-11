@@ -27,7 +27,7 @@ let make_net_req uri meth' body () =
   let headers = Cohttp.Header.of_list [ ("connection", "close") ] in
   Client.call meth ~headers ~body:Body.(of_string body) uri
   >>= fun (res, body) ->
-  show_headers (Cohttp.Response.headers res);
+  show_headers (Http.Response.headers res);
   body
   |> Body.to_pipe
   |> Pipe.iter ~f:(fun b ->

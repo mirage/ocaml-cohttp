@@ -10,10 +10,10 @@ val resolve_file : docroot:string -> uri:Uri.t -> string
   [@@deprecated "Please use Cohttp.Path.resolve_local_file. "]
 
 val respond_file :
-  ?headers:Cohttp.Header.t ->
+  ?headers:Http.Header.t ->
   fname:string ->
   unit ->
-  (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+  (Http.Response.t * Cohttp_lwt.Body.t) Lwt.t
 
 val create :
   ?timeout:int ->

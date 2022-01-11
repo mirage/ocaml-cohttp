@@ -86,14 +86,14 @@ let handler ~info ~docroot ~index ~body:_ _sock req =
   let uri = Cohttp.Request.uri req in
   let path = Uri.path uri in
   (* Log the request to the console *)
-  printf "%s %s%!" Cohttp.(Code.string_of_method (Request.meth req)) path;
-  match Cohttp.Request.meth req with
+  printf "%s %s%!" Http.(Method.to_string (Request.meth req)) path;
+  match Http.Request.meth req with
   | (`GET | `HEAD) as meth ->
       serve ~info ~docroot ~index uri path >>= method_filter meth
   | meth ->
-      let meth = Cohttp.Code.string_of_method meth in
+      let meth = Http.Method.to_string meth in
       let allowed = "GET, HEAD" in
-      let headers = Cohttp.Header.of_list [ ("allow", allowed) ] in
+      let headers = Http.Header.of_list [ ("allow", allowed) ] in
       Server.respond_string ~headers ~status:`Method_not_allowed
         (html_of_method_not_allowed meth allowed path info)
 

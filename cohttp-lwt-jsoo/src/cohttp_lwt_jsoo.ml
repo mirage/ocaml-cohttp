@@ -133,9 +133,9 @@ module Make_api (X : sig
   module Response : Cohttp.S.Response
 
   val call :
-    ?headers:Cohttp.Header.t ->
+    ?headers:Http.Header.t ->
     ?body:Cohttp_lwt.Body.t ->
-    Cohttp.Code.meth ->
+    Http.Method.t ->
     Uri.t ->
     (Response.t * Cohttp_lwt.Body.t) Lwt.t
 end) =
@@ -192,7 +192,7 @@ module Make_client_async (P : Params) = Make_api (struct
     let xml = XmlHttpRequest.create () in
     xml##.withCredentials := Js.bool P.with_credentials;
     if xhr_response_supported then xml##.responseType := Js.string "arraybuffer";
-    let (res : (Response.t Lwt.t * CLB.t) Lwt.t), wake = Lwt.task () in
+    let (res : (Http.Response.t Lwt.t * CLB.t) Lwt.t), wake = Lwt.task () in
     let () =
       xml
       ## (_open
@@ -229,7 +229,7 @@ module Make_client_async (P : Params) = Make_api (struct
                 let response =
                   Lwt.(
                     Header_io.parse channel >|= fun resp_headers ->
-                    Cohttp.Response.make ~version:`HTTP_1_1
+                    Http.Response.make ~version:`HTTP_1_1
                       ~status:(C.Code.status_of_code xml##.status)
                       ~flush:false (* ??? *)
                       ~encoding:(CLB.transfer_encoding body)

@@ -42,7 +42,8 @@
 open Base
 open Core
 open Async
-open Cohttp
+
+(* open Cohttp *)
 module Client = Cohttp_async.Client
 module Body = Cohttp_async.Body
 
@@ -186,7 +187,7 @@ module Auth = struct
       ],
       hashed_payload )
 
-  let canonical_request hashed_payload (request : Request.t) =
+  let canonical_request hashed_payload (request : Http.Request.t) =
     (* This corresponds to p.21 of the s3 api doc
        we're making:
        <HTTPMethod>\n
@@ -196,15 +197,14 @@ module Auth = struct
        <SignedHeaders>\n
        <HashedPayload>
     *)
-    let open Cohttp.Request in
-    let http_method = Code.string_of_method request.meth in
+    let http_method = Http.Method.to_string request.meth in
     (* Nb the path will be url encoded as per spec *)
     let uri = Cohttp.Request.uri request in
     let canoncical_uri = Compat.encode_string (Uri.path uri) in
     (* Sort query string in alphabetical order by key *)
     let canonical_query = Compat.encode_query_string uri in
     let sorted_headers =
-      Header.to_list request.headers |> List.sort ~compare:ksrt
+      Http.Header.to_list request.headers |> List.sort ~compare:ksrt
     in
     let canonical_headers =
       sorted_headers
@@ -314,13 +314,15 @@ module S3 = struct
     let headers = headers @ [ ("Host", host_str) ] in
     let amz_headers, hashed_payload = Auth.make_amz_headers time ?body in
     let headers = headers @ amz_headers in
-    let request = Request.make ~meth ~headers:(Header.of_list headers) uri in
+    let request =
+      Cohttp.Request.make ~meth ~headers:(Http.Header.of_list headers) uri
+    in
     let auth_header =
       Auth.auth_request ~now:time ~hashed_payload ~region:conf.region
         ~service:`S3 ~aws_access_key:conf.aws_access_key
         ~aws_secret_key:conf.aws_secret_key request
     in
-    let headers = headers @ auth_header |> Header.of_list in
+    let headers = headers @ auth_header |> Http.Header.of_list in
     let request = { request with Cohttp.Request.headers } in
     match meth with
     | `PUT ->
@@ -359,8 +361,8 @@ let main region_str aws_access_key aws_secret_key src dst () =
   | S3toLocal (src, dst) -> (
       make_request conf ~meth:`GET ~bucket:src.bucket ~objekt:src.objekt
       >>= fun (resp, body) ->
-      match Cohttp.Response.(resp.status) with
-      | #Code.success_status ->
+      match Http.Response.(resp.status) with
+      | #Http.Status.success ->
           Body.to_string body >>| fun s ->
           Out_channel.with_file
             ~f:(fun oc -> Out_channel.output_string oc s)
@@ -369,7 +371,7 @@ let main region_str aws_access_key aws_secret_key src dst () =
             dst
       | _ ->
           Core.Printf.printf "Error: %s\n"
-            (Sexp.to_string (Response.sexp_of_t resp));
+            (Sexp.to_string (Cohttp.Response.sexp_of_t resp));
           return ())
   | LocaltoS3 (src, dst) -> (
       let body =
@@ -377,15 +379,15 @@ let main region_str aws_access_key aws_secret_key src dst () =
       in
       make_request ~body conf ~meth:`PUT ~bucket:dst.bucket ~objekt:dst.objekt
       >>= fun (resp, body) ->
-      match Cohttp.Response.status resp with
-      | #Code.success_status ->
+      match Http.Response.status resp with
+      | #Http.Status.success ->
           Core.Printf.printf "Wrote %s to s3://%s\n" src
             (dst.bucket ^ dst.objekt);
           return ()
       | _ ->
           Body.to_string body >>| fun s ->
           Core.Printf.printf "Error: %s\n%s\n"
-            (Sexp.to_string (Response.sexp_of_t resp))
+            (Sexp.to_string (Cohttp.Response.sexp_of_t resp))
             s)
 
 let () =

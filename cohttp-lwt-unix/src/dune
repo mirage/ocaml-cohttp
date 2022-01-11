@@ -12,6 +12,7 @@
   magic-mime
   lwt.unix
   conduit-lwt-unix
+  http
   cohttp
   cohttp-lwt
   logs.fmt))

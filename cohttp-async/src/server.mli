@@ -8,24 +8,24 @@ val is_closed : (_, _) t -> bool
 val listening_on : (_, 'listening_on) t -> 'listening_on
 val num_connections : (_, _) t -> int
 
-type response = Cohttp.Response.t * Body.t [@@deriving sexp_of]
+type response = Http.Response.t * Body.t [@@deriving sexp_of]
 
 type 'r respond_t =
   ?flush:bool ->
-  ?headers:Cohttp.Header.t ->
+  ?headers:Http.Header.t ->
   ?body:Body.t ->
-  Cohttp.Code.status_code ->
+  Http.Status.t ->
   'r Async_kernel.Deferred.t
 
 type response_action =
   [ `Expert of
-    Cohttp.Response.t
+    Http.Response.t
     * (Input_channel.t -> Async_unix.Writer.t -> unit Async_kernel.Deferred.t)
   | `Response of response ]
 (** A request handler can respond in two ways:
 
-    - Using [`Response], with a {!Cohttp.Response.t} and a {!Body.t}.
-    - Using [`Expert], with a {!Cohttp.Response.t} and an IO function that is
+    - Using [`Response], with a {!Http.Response.t} and a {!Body.t}.
+    - Using [`Expert], with a {!Http.Response.t} and an IO function that is
       expected to write the response body. The IO function has access to the
       underlying {!Async_unix.Reader.t} and {!Async_unix.Writer.t}, which allows
       writing a response body more efficiently, stream a response or to switch
@@ -41,8 +41,8 @@ val resolve_local_file : docroot:string -> uri:Uri.t -> string
 
 val respond_with_pipe :
   ?flush:bool ->
-  ?headers:Cohttp.Header.t ->
-  ?code:Cohttp.Code.status_code ->
+  ?headers:Http.Header.t ->
+  ?code:Http.Status.t ->
   string Async_kernel.Pipe.Reader.t ->
   response Async_kernel.Deferred.t
 (** Respond with a [string] Pipe that provides the response string
@@ -52,20 +52,20 @@ val respond_with_pipe :
 
 val respond_string :
   ?flush:bool ->
-  ?headers:Cohttp.Header.t ->
-  ?status:Cohttp.Code.status_code ->
+  ?headers:Http.Header.t ->
+  ?status:Http.Status.t ->
   string ->
   response Async_kernel.Deferred.t
 
 val respond_with_redirect :
-  ?headers:Cohttp.Header.t -> Uri.t -> response Async_kernel.Deferred.t
+  ?headers:Http.Header.t -> Uri.t -> response Async_kernel.Deferred.t
 (** Respond with a redirect to an absolute [uri]
 
     @param uri Absolute URI to redirect the client to *)
 
 val respond_with_file :
   ?flush:bool ->
-  ?headers:Cohttp.Header.t ->
+  ?headers:Http.Header.t ->
   ?error_body:string ->
   string ->
   response Async_kernel.Deferred.t
@@ -83,7 +83,7 @@ val create_expert :
   ('address, 'listening_on) Async.Tcp.Where_to_listen.t ->
   (body:Body.t ->
   'address ->
-  Cohttp.Request.t ->
+  Http.Request.t ->
   response_action Async_kernel.Deferred.t) ->
   ('address, 'listening_on) t Async_kernel.Deferred.t
 (** Build a HTTP server and expose the [IO.ic] and [IO.oc]s, based on the
@@ -98,7 +98,7 @@ val create :
   ('address, 'listening_on) Async.Tcp.Where_to_listen.t ->
   (body:Body.t ->
   'address ->
-  Cohttp.Request.t ->
+  Http.Request.t ->
   response Async_kernel.Deferred.t) ->
   ('address, 'listening_on) t Async_kernel.Deferred.t
 (** Build a HTTP server, based on the [Tcp.Server] interface *)

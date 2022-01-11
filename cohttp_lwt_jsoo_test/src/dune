@@ -1,7 +1,7 @@
 (executable
  (name cohttp_lwt_jsoo_test)
  (modes js)
- (libraries cohttp cohttp-lwt cohttp-lwt-jsoo lwt js_of_ocaml-lwt)
+ (libraries http cohttp cohttp-lwt cohttp-lwt-jsoo lwt js_of_ocaml-lwt)
  (preprocess
   (pps lwt_ppx js_of_ocaml-ppx)))
 

@@ -48,12 +48,12 @@ let server =
       (fun _ _ ->
         Lwt.return
           (`Expert
-            ( Cohttp.Response.make (),
+            ( Http.Response.make (),
               fun _ic oc -> Lwt_io.write oc "8\r\nexpert 1\r\n0\r\n\r\n" )));
       (fun _ _ ->
         Lwt.return
           (`Expert
-            ( Cohttp.Response.make (),
+            ( Http.Response.make (),
               fun ic oc ->
                 Lwt_io.write oc "8\r\nexpert 2\r\n0\r\n\r\n" >>= fun () ->
                 Lwt_io.flush oc >>= fun () ->
@@ -71,8 +71,7 @@ let server =
             if !i > 1000 then failwith "Connection should have failed by now!";
             Some (String.make 4096 'X'))
       in
-      Lwt.return
-        (`Response (Cohttp.Response.make ~status:`OK (), `Stream stream)));
+      Lwt.return (`Response (Http.Response.make ~status:`OK (), `Stream stream)));
   ]
   |> response_sequence
 
@@ -179,7 +178,7 @@ let ts =
         | `Eof | `Invalid _ -> assert false
         | `Ok rsp ->
             assert_equal ~printer:Cohttp.Code.string_of_status `OK
-              (Cohttp.Response.status rsp);
+              (Http.Response.status rsp);
             Cohttp_lwt_unix.Net.close ic oc;
             Lwt_condition.broadcast cond ();
             Lwt.pause ()

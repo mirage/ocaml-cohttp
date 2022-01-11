@@ -210,9 +210,9 @@ module Make (IO : S.IO) = struct
   let write_header req oc =
     let fst_line =
       Printf.sprintf "%s %s %s\r\n"
-        (Code.string_of_method req.meth)
+        (Http.Method.to_string req.meth)
         (if req.resource = "" then "/" else req.resource)
-        (Code.string_of_version req.version)
+        (Http.Version.to_string req.version)
     in
     let headers = req.headers in
     let headers =

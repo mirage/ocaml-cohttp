@@ -279,7 +279,7 @@ let rec http_get_and_follow ~max_redirects uri =
 
 and follow_redirect ~max_redirects request_uri (response, body) =
   let open Lwt.Syntax in
-  let status = Cohttp.Response.status response in
+  let status = Http.Response.status response in
   (* The unconsumed body would otherwise leak memory *)
   let* () =
     if status <> `OK then Cohttp_lwt.Body.drain_body body else Lwt.return_unit
@@ -299,8 +299,8 @@ and follow_redirect ~max_redirects request_uri (response, body) =
 and handle_redirect ~permanent ~max_redirects request_uri response =
   if max_redirects <= 0 then Lwt.fail_with "Too many redirects"
   else
-    let headers = Cohttp.Response.headers response in
-    let location = Cohttp.Header.get headers "location" in
+    let headers = Http.Response.headers response in
+    let location = Http.Header.get headers "location" in
     match location with
     | None -> Lwt.fail_with "Redirection without Location header"
     | Some url ->
@@ -363,13 +363,13 @@ Implementing a server in cohttp using the Lwt backend (for Async is very similar
 is mostly equivalent to implementing a function of type :
 
 ```
-conn -> Cohttp.Request.t -> Cohttp_lwt.Body.t -> (Cohttp.Response.t * Cohttp_lwt.Body.t) Lwt.t
+conn -> Http.Request.t -> Cohttp_lwt.Body.t -> (Http.Response.t * Cohttp_lwt.Body.t) Lwt.t
 ```
 
 The parameters are self explanatory but we'll summarize them quickly here:
 
 * `conn` - contains connection information
-* `Cohttp.Request.t` - Request information such as method, uri, headers, etc.
+* `Http.Request.t` - Request information such as method, uri, headers, etc.
 * `Cohttp_lwt.Body.t` - Contains the request body. You must manually decode the
   request body into json, form encoded pairs, etc. For cohttp, the body is
   simply binary data.

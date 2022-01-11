@@ -116,7 +116,7 @@ let t_parse_result_uri : Uri.t Parse_result.t Alcotest.testable =
 let parse_request_uri_ r (expected : Uri.t Parse_result.t) name =
   String_io.M.(
     StringRequest.read (String_io.open_in r)
-    >>= fun (result : Cohttp.Request.t Parse_result.t) ->
+    >>= fun (result : Http.Request.t Parse_result.t) ->
     let uri = Parse_result.map result ~f:Request.uri in
     return @@ Alcotest.check t_parse_result_uri name uri expected)
 

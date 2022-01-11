@@ -11,7 +11,7 @@ let start_server port () =
     port;
   Cohttp_async.Server.create ~on_handler_error:`Raise
     (Async.Tcp.Where_to_listen.of_port port) (fun ~body _ req ->
-      match req |> Cohttp.Request.meth with
+      match req |> Http.Request.meth with
       | `POST ->
           Body.to_string body >>= fun body ->
           Caml.Printf.eprintf "Body: %s" body;
