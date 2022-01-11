@@ -1,5 +1,6 @@
 module Make
     (P : Mirage_clock.PCLOCK)
+    (T : Mirage_time.S)
     (R : Resolver_mirage.S)
     (S : Conduit_mirage.S) : sig
   include Cohttp_lwt.S.Client

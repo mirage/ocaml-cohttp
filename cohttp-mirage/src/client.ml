@@ -21,6 +21,7 @@ open Lwt.Infix
 
 module Make
     (P : Mirage_clock.PCLOCK)
+    (T : Mirage_time.S)
     (R : Resolver_mirage.S)
     (S : Conduit_mirage.S) =
 struct
@@ -72,5 +73,5 @@ struct
   let with_authenticator a ctx = { ctx with Net_IO.authenticator = Some a }
 
   (* Build all the core modules from the [Cohttp_lwt] functors *)
-  include Cohttp_lwt.Make_client (HTTP_IO) (Net_IO)
+  include Cohttp_lwt.Make_client (HTTP_IO) (Net_IO) (T)
 end

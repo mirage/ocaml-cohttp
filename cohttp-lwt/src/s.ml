@@ -29,6 +29,10 @@ module type Net = sig
   val close : IO.ic -> IO.oc -> unit
 end
 
+module type Sleep = sig
+  val sleep_ns : int64 -> unit Lwt.t
+end
+
 (** The [Client] module implements non-pipelined single HTTP client calls. Each
     call will open a separate {!Net} connection. For best results, the {!Body}
     that is returned should be consumed in order to close the file descriptor in
@@ -36,6 +40,47 @@ end
     up, but this can take some additional time to happen. *)
 module type Client = sig
   type ctx
+
+  module Connection : sig
+    type t
+
+    val connect :
+      ?finalise:(t -> unit Lwt.t) ->
+      ?persistent:bool ->
+      ?ctx:ctx ->
+      Uri.t -> (* XXX this should actually be something like Conduit.endp *)
+      t
+
+    val shutdown : t -> unit
+    val close : t -> unit
+    val is_closed : t -> bool
+    val notify : t -> unit Lwt.t
+    val length : t -> int
+
+    val request :
+      t ->
+      ?body:Body.t ->
+      Cohttp.Request.t ->
+      (Cohttp.Response.t * Body.t) Lwt.t
+  end
+
+  module Connection_cache : sig
+    type t
+
+    val set_default : t -> unit
+
+    val request : ?cache:t -> ?body:Body.t -> Cohttp.Request.t ->
+      (Cohttp.Response.t * Body.t) Lwt.t
+
+    val no_cache :?ctx:ctx -> unit -> t
+    val cache :
+      ?ctx:ctx ->
+      ?keep:int64 ->
+      ?retry:int ->
+      ?parallel:int ->
+      ?depth:int ->
+      unit -> t
+  end
 
   val call :
     ?ctx:ctx ->
