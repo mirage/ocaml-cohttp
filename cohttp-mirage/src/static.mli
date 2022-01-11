@@ -31,7 +31,7 @@ module HTTP (FS : Mirage_kv.RO) (S : Cohttp_lwt.S.Server) : sig
 
   val start :
     http_port:int ->
-    ?request_fn:(Uri.t -> Cohttp.Header.t -> Cohttp.Header.t) ->
+    ?request_fn:(Uri.t -> Http.Header.t -> Http.Header.t) ->
     FS.t ->
     ([> `TCP of int ] -> S.t -> 'a) ->
     'a

@@ -126,7 +126,7 @@ let t_links =
 let headers_of_response test_name response_string =
   String_io.M.(
     StringResponse.read (String_io.open_in response_string) >>= function
-    | `Ok resp -> Cohttp.Response.headers resp
+    | `Ok resp -> Http.Response.headers resp
     | _ -> failwith (test_name ^ " response parse failed"))
 
 let get_resp lines =

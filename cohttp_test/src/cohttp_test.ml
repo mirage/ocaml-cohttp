@@ -1,5 +1,3 @@
-open Cohttp
-
 module type S = sig
   type 'a io
   type ic
@@ -7,15 +5,15 @@ module type S = sig
   type body
 
   type response_action =
-    [ `Expert of Cohttp.Response.t * (ic -> oc -> unit io)
-    | `Response of Cohttp.Response.t * body ]
+    [ `Expert of Http.Response.t * (ic -> oc -> unit io)
+    | `Response of Http.Response.t * body ]
 
-  type spec = Request.t -> body -> response_action io
+  type spec = Http.Request.t -> body -> response_action io
   type async_test = unit -> unit io
 
-  val response : Response.t * body -> response_action
-  val expert : ?rsp:Cohttp.Response.t -> (ic -> oc -> unit io) -> spec
-  val const : (Response.t * body) io -> spec
+  val response : Http.Response.t * body -> response_action
+  val expert : ?rsp:Http.Response.t -> (ic -> oc -> unit io) -> spec
+  val const : (Http.Response.t * body) io -> spec
   val response_sequence : spec list -> spec
   val temp_server : ?port:int -> spec -> (Uri.t -> 'a io) -> 'a io
 

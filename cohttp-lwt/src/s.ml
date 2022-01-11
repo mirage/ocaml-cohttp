@@ -39,12 +39,12 @@ module type Client = sig
 
   val call :
     ?ctx:ctx ->
-    ?headers:Cohttp.Header.t ->
+    ?headers:Http.Header.t ->
     ?body:Body.t ->
     ?chunked:bool ->
-    Cohttp.Code.meth ->
+    Http.Method.t ->
     Uri.t ->
-    (Cohttp.Response.t * Body.t) Lwt.t
+    (Http.Response.t * Body.t) Lwt.t
   (** [call ?ctx ?headers ?body ?chunked meth uri] will resolve the [uri] to a
       concrete network endpoint using context [ctx]. It will then issue an HTTP
       request with method [meth], adding request headers from [headers] if
@@ -77,58 +77,58 @@ module type Client = sig
       the specified port by the user in a non-secured way. *)
 
   val head :
-    ?ctx:ctx -> ?headers:Cohttp.Header.t -> Uri.t -> Cohttp.Response.t Lwt.t
+    ?ctx:ctx -> ?headers:Http.Header.t -> Uri.t -> Http.Response.t Lwt.t
 
   val get :
     ?ctx:ctx ->
-    ?headers:Cohttp.Header.t ->
+    ?headers:Http.Header.t ->
     Uri.t ->
-    (Cohttp.Response.t * Body.t) Lwt.t
+    (Http.Response.t * Body.t) Lwt.t
 
   val delete :
     ?ctx:ctx ->
     ?body:Body.t ->
     ?chunked:bool ->
-    ?headers:Cohttp.Header.t ->
+    ?headers:Http.Header.t ->
     Uri.t ->
-    (Cohttp.Response.t * Body.t) Lwt.t
+    (Http.Response.t * Body.t) Lwt.t
 
   val post :
     ?ctx:ctx ->
     ?body:Body.t ->
     ?chunked:bool ->
-    ?headers:Cohttp.Header.t ->
+    ?headers:Http.Header.t ->
     Uri.t ->
-    (Cohttp.Response.t * Body.t) Lwt.t
+    (Http.Response.t * Body.t) Lwt.t
 
   val put :
     ?ctx:ctx ->
     ?body:Body.t ->
     ?chunked:bool ->
-    ?headers:Cohttp.Header.t ->
+    ?headers:Http.Header.t ->
     Uri.t ->
-    (Cohttp.Response.t * Body.t) Lwt.t
+    (Http.Response.t * Body.t) Lwt.t
 
   val patch :
     ?ctx:ctx ->
     ?body:Body.t ->
     ?chunked:bool ->
-    ?headers:Cohttp.Header.t ->
+    ?headers:Http.Header.t ->
     Uri.t ->
-    (Cohttp.Response.t * Body.t) Lwt.t
+    (Http.Response.t * Body.t) Lwt.t
 
   val post_form :
     ?ctx:ctx ->
-    ?headers:Cohttp.Header.t ->
+    ?headers:Http.Header.t ->
     params:(string * string list) list ->
     Uri.t ->
-    (Cohttp.Response.t * Body.t) Lwt.t
+    (Http.Response.t * Body.t) Lwt.t
 
   val callv :
     ?ctx:ctx ->
     Uri.t ->
-    (Cohttp.Request.t * Body.t) Lwt_stream.t ->
-    (Cohttp.Response.t * Body.t) Lwt_stream.t Lwt.t
+    (Http.Request.t * Body.t) Lwt_stream.t ->
+    (Http.Response.t * Body.t) Lwt_stream.t Lwt.t
 end
 
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)
@@ -138,8 +138,8 @@ module type Server = sig
   type conn = IO.conn * Cohttp.Connection.t [@@warning "-3"]
 
   type response_action =
-    [ `Expert of Cohttp.Response.t * (IO.ic -> IO.oc -> unit Lwt.t)
-    | `Response of Cohttp.Response.t * Body.t ]
+    [ `Expert of Http.Response.t * (IO.ic -> IO.oc -> unit Lwt.t)
+    | `Response of Http.Response.t * Body.t ]
   (** A request handler can respond in two ways:
 
       - Using [`Response], with a {!Response.t} and a {!Body.t}.
@@ -155,7 +155,7 @@ module type Server = sig
 
   val make_response_action :
     ?conn_closed:(conn -> unit) ->
-    callback:(conn -> Cohttp.Request.t -> Body.t -> response_action Lwt.t) ->
+    callback:(conn -> Http.Request.t -> Body.t -> response_action Lwt.t) ->
     unit ->
     t
 
@@ -163,16 +163,16 @@ module type Server = sig
     ?conn_closed:(conn -> unit) ->
     callback:
       (conn ->
-      Cohttp.Request.t ->
+      Http.Request.t ->
       Body.t ->
-      (Cohttp.Response.t * (IO.ic -> IO.oc -> unit Lwt.t)) Lwt.t) ->
+      (Http.Response.t * (IO.ic -> IO.oc -> unit Lwt.t)) Lwt.t) ->
     unit ->
     t
 
   val make :
     ?conn_closed:(conn -> unit) ->
     callback:
-      (conn -> Cohttp.Request.t -> Body.t -> (Cohttp.Response.t * Body.t) Lwt.t) ->
+      (conn -> Http.Request.t -> Body.t -> (Http.Response.t * Body.t) Lwt.t) ->
     unit ->
     t
 
@@ -181,12 +181,12 @@ module type Server = sig
   (** Resolve a URI and a docroot into a concrete local filename. *)
 
   val respond :
-    ?headers:Cohttp.Header.t ->
+    ?headers:Http.Header.t ->
     ?flush:bool ->
-    status:Cohttp.Code.status_code ->
+    status:Http.Status.t ->
     body:Body.t ->
     unit ->
-    (Cohttp.Response.t * Body.t) Lwt.t
+    (Http.Response.t * Body.t) Lwt.t
   (** [respond ?headers ?flush ~status ~body] will respond to an HTTP request
       with the given [status] code and response [body]. If [flush] is true, then
       every response chunk will be flushed to the network rather than being
@@ -198,33 +198,31 @@ module type Server = sig
 
   val respond_string :
     ?flush:bool ->
-    ?headers:Cohttp.Header.t ->
-    status:Cohttp.Code.status_code ->
+    ?headers:Http.Header.t ->
+    status:Http.Status.t ->
     body:string ->
     unit ->
-    (Cohttp.Response.t * Body.t) Lwt.t
+    (Http.Response.t * Body.t) Lwt.t
 
   val respond_error :
-    ?headers:Cohttp.Header.t ->
-    ?status:Cohttp.Code.status_code ->
+    ?headers:Http.Header.t ->
+    ?status:Http.Status.t ->
     body:string ->
     unit ->
-    (Cohttp.Response.t * Body.t) Lwt.t
+    (Http.Response.t * Body.t) Lwt.t
 
   val respond_redirect :
-    ?headers:Cohttp.Header.t ->
+    ?headers:Http.Header.t ->
     uri:Uri.t ->
     unit ->
-    (Cohttp.Response.t * Body.t) Lwt.t
+    (Http.Response.t * Body.t) Lwt.t
 
   val respond_need_auth :
-    ?headers:Cohttp.Header.t ->
+    ?headers:Http.Header.t ->
     auth:Cohttp.Auth.challenge ->
     unit ->
-    (Cohttp.Response.t * Body.t) Lwt.t
+    (Http.Response.t * Body.t) Lwt.t
 
-  val respond_not_found :
-    ?uri:Uri.t -> unit -> (Cohttp.Response.t * Body.t) Lwt.t
-
+  val respond_not_found : ?uri:Uri.t -> unit -> (Http.Response.t * Body.t) Lwt.t
   val callback : t -> IO.conn -> IO.ic -> IO.oc -> unit Lwt.t
 end

@@ -10,15 +10,15 @@ type oc = Async_unix.Writer.t
 type body = Body.t
 
 type response_action =
-  [ `Expert of Cohttp.Response.t * (ic -> oc -> unit io)
-  | `Response of Cohttp.Response.t * body ]
+  [ `Expert of Http.Response.t * (ic -> oc -> unit io)
+  | `Response of Http.Response.t * body ]
 
-type spec = Cohttp.Request.t -> body -> response_action io
+type spec = Http.Request.t -> body -> response_action io
 type async_test = unit -> unit io
 
 let response rsp = `Response rsp
 
-let expert ?(rsp = Cohttp.Response.make ()) f _req _body =
+let expert ?(rsp = Http.Response.make ()) f _req _body =
   return (`Expert (rsp, f))
 
 let const rsp _req _body = rsp >>| response

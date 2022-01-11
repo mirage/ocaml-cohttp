@@ -13,14 +13,14 @@ type response = Cohttp.Response.t * Body.t [@@deriving sexp_of]
 
 type response_action =
   [ `Expert of
-    Cohttp.Response.t * (Input_channel.t -> Writer.t -> unit Deferred.t)
+    Http.Response.t * (Input_channel.t -> Writer.t -> unit Deferred.t)
   | `Response of response ]
 
 type 'r respond_t =
   ?flush:bool ->
-  ?headers:Cohttp.Header.t ->
+  ?headers:Http.Header.t ->
   ?body:Body.t ->
-  Cohttp.Code.status_code ->
+  Http.Status.t ->
   'r Deferred.t
 
 let close t = Tcp.Server.close t.server
@@ -64,16 +64,16 @@ let handle_client handle_request sock rd wr =
                   Io.Response.write_header res wr >>= fun () ->
                   handler rd wr >>= fun () -> loop rd wr sock handle_request
               | `Response (res, res_body) ->
-                  let keep_alive = Cohttp.Request.is_keep_alive req in
-                  let flush = Cohttp.Response.flush res in
+                  let keep_alive = Http.Request.is_keep_alive req in
+                  let flush = Http.Response.flush res in
                   let res =
                     let headers =
-                      Cohttp.Header.add_unless_exists
-                        (Cohttp.Response.headers res)
+                      Http.Header.add_unless_exists
+                        (Http.Response.headers res)
                         "connection"
                         (if keep_alive then "keep-alive" else "close")
                     in
-                    { res with Cohttp.Response.headers }
+                    { res with Http.Response.headers }
                   in
                   Io.Response.write ~flush
                     (Body.Private.write_body Io.Response.write_body res_body)
@@ -86,10 +86,10 @@ let handle_client handle_request sock rd wr =
       loop rd wr sock handle_request)
   >>| fun res -> Result.ok_exn res
 
-let respond ?(flush = true) ?(headers = Cohttp.Header.init ()) ?(body = `Empty)
+let respond ?(flush = true) ?(headers = Http.Header.init ()) ?(body = `Empty)
     status : response Deferred.t =
   let encoding = Body.transfer_encoding body in
-  let resp = Cohttp.Response.make ~status ~flush ~encoding ~headers () in
+  let resp = Http.Response.make ~status ~flush ~encoding ~headers () in
   return (resp, body)
 
 let respond_with_pipe ?flush ?headers ?(code = `OK) body =
@@ -100,7 +100,7 @@ let respond_string ?flush ?headers ?(status = `OK) body =
 
 let respond_with_redirect ?headers uri =
   let headers =
-    Cohttp.Header.add_opt_unless_exists headers "location" (Uri.to_string uri)
+    Http.Header.add_opt_unless_exists headers "location" (Uri.to_string uri)
   in
   respond ~flush:false ~headers `Found
 
@@ -116,7 +116,7 @@ let respond_with_file ?flush ?headers ?(error_body = error_body_default)
       let body = `Pipe (Reader.pipe rd) in
       let mime_type = Magic_mime.lookup filename in
       let headers =
-        Cohttp.Header.add_opt_unless_exists headers "content-type" mime_type
+        Http.Header.add_opt_unless_exists headers "content-type" mime_type
       in
       respond ?flush ~headers ~body `OK)
   >>= function

@@ -14,11 +14,11 @@ module Make (IO : S.IO) = struct
   type conn = IO.conn * Connection.t
 
   type response_action =
-    [ `Expert of Cohttp.Response.t * (IO.ic -> IO.oc -> unit Lwt.t)
-    | `Response of Cohttp.Response.t * Body.t ]
+    [ `Expert of Http.Response.t * (IO.ic -> IO.oc -> unit Lwt.t)
+    | `Response of Http.Response.t * Body.t ]
 
   type t = {
-    callback : conn -> Cohttp.Request.t -> Body.t -> response_action Lwt.t;
+    callback : conn -> Http.Request.t -> Body.t -> response_action Lwt.t;
     conn_closed : conn -> unit;
   }
 
@@ -48,7 +48,7 @@ module Make (IO : S.IO) = struct
       | None -> Body.transfer_encoding body
       | Some headers -> (
           match Header.get_transfer_encoding headers with
-          | Cohttp.Transfer.Unknown -> Body.transfer_encoding body
+          | Http.Transfer.Unknown -> Body.transfer_encoding body
           | t -> t)
     in
     let res = Response.make ~status ~flush ~encoding ?headers () in
@@ -57,7 +57,7 @@ module Make (IO : S.IO) = struct
   let respond_string ?(flush = true) ?headers ~status ~body () =
     let res =
       Response.make ~status ~flush
-        ~encoding:(Cohttp.Transfer.Fixed (Int64.of_int (String.length body)))
+        ~encoding:(Http.Transfer.Fixed (Int64.of_int (String.length body)))
         ?headers ()
     in
     let body = Body.of_string body in

@@ -25,7 +25,7 @@ let () =
            let* response, body = Client.get uri in
            let+ body = Cohttp_lwt.Body.to_string body in
            let status =
-             Cohttp.Response.status response |> Cohttp.Code.code_of_status
+             Http.Response.status response |> Cohttp.Code.code_of_status
            in
            Js.array
              [| Js.Unsafe.inject status; Js.Unsafe.inject @@ Js.string body |]
