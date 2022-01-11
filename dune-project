@@ -114,6 +114,23 @@ should also be fine under Windows too.
   (ounit :with-test)))
 
 (package
+ (name cohttp-server-lwt-unix)
+ (synopsis "Lightweight Cohttp + Lwt based HTTP server")
+ (description "\
+This server implementation is faster than cohttp-lwt-unix and is independent of
+conduit.
+")
+ (depends
+  (ocaml (>= 4.08))
+  (http (= :version))
+  (cohttp (= :version))
+  (cohttp-lwt (= :version))
+  (conduit-lwt-unix :with-test)
+  (cohttp-lwt-unix (and :with-test (= :version)))
+  (cohttp-lwt (and :with-test (= :version)))
+  lwt))
+
+(package
  (name cohttp-lwt-jsoo)
  (synopsis "CoHTTP implementation for the Js_of_ocaml JavaScript compiler")
  (description "\

@@ -26,6 +26,9 @@
 - http(header): faster `to_lines` and `to_frames` implementation (mseri #847)
 - ci: add changelog check (mseri #850)
 - cohttp(cookies): use case-insensitive comparison to check for `set-cookies` (mseri #858)
+- New lwt based server implementation: cohttp-server-lwt-unix
+  + This new implementation does not depend on conduit and has a simpler and
+    more flexible API
 - *Breaking changes*
   + refactor: move opam metadata to dune-project (rgrinberg #811)
   + refactor: deprecate Cohttp_async.Io (rgrinberg #807)
