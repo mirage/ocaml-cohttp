@@ -1,0 +1,10 @@
+(test
+ (name test)
+ (libraries
+  lwt.unix
+  lwt
+  http
+  conduit-lwt-unix
+  cohttp-lwt
+  cohttp-lwt-unix
+  cohttp-server-lwt-unix))
