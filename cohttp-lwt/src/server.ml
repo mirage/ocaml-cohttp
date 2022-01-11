@@ -63,29 +63,30 @@ module Make (IO : S.IO) = struct
     let body = Body.of_string body in
     Lwt.return (res, body)
 
-  let respond_error ?headers ?(status = `Internal_server_error) ~body () =
-    respond_string ?headers ~status ~body:("Error: " ^ body) ()
+  let respond_error ?flush ?headers ?(status = `Internal_server_error) ~body ()
+      =
+    respond_string ?flush ?headers ~status ~body:("Error: " ^ body) ()
 
-  let respond_redirect ?headers ~uri () =
+  let respond_redirect ?flush ?headers ~uri () =
     let headers =
       match headers with
       | None -> Header.init_with "location" (Uri.to_string uri)
       | Some h -> Header.add_unless_exists h "location" (Uri.to_string uri)
     in
-    respond ~headers ~status:`Found ~body:`Empty ()
+    respond ?flush ~headers ~status:`Found ~body:`Empty ()
 
-  let respond_need_auth ?headers ~auth () =
+  let respond_need_auth ?flush ?headers ~auth () =
     let headers = match headers with None -> Header.init () | Some h -> h in
     let headers = Header.add_authorization_req headers auth in
-    respond ~headers ~status:`Unauthorized ~body:`Empty ()
+    respond ?flush ~headers ~status:`Unauthorized ~body:`Empty ()
 
-  let respond_not_found ?uri () =
+  let respond_not_found ?flush ?uri () =
     let body =
       match uri with
       | None -> "Not found"
       | Some uri -> "Not found: " ^ Uri.to_string uri
     in
-    respond_string ~status:`Not_found ~body ()
+    respond_string ?flush ~status:`Not_found ~body ()
 
   let read_body ic req =
     match Request.has_body req with

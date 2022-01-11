@@ -205,6 +205,7 @@ module type Server = sig
     (Http.Response.t * Body.t) Lwt.t
 
   val respond_error :
+    ?flush:bool ->
     ?headers:Http.Header.t ->
     ?status:Http.Status.t ->
     body:string ->
@@ -212,17 +213,21 @@ module type Server = sig
     (Http.Response.t * Body.t) Lwt.t
 
   val respond_redirect :
+    ?flush:bool ->
     ?headers:Http.Header.t ->
     uri:Uri.t ->
     unit ->
     (Http.Response.t * Body.t) Lwt.t
 
   val respond_need_auth :
+    ?flush:bool ->
     ?headers:Http.Header.t ->
     auth:Cohttp.Auth.challenge ->
     unit ->
     (Http.Response.t * Body.t) Lwt.t
 
-  val respond_not_found : ?uri:Uri.t -> unit -> (Http.Response.t * Body.t) Lwt.t
+  val respond_not_found :
+    ?flush:bool -> ?uri:Uri.t -> unit -> (Http.Response.t * Body.t) Lwt.t
+
   val callback : t -> IO.conn -> IO.ic -> IO.oc -> unit Lwt.t
 end
