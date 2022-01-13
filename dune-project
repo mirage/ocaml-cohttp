@@ -38,6 +38,7 @@ debugging of the connection layer can be obtained by setting `CONDUIT_DEBUG`
 to any value.
 ")
  (depends
+  (http (= :version))
   (ocaml (>= 4.08))
   (re (>= 1.9.0))
   (uri (>= 2.0.0))
@@ -75,6 +76,7 @@ version of the library. All of these implementations share the same IO logic
 from this module.")
  (depends
   (ocaml (>= 4.08))
+  (http (= :version))
   (cohttp (= :version))
   (lwt (>= 2.5.0))
   sexplib0
@@ -97,6 +99,7 @@ should also be fine under Windows too.
 ")
  (depends
   (ocaml (>= 4.08))
+  (http (= :version))
   (cohttp (= :version))
   (cohttp-lwt (= :version))
   cmdliner
@@ -121,6 +124,7 @@ and also to native JavaScript via js_of_ocaml.
 ")
  (depends
   (ocaml (>= 4.08))
+  (http (= :version))
   (cohttp (= :version))
   (cohttp-lwt (= :version))
   logs
@@ -143,6 +147,7 @@ client and server respectively.
 ")
  (depends
   (ocaml (>= 4.08))
+  (http (= :version))
   (cohttp (= :version))
   (async_kernel (>= v0.14.0))
   (async_unix (>= v0.14.0))
