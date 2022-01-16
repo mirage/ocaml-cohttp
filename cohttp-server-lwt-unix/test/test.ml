@@ -3,15 +3,16 @@ open Lwt.Syntax
 let expected_response = "shutdown received"
 
 let http_server =
-  Cohttp_server_lwt_unix.make
-    ~callback:(fun _ req body ->
-      let* () = Cohttp_lwt.Body.drain_body body in
+  let module Context = Cohttp_server_lwt_unix.Context in
+  Cohttp_server_lwt_unix.create (fun ctx ->
+      let* () = Context.discard_body ctx in
+      let req = Context.request ctx in
       match Http.Request.resource req with
       | "/shutdown" ->
           let resp = Http.Response.make () in
-          Lwt.return (resp, Cohttp_lwt.Body.of_string expected_response)
+          Context.respond ctx resp
+            (Cohttp_server_lwt_unix.Body.string expected_response)
       | _ -> assert false)
-    ()
 
 let fname = "test-lwt-unix"
 let delete_socket () = try Unix.unlink fname with Unix.Unix_error _ -> ()

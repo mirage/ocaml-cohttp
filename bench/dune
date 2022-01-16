@@ -26,3 +26,8 @@
  (package cohttp-bench)
  (action
   (run ./latency.sh)))
+
+(executable
+ (name lwt_unix_server_new)
+ (modules lwt_unix_server_new)
+ (libraries cohttp_server_lwt_unix lwt.unix lwt http unix))

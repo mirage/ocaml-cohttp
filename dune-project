@@ -245,5 +245,7 @@ online at https://hdrhistogram.github.io/HdrHistogram/plotFiles.html.")
   (core (>= v0.13.0))
   core_bench
   (http (= :version))
+  (cohttp (= :version))
   (cohttp-lwt-unix (= :version))
+  (cohttp-server-lwt-unix (= :version))
   (cohttp-async (= :version))))
