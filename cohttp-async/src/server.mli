@@ -105,19 +105,30 @@ val create :
   ('address, 'listening_on) t Async_kernel.Deferred.t
 (** Build a HTTP server, based on the [Tcp.Server] interface *)
 
-val create_tcp_handler :
-  'addr ->
-  Async_unix.Reader.t ->
-  Async_unix.Writer.t ->
-  (body:Body.t -> 'addr -> Http.Request.t -> response Async_kernel.Deferred.t) ->
-  unit Async_kernel.Deferred.t
+module Expert : sig
+  val create :
+    (body:Body.t -> 'addr -> Http.Request.t -> response Async_kernel.Deferred.t) ->
+    'addr ->
+    Async_unix.Reader.t ->
+    Async_unix.Writer.t ->
+    unit Async_kernel.Deferred.t
+  (** [create] accepts a user provided cohttp handler, and creates a server
+      callback that works with user provided socket address,
+      [Async_unix.Reader.t] and [Async_unix.Writer.t]. This can be useful if
+      there is a need for more control over how the Reader and Writer get
+      created. *)
 
-val create_expert_tcp_handler :
-  'addr ->
-  Async_unix.Reader.t ->
-  Async_unix.Writer.t ->
-  (body:Body.t ->
-  'addr ->
-  Http.Request.t ->
-  response_action Async_kernel.Deferred.t) ->
-  unit Async_kernel.Deferred.t
+  val create_expert :
+    (body:Body.t ->
+    'addr ->
+    Http.Request.t ->
+    response_action Async_kernel.Deferred.t) ->
+    'addr ->
+    Async_unix.Reader.t ->
+    Async_unix.Writer.t ->
+    unit Async_kernel.Deferred.t
+  (** [create_expert] is similar to [create] but the user provided handler can
+      use [Cohttp_async.Server.response_action], and has access to using the
+      Expert mode response that can access the underlying reader/writer pair
+      from within the http handler. *)
+end
