@@ -400,6 +400,9 @@ module Response : sig
 
   val compare : t -> t -> int
 
+  val is_keep_alive : t -> bool
+  (** Return true whether the connection should be reused *)
+
   val make :
     ?version:Version.t ->
     ?status:Status.t ->

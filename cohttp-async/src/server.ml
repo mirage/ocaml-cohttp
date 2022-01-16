@@ -66,7 +66,10 @@ let handle_client handle_request sock rd wr =
                     rd
                   >>= fun reader -> handler reader wr
               | `Response (res, res_body) ->
-                  let keep_alive = Http.Request.is_keep_alive req in
+                  let keep_alive =
+                    Http.Request.is_keep_alive req
+                    && Http.Response.is_keep_alive res
+                  in
                   let flush = Http.Response.flush res in
                   let res =
                     let headers =
