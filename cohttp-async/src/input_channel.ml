@@ -99,7 +99,7 @@ type t = { buf : Bytebuffer.t; reader : Reader.t }
 let create ?(buf_len = 0x4000) reader =
   { buf = Bytebuffer.create buf_len; reader }
 
-let read_line_opt t = Bytebuffer.read_line t.buf t.reader
+let read_line t = Bytebuffer.read_line t.buf t.reader
 let read t count = Bytebuffer.read t.buf t.reader count
 let refill t = Bytebuffer.refill t.buf t.reader
 

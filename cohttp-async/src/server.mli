@@ -1,3 +1,18 @@
+module Input_channel : sig
+  type t
+
+  val read_line : t -> string option Async_kernel.Deferred.t
+  val read : t -> int -> string Async_kernel.Deferred.t
+  val refill : t -> [> `Eof | `Ok ] Async_kernel.Deferred.t
+
+  val with_input_buffer :
+    t -> f:(string -> pos:int -> len:int -> 'a * int) -> 'a
+
+  val is_closed : t -> bool
+  val close : t -> unit Async_kernel.Deferred.t
+  val close_finished : t -> unit Async_kernel.Deferred.t
+end
+
 type ('address, 'listening_on) t
   constraint 'address = [< Async_unix.Socket.Address.t ]
 [@@deriving sexp_of]

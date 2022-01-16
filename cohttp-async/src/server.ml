@@ -1,6 +1,7 @@
 open Base
 open Async_kernel
 open Async_unix
+module Input_channel = Input_channel
 
 type ('address, 'listening_on) t = {
   server : ('address, 'listening_on) Tcp.Server.t; [@sexp.opaque]
