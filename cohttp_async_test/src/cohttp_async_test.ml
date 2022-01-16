@@ -5,7 +5,7 @@ module Server = Cohttp_async.Server
 module Body = Cohttp_async.Body
 
 type 'a io = 'a Deferred.t
-type ic = Cohttp_async.Private.Input_channel.t
+type ic = Async_unix.Reader.t
 type oc = Async_unix.Writer.t
 type body = Body.t
 

@@ -12,8 +12,7 @@ let num_connections t = Tcp.Server.num_connections t.server
 type response = Cohttp.Response.t * Body.t [@@deriving sexp_of]
 
 type response_action =
-  [ `Expert of
-    Http.Response.t * (Input_channel.t -> Writer.t -> unit Deferred.t)
+  [ `Expert of Http.Response.t * (Reader.t -> Writer.t -> unit Deferred.t)
   | `Response of response ]
 
 type 'r respond_t =
@@ -62,7 +61,10 @@ let handle_client handle_request sock rd wr =
               handle_request ~body:req_body sock req >>= function
               | `Expert (res, handler) ->
                   Io.Response.write_header res wr >>= fun () ->
-                  handler rd wr >>= fun () -> loop rd wr sock handle_request
+                  Input_channel.to_reader
+                    (Info.of_string "Cohttp_async.Server.Expert: Create reader")
+                    rd
+                  >>= fun reader -> handler reader wr
               | `Response (res, res_body) ->
                   let keep_alive = Http.Request.is_keep_alive req in
                   let flush = Http.Response.flush res in

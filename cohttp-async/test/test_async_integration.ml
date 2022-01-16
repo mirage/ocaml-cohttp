@@ -47,8 +47,7 @@ let server =
         Async_unix.Writer.flushed oc);
     expert (fun ic oc ->
         Async_unix.Writer.write oc "8\r\nexpert 2\r\n0\r\n\r\n";
-        Async_unix.Writer.flushed oc >>= fun () ->
-        Cohttp_async.Private.Input_channel.close ic);
+        Async_unix.Writer.flushed oc >>= fun () -> Async_unix.Reader.close ic);
   ]
   |> response_sequence
 

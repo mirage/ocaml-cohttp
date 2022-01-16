@@ -116,3 +116,25 @@ let with_input_buffer t ~f =
 let is_closed t = Reader.is_closed t.reader
 let close t = Reader.close t.reader
 let close_finished t = Reader.close_finished t.reader
+
+let transfer t writer =
+  let finished = Ivar.create () in
+  upon (Pipe.closed writer) (fun () -> Ivar.fill_if_empty finished ());
+  let rec loop () =
+    refill t >>> function
+    | `Eof -> Ivar.fill_if_empty finished ()
+    | `Ok ->
+        let payload =
+          with_input_buffer t ~f:(fun buf ~pos ~len ->
+              (String.sub buf ~pos ~len, len))
+        in
+        Pipe.write writer payload >>> fun () -> loop ()
+  in
+  loop ();
+  Ivar.read finished
+
+let to_reader info ic =
+  let reader, writer = Pipe.create () in
+  ( transfer ic writer >>> fun () ->
+    close ic >>> fun () -> Pipe.close writer );
+  Reader.of_pipe info reader

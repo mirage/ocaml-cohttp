@@ -10,3 +10,4 @@ val with_input_buffer : t -> f:(string -> pos:int -> len:int -> 'a * int) -> 'a
 val is_closed : t -> bool
 val close : t -> unit Deferred.t
 val close_finished : t -> unit Deferred.t
+val to_reader : Core_kernel.Info.t -> t -> Reader.t Deferred.t

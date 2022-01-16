@@ -20,7 +20,9 @@ type 'r respond_t =
 type response_action =
   [ `Expert of
     Http.Response.t
-    * (Input_channel.t -> Async_unix.Writer.t -> unit Async_kernel.Deferred.t)
+    * (Async_unix.Reader.t ->
+      Async_unix.Writer.t ->
+      unit Async_kernel.Deferred.t)
   | `Response of response ]
 (** A request handler can respond in two ways:
 
