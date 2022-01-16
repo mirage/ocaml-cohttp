@@ -684,6 +684,13 @@ module Version = struct
   let compare (a : t) (b : t) = Stdlib.compare a b
 end
 
+let is_keep_alive version headers =
+  match Header.connection headers with
+  | Some `Close -> false
+  | Some `Keep_alive -> true
+  | Some (`Unknown _) -> false
+  | None -> Version.compare version `HTTP_1_1 = 0
+
 module Request = struct
   type t = {
     headers : Header.t;  (** HTTP request headers *)
@@ -718,10 +725,7 @@ module Request = struct
         | i -> i)
     | i -> i
 
-  let is_keep_alive { version; headers; _ } =
-    not
-      (version = `HTTP_1_0
-      || match Header.connection headers with Some `Close -> true | _ -> false)
+  let is_keep_alive { version; headers; _ } = is_keep_alive version headers
 end
 
 module Response = struct
@@ -761,6 +765,7 @@ module Response = struct
   let version t = t.version
   let status t = t.status
   let flush t = t.flush
+  let is_keep_alive { version; headers; _ } = is_keep_alive version headers
 end
 
 module Parser = struct

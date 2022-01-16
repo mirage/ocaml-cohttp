@@ -9,6 +9,14 @@
 - Use raise_notrace in header short circuiting exceptions (rgrinberg #802)
 - async(server): allow reading number of active connections (anuragsoni #809)
 - Various internal refactors (rgrinberg, mseri #820, #800, #799, #797)
+- http (all cohttp server backends): Consider the connection header in response
+  in addition to the request when deciding on whether to keep a connection
+  alive (anuragsoni, #843)
+  + The user provided Response can contain a connection header. That header
+    will also be considered in addition to the connection header in requests
+    when deciding whether to use keep-alive. This allows a handler to decide to
+    close a connection even if the client requested a keep-alive in the
+    request.
 - *Breaking changes*
   + refactor: move opam metadata to dune-project (rgrinberg #811)
   + refactor: deprecate Cohttp_async.Io (rgrinberg #807)
