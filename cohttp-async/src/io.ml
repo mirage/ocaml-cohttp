@@ -75,9 +75,9 @@ module IO = struct
 
   let read_line =
     check_debug
-      (fun ic -> Input_channel.read_line ic)
+      (fun ic -> Input_channel.read_line_opt ic)
       (fun ic ->
-        Input_channel.read_line ic >>| function
+        Input_channel.read_line_opt ic >>| function
         | Some s ->
             Log.debug (fun fmt -> fmt "<<< %s" s);
             Some s
