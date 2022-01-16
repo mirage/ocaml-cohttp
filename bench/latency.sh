@@ -4,7 +4,7 @@ set -xe
 rm -rf output/*
 mkdir -p output
 
-for cmd in "lwt_unix_server" "async_server"; do
+for cmd in "lwt_unix_server" "async_server" "lwt_unix_server_new"; do
   ./$cmd.exe &
   running_pid=$!
   echo "Measuring latency of $cmd"
