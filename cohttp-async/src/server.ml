@@ -150,13 +150,11 @@ let create ?max_connections ?backlog ?buffer_age_limit ?(mode = `TCP)
   create_raw ?max_connections ?backlog ?buffer_age_limit ~on_handler_error ~mode
     where_to_listen handle_request
 
-module V2 = struct
-  let create addr reader writer handle_request =
-    let handle_request ~body addr request =
-      handle_request ~body addr request >>| fun r -> `Response r
-    in
-    handle_client handle_request addr reader writer
+let create_tcp_handler addr reader writer handle_request =
+  let handle_request ~body addr request =
+    handle_request ~body addr request >>| fun r -> `Response r
+  in
+  handle_client handle_request addr reader writer
 
-  let create_expert addr reader writer handle_request =
-    handle_client handle_request addr reader writer
-end
+let create_expert_tcp_handler addr reader writer handle_request =
+  handle_client handle_request addr reader writer

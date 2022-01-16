@@ -105,21 +105,19 @@ val create :
   ('address, 'listening_on) t Async_kernel.Deferred.t
 (** Build a HTTP server, based on the [Tcp.Server] interface *)
 
-module V2 : sig
-  val create :
-    'addr ->
-    Async_unix.Reader.t ->
-    Async_unix.Writer.t ->
-    (body:Body.t -> 'addr -> Http.Request.t -> response Async_kernel.Deferred.t) ->
-    unit Async_kernel.Deferred.t
+val create_tcp_handler :
+  'addr ->
+  Async_unix.Reader.t ->
+  Async_unix.Writer.t ->
+  (body:Body.t -> 'addr -> Http.Request.t -> response Async_kernel.Deferred.t) ->
+  unit Async_kernel.Deferred.t
 
-  val create_expert :
-    'addr ->
-    Async_unix.Reader.t ->
-    Async_unix.Writer.t ->
-    (body:Body.t ->
-    'addr ->
-    Http.Request.t ->
-    response_action Async_kernel.Deferred.t) ->
-    unit Async_kernel.Deferred.t
-end
+val create_expert_tcp_handler :
+  'addr ->
+  Async_unix.Reader.t ->
+  Async_unix.Writer.t ->
+  (body:Body.t ->
+  'addr ->
+  Http.Request.t ->
+  response_action Async_kernel.Deferred.t) ->
+  unit Async_kernel.Deferred.t
