@@ -1,18 +1,3 @@
-module Input_channel : sig
-  type t
-
-  val read_line : t -> string option Async_kernel.Deferred.t
-  val read : t -> int -> string Async_kernel.Deferred.t
-  val refill : t -> [> `Eof | `Ok ] Async_kernel.Deferred.t
-
-  val with_input_buffer :
-    t -> f:(string -> pos:int -> len:int -> 'a * int) -> 'a
-
-  val is_closed : t -> bool
-  val close : t -> unit Async_kernel.Deferred.t
-  val close_finished : t -> unit Async_kernel.Deferred.t
-end
-
 type ('address, 'listening_on) t
   constraint 'address = [< Async_unix.Socket.Address.t ]
 [@@deriving sexp_of]
@@ -125,10 +110,7 @@ module V2 : sig
     'addr ->
     Async_unix.Reader.t ->
     Async_unix.Writer.t ->
-    (body:Body.t ->
-    'addr ->
-    Cohttp.Request.t ->
-    response Async_kernel.Deferred.t) ->
+    (body:Body.t -> 'addr -> Http.Request.t -> response Async_kernel.Deferred.t) ->
     unit Async_kernel.Deferred.t
 
   val create_expert :
@@ -137,7 +119,7 @@ module V2 : sig
     Async_unix.Writer.t ->
     (body:Body.t ->
     'addr ->
-    Cohttp.Request.t ->
+    Http.Request.t ->
     response_action Async_kernel.Deferred.t) ->
     unit Async_kernel.Deferred.t
 end
