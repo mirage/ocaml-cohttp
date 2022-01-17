@@ -11,3 +11,7 @@ js-test:
 
 clean:
 	dune clean
+
+.PHONY: nix/opam-selection.nix
+nix/opam-selection.nix:
+	nix-shell -A resolve default.nix
