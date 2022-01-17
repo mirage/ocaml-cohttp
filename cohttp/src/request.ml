@@ -163,13 +163,6 @@ let uri { scheme; resource; headers; meth; _ } =
   (* Only set the scheme if it's not already part of the URI *)
   match Uri.scheme uri with Some _ -> uri | None -> Uri.with_scheme uri scheme
 
-(* Defined for method types in RFC7231 *)
-let has_body req =
-  match req.meth with
-  | `GET | `HEAD | `CONNECT | `TRACE -> `No
-  | `DELETE | `POST | `PUT | `PATCH | `OPTIONS | `Other _ ->
-      Transfer.has_body req.encoding
-
 type tt = t
 
 module Make (IO : S.IO) = struct
@@ -213,7 +206,7 @@ module Make (IO : S.IO) = struct
     in
     let headers = req.headers in
     let headers =
-      match has_body req with
+      match Http.Request.has_body req with
       | `Yes | `Unknown -> Header.add_transfer_encoding headers req.encoding
       | `No -> headers
     in
@@ -240,3 +233,5 @@ end
 module Private = struct
   module Make = Make
 end
+
+let has_body = Http.Request.has_body
