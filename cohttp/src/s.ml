@@ -73,7 +73,6 @@ module type Http_io = sig
   module IO : IO
 
   val read : IO.ic -> [ `Eof | `Invalid of string | `Ok of t ] IO.t
-  val has_body : t -> [ `No | `Unknown | `Yes ]
   val make_body_writer : ?flush:bool -> t -> IO.oc -> writer
   val make_body_reader : t -> IO.ic -> reader
   val read_body_chunk : reader -> Transfer.chunk IO.t

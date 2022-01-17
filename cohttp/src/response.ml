@@ -57,6 +57,15 @@ let make ?(version = `HTTP_1_1) ?(status = `OK) ?(flush = false)
 let pp_hum ppf r =
   Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib0.Sexp.to_string_hum)
 
+let allowed_body response =
+  (* rfc7230#section-5.7.1 *)
+  match status response with
+  | #Code.informational_status | `No_content | `Not_modified -> false
+  | #Code.status_code -> true
+
+let has_body response =
+  if allowed_body response then Transfer.has_body (encoding response) else `No
+
 type tt = t
 
 module Make (IO : S.IO) = struct
@@ -97,15 +106,6 @@ module Make (IO : S.IO) = struct
         let encoding = Header.get_transfer_encoding headers in
         let flush = false in
         return (`Ok { encoding; headers; version; status; flush })
-
-  let allowed_body response =
-    (* rfc7230#section-5.7.1 *)
-    match status response with
-    | #Code.informational_status | `No_content | `Not_modified -> false
-    | #Code.status_code -> true
-
-  let has_body response =
-    if allowed_body response then Transfer.has_body (encoding response) else `No
 
   let make_body_reader { encoding; _ } ic = Transfer_IO.make_reader encoding ic
   let read_body_chunk = Transfer_IO.read

@@ -25,6 +25,8 @@ include S.Request with type t = Http.Request.t
     accessor functions for each of the records below. It also provides [sexp]
     serializers to convert to-and-from an {!Core.Std.Sexp.t}. *)
 
+val has_body : t -> [ `No | `Unknown | `Yes ]
+
 val pp_hum : Format.formatter -> t -> unit
 (** Human-readable output, used by the toplevel printer *)
 
