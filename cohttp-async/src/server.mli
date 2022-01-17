@@ -118,7 +118,7 @@ module Expert : sig
       there is a need for more control over how the Reader and Writer get
       created. *)
 
-  val create_expert :
+  val create_with_response_action :
     (body:Body.t ->
     'addr ->
     Http.Request.t ->
@@ -127,8 +127,8 @@ module Expert : sig
     Async_unix.Reader.t ->
     Async_unix.Writer.t ->
     unit Async_kernel.Deferred.t
-  (** [create_expert] is similar to [create] but the user provided handler can
-      use [Cohttp_async.Server.response_action], and has access to using the
-      Expert mode response that can access the underlying reader/writer pair
-      from within the http handler. *)
+  (** [create_with_response_action] is similar to [create] but the user provided
+      handler can use [Cohttp_async.Server.response_action], and has access to
+      using the Expert mode response that can access the underlying
+      reader/writer pair from within the http handler. *)
 end

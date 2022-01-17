@@ -157,6 +157,6 @@ module Expert = struct
     in
     handle_client handle_request addr reader writer
 
-  let create_expert handle_request addr reader writer =
+  let create_with_response_action handle_request addr reader writer =
     handle_client handle_request addr reader writer
 end

@@ -18,7 +18,7 @@
     close a connection even if the client requested a keep-alive in the
     request.
 - async(server): allow creating a server without using conduit (anuragsoni, #839)
-  + Add `Cohttp_async.Server.Expert.create` and `Cohttp_async.Server.Expert.create_expert`that can be used to create a server without going through Conduit. This allows creating an async TCP server using the Tcp module from `Async_unix` and lets the user have more control over how the `Reader.t` and `Writer.t` are created.
+  + Add `Cohttp_async.Server.Expert.create` and `Cohttp_async.Server.Expert.create_with_response_action`that can be used to create a server without going through Conduit. This allows creating an async TCP server using the Tcp module from `Async_unix` and lets the user have more control over how the `Reader.t` and `Writer.t` are created.
 - *Breaking changes*
   + refactor: move opam metadata to dune-project (rgrinberg #811)
   + refactor: deprecate Cohttp_async.Io (rgrinberg #807)
