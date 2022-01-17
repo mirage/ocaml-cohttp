@@ -88,7 +88,7 @@ module Make (IO : S.IO) = struct
     respond_string ~status:`Not_found ~body ()
 
   let read_body ic req =
-    match Request.has_body req with
+    match Http.Request.has_body req with
     | `Yes ->
         let reader = Request.make_body_reader req ic in
         let body_stream = Body.create_stream Request.read_body_chunk reader in

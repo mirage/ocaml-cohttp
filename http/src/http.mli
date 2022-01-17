@@ -161,6 +161,10 @@ module Transfer : sig
     | Unknown  (** unknown body size, which leads to best-effort *)
 
   val compare_encoding : encoding -> encoding -> int
+
+  module Private : sig
+    val has_body : encoding -> [ `No | `Unknown | `Yes ]
+  end
 end
 
 module Header : sig
@@ -362,6 +366,7 @@ module Request : sig
         [@deprecated "this field will be removed in the future"]
   }
 
+  val has_body : t -> [ `No | `Unknown | `Yes ]
   val headers : t -> Header.t
   val meth : t -> Method.t
   val scheme : t -> string option

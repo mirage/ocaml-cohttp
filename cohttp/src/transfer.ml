@@ -26,7 +26,4 @@ let string_of_encoding = function
   | Fixed i -> Printf.sprintf "fixed[%Ld]" i
   | Unknown -> "unknown"
 
-let has_body = function
-  | Fixed 0L -> `No
-  | Chunked | Fixed _ -> `Yes
-  | Unknown -> `Unknown
+let has_body = Http.Transfer.Private.has_body

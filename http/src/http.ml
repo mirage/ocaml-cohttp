@@ -2,6 +2,15 @@ module Transfer = struct
   type encoding = Chunked | Fixed of int64 | Unknown
 
   let compare_encoding (x : encoding) (y : encoding) = Stdlib.compare x y
+
+  let has_body = function
+    | Fixed 0L -> `No
+    | Chunked | Fixed _ -> `Yes
+    | Unknown -> `Unknown
+
+  module Private = struct
+    let has_body = has_body
+  end
 end
 
 module Header = struct
@@ -726,6 +735,13 @@ module Request = struct
     | i -> i
 
   let is_keep_alive { version; headers; _ } = is_keep_alive version headers
+
+  (* Defined for method types in RFC7231 *)
+  let has_body req =
+    match req.meth with
+    | `GET | `HEAD | `CONNECT | `TRACE -> `No
+    | `DELETE | `POST | `PUT | `PATCH | `OPTIONS | `Other _ ->
+        Transfer.has_body req.encoding
 end
 
 module Response = struct
