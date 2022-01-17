@@ -163,6 +163,13 @@ let uri { scheme; resource; headers; meth; _ } =
   (* Only set the scheme if it's not already part of the URI *)
   match Uri.scheme uri with Some _ -> uri | None -> Uri.with_scheme uri scheme
 
+(* Defined for method types in RFC7231 *)
+let has_body req =
+  match req.meth with
+  | `GET | `HEAD | `CONNECT | `TRACE -> `No
+  | `DELETE | `POST | `PUT | `PATCH | `OPTIONS | `Other _ ->
+      Transfer.has_body req.encoding
+
 type tt = t
 
 module Make (IO : S.IO) = struct
@@ -193,13 +200,6 @@ module Make (IO : S.IO) = struct
           return (`Ok req)
         else return (`Invalid "bad request URI")
     | `Invalid msg -> return (`Invalid msg)
-
-  (* Defined for method types in RFC7231 *)
-  let has_body req =
-    match req.meth with
-    | `GET | `HEAD | `CONNECT | `TRACE -> `No
-    | `DELETE | `POST | `PUT | `PATCH | `OPTIONS | `Other _ ->
-        Transfer.has_body req.encoding
 
   let make_body_reader req ic = Transfer_IO.make_reader req.encoding ic
   let read_body_chunk = Transfer_IO.read

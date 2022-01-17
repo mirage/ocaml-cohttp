@@ -43,7 +43,7 @@ let read_response ic =
   | `Eof -> failwith "Connection closed by remote host"
   | `Invalid reason -> failwith reason
   | `Ok res -> (
-      match Io.Response.has_body res with
+      match Cohttp.Response.has_body res with
       | `Yes | `Unknown ->
           (* Build a response pipe for the body *)
           let reader = Io.Response.make_body_reader res ic in

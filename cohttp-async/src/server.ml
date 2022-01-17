@@ -28,7 +28,7 @@ let is_closed t = Tcp.Server.is_closed t.server
 let listening_on t = Tcp.Server.listening_on t.server
 
 let read_body req rd =
-  match Io.Request.has_body req with
+  match Cohttp.Request.has_body req with
   (* TODO maybe attempt to read body *)
   | `No | `Unknown -> `Empty
   | `Yes ->
