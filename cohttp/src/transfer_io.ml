@@ -38,10 +38,11 @@ module Make (IO : S.IO) = struct
            > The chunked encoding allows each chunk to include zero or
            > more chunk extensions, immediately following the chunk-size
         *)
-        try String.sub chunk_size_hex 0 (String.index chunk_size_hex ';')
-        with _ -> chunk_size_hex
+        match String.index chunk_size_hex ';' with
+        | exception Not_found -> chunk_size_hex
+        | s -> String.sub chunk_size_hex 0 s
       in
-      try Some (Int64.of_string ("0x" ^ hex)) with _ -> None
+      Int64.of_string_opt ("0x" ^ hex)
 
     let rec junk_until_empty_line ic =
       read_line ic >>= function
