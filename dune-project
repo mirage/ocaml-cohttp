@@ -1,18 +1,28 @@
-(lang dune 2.9)
+(lang dune 3.0)
+
 (name cohttp)
 
+(using mdx 0.2)
+
 (license ISC)
+
+(using mdx 0.2)
+
 (maintainers "Anil Madhavapeddy <anil@recoil.org>")
+
 (authors
-  "Anil Madhavapeddy"
-  "Stefano Zacchiroli"
-  "David Sheets"
-  "Thomas Gazagnaire"
-  "David Scott"
-  "Rudi Grinberg"
-  "Andy Ray"
-  "Anurag Soni")
-(source (github mirage/ocaml-cohttp))
+ "Anil Madhavapeddy"
+ "Stefano Zacchiroli"
+ "David Sheets"
+ "Thomas Gazagnaire"
+ "David Scott"
+ "Rudi Grinberg"
+ "Andy Ray"
+ "Anurag Soni")
+
+(source
+ (github mirage/ocaml-cohttp))
+
 (documentation "https://mirage.github.io/ocaml-cohttp/")
 
 (generate_opam_files true)
@@ -20,95 +30,85 @@
 (package
  (name cohttp)
  (synopsis "An OCaml library for HTTP clients and servers")
- (description "\
-Cohttp is an OCaml library for creating HTTP daemons. It has a portable
-HTTP parser, and implementations using various asynchronous programming
-libraries.
-
-See the cohttp-async, cohttp-lwt, cohttp-lwt-unix, cohttp-lwt-jsoo and
-cohttp-mirage libraries for concrete implementations for particular
-targets.
-
-You can implement other targets using the parser very easily. Look at the `IO`
-signature in `lib/s.mli` and implement that in the desired backend.
-
-You can activate some runtime debugging by setting `COHTTP_DEBUG` to any
-value, and all requests and responses will be written to stderr.  Further
-debugging of the connection layer can be obtained by setting `CONDUIT_DEBUG`
-to any value.
-")
+ (description
+  "Cohttp is an OCaml library for creating HTTP daemons. It has a portable\nHTTP parser, and implementations using various asynchronous programming\nlibraries.\n\nSee the cohttp-async, cohttp-lwt, cohttp-lwt-unix, cohttp-lwt-jsoo and\ncohttp-mirage libraries for concrete implementations for particular\ntargets.\n\nYou can implement other targets using the parser very easily. Look at the `IO`\nsignature in `lib/s.mli` and implement that in the desired backend.\n\nYou can activate some runtime debugging by setting `COHTTP_DEBUG` to any\nvalue, and all requests and responses will be written to stderr.  Further\ndebugging of the connection layer can be obtained by setting `CONDUIT_DEBUG`\nto any value.\n")
  (depends
-  (http (= :version))
-  (ocaml (>= 4.08))
-  (re (>= 1.9.0))
-  (uri (>= 2.0.0))
+  (http
+   (= :version))
+  (ocaml
+   (>= 4.08))
+  (re
+   (>= 1.9.0))
+  (uri
+   (>= 2.0.0))
   uri-sexp
   sexplib0
-  (ppx_sexp_conv (>= v0.13.0))
+  (ppx_sexp_conv
+   (>= v0.13.0))
   stringext
-  (base64 (>= 3.1.0))
+  (base64
+   (>= 3.1.0))
   (fmt :with-test)
   (alcotest :with-test)))
 
 (package
  (name cohttp-top)
  (synopsis "CoHTTP toplevel pretty printers for HTTP types")
- (description "\
-This library installs toplevel prettyprinters for CoHTTP
-types such as the `Request`, `Response` and `Types` modules.
-Once this library has been loaded, you can directly see the
-values of those types in toplevels such as `utop` or `ocaml`.
-")
+ (description
+  "This library installs toplevel prettyprinters for CoHTTP\ntypes such as the `Request`, `Response` and `Types` modules.\nOnce this library has been loaded, you can directly see the\nvalues of those types in toplevels such as `utop` or `ocaml`.\n")
  (depends
-  (ocaml (>= 4.08))
-  (cohttp (= :version))))
+  (ocaml
+   (>= 4.08))
+  (cohttp
+   (= :version))))
 
 (package
  (name cohttp-lwt)
  (synopsis "CoHTTP implementation using the Lwt concurrency library")
- (description "\
-This is a portable implementation of HTTP that uses the Lwt concurrency library
-to multiplex IO.  It implements as much of the logic in an OS-independent way
-as possible, so that more specialised modules can be tailored for different
-targets.  For example, you can install `cohttp-lwt-unix` or `cohttp-lwt-jsoo`
-for a Unix or JavaScript backend, or `cohttp-mirage` for the MirageOS unikernel
-version of the library. All of these implementations share the same IO logic
-from this module.")
+ (description
+  "This is a portable implementation of HTTP that uses the Lwt concurrency library\nto multiplex IO.  It implements as much of the logic in an OS-independent way\nas possible, so that more specialised modules can be tailored for different\ntargets.  For example, you can install `cohttp-lwt-unix` or `cohttp-lwt-jsoo`\nfor a Unix or JavaScript backend, or `cohttp-mirage` for the MirageOS unikernel\nversion of the library. All of these implementations share the same IO logic\nfrom this module.")
  (depends
-  (ocaml (>= 4.08))
-  (http (= :version))
-  (cohttp (= :version))
-  (lwt (>= 2.5.0))
+  (ocaml
+   (>= 4.08))
+  (http
+   (= :version))
+  (cohttp
+   (= :version))
+  (lwt
+   (>= 2.5.0))
   sexplib0
-  (ppx_sexp_conv (>= v0.13.0))
+  (ppx_sexp_conv
+   (>= v0.13.0))
   logs
-  (uri (>= 2.0.0))))
+  (uri
+   (>= 2.0.0))))
 
 (package
  (name cohttp-lwt-unix)
  (synopsis "CoHTTP implementation for Unix and Windows using Lwt")
- (description "\
-An implementation of an HTTP client and server using the Lwt
-concurrency library. See the `Cohttp_lwt_unix` module for information
-on how to use this.  The package also installs `cohttp-curl-lwt`
-and a `cohttp-server-lwt` binaries for quick uses of a HTTP(S)
-client and server respectively.
-
-Although the name implies that this only works under Unix, it
-should also be fine under Windows too.
-")
+ (description
+  "An implementation of an HTTP client and server using the Lwt\nconcurrency library. See the `Cohttp_lwt_unix` module for information\non how to use this.  The package also installs `cohttp-curl-lwt`\nand a `cohttp-server-lwt` binaries for quick uses of a HTTP(S)\nclient and server respectively.\n\nAlthough the name implies that this only works under Unix, it\nshould also be fine under Windows too.\n")
  (depends
-  (ocaml (>= 4.08))
-  (http (= :version))
-  (cohttp (= :version))
-  (cohttp-lwt (= :version))
-  (cmdliner (>= 1.1.0))
-  (lwt (>= 3.0.0))
-  (conduit-lwt (>= 5.0.0))
-  (conduit-lwt-unix (>= 5.0.0))
-  (fmt (>= 0.8.2))
+  (ocaml
+   (>= 4.08))
+  (http
+   (= :version))
+  (cohttp
+   (= :version))
+  (cohttp-lwt
+   (= :version))
+  cmdliner
+  (lwt
+   (>= 3.0.0))
+  (conduit-lwt
+   (>= 5.0.0))
+  (conduit-lwt-unix
+   (>= 5.0.0))
+  (fmt
+   (>= 0.8.2))
   base-unix
-  (ppx_sexp_conv (>= v0.13.0))
+  (ppx_sexp_conv
+   (>= v0.13.0))
   magic-mime
   logs
   (ounit :with-test)))
@@ -116,118 +116,142 @@ should also be fine under Windows too.
 (package
  (name cohttp-server-lwt-unix)
  (synopsis "Lightweight Cohttp + Lwt based HTTP server")
- (description "\
-This server implementation is faster than cohttp-lwt-unix and is independent of
-conduit.
-")
+ (description
+  "This server implementation is faster than cohttp-lwt-unix and is independent of\nconduit.\n")
  (depends
-  (ocaml (>= 4.08))
-  (http (= :version))
-  (cohttp (= :version))
-  (cohttp-lwt (= :version))
+  (ocaml
+   (>= 4.08))
+  (http
+   (= :version))
+  (cohttp
+   (= :version))
+  (cohttp-lwt
+   (= :version))
   (conduit-lwt-unix :with-test)
-  (cohttp-lwt-unix (and :with-test (= :version)))
-  (cohttp-lwt (and :with-test (= :version)))
+  (cohttp-lwt-unix
+   (and
+    :with-test
+    (= :version)))
+  (cohttp-lwt
+   (and
+    :with-test
+    (= :version)))
   lwt))
 
 (package
  (name cohttp-lwt-jsoo)
  (synopsis "CoHTTP implementation for the Js_of_ocaml JavaScript compiler")
- (description "\
-An implementation of an HTTP client for JavaScript, but using the
-CoHTTP types.  This lets you build HTTP clients that can compile
-natively (using one of the other Cohttp backends such as `cohttp-lwt-unix`)
-and also to native JavaScript via js_of_ocaml.
-")
+ (description
+  "An implementation of an HTTP client for JavaScript, but using the\nCoHTTP types.  This lets you build HTTP clients that can compile\nnatively (using one of the other Cohttp backends such as `cohttp-lwt-unix`)\nand also to native JavaScript via js_of_ocaml.\n")
  (depends
-  (ocaml (>= 4.08))
-  (http (= :version))
-  (cohttp (= :version))
-  (cohttp-lwt (= :version))
+  (ocaml
+   (>= 4.08))
+  (http
+   (= :version))
+  (cohttp
+   (= :version))
+  (cohttp-lwt
+   (= :version))
   logs
-  (lwt (>= 3.0.0))
+  (lwt
+   (>= 3.0.0))
   (lwt_ppx :with-test)
   (conf-npm :with-test)
-  (js_of_ocaml (>= 3.3.0))
-  (js_of_ocaml-ppx (>= 3.3.0))
-  (js_of_ocaml-lwt (>= 3.5.0))))
+  (js_of_ocaml
+   (>= 3.3.0))
+  (js_of_ocaml-ppx
+   (>= 3.3.0))
+  (js_of_ocaml-lwt
+   (>= 3.5.0))))
 
 (package
  (name cohttp-async)
  (synopsis "CoHTTP implementation for the Async concurrency library")
- (description "\
-An implementation of an HTTP client and server using the Async
-concurrency library. See the `Cohttp_async` module for information
-on how to use this.  The package also installs `cohttp-curl-async`
-and a `cohttp-server-async` binaries for quick uses of a HTTP(S)
-client and server respectively.
-")
+ (description
+  "An implementation of an HTTP client and server using the Async\nconcurrency library. See the `Cohttp_async` module for information\non how to use this.  The package also installs `cohttp-curl-async`\nand a `cohttp-server-async` binaries for quick uses of a HTTP(S)\nclient and server respectively.\n")
  (depends
-  (ocaml (>= 4.08))
-  (http (= :version))
-  (cohttp (= :version))
-  (async_kernel (>= v0.14.0))
-  (async_unix (>= v0.14.0))
-  (async (>= v0.14.0))
-  (base (>= v0.11.0))
+  (ocaml
+   (>= 4.08))
+  (http
+   (= :version))
+  (cohttp
+   (= :version))
+  (async_kernel
+   (>= v0.14.0))
+  (async_unix
+   (>= v0.14.0))
+  (async
+   (>= v0.14.0))
+  (base
+   (>= v0.11.0))
   (core :with-test)
-  (core_unix (>= v0.14.0))
-  (conduit-async (>= 1.2.0))
+  (core_unix
+   (>= v0.14.0))
+  (conduit-async
+   (>= 1.2.0))
   magic-mime
   (mirage-crypto :with-test)
   logs
-  (fmt (>= 0.8.2))
+  (fmt
+   (>= 0.8.2))
   sexplib0
-  (ppx_sexp_conv (>= v0.13.0))
+  (ppx_sexp_conv
+   (>= v0.13.0))
   (ounit :with-test)
-  (uri (>= 2.0.0))
+  (uri
+   (>= 2.0.0))
   uri-sexp
   ipaddr))
 
 (package
  (name cohttp-mirage)
  (synopsis "CoHTTP implementation for the MirageOS unikernel")
- (description "\
-This HTTP implementation uses the Cohttp portable implementaiton
-along with the Lwt threading library in order to provide a
-`Cohttp_mirage` functor that can be used in MirageOS unikernels
-to build very small and efficient HTTP clients and servers
-without having a hard dependency on an underlying operating
-system.
-
-Please see <https://mirage.io> for a self-hosted explanation
-and instructions on how to use this library.")
+ (description
+  "This HTTP implementation uses the Cohttp portable implementaiton\nalong with the Lwt threading library in order to provide a\n`Cohttp_mirage` functor that can be used in MirageOS unikernels\nto build very small and efficient HTTP clients and servers\nwithout having a hard dependency on an underlying operating\nsystem.\n\nPlease see <https://mirage.io> for a self-hosted explanation\nand instructions on how to use this library.")
  (depends
-  (ocaml (>= 4.08))
-  (mirage-flow (>= 2.0.0))
-  (mirage-channel (>= 4.0.0))
-  (conduit (>= 2.0.2))
-  (conduit-mirage (>= 2.3.0))
-  (mirage-kv (>= 3.0.0))
-  (lwt (>= 2.4.3))
-  (cohttp-lwt (= :version))
-  (fmt (>= 0.8.7))
+  (ocaml
+   (>= 4.08))
+  (mirage-flow
+   (>= 2.0.0))
+  (mirage-channel
+   (>= 4.0.0))
+  (conduit
+   (>= 2.0.2))
+  (conduit-mirage
+   (>= 2.3.0))
+  (mirage-kv
+   (>= 3.0.0))
+  (lwt
+   (>= 2.4.3))
+  (cohttp-lwt
+   (= :version))
+  (fmt
+   (>= 0.8.7))
   astring
   magic-mime
-  (ppx_sexp_conv (>= v0.13.0))
-  (cohttp (= :version))))
+  (ppx_sexp_conv
+   (>= v0.13.0))
+  (cohttp
+   (= :version))))
 
 (package
  (name http)
  (synopsis "Type definitions of HTTP essentials")
- (description "\
-This package contains essential type definitions used in Cohttp. It is designed
-to have no dependencies and make it easy for other packages to easily
-interoperate with Cohttp.")
+ (description
+  "This package contains essential type definitions used in Cohttp. It is designed\nto have no dependencies and make it easy for other packages to easily\ninteroperate with Cohttp.")
  (depends
-  (ocaml (>= 4.08))
+  (ocaml
+   (>= 4.08))
   (alcotest :with-test)
   (base_quickcheck :with-test)
   (ppx_assert :with-test)
   (ppx_sexp_conv :with-test)
   (ppx_compare :with-test)
   (ppx_here :with-test)
-  (core (and :with-test (>= v0.13.0)))
+  (core
+   (and
+    :with-test
+    (>= v0.13.0)))
   (core_bench :with-test)
   (crowbar (and :with-test (>= 0.2)))
   (sexplib0 :with-test)))
@@ -237,25 +261,31 @@ interoperate with Cohttp.")
  (synopsis "Shared code between the individual cohttp-curl clients")
  (description "Use cohttp-curl-lwt or cohttp-curl-async")
  (depends
-  (ocaml (>= 4.08))
+  (ocaml
+   (>= 4.08))
   ocurl
-  (http (= :version))
+  (http
+   (= :version))
   stringext))
 
 (package
  (name cohttp-curl-lwt)
  (synopsis "Cohttp client using Curl & Lwt as the backend")
- (description "\
-An HTTP client that relies on Curl + Lwt for the backend. Does not require
-conduit for SSL.")
+ (description
+  "An HTTP client that relies on Curl + Lwt for the backend. Does not require\nconduit for SSL.")
  (depends
-  (ocaml (>= 4.08))
+  (ocaml
+   (>= 4.08))
   ocurl
-  (http (= :version))
+  (http
+   (= :version))
   cohttp-curl
   stringext
   lwt
-  (uri (and :with-test (>= 4.2.0)))
+  (uri
+   (and
+    :with-test
+    (>= 4.2.0)))
   (alcotest :with-test)
   (cohttp-lwt-unix :with-test)
   (cohttp :with-test)
@@ -266,19 +296,21 @@ conduit for SSL.")
 (package
  (name cohttp-curl-async)
  (synopsis "Cohttp client using Curl & Async as the backend")
- (description "\
-An HTTP client that relies on Curl + Async for the backend. Does not require
-conduit for SSL.")
+ (description
+  "An HTTP client that relies on Curl + Async for the backend. Does not require\nconduit for SSL.")
  (depends
   ocurl
-  (http (= :version))
+  (http
+   (= :version))
   stringext
-  core
-  (core_unix (>= v0.14.0))
+  core_kernel
   async_kernel
   async_unix
   (cohttp-async :with-test)
-  (uri (and :with-test (>= 4.2.0)))
+  (uri
+   (and
+    :with-test
+    (>= 4.2.0)))
   (fmt :with-test)
   (ounit :with-test)
   (alcotest :with-test)))
@@ -286,17 +318,33 @@ conduit for SSL.")
 (package
  (name cohttp-bench)
  (synopsis "Benchmarks binaries for Cohttp")
- (description "\
-This package contains some benchmarks for http and cohttp.
-The benchmarks for the server latency will require wrk2
-(https://github.com/giltene/wrk2) to run. The latency graphs
-can then be generated with HdrHistogram plotter, also available
-online at https://hdrhistogram.github.io/HdrHistogram/plotFiles.html.")
+ (description
+  "This package contains some benchmarks for http and cohttp.\nThe benchmarks for the server latency will require wrk2\n(https://github.com/giltene/wrk2) to run. The latency graphs\ncan then be generated with HdrHistogram plotter, also available\nonline at https://hdrhistogram.github.io/HdrHistogram/plotFiles.html.")
  (depends
-  (core (>= v0.13.0))
+  (core
+   (>= v0.13.0))
   core_bench
-  (http (= :version))
-  (cohttp (= :version))
-  (cohttp-lwt-unix (= :version))
-  (cohttp-server-lwt-unix (= :version))
-  (cohttp-async (= :version))))
+  (http
+   (= :version))
+  (cohttp
+   (= :version))
+  (cohttp-lwt-unix
+   (= :version))
+  (cohttp-server-lwt-unix
+   (= :version))
+  (cohttp-async
+   (= :version))))
+
+(package
+ (name cohttp-eio)
+ (synopsis "CoHTTP implementation with eio backend")
+ (description
+  "A CoHTTP server and client implementation based on `eio` library. `cohttp-eio`features a multicore capable HTTP 1.1 server. The library promotes and is built with direct style of coding as opposed to a monadic.")
+ (depends
+  base-domains
+  eio
+  cstruct
+  bigstringaf
+  (http
+   (= :version))
+  ))

@@ -1,0 +1,3 @@
+(executable
+ (name server1)
+ (libraries cohttp-eio uri eio_main))
