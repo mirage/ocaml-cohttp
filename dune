@@ -1,1 +1,2 @@
 (dirs :standard \ node_modules)
+(data_only_dirs cohttp-lwt-jsoo cohttp_lwt_jsoo_test)
