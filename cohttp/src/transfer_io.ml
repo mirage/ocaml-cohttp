@@ -32,18 +32,6 @@ module Make (IO : S.IO) = struct
       let len = min size max_read_len in
       read ic (Int64.to_int len)
 
-    let parse_chunksize chunk_size_hex =
-      let hex =
-        (* From https://tools.ietf.org/html/rfc7230#section-4.1.1
-           > The chunked encoding allows each chunk to include zero or
-           > more chunk extensions, immediately following the chunk-size
-        *)
-        match String.index chunk_size_hex ';' with
-        | exception Not_found -> chunk_size_hex
-        | s -> String.sub chunk_size_hex 0 s
-      in
-      Int64.of_string_opt ("0x" ^ hex)
-
     let rec junk_until_empty_line ic =
       read_line ic >>= function
       | None | Some "" -> return Done
@@ -64,12 +52,17 @@ module Make (IO : S.IO) = struct
         read_line ic >>= function
         | None -> return Done
         | Some chunk_size_hex -> (
-            match parse_chunksize chunk_size_hex with
-            | None -> return Done
-            | Some 0L ->
+            match
+              Http.Private.Parser.parse_chunk_length (chunk_size_hex ^ "\r\n")
+            with
+            | Error Partial ->
+                assert false
+                (* this branch will never be reached here since we feed the full line *)
+            | Error (Msg _) -> return Done
+            | Ok (0L, _consumed) ->
                 (* TODO: Trailer header support *)
                 junk_until_empty_line ic
-            | Some count -> (
+            | Ok (count, _consumed) -> (
                 remaining := count;
                 read_chunk_fragment () >>= function
                 | "" -> return Done (* 0 bytes read means EOF *)
