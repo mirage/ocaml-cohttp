@@ -305,7 +305,7 @@ module Header : sig
   val fold : (string -> string -> 'a -> 'a) -> t -> 'a -> 'a
 
   val to_lines : t -> string list
-  (** [to_lines h] returns header fieds as a list of lines. Beware that each
+  (** [to_lines h] returns header fields as a list of lines. Beware that each
       line ends with "\r\n" characters. *)
 
   val to_frames : t -> string list

@@ -177,11 +177,19 @@ module Header = struct
   let to_list h = List.rev h
 
   let to_lines (h : t) =
-    let header_line k v = Printf.sprintf "%s: %s\r\n" k v in
+    let b = Buffer.create 128 in
+    let header_line k v =
+      Buffer.clear b;
+      Buffer.add_string b k;
+      Buffer.add_string b ": ";
+      Buffer.add_string b v;
+      Buffer.add_string b "\r\n";
+      Buffer.contents b
+    in
     List.fold_left (fun acc (k, v) -> header_line k v :: acc) [] h
 
   let to_frames h =
-    let to_frame k v = Printf.sprintf "%s: %s" k v in
+    let to_frame k v = String.concat ": " [ k; v ] in
     List.fold_left (fun acc (k, v) -> to_frame k v :: acc) [] h
 
   let to_string h =
