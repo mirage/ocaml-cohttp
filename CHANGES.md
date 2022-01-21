@@ -24,6 +24,7 @@
     async TCP server using the Tcp module from `Async_unix` and lets the user
     have more control over how the `Reader.t` and `Writer.t` are created.
 - http(header): faster `to_lines` and `to_frames` implementation (mseri, #847)
+- ci: add changelog check (mseri #850)
 - *Breaking changes*
   + refactor: move opam metadata to dune-project (rgrinberg #811)
   + refactor: deprecate Cohttp_async.Io (rgrinberg #807)
