@@ -21,6 +21,7 @@ jobs:
           - 4.10.x
           - 4.11.x
           - 4.12.x
+          - 4.13.x
 
     runs-on: ${{ matrix.os }}
 
@@ -47,6 +48,4 @@ jobs:
 
       - run: opam exec -- make test
 
-      # The npm package to provide xmlhttprequest is broken
-      # on the latest node
-      # - run: opam exec -- make js-test
+      - run: opam exec -- make js-test
