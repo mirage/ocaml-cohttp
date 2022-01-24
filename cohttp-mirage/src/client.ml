@@ -44,14 +44,16 @@ struct
       { resolver = R.localhost; conduit = None; authenticator = None }
 
     let connect_uri ~ctx:{ resolver; conduit; authenticator } uri =
-      R.resolve_uri ~uri resolver >>= fun endp ->
-      Endpoint.client ?tls_authenticator:authenticator endp >>= fun client ->
-      match conduit with
-      | None -> failwith "conduit not initialised"
-      | Some c ->
-          S.connect c client >>= fun flow ->
-          let ch = Channel.create flow in
-          Lwt.return (flow, Input_channel.create ch, ch)
+      Lwt_eio.Promise.await_lwt
+        ( R.resolve_uri ~uri resolver >>= fun endp ->
+          Endpoint.client ?tls_authenticator:authenticator endp
+          >>= fun client ->
+          match conduit with
+          | None -> failwith "conduit not initialised"
+          | Some c ->
+              S.connect c client >>= fun flow ->
+              let ch = Channel.create flow in
+              Lwt.return (flow, Input_channel.create ch, ch) )
 
     let close_in _ = ()
     let close_out _ = ()

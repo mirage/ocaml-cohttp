@@ -23,7 +23,7 @@ module type Net = sig
   type ctx [@@deriving sexp_of]
 
   val default_ctx : ctx
-  val connect_uri : ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
+  val connect_uri : ctx:ctx -> Uri.t -> IO.conn * IO.ic * IO.oc
   val close_in : IO.ic -> unit
   val close_out : IO.oc -> unit
   val close : IO.ic -> IO.oc -> unit
@@ -44,7 +44,7 @@ module type Client = sig
     ?chunked:bool ->
     Http.Method.t ->
     Uri.t ->
-    (Http.Response.t * Body.t) Lwt.t
+    Http.Response.t * Body.t
   (** [call ?ctx ?headers ?body ?chunked meth uri] will resolve the [uri] to a
       concrete network endpoint using context [ctx]. It will then issue an HTTP
       request with method [meth], adding request headers from [headers] if
@@ -76,14 +76,10 @@ module type Client = sig
       installed on the system, [cohttp]/[conduit] tries the usual ([*:80]) or
       the specified port by the user in a non-secured way. *)
 
-  val head :
-    ?ctx:ctx -> ?headers:Http.Header.t -> Uri.t -> Http.Response.t Lwt.t
+  val head : ?ctx:ctx -> ?headers:Http.Header.t -> Uri.t -> Http.Response.t
 
   val get :
-    ?ctx:ctx ->
-    ?headers:Http.Header.t ->
-    Uri.t ->
-    (Http.Response.t * Body.t) Lwt.t
+    ?ctx:ctx -> ?headers:Http.Header.t -> Uri.t -> Http.Response.t * Body.t
 
   val delete :
     ?ctx:ctx ->
@@ -91,7 +87,7 @@ module type Client = sig
     ?chunked:bool ->
     ?headers:Http.Header.t ->
     Uri.t ->
-    (Http.Response.t * Body.t) Lwt.t
+    Http.Response.t * Body.t
 
   val post :
     ?ctx:ctx ->
@@ -99,7 +95,7 @@ module type Client = sig
     ?chunked:bool ->
     ?headers:Http.Header.t ->
     Uri.t ->
-    (Http.Response.t * Body.t) Lwt.t
+    Http.Response.t * Body.t
 
   val put :
     ?ctx:ctx ->
@@ -107,7 +103,7 @@ module type Client = sig
     ?chunked:bool ->
     ?headers:Http.Header.t ->
     Uri.t ->
-    (Http.Response.t * Body.t) Lwt.t
+    Http.Response.t * Body.t
 
   val patch :
     ?ctx:ctx ->
@@ -115,20 +111,20 @@ module type Client = sig
     ?chunked:bool ->
     ?headers:Http.Header.t ->
     Uri.t ->
-    (Http.Response.t * Body.t) Lwt.t
+    Http.Response.t * Body.t
 
   val post_form :
     ?ctx:ctx ->
     ?headers:Http.Header.t ->
     params:(string * string list) list ->
     Uri.t ->
-    (Http.Response.t * Body.t) Lwt.t
+    Http.Response.t * Body.t
 
   val callv :
     ?ctx:ctx ->
     Uri.t ->
     (Http.Request.t * Body.t) Lwt_stream.t ->
-    (Http.Response.t * Body.t) Lwt_stream.t Lwt.t
+    (Http.Response.t * Body.t) Lwt_stream.t
 end
 
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)

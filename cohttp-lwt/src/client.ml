@@ -49,7 +49,7 @@ module Make (IO : S.IO) (Net : S.Net with module IO = IO) = struct
   let call ?(ctx = Net.default_ctx) ?headers ?(body = `Empty) ?chunked meth uri
       =
     let headers = match headers with None -> Header.init () | Some h -> h in
-    Net.connect_uri ~ctx uri >>= fun (_conn, ic, oc) ->
+    Net.connect_uri ~ctx uri |> fun (_conn, ic, oc) ->
     let closefn () = Net.close ic oc in
     let chunked =
       match chunked with None -> is_meth_chunked meth | Some v -> v
@@ -72,26 +72,27 @@ module Make (IO : S.IO) (Net : S.Net with module IO = IO) = struct
             (fun writer -> Body.write_body (Request.write_body writer) buf)
             req oc
     in
-    sent >>= fun () ->
-    (Response.read ic >>= function
-     | `Invalid reason ->
-         Lwt.fail (Failure ("Failed to read response: " ^ reason))
-     | `Eof -> Lwt.fail (Failure "Server closed connection prematurely.")
-     | `Ok res -> (
-         match meth with
-         | `HEAD ->
-             closefn ();
-             Lwt.return (res, `Empty)
-         | _ ->
-             let body = read_body ~closefn ic res in
-             Lwt.return (res, body)))
-    |> fun t ->
-    Lwt.on_cancel t closefn;
-    Lwt.on_failure t (fun _exn -> closefn ());
-    t
+    Lwt_eio.Promise.await_lwt
+      ( sent >>= fun () ->
+        (Response.read ic >>= function
+         | `Invalid reason ->
+             Lwt.fail (Failure ("Failed to read response: " ^ reason))
+         | `Eof -> Lwt.fail (Failure "Server closed connection prematurely.")
+         | `Ok res -> (
+             match meth with
+             | `HEAD ->
+                 closefn ();
+                 Lwt.return (res, `Empty)
+             | _ ->
+                 let body = read_body ~closefn ic res in
+                 Lwt.return (res, body)))
+        |> fun t ->
+        Lwt.on_cancel t closefn;
+        Lwt.on_failure t (fun _exn -> closefn ());
+        t )
 
   (* The HEAD should not have a response body *)
-  let head ?ctx ?headers uri = call ?ctx ?headers `HEAD uri >|= fst
+  let head ?ctx ?headers uri = call ?ctx ?headers `HEAD uri |> fst
   let get ?ctx ?headers uri = call ?ctx ?headers `GET uri
 
   let delete ?ctx ?body ?chunked ?headers uri =
@@ -115,7 +116,7 @@ module Make (IO : S.IO) (Net : S.Net with module IO = IO) = struct
     post ?ctx ~chunked:false ~headers ~body uri
 
   let callv ?(ctx = Net.default_ctx) uri reqs =
-    Net.connect_uri ~ctx uri >>= fun (_conn, ic, oc) ->
+    Net.connect_uri ~ctx uri |> fun (_conn, ic, oc) ->
     (* Serialise the requests out to the wire *)
     let meth_stream =
       Lwt_stream.map_s
@@ -155,5 +156,5 @@ module Make (IO : S.IO) (Net : S.Net with module IO = IO) = struct
         meth_stream
     in
     Lwt.on_success (Lwt_stream.closed resps) (fun () -> Net.close ic oc);
-    Lwt.return resps
+    Lwt_eio.Promise.await_lwt (Lwt.return resps)
 end

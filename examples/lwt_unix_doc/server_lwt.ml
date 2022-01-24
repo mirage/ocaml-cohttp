@@ -14,4 +14,7 @@ let server =
   in
   Server.create ~mode:(`TCP (`Port 8000)) (Server.make ~callback ())
 
-let () = ignore (Lwt_main.run server)
+let () =
+  Eio_main.run @@ fun env ->
+  Lwt_eio.with_event_loop ~clock:env#clock @@ fun () ->
+  Lwt_eio.Promise.await_lwt server

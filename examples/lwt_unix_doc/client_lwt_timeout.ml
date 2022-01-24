@@ -3,14 +3,18 @@ open Cohttp
 open Cohttp_lwt_unix
 
 let compute ~time ~f =
-  Lwt.pick
-    [
-      (f () >|= fun v -> `Done v); (Lwt_unix.sleep time >|= fun () -> `Timeout);
-    ]
+  Lwt_eio.Promise.await_lwt
+  @@ Lwt.pick
+       [
+         (f () >|= fun v -> `Done v);
+         (Lwt_unix.sleep time >|= fun () -> `Timeout);
+       ]
 
 let body =
-  let get () = Client.get (Uri.of_string "https://www.reddit.com/") in
-  compute ~time:0.1 ~f:get >>= function
+  let get () =
+    Client.get (Uri.of_string "https://www.reddit.com/") |> Lwt.return
+  in
+  compute ~time:0.1 ~f:get |> function
   | `Timeout -> Lwt.fail_with "Timeout expired"
   | `Done (resp, body) ->
       let code = resp |> Response.status |> Code.code_of_status in

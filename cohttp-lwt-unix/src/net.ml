@@ -34,11 +34,12 @@ let default_ctx =
   }
 
 let connect_uri ~ctx:{ ctx; resolver } uri =
-  Resolver_lwt.resolve_uri ~uri resolver >>= fun endp ->
-  Conduit_lwt_unix.endp_to_client ~ctx endp >>= fun client ->
-  Conduit_lwt_unix.connect ~ctx client >|= fun (flow, ic, oc) ->
-  let ic = Input_channel.create ic in
-  (flow, ic, oc)
+  Lwt_eio.Promise.await_lwt
+    ( Resolver_lwt.resolve_uri ~uri resolver >>= fun endp ->
+      Conduit_lwt_unix.endp_to_client ~ctx endp >>= fun client ->
+      Conduit_lwt_unix.connect ~ctx client >|= fun (flow, ic, oc) ->
+      let ic = Input_channel.create ic in
+      (flow, ic, oc) )
 
 let close c =
   Lwt.catch

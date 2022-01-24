@@ -17,7 +17,6 @@
   }}}*)
 
 open Printf
-open Lwt
 open Cohttp
 open Cohttp_lwt_unix
 
@@ -40,7 +39,7 @@ let handler ~verbose _ req body =
   in
   (* Fetch the remote URI *)
   let meth = Request.meth req in
-  Client.call ~headers ~body meth uri >>= fun (resp, body) ->
+  Client.call ~headers ~body meth uri |> fun (resp, body) ->
   if verbose then
     eprintf "<-- %s %s\n%!"
       (Uri.to_string (Request.uri req))

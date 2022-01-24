@@ -36,7 +36,7 @@ val init : ?ctx:Conduit_lwt_unix.ctx -> ?resolver:Resolver_lwt.t -> unit -> ctx
 val connect_uri :
   ctx:ctx ->
   Uri.t ->
-  (Conduit_lwt_unix.flow * Input_channel.t * Lwt_io.output Lwt_io.channel) Lwt.t
+  Conduit_lwt_unix.flow * Input_channel.t * Lwt_io.output Lwt_io.channel
 (** [connect_uri ~ctx uri] starts a {i flow} on the given [uri]. The choice of
     the protocol (with or without encryption) is done by the {i scheme} of the
     given [uri]:

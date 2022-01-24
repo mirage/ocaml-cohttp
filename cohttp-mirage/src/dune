@@ -11,4 +11,5 @@
   mirage-kv
   mirage-flow
   magic-mime
+  lwt_eio
   astring))
