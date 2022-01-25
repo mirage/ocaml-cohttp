@@ -1,4 +1,3 @@
-open Lwt.Infix
 module Header = Cohttp.Header
 module Connection = Cohttp.Connection [@@warning "-3"]
 
@@ -14,11 +13,11 @@ module Make (IO : S.IO) = struct
   type conn = IO.conn * Connection.t
 
   type response_action =
-    [ `Expert of Http.Response.t * (IO.ic -> IO.oc -> unit Lwt.t)
+    [ `Expert of Http.Response.t * (IO.ic -> IO.oc -> unit)
     | `Response of Http.Response.t * Body.t ]
 
   type t = {
-    callback : conn -> Http.Request.t -> Body.t -> response_action Lwt.t;
+    callback : conn -> Http.Request.t -> Body.t -> response_action;
     conn_closed : conn -> unit;
   }
 
@@ -27,13 +26,13 @@ module Make (IO : S.IO) = struct
 
   let make ?conn_closed ~callback () =
     let callback conn req body =
-      callback conn req body >|= fun rsp -> `Response rsp
+      callback conn req body |> fun rsp -> `Response rsp
     in
     make_response_action ?conn_closed ~callback ()
 
   let make_expert ?conn_closed ~callback () =
     let callback conn req body =
-      callback conn req body >|= fun rsp -> `Expert rsp
+      callback conn req body |> fun rsp -> `Expert rsp
     in
     make_response_action ?conn_closed ~callback ()
 
@@ -52,7 +51,7 @@ module Make (IO : S.IO) = struct
           | t -> t)
     in
     let res = Response.make ~status ~flush ~encoding ?headers () in
-    Lwt.return (res, body)
+    (res, body)
 
   let respond_string ?(flush = true) ?headers ~status ~body () =
     let res =
@@ -61,7 +60,7 @@ module Make (IO : S.IO) = struct
         ?headers ()
     in
     let body = Body.of_string body in
-    Lwt.return (res, body)
+    (res, body)
 
   let respond_error ?headers ?(status = `Internal_server_error) ~body () =
     respond_string ?headers ~status ~body:("Error: " ^ body) ()
@@ -97,56 +96,61 @@ module Make (IO : S.IO) = struct
 
   let handle_request callback conn req body =
     Log.debug (fun m -> m "Handle request: %a." Request.pp_hum req);
-    Lwt.finalize
-      (fun () ->
-        Lwt.catch
-          (fun () -> callback conn req body)
-          (function
-            | Out_of_memory -> Lwt.fail Out_of_memory
-            | exn ->
-                Log.err (fun f ->
-                    f "Error handling %a: %s" Request.pp_hum req
-                      (Printexc.to_string exn));
-                respond_error ~body:"Internal Server Error" () >|= fun rsp ->
-                `Response rsp))
-      (fun () -> Body.drain_body body)
+    Lwt_eio.Promise.await_lwt
+      (Lwt.finalize
+         (fun () ->
+           Lwt.catch
+             (fun () -> Lwt.return (callback conn req body))
+             (function
+               | Out_of_memory -> Lwt.fail Out_of_memory
+               | exn ->
+                   Log.err (fun f ->
+                       f "Error handling %a: %s" Request.pp_hum req
+                         (Printexc.to_string exn));
+                   respond_error ~body:"Internal Server Error" () |> fun rsp ->
+                   Lwt.return (`Response rsp)))
+         (fun () -> Body.drain_body body))
 
   let rec handle_client ic oc conn callback =
-    Request.read ic >>= function
-    | `Eof -> Lwt.return_unit
+    Lwt_eio.Promise.await_lwt (Request.read ic) |> function
+    | `Eof -> ()
     | `Invalid data ->
-        Log.err (fun m -> m "invalid input %s while handling client" data);
-        Lwt.return_unit
+        Log.err (fun m -> m "invalid input %s while handling client" data)
     | `Ok req -> (
         let body = read_body ic req in
-        handle_request callback conn req body >>= function
+        handle_request callback conn req body |> function
         | `Response (res, body) ->
             let flush = Response.flush res in
-            Response.write ~flush
-              (fun writer -> Body.write_body (Response.write_body writer) body)
-              res oc
-            >>= fun () ->
+            Lwt_eio.Promise.await_lwt
+              (Response.write ~flush
+                 (fun writer ->
+                   Body.write_body (Response.write_body writer) body)
+                 res oc);
             if Http.Request.is_keep_alive req && Http.Response.is_keep_alive res
             then handle_client ic oc conn callback
-            else Lwt.return_unit
+            else ()
         | `Expert (res, io_handler) ->
-            Response.write_header res oc >>= fun () ->
-            io_handler ic oc >>= fun () -> handle_client ic oc conn callback)
+            Lwt_eio.Promise.await_lwt (Response.write_header res oc);
+            io_handler ic oc |> fun () -> handle_client ic oc conn callback)
 
   let callback spec io_id ic oc =
     let conn_id = Connection.create () in
     let conn_closed () = spec.conn_closed (io_id, conn_id) in
-    Lwt.finalize
-      (fun () ->
-        IO.catch (fun () -> handle_client ic oc (io_id, conn_id) spec.callback)
-        >>= function
-        | Ok () -> Lwt.return_unit
-        | Error e ->
-            Log.info (fun m ->
-                m "IO error while handling client: %a" IO.pp_error e);
-            Lwt.return_unit)
-      (fun () ->
-        (* Clean up resources when the response stream terminates and call
-         * the user callback *)
-        conn_closed () |> Lwt.return)
+    Lwt_eio.Promise.await_lwt
+    @@ Lwt.finalize
+         (fun () ->
+           Lwt_eio.Promise.await_lwt
+             (IO.catch (fun () ->
+                  Lwt.return
+                    (handle_client ic oc (io_id, conn_id) spec.callback)))
+           |> function
+           | Ok () -> Lwt.return_unit
+           | Error e ->
+               Log.info (fun m ->
+                   m "IO error while handling client: %a" IO.pp_error e);
+               Lwt.return_unit)
+         (fun () ->
+           (* Clean up resources when the response stream terminates and call
+            * the user callback *)
+           conn_closed () |> Lwt.return)
 end

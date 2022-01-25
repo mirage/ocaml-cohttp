@@ -231,17 +231,3 @@ online at https://hdrhistogram.github.io/HdrHistogram/plotFiles.html.")
   (cohttp-lwt-unix (= :version))
   (cohttp-async (= :version))))
 
-(package
- (name cohttp-eio)
- (synopsis "CoHTTP implementation with eio backend")
- (description "\
-This HTTP implementation uses the Cohttp portable implementation
-along with the eio threading library in order to provide a
-`Cohttp_eio.Server` module.")
- (depends
-  (ocaml (>= 4.12.0+domains))
-  (fmt (>= 0.8.7))
-  cstruct
-  logs
-  eio
-  (http (= :version))))

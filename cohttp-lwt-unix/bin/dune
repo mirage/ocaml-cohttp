@@ -9,6 +9,8 @@
   logs.cli
   cmdliner
   conduit-lwt
+  lwt_eio
+  eio_main
   fmt.tty)
  (package cohttp-lwt-unix)
  (public_names cohttp-curl-lwt cohttp-proxy-lwt cohttp-server-lwt))

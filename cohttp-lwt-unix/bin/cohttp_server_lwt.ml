@@ -25,9 +25,7 @@ let src = Logs.Src.create "cohttp.lwt.server" ~doc:"Cohttp Lwt server"
 module Log = (val Logs.src_log src : Logs.LOG)
 
 let method_filter meth (res, body) =
-  match meth with
-  | `HEAD -> Lwt.return (res, `Empty)
-  | _ -> Lwt.return (res, body)
+  match meth with `HEAD -> (res, `Empty) | _ -> (res, body)
 
 let serve_file ~docroot ~uri =
   let fname = Cohttp.Path.resolve_local_file ~docroot ~uri in
@@ -39,21 +37,21 @@ let ls_dir dir =
 
 let serve ~info ~docroot ~index uri path =
   let file_name = Cohttp.Path.resolve_local_file ~docroot ~uri in
-  Lwt.catch
-    (fun () ->
-      Lwt_unix.stat file_name >>= fun stat ->
-      match kind_of_unix_kind stat.Unix.st_kind with
-      | `Directory -> (
-          let path_len = String.length path in
-          if path_len <> 0 && path.[path_len - 1] <> '/' then
-            Server.respond_redirect ~uri:(Uri.with_path uri (path ^ "/")) ()
-          else
-            match Sys.file_exists (file_name / index) with
-            | true ->
-                let uri = Uri.with_path uri (path / index) in
-                serve_file ~docroot ~uri
-            | false ->
-                ls_dir file_name
+  try
+    Lwt_eio.Promise.await_lwt (Lwt_unix.stat file_name) |> fun stat ->
+    match kind_of_unix_kind stat.Unix.st_kind with
+    | `Directory -> (
+        let path_len = String.length path in
+        if path_len <> 0 && path.[path_len - 1] <> '/' then
+          Server.respond_redirect ~uri:(Uri.with_path uri (path ^ "/")) ()
+        else
+          match Sys.file_exists (file_name / index) with
+          | true ->
+              let uri = Uri.with_path uri (path / index) in
+              serve_file ~docroot ~uri
+          | false ->
+              Lwt_eio.Promise.await_lwt
+                ( ls_dir file_name
                 >>= Lwt_list.map_s (fun f ->
                         let file_name = file_name / f in
                         Lwt.try_bind
@@ -65,22 +63,22 @@ let serve ~info ~docroot ~index uri path =
                                 stat.Unix.LargeFile.st_size,
                                 f ))
                           (fun _exn -> Lwt.return (None, 0L, f)))
-                >>= fun listing ->
-                let body = html_of_listing uri path (sort listing) info in
-                Server.respond_string ~status:`OK ~body ())
-      | `File -> serve_file ~docroot ~uri
-      | _ ->
-          Server.respond_string ~status:`Forbidden
-            ~body:(html_of_forbidden_unnormal path info)
-            ())
-    (function
-      | Unix.Unix_error (Unix.ENOENT, "stat", p) as e ->
-          if p = file_name then
-            Server.respond_string ~status:`Not_found
-              ~body:(html_of_not_found path info)
-              ()
-          else Lwt.fail e
-      | e -> Lwt.fail e)
+                >|= fun listing -> html_of_listing uri path (sort listing) info
+                )
+              |> fun body -> Server.respond_string ~status:`OK ~body ())
+    | `File -> serve_file ~docroot ~uri
+    | _ ->
+        Server.respond_string ~status:`Forbidden
+          ~body:(html_of_forbidden_unnormal path info)
+          ()
+  with
+  | Unix.Unix_error (Unix.ENOENT, "stat", p) as e ->
+      if p = file_name then
+        Server.respond_string ~status:`Not_found
+          ~body:(html_of_not_found path info)
+          ()
+      else raise e
+  | e -> raise e
 
 let handler ~info ~docroot ~index (ch, _conn) req _body =
   let uri = Cohttp.Request.uri req in
@@ -94,7 +92,7 @@ let handler ~info ~docroot ~index (ch, _conn) req _body =
   (* Get a canonical filename from the URL and docroot *)
   match Request.meth req with
   | (`GET | `HEAD) as meth ->
-      serve ~info ~docroot ~index uri path >>= method_filter meth
+      serve ~info ~docroot ~index uri path |> method_filter meth
   | meth ->
       let meth = Cohttp.Code.string_of_method meth in
       let allowed = [ "GET"; "HEAD" ] in
@@ -124,7 +122,7 @@ let start_server docroot port host index tls () =
         `TLS (`Crt_file_path c, `Key_file_path k, `No_password, `Port port)
     | None -> `TCP (`Port port)
   in
-  Conduit_lwt_unix.init ~src:host () >>= fun ctx ->
+  Lwt_eio.Promise.await_lwt (Conduit_lwt_unix.init ~src:host ()) |> fun ctx ->
   let ctx = Cohttp_lwt_unix.Net.init ~ctx () in
   Server.create ~ctx ~mode config
 
@@ -133,7 +131,9 @@ let lwt_start_server docroot port host index level tls =
     Fmt_tty.setup_std_outputs ();
     Logs.set_level ~all:true level;
     Logs.set_reporter Debug.default_reporter);
-  Lwt_main.run (start_server docroot port host index tls ())
+  Eio_main.run @@ fun env ->
+  Lwt_eio.with_event_loop ~clock:env#clock @@ fun () ->
+  start_server docroot port host index tls ()
 
 open Cmdliner
 

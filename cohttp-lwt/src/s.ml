@@ -134,7 +134,7 @@ module type Server = sig
   type conn = IO.conn * Cohttp.Connection.t [@@warning "-3"]
 
   type response_action =
-    [ `Expert of Http.Response.t * (IO.ic -> IO.oc -> unit Lwt.t)
+    [ `Expert of Http.Response.t * (IO.ic -> IO.oc -> unit)
     | `Response of Http.Response.t * Body.t ]
   (** A request handler can respond in two ways:
 
@@ -151,7 +151,7 @@ module type Server = sig
 
   val make_response_action :
     ?conn_closed:(conn -> unit) ->
-    callback:(conn -> Http.Request.t -> Body.t -> response_action Lwt.t) ->
+    callback:(conn -> Http.Request.t -> Body.t -> response_action) ->
     unit ->
     t
 
@@ -161,14 +161,13 @@ module type Server = sig
       (conn ->
       Http.Request.t ->
       Body.t ->
-      (Http.Response.t * (IO.ic -> IO.oc -> unit Lwt.t)) Lwt.t) ->
+      Http.Response.t * (IO.ic -> IO.oc -> unit)) ->
     unit ->
     t
 
   val make :
     ?conn_closed:(conn -> unit) ->
-    callback:
-      (conn -> Http.Request.t -> Body.t -> (Http.Response.t * Body.t) Lwt.t) ->
+    callback:(conn -> Http.Request.t -> Body.t -> Http.Response.t * Body.t) ->
     unit ->
     t
 
@@ -182,7 +181,7 @@ module type Server = sig
     status:Http.Status.t ->
     body:Body.t ->
     unit ->
-    (Http.Response.t * Body.t) Lwt.t
+    Http.Response.t * Body.t
   (** [respond ?headers ?flush ~status ~body] will respond to an HTTP request
       with the given [status] code and response [body]. If [flush] is true, then
       every response chunk will be flushed to the network rather than being
@@ -198,27 +197,24 @@ module type Server = sig
     status:Http.Status.t ->
     body:string ->
     unit ->
-    (Http.Response.t * Body.t) Lwt.t
+    Http.Response.t * Body.t
 
   val respond_error :
     ?headers:Http.Header.t ->
     ?status:Http.Status.t ->
     body:string ->
     unit ->
-    (Http.Response.t * Body.t) Lwt.t
+    Http.Response.t * Body.t
 
   val respond_redirect :
-    ?headers:Http.Header.t ->
-    uri:Uri.t ->
-    unit ->
-    (Http.Response.t * Body.t) Lwt.t
+    ?headers:Http.Header.t -> uri:Uri.t -> unit -> Http.Response.t * Body.t
 
   val respond_need_auth :
     ?headers:Http.Header.t ->
     auth:Cohttp.Auth.challenge ->
     unit ->
-    (Http.Response.t * Body.t) Lwt.t
+    Http.Response.t * Body.t
 
-  val respond_not_found : ?uri:Uri.t -> unit -> (Http.Response.t * Body.t) Lwt.t
-  val callback : t -> IO.conn -> IO.ic -> IO.oc -> unit Lwt.t
+  val respond_not_found : ?uri:Uri.t -> unit -> Http.Response.t * Body.t
+  val callback : t -> IO.conn -> IO.ic -> IO.oc -> unit
 end

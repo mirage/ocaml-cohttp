@@ -1,6 +1,0 @@
-(library
- (name cohttp_eio)
- (public_name cohttp-eio)
- (libraries eio eio_main cstruct logs fmt http angstrom)
- (preprocess
-  (pps ppx_sexp_conv)))

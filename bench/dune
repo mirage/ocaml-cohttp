@@ -1,17 +1,17 @@
 (executable
  (name bench)
  (modules bench)
- (libraries http core core_bench))
+ (libraries http core core_bench lwt_eio eio_main))
 
 (executable
  (name lwt_unix_server)
  (modules lwt_unix_server)
- (libraries cohttp-lwt-unix logs.fmt fmt.tty))
+ (libraries cohttp-lwt-unix logs.fmt fmt.tty lwt_eio eio_main))
 
 (executable
  (name async_server)
  (modules async_server)
- (libraries cohttp-async logs.fmt fmt.tty))
+ (libraries cohttp-async logs.fmt fmt.tty lwt_eio eio_main))
 
 (rule
  (alias bench)

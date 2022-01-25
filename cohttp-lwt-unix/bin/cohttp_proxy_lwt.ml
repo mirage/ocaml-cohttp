@@ -77,7 +77,9 @@ let lwt_start_proxy port host level cert key =
     Fmt_tty.setup_std_outputs ();
     Logs.set_level ~all:true level;
     Logs.set_reporter Debug.default_reporter);
-  Lwt_main.run (start_proxy port host (level <> None) cert key ())
+  Eio_main.run @@ fun env ->
+  Lwt_eio.with_event_loop ~clock:env#clock @@ fun () ->
+  start_proxy port host (level <> None) cert key ()
 
 open Cmdliner
 

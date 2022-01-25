@@ -33,7 +33,8 @@ let temp_server ?port spec callback =
   let server_failed, server_failed_wake = Lwt.task () in
   let server =
     Lwt.catch
-      (fun () -> Server.create ~backlog:40 ~mode:(`TCP (`Port port)) server)
+      (fun () ->
+        Lwt.return (Server.create ~backlog:40 ~mode:(`TCP (`Port port)) server))
       (function
         | Lwt.Canceled -> Lwt.return_unit
         | x ->

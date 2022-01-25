@@ -14,4 +14,5 @@ let () =
   Printexc.record_backtrace true;
   Logs.set_level (Some Info);
   Logs.set_reporter (Logs_fmt.reporter ());
-  ignore (Lwt_main.run (main ()))
+  Eio_main.run @@ fun env ->
+  Lwt_eio.with_event_loop ~clock:env#clock @@ fun () -> main ()

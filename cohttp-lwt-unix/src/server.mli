@@ -13,7 +13,7 @@ val respond_file :
   ?headers:Http.Header.t ->
   fname:string ->
   unit ->
-  (Http.Response.t * Cohttp_lwt.Body.t) Lwt.t
+  Http.Response.t * Cohttp_lwt.Body.t
 
 val create :
   ?timeout:int ->
@@ -23,7 +23,7 @@ val create :
   ?ctx:Net.ctx ->
   ?mode:Conduit_lwt_unix.server ->
   t ->
-  unit Lwt.t
+  unit
 (** [create ?timeout ?backlog ?stop ?on_exn ?mode t] is a new HTTP server.
 
     The user can decide to start a simple HTTP server (without encryption) or
