@@ -353,6 +353,12 @@ module Header : sig
 
   val pp_hum : Format.formatter -> t -> unit
   (** Human-readable output, used by the toplevel printer *)
+
+  module Private : sig
+    val caseless_equal : string -> string -> bool
+    (** [caseless_equal a b] must be equivalent to
+        [String.equal (String.lowercase_ascii a) (String.lowercase_ascii b)]. *)
+  end
 end
 
 module Request : sig

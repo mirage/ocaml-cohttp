@@ -135,11 +135,12 @@ module Set_cookie_hdr = struct
 
   (* TODO: check dupes+order *)
   let extract hdr =
+    let caseless_equal = Http.Header.Private.caseless_equal in
     Header.fold
-      (function
-        | "set-cookie" -> extract_1_0
-        | "set-cookie2" -> extract_1_1
-        | _ -> fun _ a -> a)
+      (fun k c a ->
+        if caseless_equal k "set-cookie" then extract_1_0 c a
+        else if caseless_equal k "set-cookie2" then extract_1_1 c a
+        else a)
       hdr []
 
   let value { cookie = _, v; _ } = v

@@ -14,51 +14,56 @@ module Transfer = struct
 end
 
 module Header = struct
-  external string_unsafe_get64 : string -> int -> int64 = "%caml_string_get64u"
+  module Private = struct
+    external string_unsafe_get64 : string -> int -> int64
+      = "%caml_string_get64u"
 
-  (* [caseless_equal a b] must be equivalent to
-     [String.equal (String.lowercase_ascii a) (String.lowercase_ascii b)]. *)
-  let caseless_equal a b =
-    if a == b then true
-    else
-      let len = String.length a in
-      len = String.length b
-      (* Note: at this point we konw that [a] and [b] have the same length. *)
-      &&
-      (* [word_loop a b i len] compares strings [a] and [b] from
-         offsets [i] (included) to [len] (excluded), one word at a time.
-         [i] is a world-aligned index into the strings.
-      *)
-      let rec word_loop a b i len =
-        if i = len then true
-        else
-          let i' = i + 8 in
-          (* If [i' > len], what remains to be compared is strictly
-             less than a word long, use byte-per-byte comparison. *)
-          if i' > len then byte_loop a b i len
-          else if string_unsafe_get64 a i = string_unsafe_get64 b i then
-            word_loop a b i' len
-          else
-            (* If the words at [i] differ, it may due to a case
-               difference; we check the individual bytes of this
-               work, and then we continue checking the other
-               words. *)
-            byte_loop a b i i' && word_loop a b i' len
-      (* [byte_loop a b i len] compares the strings [a] and [b] from
-         offsets [i] (included) to [len] (excluded), one byte at
-         a time.
-
-         This function assumes that [i < len] holds -- its only called
-         by [word_loop] when this is known to hold. *)
-      and byte_loop a b i len =
-        let c1 = String.unsafe_get a i in
-        let c2 = String.unsafe_get b i in
-        Char.lowercase_ascii c1 = Char.lowercase_ascii c2
+    (* [caseless_equal a b] must be equivalent to
+       [String.equal (String.lowercase_ascii a) (String.lowercase_ascii b)]. *)
+    let caseless_equal a b =
+      if a == b then true
+      else
+        let len = String.length a in
+        len = String.length b
+        (* Note: at this point we konw that [a] and [b] have the same length. *)
         &&
-        let i' = i + 1 in
-        i' = len || byte_loop a b i' len
-      in
-      word_loop a b 0 len
+        (* [word_loop a b i len] compares strings [a] and [b] from
+           offsets [i] (included) to [len] (excluded), one word at a time.
+           [i] is a world-aligned index into the strings.
+        *)
+        let rec word_loop a b i len =
+          if i = len then true
+          else
+            let i' = i + 8 in
+            (* If [i' > len], what remains to be compared is strictly
+               less than a word long, use byte-per-byte comparison. *)
+            if i' > len then byte_loop a b i len
+            else if string_unsafe_get64 a i = string_unsafe_get64 b i then
+              word_loop a b i' len
+            else
+              (* If the words at [i] differ, it may due to a case
+                 difference; we check the individual bytes of this
+                 work, and then we continue checking the other
+                 words. *)
+              byte_loop a b i i' && word_loop a b i' len
+        (* [byte_loop a b i len] compares the strings [a] and [b] from
+           offsets [i] (included) to [len] (excluded), one byte at
+           a time.
+
+           This function assumes that [i < len] holds -- its only called
+           by [word_loop] when this is known to hold. *)
+        and byte_loop a b i len =
+          let c1 = String.unsafe_get a i in
+          let c2 = String.unsafe_get b i in
+          Char.lowercase_ascii c1 = Char.lowercase_ascii c2
+          &&
+          let i' = i + 1 in
+          i' = len || byte_loop a b i' len
+        in
+        word_loop a b 0 len
+  end
+
+  let caseless_equal = Private.caseless_equal
 
   type t = (string * string) list
 
