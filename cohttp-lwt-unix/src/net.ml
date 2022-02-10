@@ -33,12 +33,20 @@ let default_ctx =
     ctx = Lazy.force Conduit_lwt_unix.default_ctx;
   }
 
-let connect_uri ~ctx:{ ctx; resolver } uri =
-  Resolver_lwt.resolve_uri ~uri resolver >>= fun endp ->
+module Endp = struct
+  type t = Conduit.endp
+  let compare = compare
+end
+
+let resolve ~ctx uri = Resolver_lwt.resolve_uri ~uri ctx.resolver
+
+let connect_endp ~ctx:{ ctx; _ } endp =
   Conduit_lwt_unix.endp_to_client ~ctx endp >>= fun client ->
   Conduit_lwt_unix.connect ~ctx client >|= fun (flow, ic, oc) ->
   let ic = Input_channel.create ic in
   (flow, ic, oc)
+
+let connect_uri ~ctx uri = resolve ~ctx uri >>= connect_endp ~ctx
 
 let close c =
   Lwt.catch

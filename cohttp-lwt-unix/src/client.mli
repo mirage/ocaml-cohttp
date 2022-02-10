@@ -3,8 +3,20 @@
 
 include Cohttp_lwt.S.Client with type ctx = Net.ctx
 
+module Connection_cache : sig
+  include Cohttp_lwt.S.Connection_cache
+
+  val create :
+    ?ctx:Net.ctx ->
+    ?keep:int64 ->
+    ?retry:int ->
+    ?parallel:int ->
+    ?depth:int ->
+    unit -> t
+end
+
 val custom_ctx :
-  ?ctx:Conduit_lwt_unix.ctx -> ?resolver:Resolver_lwt.t -> unit -> ctx
+  ?ctx:Conduit_lwt_unix.ctx -> ?resolver:Resolver_lwt.t -> unit -> Net.ctx
 (** [custom_ctx ?ctx ?resolver ()] will return a context that is the same as the
     {!default_ctx}, but with either the connection handling or resolution module
     overridden with [ctx] or [resolver] respectively. This is useful to supply a

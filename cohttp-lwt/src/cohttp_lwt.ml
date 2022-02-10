@@ -18,6 +18,8 @@ module type IO = S.IO
 
 module Request = Cohttp.Request [@@deprecated "Use Cohttp.Request directly"]
 module Response = Cohttp.Response [@@deprecated "Use Cohttp.Response directly"]
+module Connection = Connection
+module Connection_cache = Connection_cache
 module Make_client = Client.Make
 module Make_server = Server.Make
 module S = S

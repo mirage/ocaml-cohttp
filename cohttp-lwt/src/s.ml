@@ -22,15 +22,59 @@ module type Net = sig
 
   type ctx [@@deriving sexp_of]
 
+  module Endp : Map.OrderedType
+
   val default_ctx : ctx
-  val connect_uri : ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) Lwt.t
+  val resolve : ctx:ctx -> Uri.t -> Endp.t IO.t
+  val connect_uri : ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) IO.t
+  val connect_endp : ctx:ctx -> Endp.t -> (IO.conn * IO.ic * IO.oc) IO.t
   val close_in : IO.ic -> unit
   val close_out : IO.oc -> unit
   val close : IO.ic -> IO.oc -> unit
 end
 
 module type Sleep = sig
-  val sleep_ns : int64 -> unit Lwt.t
+  type 'a promise
+  val sleep_ns : int64 -> unit promise
+end
+
+module type Connection = sig
+  module Net : Net
+
+  exception Retry
+  type t
+
+  val create :
+    ?finalise:(t -> unit Net.IO.t) ->
+    ?persistent:bool ->
+    ?ctx:Net.ctx ->
+    Net.Endp.t ->
+    t
+
+  val connect :
+    ?finalise:(t -> unit Net.IO.t) ->
+    ?persistent:bool ->
+    ?ctx:Net.ctx ->
+    Net.Endp.t ->
+    t Net.IO.t
+
+  val shutdown : t -> unit
+  val close : t -> unit
+  val is_closed : t -> bool
+  val notify : t -> unit Net.IO.t
+  val length : t -> int
+
+  val request : t ->
+    ?body:Body.t -> Cohttp.Request.t -> (Cohttp.Response.t * Body.t) Net.IO.t
+end
+
+module type Connection_cache = sig
+  module IO : IO
+
+  type t
+
+  val request : t ->
+    ?body:Body.t -> Cohttp.Request.t -> (Cohttp.Response.t * Body.t) IO.t
 end
 
 (** The [Client] module implements non-pipelined single HTTP client calls. Each
@@ -41,46 +85,11 @@ end
 module type Client = sig
   type ctx
 
-  module Connection : sig
-    type t
+  module Connection : Connection with type Net.ctx = ctx
 
-    val connect :
-      ?finalise:(t -> unit Lwt.t) ->
-      ?persistent:bool ->
-      ?ctx:ctx ->
-      Uri.t -> (* XXX this should actually be something like Conduit.endp *)
-      t
-
-    val shutdown : t -> unit
-    val close : t -> unit
-    val is_closed : t -> bool
-    val notify : t -> unit Lwt.t
-    val length : t -> int
-
-    val request :
-      t ->
-      ?body:Body.t ->
-      Cohttp.Request.t ->
-      (Cohttp.Response.t * Body.t) Lwt.t
-  end
-
-  module Connection_cache : sig
-    type t
-
-    val set_default : t -> unit
-
-    val request : ?cache:t -> ?body:Body.t -> Cohttp.Request.t ->
-      (Cohttp.Response.t * Body.t) Lwt.t
-
-    val no_cache :?ctx:ctx -> unit -> t
-    val cache :
-      ?ctx:ctx ->
-      ?keep:int64 ->
-      ?retry:int ->
-      ?parallel:int ->
-      ?depth:int ->
-      unit -> t
-  end
+  val set_cache :
+    (?body:Body.t -> Cohttp.Request.t -> (Cohttp.Response.t * Body.t) Lwt.t) ->
+    unit
 
   val call :
     ?ctx:ctx ->

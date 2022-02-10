@@ -44,15 +44,23 @@ struct
     let default_ctx =
       { resolver = R.localhost; conduit = None; authenticator = None }
 
-    let connect_uri ~ctx:{ resolver; conduit; authenticator } uri =
-      R.resolve_uri ~uri resolver >>= fun endp ->
-      Endpoint.client ?tls_authenticator:authenticator endp >>= fun client ->
-      match conduit with
+    module Endp = struct
+      type t = Conduit.endp
+      let compare = compare
+    end
+
+    let resolve ~ctx uri = R.resolve_uri ~uri ctx.resolver
+
+    let connect_endp ~ctx endp =
+      Endpoint.client ?tls_authenticator:ctx.authenticator endp >>= fun client ->
+      match ctx.conduit with
       | None -> failwith "conduit not initialised"
       | Some c ->
           S.connect c client >>= fun flow ->
           let ch = Channel.create flow in
           Lwt.return (flow, Input_channel.create ch, ch)
+
+    let connect_uri ~ctx uri = resolve ~ctx uri >>= connect_endp ~ctx
 
     let close_in _ = ()
     let close_out _ = ()
@@ -67,11 +75,14 @@ struct
              Lwt.return @@ Ok ())
   end
 
+  (* Build all the core modules from the [Cohttp_lwt] functors *)
+  include Cohttp_lwt.Make_client (HTTP_IO) (Net_IO)
+  module Connection_cache = Cohttp_lwt.Make_connection_cache
+      (Connection)
+      (struct include T type 'a promise = 'a Lwt.t end)
+
   let ctx ?authenticator resolver conduit =
     { Net_IO.resolver; conduit = Some conduit; authenticator }
 
   let with_authenticator a ctx = { ctx with Net_IO.authenticator = Some a }
-
-  (* Build all the core modules from the [Cohttp_lwt] functors *)
-  include Cohttp_lwt.Make_client (HTTP_IO) (Net_IO) (T)
 end
