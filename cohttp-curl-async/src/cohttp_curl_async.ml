@@ -90,9 +90,8 @@ module Context = struct
             Deferred.return
               {
                 fd =
-                  Fd.create
-                    (Fd.Kind.Socket `Active)
-                    fd (Base.Info.createf "curl");
+                  Fd.create (Fd.Kind.Socket `Active) fd
+                    (Base.Info.createf "curl");
                 read = None;
                 write = None;
               }
