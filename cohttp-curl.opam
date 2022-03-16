@@ -20,8 +20,8 @@ bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
 depends: [
   "dune" {>= "2.9"}
   "ocaml" {>= "4.08"}
-  "ocurl"
   "http" {= version}
+  "ocurl"
   "stringext"
   "odoc" {with-doc}
 ]

@@ -24,13 +24,13 @@ doc: "https://mirage.github.io/ocaml-cohttp/"
 bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
 depends: [
   "dune" {>= "2.9"}
-  "core" {>= "v0.13.0"}
-  "core_bench"
-  "http" {= version}
   "cohttp" {= version}
+  "cohttp-async" {= version}
   "cohttp-lwt-unix" {= version}
   "cohttp-server-lwt-unix" {= version}
-  "cohttp-async" {= version}
+  "http" {= version}
+  "core" {>= "v0.13.0"}
+  "core_bench"
   "odoc" {with-doc}
 ]
 build: [

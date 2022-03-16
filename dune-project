@@ -38,17 +38,17 @@ debugging of the connection layer can be obtained by setting `CONDUIT_DEBUG`
 to any value.
 ")
  (depends
-  (http (= :version))
   (ocaml (>= 4.08))
+  (http (= :version))
+  (base64 (>= 3.1.0))
+  (ppx_sexp_conv (>= v0.13.0))
   (re (>= 1.9.0))
   (uri (>= 2.0.0))
-  uri-sexp
   sexplib0
-  (ppx_sexp_conv (>= v0.13.0))
   stringext
-  (base64 (>= 3.1.0))
-  (fmt :with-test)
-  (alcotest :with-test)))
+  uri-sexp
+  (alcotest :with-test)
+  (fmt :with-test)))
 
 (package
  (name cohttp-top)
@@ -76,13 +76,13 @@ version of the library. All of these implementations share the same IO logic
 from this module.")
  (depends
   (ocaml (>= 4.08))
-  (http (= :version))
   (cohttp (= :version))
+  (http (= :version))
   (lwt (>= 2.5.0))
-  sexplib0
   (ppx_sexp_conv (>= v0.13.0))
+  (uri (>= 2.0.0))
   logs
-  (uri (>= 2.0.0))))
+  sexplib0))
 
 (package
  (name cohttp-lwt-unix)
@@ -99,18 +99,18 @@ should also be fine under Windows too.
 ")
  (depends
   (ocaml (>= 4.08))
-  (http (= :version))
   (cohttp (= :version))
   (cohttp-lwt (= :version))
-  cmdliner
-  (lwt (>= 3.0.0))
+  (http (= :version))
+  (cmdliner (>= 1.1.0))
   (conduit-lwt (>= 5.0.0))
   (conduit-lwt-unix (>= 5.0.0))
   (fmt (>= 0.8.2))
-  base-unix
+  (lwt (>= 3.0.0))
   (ppx_sexp_conv (>= v0.13.0))
-  magic-mime
+  base-unix
   logs
+  magic-mime
   (ounit :with-test)))
 
 (package
@@ -122,13 +122,13 @@ conduit.
 ")
  (depends
   (ocaml (>= 4.08))
-  (http (= :version))
   (cohttp (= :version))
   (cohttp-lwt (= :version))
-  (conduit-lwt-unix :with-test)
-  (cohttp-lwt-unix (and :with-test (= :version)))
+  (http (= :version))
+  lwt
   (cohttp-lwt (and :with-test (= :version)))
-  lwt))
+  (cohttp-lwt-unix (and :with-test (= :version)))
+  (conduit-lwt-unix :with-test)))
 
 (package
  (name cohttp-lwt-jsoo)
@@ -141,16 +141,16 @@ and also to native JavaScript via js_of_ocaml.
 ")
  (depends
   (ocaml (>= 4.08))
-  (http (= :version))
   (cohttp (= :version))
   (cohttp-lwt (= :version))
-  logs
-  (lwt (>= 3.0.0))
-  (lwt_ppx :with-test)
-  (conf-npm :with-test)
+  (http (= :version))
   (js_of_ocaml (>= 3.3.0))
+  (js_of_ocaml-lwt (>= 3.5.0))
   (js_of_ocaml-ppx (>= 3.3.0))
-  (js_of_ocaml-lwt (>= 3.5.0))))
+  (lwt (>= 3.0.0))
+  logs
+  (conf-npm :with-test)
+  (lwt_ppx :with-test)))
 
 (package
  (name cohttp-async)
@@ -164,25 +164,25 @@ client and server respectively.
 ")
  (depends
   (ocaml (>= 4.08))
-  (http (= :version))
   (cohttp (= :version))
+  (http (= :version))
+  (async (>= v0.14.0))
   (async_kernel (>= v0.14.0))
   (async_unix (>= v0.14.0))
-  (async (>= v0.14.0))
   (base (>= v0.11.0))
+  (conduit-async (>= 1.2.0))
   (core :with-test)
   (core_unix (>= v0.14.0))
-  (conduit-async (>= 1.2.0))
-  magic-mime
-  (mirage-crypto :with-test)
-  logs
   (fmt (>= 0.8.2))
-  sexplib0
-  (ppx_sexp_conv (>= v0.13.0))
+  (mirage-crypto :with-test)
   (ounit :with-test)
+  (ppx_sexp_conv (>= v0.13.0))
   (uri (>= 2.0.0))
-  uri-sexp
-  ipaddr))
+  ipaddr
+  logs
+  magic-mime
+  sexplib0
+  uri-sexp))
 
 (package
  (name cohttp-mirage)
@@ -199,18 +199,18 @@ Please see <https://mirage.io> for a self-hosted explanation
 and instructions on how to use this library.")
  (depends
   (ocaml (>= 4.08))
-  (mirage-flow (>= 2.0.0))
-  (mirage-channel (>= 4.0.0))
+  (cohttp (= :version))
+  (cohttp-lwt (= :version))
   (conduit (>= 2.0.2))
   (conduit-mirage (>= 2.3.0))
-  (mirage-kv (>= 3.0.0))
-  (lwt (>= 2.4.3))
-  (cohttp-lwt (= :version))
   (fmt (>= 0.8.7))
-  astring
-  magic-mime
+  (lwt (>= 2.4.3))
+  (mirage-channel (>= 4.0.0))
+  (mirage-flow (>= 2.0.0))
+  (mirage-kv (>= 3.0.0))
   (ppx_sexp_conv (>= v0.13.0))
-  (cohttp (= :version))))
+  astring
+  magic-mime))
 
 (package
  (name http)
@@ -238,8 +238,8 @@ interoperate with Cohttp.")
  (description "Use cohttp-curl-lwt or cohttp-curl-async")
  (depends
   (ocaml (>= 4.08))
-  ocurl
   (http (= :version))
+  ocurl
   stringext))
 
 (package
@@ -250,18 +250,19 @@ An HTTP client that relies on Curl + Lwt for the backend. Does not require
 conduit for SSL.")
  (depends
   (ocaml (>= 4.08))
-  ocurl
   (http (= :version))
-  cohttp-curl
-  stringext
+  (cohttp-curl (= :version))
+  (cmdliner (>= 1.1.0))
   lwt
-  (uri (and :with-test (>= 4.2.0)))
+  ocurl
+  stringext
+  (cohttp (and :with-test (= :version)))
+  (cohttp-lwt (and :with-test (= :version)))
+  (cohttp-lwt-unix (and :with-test (= :version)))
   (alcotest :with-test)
-  (cohttp-lwt-unix :with-test)
-  (cohttp :with-test)
-  (cohttp-lwt :with-test)
   (conduit-lwt :with-test)
-  (ounit :with-test)))
+  (ounit :with-test)
+  (uri (and :with-test (>= 4.2.0)))))
 
 (package
  (name cohttp-curl-async)
@@ -270,17 +271,17 @@ conduit for SSL.")
 An HTTP client that relies on Curl + Async for the backend. Does not require
 conduit for SSL.")
  (depends
-  ocurl
   (http (= :version))
-  stringext
-  core_kernel
   async_kernel
   async_unix
-  (cohttp-async :with-test)
-  (uri (and :with-test (>= 4.2.0)))
+  core_kernel
+  ocurl
+  stringext
+  (cohttp-async (and :with-test (= :version)))
+  (alcotest :with-test)
   (fmt :with-test)
   (ounit :with-test)
-  (alcotest :with-test)))
+  (uri (and :with-test (>= 4.2.0)))))
 
 (package
  (name cohttp-bench)
@@ -292,10 +293,10 @@ The benchmarks for the server latency will require wrk2
 can then be generated with HdrHistogram plotter, also available
 online at https://hdrhistogram.github.io/HdrHistogram/plotFiles.html.")
  (depends
-  (core (>= v0.13.0))
-  core_bench
-  (http (= :version))
   (cohttp (= :version))
+  (cohttp-async (= :version))
   (cohttp-lwt-unix (= :version))
   (cohttp-server-lwt-unix (= :version))
-  (cohttp-async (= :version))))
+  (http (= :version))
+  (core (>= v0.13.0))
+  core_bench))

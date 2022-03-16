@@ -25,16 +25,16 @@ bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
 depends: [
   "dune" {>= "2.9"}
   "ocaml" {>= "4.08"}
-  "http" {= version}
   "cohttp" {= version}
   "cohttp-lwt" {= version}
-  "logs"
-  "lwt" {>= "3.0.0"}
-  "lwt_ppx" {with-test}
-  "conf-npm" {with-test}
+  "http" {= version}
   "js_of_ocaml" {>= "3.3.0"}
-  "js_of_ocaml-ppx" {>= "3.3.0"}
   "js_of_ocaml-lwt" {>= "3.5.0"}
+  "js_of_ocaml-ppx" {>= "3.3.0"}
+  "lwt" {>= "3.0.0"}
+  "logs"
+  "conf-npm" {with-test}
+  "lwt_ppx" {with-test}
   "odoc" {with-doc}
 ]
 build: [
