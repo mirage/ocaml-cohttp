@@ -3,102 +3,59 @@ open Eio.Std
 type handler = Request.t -> Response.t
 type middleware = handler -> handler
 
-type t = {
-  socket_backlog : int;
-  domains : int;
-  port : int;
-  request_handler : handler;
-  stopped : bool Atomic.t;
-}
-
-let stop t = ignore @@ Atomic.compare_and_set t.stopped false true
-
 let domain_count =
   match Sys.getenv_opt "COHTTP_DOMAINS" with
   | Some d -> int_of_string d
   | None -> 1
 
-(* https://datatracker.ietf.org/doc/html/rfc7230#section-4.1 *)
+let rec handle_request reader writer flow handler =
+  match Request.parse reader with
+  | request ->
+      let response = handler request in
+      Response.write response writer;
+      Writer.wakeup writer;
+      if Request.is_keep_alive request then
+        handle_request reader writer flow handler
+      else Eio.Flow.close flow
+  | (exception End_of_file) | (exception Eio.Net.Connection_reset _) ->
+      Eio.Flow.close flow
+  | exception Parser.Parse_failure _e ->
+      Response.(write bad_request writer);
+      Writer.wakeup writer;
+      Eio.Flow.close flow
+  | exception _ ->
+      Response.(write internal_server_error writer);
+      Writer.wakeup writer;
+      Eio.Flow.close flow
 
-let rec handle_request (t : t) (conn : Client_connection.t) : unit =
-  match Reader.parse conn.reader Parser.request with
-  | req -> (
-      let req = Request.{ req; reader = conn.reader; read_complete = false } in
-      let response = t.request_handler req in
-      let keep_alive = Request.is_keep_alive req in
-      response.headers <-
-        Http.Header.add_unless_exists response.headers "connection"
-          (if keep_alive then "keep-alive" else "close");
-      Response.write conn response;
-      match (keep_alive, Atomic.get t.stopped) with
-      | _, true | false, _ -> Client_connection.close conn
-      | true, false ->
-          (* Drain unread bytes from client connection before
-             reading another request. *)
-          if not req.read_complete then
-            match Http.Header.get_transfer_encoding (Request.headers req) with
-            | Http.Transfer.Fixed _ -> ignore @@ Request.read_fixed req
-            | Http.Transfer.Chunked -> ignore @@ Request.read_chunk req ignore
-            | _ -> ()
-          else ();
-          (handle_request [@tailcall]) t conn)
-  | exception End_of_file ->
-      Printf.eprintf "\nClosing connection%!";
-      Client_connection.close conn
-  | exception Reader.Parse_error msg ->
-      Printf.eprintf "\nRequest parsing error: %s%!" msg;
-      Response.write conn Response.bad_request
-  | exception exn ->
-      Printf.eprintf "\nUnhandled exception: %s%!" (Printexc.to_string exn);
-      Response.write conn Response.internal_server_error
-
-let run_domain (t : t) env =
+let run_domain ssock handler =
   let on_accept_error exn =
     Printf.fprintf stderr "Error while accepting connection: %s"
       (Printexc.to_string exn)
   in
-  Switch.run @@ fun sw ->
+  Switch.run (fun sw ->
+      while true do
+        Eio.Net.accept_sub ~sw ssock ~on_error:on_accept_error
+          (fun ~sw flow _addr ->
+            let reader = Reader.create 0x1000 (flow :> Eio.Flow.source) in
+            let writer = Writer.create flow in
+            Eio.Fiber.fork ~sw (fun () -> Writer.run writer);
+            handle_request reader writer flow handler)
+      done)
+
+let run ?(socket_backlog = 128) ?(domains = domain_count) ~port env sw handler =
+  let domain_mgr = Eio.Stdenv.domain_mgr env in
   let ssock =
     Eio.Net.listen (Eio.Stdenv.net env) ~sw ~reuse_addr:true ~reuse_port:true
-      ~backlog:t.socket_backlog
-    @@ `Tcp (Eio.Net.Ipaddr.V4.loopback, t.port)
+      ~backlog:socket_backlog
+      (`Tcp (Eio.Net.Ipaddr.V4.loopback, port))
   in
-  while not (Atomic.get t.stopped) do
-    Eio.Net.accept_sub ~sw ssock ~on_error:on_accept_error (fun ~sw flow addr ->
-        let client_conn =
-          {
-            Client_connection.flow;
-            addr;
-            switch = sw;
-            reader = Reader.create 1024 (flow :> Eio.Flow.source);
-            response_buffer = Buffer.create 1024;
-          }
-        in
-        handle_request t client_conn)
-  done
-
-let create ?(socket_backlog = 10_000) ?(domains = domain_count) ~port
-    request_handler : t =
-  {
-    socket_backlog;
-    domains;
-    port;
-    request_handler;
-    stopped = Atomic.make false;
-  }
-
-(* wrk2 -t 24 -c 1000 -d 60s -R400000 http://localhost:8080 *)
-let run (t : t) env =
-  Eio.Std.traceln "\nServer listening on 127.0.0.1:%d" t.port;
-  Eio.Std.traceln "\nStarting %d domains ...%!" t.domains;
-  Switch.run @@ fun sw ->
-  let domain_mgr = Eio.Stdenv.domain_mgr env in
-  for _ = 2 to t.domains do
+  for _ = 2 to domains do
     Eio.Std.Fiber.fork ~sw (fun () ->
-        Eio.Domain_manager.run domain_mgr (fun () -> run_domain t env))
+        Eio.Domain_manager.run domain_mgr (fun () -> run_domain ssock handler))
   done;
-  run_domain t env
+  run_domain ssock handler
 
 (* Basic handlers *)
 
-let not_found : handler = fun (_ : Request.t) -> Response.not_found
+let not_found _ = Response.not_found

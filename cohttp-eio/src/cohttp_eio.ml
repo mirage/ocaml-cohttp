@@ -1,8 +1,10 @@
-module Reader = Reader
-module Chunk = Chunk
-module Request = Request
-module Response = Response
-module Server = Server
+module Server = struct
+  module Reader = Reader
+  module Chunk = Chunk
+  module Request = Request
+  module Response = Response
+  include Server
+end
 
 module Private = struct
   let create_reader = Reader.create

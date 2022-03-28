@@ -1,3 +1,27 @@
+(executable
+ (name test_server)
+ (modules test_server)
+ (public_name test-server)
+ (package cohttp-eio)
+ (libraries cohttp_eio eio_main))
+
+(executable
+ (name test_chunk_server)
+ (modules test_chunk_server)
+ (public_name test-chunk-server)
+ (package cohttp-eio)
+ (libraries cohttp_eio eio_main))
+
+(executable
+ (name crlf)
+ (modules crlf)
+ (public_name crlf)
+ (package cohttp-eio)
+ (libraries unix))
+
 (mdx
  (package cohttp-eio)
-(libraries cohttp_eio bigstringaf fmt eio cstruct))
+ (libraries cohttp_eio bigstringaf fmt eio cstruct))
+
+(cram
+ (deps %{bin:test-server} %{bin:test-chunk-server} %{bin:crlf}))

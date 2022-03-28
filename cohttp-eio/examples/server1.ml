@@ -28,13 +28,12 @@ let text =
    was coming to, but it was too dark to see anything; then she looked at the \
    sides of the well, and noticed that they were filled with cupboards......"
 
-open Cohttp_eio
+open Cohttp_eio.Server
 
 let app req =
   match Request.resource req with
   | "/" -> Response.text text
   | "/html" -> Response.html text
-  | "/exit" -> exit 0
   | _ -> Response.not_found
 
 let () =
@@ -43,5 +42,5 @@ let () =
     [ ("-p", Arg.Set_int port, " Listening port number(8080 by default)") ]
     ignore "An HTTP/1.1 server";
 
-  let server = Server.create ~port:!port app ~socket_backlog:128 in
-  Eio_linux.run @@ fun env -> Server.run server (env :> Eio.Stdenv.t)
+  Eio_main.run @@ fun env ->
+  Eio.Switch.run @@ fun sw -> run ~port:!port env sw app

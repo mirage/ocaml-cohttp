@@ -24,6 +24,7 @@ depends: [
   "eio"
   "cstruct"
   "bigstringaf"
+  "fmt"
   "http" {= version}
   "odoc" {with-doc}
 ]

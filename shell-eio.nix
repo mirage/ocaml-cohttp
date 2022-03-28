@@ -4,7 +4,6 @@
 
 pkgs.mkShell {
   buildInputs = with pkgs; [
-    curl
     pkg-config
     gmp
     libev

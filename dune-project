@@ -8,6 +8,8 @@
 
 (using mdx 0.2)
 
+(cram enable)
+
 (maintainers "Anil Madhavapeddy <anil@recoil.org>")
 
 (authors
@@ -86,29 +88,28 @@
 (package
  (name cohttp-lwt-unix)
  (synopsis "CoHTTP implementation for Unix and Windows using Lwt")
- (description
-  "An implementation of an HTTP client and server using the Lwt\nconcurrency library. See the `Cohttp_lwt_unix` module for information\non how to use this.  The package also installs `cohttp-curl-lwt`\nand a `cohttp-server-lwt` binaries for quick uses of a HTTP(S)\nclient and server respectively.\n\nAlthough the name implies that this only works under Unix, it\nshould also be fine under Windows too.\n")
+ (description "\
+An implementation of an HTTP client and server using the Lwt
+concurrency library. See the `Cohttp_lwt_unix` module for information
+on how to use this.  The package also installs `cohttp-curl-lwt`
+and a `cohttp-server-lwt` binaries for quick uses of a HTTP(S)
+client and server respectively.
+
+Although the name implies that this only works under Unix, it
+should also be fine under Windows too.
+")
  (depends
-  (ocaml
-   (>= 4.08))
-  (http
-   (= :version))
-  (cohttp
-   (= :version))
-  (cohttp-lwt
-   (= :version))
-  cmdliner
-  (lwt
-   (>= 3.0.0))
-  (conduit-lwt
-   (>= 5.0.0))
-  (conduit-lwt-unix
-   (>= 5.0.0))
-  (fmt
-   (>= 0.8.2))
+  (ocaml (>= 4.08))
+  (http (= :version))
+  (cohttp (= :version))
+  (cohttp-lwt (= :version))
+  (cmdliner (>= 1.1.0))
+  (lwt (>= 3.0.0))
+  (conduit-lwt (>= 5.0.0))
+  (conduit-lwt-unix (>= 5.0.0))
+  (fmt (>= 0.8.2))
   base-unix
-  (ppx_sexp_conv
-   (>= v0.13.0))
+  (ppx_sexp_conv (>= v0.13.0))
   magic-mime
   logs
   (ounit :with-test)))
@@ -345,6 +346,6 @@
   eio
   cstruct
   bigstringaf
+  fmt
   (http
-   (= :version))
-  ))
+   (= :version))))

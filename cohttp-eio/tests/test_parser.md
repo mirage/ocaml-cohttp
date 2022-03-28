@@ -3,7 +3,7 @@
 ```ocaml
 open Cohttp_eio
 module P = Private.Parser
-module R = Reader
+module R = Server.Reader
 
 let create_reader s = 
   let flow = Eio.Flow.string_source s in
@@ -166,7 +166,7 @@ val rdr : R.t = <abstr>
 # let ((), pos) = parse ~rdr p2 "ABCD hello world!";;
 val pos : int = 3
 
-# Reader.consume rdr pos;;
+# R.consume rdr pos;;
 - : unit = ()
 
 # parse ~rdr p4 "";;
