@@ -40,4 +40,4 @@ let () =
            (optional_with_default 8080 int)
            ~doc:"int Source port to listen on")
     start_server
-  |> Command.run
+  |> Command_unix.run
