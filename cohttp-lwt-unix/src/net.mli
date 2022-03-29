@@ -36,11 +36,15 @@ val init : ?ctx:Conduit_lwt_unix.ctx -> ?resolver:Resolver_lwt.t -> unit -> ctx
 type endp = Conduit.endp
 
 val resolve : ctx:ctx -> Uri.t -> Conduit.endp Lwt.t
+(** [resolve ~ctx uri] resolves [uri] into an endpoint description.
+    This is [Resolver_lwt.resolve_uri ~uri ctx.resolver]. *)
 
 val connect_endp :
   ctx:ctx ->
   Conduit.endp ->
   (Conduit_lwt_unix.flow * Input_channel.t * Lwt_io.output Lwt_io.channel) Lwt.t
+(** [connect_endp ~ctx endp] starts a {i flow} to the given [endp].
+    [endp] describes address and protocol of the endpoint to connect to. *)
 
 val connect_uri :
   ctx:ctx ->
@@ -59,7 +63,10 @@ val connect_uri :
     These extensions have the highest priority ([Conduit] will try to initiate a
     communication with them first). By {i extension}, we mean that the user is
     able to fill its own [ctx] and we don't overlap resolution functions from
-    the given [ctx]. *)
+    the given [ctx].
+
+    This is [resolve ~ctx uri >>= connect_endp ~ctx].
+*)
 
 val close_in : Input_channel.t -> unit
 val close_out : 'a Lwt_io.channel -> unit

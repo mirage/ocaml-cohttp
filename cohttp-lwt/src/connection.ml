@@ -1,3 +1,6 @@
+(** Raised on failed requests that may be safely retried - even on
+    non-idempotent requests. Raised for example on timeout or
+    connection suhtdown by remote end. *)
 exception Retry
 
 module Make (Net : S.Net) : (S.Connection with module Net = Net) =
@@ -18,9 +21,14 @@ struct
 
   type state =
     | Connecting of (IO.ic * IO.oc) Lwt.t
+    (* Waiting for the TCP handshake / TLS connection setup *)
     | Full of (IO.ic * IO.oc)
+    (* "full-duplex". May send requests, may be waiting for responses / EOF. *)
     | Closing of (IO.ic * IO.oc)
+    (* still in "full-duplex", but no new requests may be queued.
+     * Will shutdown oc as soon as the last request went out. *)
     | Half of IO.ic
+    (* oc has been closed, waiting for outstanding responses on ic. *)
     | Closed
     | Failed of exn
   type req_resr =
@@ -82,7 +90,7 @@ struct
     match connection.state with
     | Full _ -> false
     | Connecting _ -> false
-    | Closing _ | Half _ -> true (* really ? *)
+    | Closing _ | Half _ -> true
     | Closed | Failed _ -> true
 
   let rec reader connection =
