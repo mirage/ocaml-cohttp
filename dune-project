@@ -102,7 +102,7 @@ should also be fine under Windows too.
   (http (= :version))
   (cohttp (= :version))
   (cohttp-lwt (= :version))
-  cmdliner
+  (cmdliner (>= 1.1.0))
   (lwt (>= 3.0.0))
   (conduit-lwt (>= 5.0.0))
   (conduit-lwt-unix (>= 5.0.0))
