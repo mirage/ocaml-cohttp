@@ -1,5 +1,3 @@
-exception Retry = Connection.Retry
-
 module Make_no_cache (Connection : S.Connection) : sig
   include S.Connection_cache with module IO = Connection.Net.IO
 
@@ -52,11 +50,11 @@ struct
 
   type ctx = Net.ctx
 
-  module Endp_map = Map.Make (Net.Endp)
+  exception Retry = S.Retry
 
   (* type t = < request : ?body:Body.t -> Cohttp.Request.t -> (Cohttp.Response.t * Body.t) IO.t > *)
   type t =
-    { mutable cache : Connection.t list Endp_map.t
+    { cache : (Net.endp, Connection.t) Hashtbl.t
     ; ctx : ctx
     ; keep : int64
     ; retry : int
@@ -72,17 +70,19 @@ struct
    *)
 
   let create ?(ctx = Net.default_ctx) ?(keep=60_000_000_000L) ?(retry=2) ?(parallel=4) ?(depth=100) () =
-    { cache = Endp_map.empty
+    { cache = Hashtbl.create ~random:true 10
     ; ctx ; keep ; retry ; parallel ; depth
     }
 
   let rec get_connection self endp =
     let finalise connection =
-      let conns = Endp_map.find endp self.cache in
-      let conns = List.filter ((!=) connection) conns in
-      if conns = []
-      then self.cache <- self.cache |> Endp_map.remove endp
-      else self.cache <- self.cache |> Endp_map.add endp conns;
+      let rec remove keep =
+        let current = Hashtbl.find self.cache endp in
+        Hashtbl.remove self.cache endp;
+        if current == connection
+        then List.iter (Hashtbl.add self.cache endp) keep
+        else remove (current :: keep)
+      in remove [];
       Lwt.return_unit
     in
     let create () =
@@ -100,12 +100,12 @@ struct
       in busy ();
       connection
     in
-    match Endp_map.find_opt endp self.cache with
-    | None ->
+    match Hashtbl.find_all self.cache endp with
+    | [] ->
       let connection = create () in
-      self.cache <- self.cache |> Endp_map.add endp [connection];
+      Hashtbl.add self.cache endp connection;
       Lwt.return connection
-    | Some conns ->
+    | conns ->
       let rec search length = function
         | a :: [] -> a, length + 1
         | a :: b :: tl
@@ -120,13 +120,13 @@ struct
         Lwt.return shallowest
       | _, length when length < self.parallel ->
         let connection = create () in
-        self.cache <- self.cache |> Endp_map.add endp (connection :: conns);
+        Hashtbl.add self.cache endp connection;
         Lwt.return connection
       | shallowest, _ when Connection.length shallowest < self.depth ->
         Lwt.return shallowest
       | _ ->
         Lwt.try_bind
-          (fun () -> Lwt.choose (List.map Connection.notify conns))
+          (fun () -> conns |> List.map Connection.notify |> Lwt.choose)
           (fun _ -> get_connection self endp)
           (fun _ -> get_connection self endp)
 

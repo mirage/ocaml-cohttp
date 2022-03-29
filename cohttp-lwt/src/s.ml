@@ -21,19 +21,8 @@ module type Net = sig
   module IO : IO
 
   type endp
-
-  (** Conduit context. Contains configuration of resolver, local source
-      address, TLS / SSL library, certificates, keys.
-
-      Depending on [ctx], the library is able to send HTTP requests
-      unencrypted or encrypted one with a secured protocol (such as
-      TLS). Depending on how conduit is configured, [ctx] might initiate
-      a secured connection with TLS (using [ocaml-tls]) or SSL (using
-      [ocaml-ssl]), on [*:443] or on the specified port by the user. If
-      neitehr [ocaml-tls] or [ocaml-ssl] are installed on the system,
-      [cohttp]/[conduit] tries the usual ([*:80]) or the specified port
-      by the user in a non-secured way. *)
   type ctx [@@deriving sexp_of]
+
 
   val default_ctx : ctx
   val resolve : ctx:ctx -> Uri.t -> endp IO.t
@@ -44,48 +33,19 @@ module type Net = sig
   val close : IO.ic -> IO.oc -> unit
 end
 
-(** This is compatible with [Mirage_time.S].
-    It may be satisfied by mirage-time-unix [Time] or [Mirage_time]. *)
 module type Sleep = sig
   type 'a promise
   val sleep_ns : int64 -> unit promise
 end
 
-(** [request ?body request]
-    Function type used to process requests.
-
-    @return [(response, response_body)]
-    [response_body] is not buffered, but stays on the wire until
-    consumed. It must therefore be consumed in a timely manner.
-    Otherwise the connection would stay open and a file descriptor leak
-    may be caused. Following responses would get blocked.
-    Functions in the {!Body} module can be used to consume [response_body].
-    Use {!Body.drain_body} if you don't consume the body by other means.
-
-    Leaks are detected by the GC and logged as debug messages, these can
-    be enabled activating the debug logging. For example, this can be
-    done as follows in [cohttp-lwt-unix]
-
-    {[
-      Cohttp_lwt_unix.Debug.activate_debug ();
-      Logs.set_level (Some Logs.Warning)
-    ]}
-
-    @raise {!exception Connection.Retry} on recoverable errors like the remote endpoint closing
-    the connection gracefully. Even non-idempotent requests are
-    guaranteed to not have been processed by the remote endpoint and
-    should be retried. But beware that a [`Stream] [body] may have been
-    consumed. *)
-type requester = ?body:Body.t -> Cohttp.Request.t -> (Cohttp.Response.t * Body.t)
-
-(** The [Connection] module handles a single, possibly pipelined, http
-    connection. *)
 module type Connection = sig
   module Net : Net
 
   exception Retry
   type t
 
+<<<<<<< HEAD
+=======
   (** [create ?finalise ?persistent ?ctx endp] connects to [endp]. The
       connection handle may be used immediately, although the connection
       may not yet be established.
@@ -103,6 +63,7 @@ module type Connection = sig
       @param ctx See [Net.ctx]
       @param endp The remote address, port and protocol to connect to.
   *)
+>>>>>>> df56028 (Move selection of encoding from Client to Connection)
   val create :
     ?finalise:(t -> unit Net.IO.t) ->
     ?persistent:bool ->
@@ -110,8 +71,6 @@ module type Connection = sig
     Net.endp ->
     t
 
-  (** Same as [create], but returns d promise which gets fulfilled when
-      the connection is established or rejected when connecting fails. *)
   val connect :
     ?finalise:(t -> unit Net.IO.t) ->
     ?persistent:bool ->
@@ -119,30 +78,12 @@ module type Connection = sig
     Net.endp ->
     t Net.IO.t
 
-  (** Send {e EOF}.
-      On {e TCP} connections send a {e FIN} packet.
-      On {e TLS} connections send a {e close notify}.
-      No new requests can be sent afterwards, but responses may still
-      be received. *)
   val shutdown : t -> unit
-
-  (** Immediately close connection. All outstanding requests will fail,
-      but non-idempotent requests that already went out on the wire may
-      have produced side-effects. *)
   val close : t -> unit
-
-  (** If [is_closed connection] is [false] the [connection] still
-      accepts new requests. *)
   val is_closed : t -> bool
-
-  (** Number of unfulfilled requests. This includes requests already
-      sent out and requests still waitung to be sent. *)
+  val notify : t -> unit Net.IO.t
   val length : t -> int
 
-  (** Request notification on change of [length] and on closing. *)
-  val notify : t -> unit Net.IO.t
-
-  (** Queue a request. Please see {!type:requester}. *)
   val request : t ->
     ?body:Body.t -> Cohttp.Request.t -> (Cohttp.Response.t * Body.t) Net.IO.t
 end
@@ -152,52 +93,24 @@ module type Connection_cache = sig
 
   type t
 
-  (** Process a request. Please see {!type:requester}. *)
   val request : t ->
     ?body:Body.t -> Cohttp.Request.t -> (Cohttp.Response.t * Body.t) IO.t
 end
 
-(** The [Client] module is a collection of convenience functions for
-    constructing and processing requests. *)
+(** The [Client] module implements non-pipelined single HTTP client calls. Each
+    call will open a separate {!Net} connection. For best results, the {!Body}
+    that is returned should be consumed in order to close the file descriptor in
+    a timely fashion. It will still be finalized by a GC hook if it is not used
+    up, but this can take some additional time to happen. *)
 module type Client = sig
   type ctx
 
   module Connection : Connection with type Net.ctx = ctx
 
-  (** Provide a function used to process requests.
-      Please see {!type:requester}.
-      The provided function is only used when no [ctx] argument is
-      passed to the convenience functions below. *)
   val set_cache :
     (?body:Body.t -> Cohttp.Request.t -> (Cohttp.Response.t * Body.t) Lwt.t) ->
     unit
 
-  (** [request ?ctx ?body request] processes a request.
-      Please see {!type:requester}.
-      @param ctx If provided, this is
-      {!val:Connection_cache.Make_no_cache.create}. *)
-  val request :
-    ?ctx:ctx ->
-    ?body:Body.t -> Cohttp.Request.t -> (Cohttp.Response.t * Body.t) Lwt.t
-
-  (** [call ?ctx ?headers ?body ?chunked meth uri]
-      constructs a {!module:Request} using provided [headers],
-      [chunked], [meth] and [uri]. Then passes this {e request} and the
-      [body] to {!val:request}.
-
-      @return [(response, response_body)] Consume [response_body] in a
-      timely fashion. Please see {!val:requester} about how and why.
-
-      @param chunked use chunked encoding if [true]. The default is
-      [false] for compatibility reasons.
-      @param ctx If provided, {!val:request} is not used, but
-      {!val:Connection_cache.Make_no_cache.create} is used to resolve
-      uri and create a dedicated connection with [ctx].
-
-      In most cases you should use the more specific helper calls in the
-      interface rather than invoke this function directly. See {!head}, {!get}
-      and {!post} for some examples.
-  *)
   val call :
     ?ctx:ctx ->
     ?headers:Http.Header.t ->
@@ -206,6 +119,36 @@ module type Client = sig
     Http.Method.t ->
     Uri.t ->
     (Http.Response.t * Body.t) Lwt.t
+  (** [call ?ctx ?headers ?body ?chunked meth uri] will resolve the [uri] to a
+      concrete network endpoint using context [ctx]. It will then issue an HTTP
+      request with method [meth], adding request headers from [headers] if
+      present. If a [body] is specified then that will be included with the
+      request, using chunked encoding if [chunked] is true. The default is to
+      disable chunked encoding for HTTP request bodies for compatibility
+      reasons.
+
+      In most cases you should use the more specific helper calls in the
+      interface rather than invoke this function directly. See {!head}, {!get}
+      and {!post} for some examples.
+
+      To avoid leaks, the body needs to be consumed, using the functions
+      provided in the {!Body} module and, if not necessary, should be explicitly
+      drained calling {!Body.drain_body}. Leaks are logged as debug messages by
+      the client, these can be enabled activating the debug logging. For
+      example, this can be done as follows in [cohttp-lwt-unix]
+
+      {[
+        Cohttp_lwt_unix.Debug.activate_debug ();
+        Logs.set_level (Some Logs.Warning)
+      ]}
+
+      Depending on [ctx], the library is able to send a simple HTTP request or
+      an encrypted one with a secured protocol (such as TLS). Depending on how
+      conduit is configured, [ctx] might initiate a secured connection with TLS
+      (using [ocaml-tls]) or SSL (using [ocaml-ssl]), on [*:443] or on the
+      specified port by the user. If neitehr [ocaml-tls] or [ocaml-ssl] are
+      installed on the system, [cohttp]/[conduit] tries the usual ([*:80]) or
+      the specified port by the user in a non-secured way. *)
 
   val head :
     ?ctx:ctx -> ?headers:Http.Header.t -> Uri.t -> Http.Response.t Lwt.t
@@ -255,7 +198,6 @@ module type Client = sig
     Uri.t ->
     (Http.Response.t * Body.t) Lwt.t
 
-  (** @deprecated use a [!Connection] instead. *)
   val callv :
     ?ctx:ctx ->
     Uri.t ->

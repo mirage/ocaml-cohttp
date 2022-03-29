@@ -33,13 +33,13 @@ val init : ?ctx:Conduit_lwt_unix.ctx -> ?resolver:Resolver_lwt.t -> unit -> ctx
     {!Resolver_lwt.t} with a different name resolution strategy (for instance to
     override a hostname to point it to a Unix domain socket). *)
 
-module Endp : Map.OrderedType with type t = Conduit.endp
+type endp = Conduit.endp
 
-val resolve : ctx:ctx -> Uri.t -> Endp.t Lwt.t
+val resolve : ctx:ctx -> Uri.t -> Conduit.endp Lwt.t
 
 val connect_endp :
   ctx:ctx ->
-  Endp.t ->
+  Conduit.endp ->
   (Conduit_lwt_unix.flow * Input_channel.t * Lwt_io.output Lwt_io.channel) Lwt.t
 
 val connect_uri :
