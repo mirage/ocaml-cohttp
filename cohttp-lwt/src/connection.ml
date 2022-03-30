@@ -187,15 +187,38 @@ struct
     | Full (ic, oc)
     | Closing (ic, oc) ->
       let {req; body; res_r; _} as work = Queue.take connection.waiting in
-      let req =
-        let open Request in
-        let headers = headers req in
-        if connection.persistent <> `False || Header.mem headers "Connection"
-        then req
-        else
-          Request.make ~meth:(meth req) ~version:(version req) ~encoding:(encoding req)
-            ~headers:(Header.add headers "Connection" "close") (uri req)
+      let uri, meth, version, headers =
+        Request.(uri req, meth req, version req, headers req) in
+
+      (* select encoding based on header, request, body and make sure
+       * the encoding in the request matches the encoding in the header. *)
+      begin match Header.get_transfer_encoding (Request.headers req) with
+        | Unknown ->
+          begin match Request.encoding req with
+          | Unknown ->
+            begin match Body.transfer_encoding body with
+            | Fixed _ as e -> Lwt.return (e, body)
+            | Chunked as e when connection.persistent = `True ->
+              Lwt.return (e, body)
+            | Chunked (* connection.persistent <> `True *) ->
+              (* We don't know yet whether chunked encoding is supported.
+               * Therefore use fixed length encoding. *)
+              Body.length body >>= fun (length, body) ->
+              Lwt.return (Cohttp.Transfer.Fixed length, body)
+            | Unknown -> assert false
+            end
+          | e -> Lwt.return (e, body)
+          end
+        | e -> Lwt.return (e, body)
+      end >>= fun (encoding, body) ->
+
+      let headers =
+        if connection.persistent = `False
+        then Header.add_unless_exists headers "Connection" "close"
+        else headers
       in
+
+      let req = Request.make ~meth ~version ~encoding ~headers uri in
       Queue.push { work with req } connection.in_flight;
       Lwt.catch
         begin fun () -> (* try *)
