@@ -8,12 +8,19 @@ let domain_count =
   | Some d -> int_of_string d
   | None -> 1
 
+let is_custom resp = match Response.body resp with
+  | Custom _ -> true
+  | _ -> false
+
 let rec handle_request reader writer flow handler =
   match Request.parse reader with
   | request ->
       let response = handler request in
       Response.write response writer;
-      Writer.wakeup writer;
+      (* A custom response needs to write the main response before calling
+         the custom function for the body. Response.write wakes the writer for
+         us if that is the case. *)
+      if not (is_custom response) then Writer.wakeup writer;
       if Request.is_keep_alive request then
         handle_request reader writer flow handler
       else Eio.Flow.close flow

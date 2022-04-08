@@ -1,4 +1,4 @@
-(lang dune 3.0)
+(lang dune 2.9)
 
 (name cohttp)
 
@@ -6,7 +6,7 @@
 
 (license ISC)
 
-(using mdx 0.2)
+(using mdx 0.1)
 
 (cram enable)
 
@@ -304,7 +304,8 @@ should also be fine under Windows too.
   (http
    (= :version))
   stringext
-  core_kernel
+  core
+  (core_unix (>= v0.14.0))
   async_kernel
   async_unix
   (cohttp-async :with-test)
@@ -347,5 +348,8 @@ should also be fine under Windows too.
   cstruct
   bigstringaf
   fmt
+  (mdx :with-test)
+  (eio_main :with-test)
+  (conf-nmap :with-test)
   (http
    (= :version))))

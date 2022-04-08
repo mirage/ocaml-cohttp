@@ -1,6 +1,12 @@
 ## Prelude: test helpers and pretty printers
 
 ```ocaml
+# #require "cohttp-eio";;
+# #require "bigstringaf";;
+# #require "fmt";;
+```
+
+```ocaml
 open Cohttp_eio
 module P = Private.Parser
 module R = Server.Reader

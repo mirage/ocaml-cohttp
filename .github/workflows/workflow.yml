@@ -1,6 +1,7 @@
 name: Main workflow
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
   schedule:
@@ -8,26 +9,32 @@ on:
     - cron: 0 1 * * MON
 
 jobs:
-  build:
+  build-test-default:
     strategy:
       fail-fast: false
       matrix:
         os:
-          - macos-latest
           - ubuntu-latest
+          - macos-latest
         ocaml-compiler:
-          - 4.08.x
-          - 4.09.x
-          - 4.10.x
-          - 4.11.x
-          - 4.12.x
-          - 4.13.x
+          - ocaml-variants.4.08.1+afl
+          - ocaml-variants.4.09.1+afl
+          - ocaml-variants.4.10.1+afl
+          - ocaml-variants.4.11.2+afl
+          - ocaml-variants.4.12.1+options,ocaml-option-afl
+          - ocaml-variants.4.13.1+options,ocaml-option-afl
+          - ocaml-variants.4.14.0+options,ocaml-option-afl
+        local-packages:
+          - |
+            *.opam
+            !cohttp-eio.opam
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
 
       - name: Use OCaml ${{ matrix.ocaml-compiler }}
         uses: ocaml/setup-ocaml@v2
@@ -35,17 +42,68 @@ jobs:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
           dune-cache: ${{ matrix.os == 'ubuntu-latest' }}
           opam-depext: true
+          opam-depext-flags: --with-test
+          opam-local-packages: ${{ matrix.local-packages }}
 
       - run: yarn --frozen-lockfile
-        working-directory: cohttp_lwt_jsoo_test
+        working-directory: cohttp-lwt-jsoo/test
+
+      - run: |
+          sudo apt update
+          sudo apt upgrade
+          opam depext conf-libcurl
+        if: ${{ matrix.os == 'ubuntu-latest' }}
 
       - run: echo "PKG_CONFIG_PATH=$(brew --prefix openssl)/lib/pkgconfig" >>"$GITHUB_ENV"
         if: ${{ matrix.os == 'macos-latest' }}
 
-      - run: opam install . --deps-only --with-test
+      - run: opam install --with-test --deps-only http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-mirage cohttp-async cohttp-curl-async cohttp-curl-lwt cohttp-curl cohttp-top cohttp-lwt-jsoo
 
-      - run: opam exec -- make build
-
-      - run: opam exec -- make test
+      - run: |
+          opam exec -- dune build --profile=dev --only-packages http,cohttp,cohttp-lwt,cohttp-lwt-unix,cohttp-server-lwt-unix,cohttp-mirage,cohttp-async,cohttp-curl-async,cohttp-curl-lwt,cohttp-curl,cohttp-top @install
+          opam exec -- dune build bench/ examples/ cohttp-curl-async/bin/ cohttp-curl-lwt/bin/
+      
+      - run: opam exec -- dune runtest --profile=dev cohttp cohttp-async cohttp-curl cohttp-curl-async cohttp-curl-lwt cohttp-lwt cohttp-lwt-unix cohttp-mirage cohttp-server-lwt-unix cohttp-top http
 
       - run: opam exec -- make js-test
+
+  build-test-cohttp-eio:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+        ocaml-compiler:
+          - ocaml-variants.5.0.0+trunk
+        local-packages:
+          - |
+            http.opam
+            cohttp-eio.opam
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - run: sudo apt-get install ncat
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+
+      - run: brew install nmap
+        if: ${{ matrix.os == 'macos-latest' }}
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          dune-cache: ${{ matrix.os == 'ubuntu-latest' }}
+          opam-local-packages: ${{ matrix.local-packages }}
+
+      - run: opam repo add alpha git+https://github.com/kit-ty-kate/opam-alpha-repository.git && opam update
+
+      - run: opam install cstruct eio_main bigstringaf fmt mdx
+
+      - run: opam exec -- dune build -p http,cohttp-eio --profile release
+
+      - run: opam exec -- dune runtest cohttp-eio --profile release

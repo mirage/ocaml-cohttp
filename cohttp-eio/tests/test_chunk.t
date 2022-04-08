@@ -6,7 +6,7 @@ Test chunk request processing.
   $ port=8081
   $ test-chunk-server -p ${port} &
   $ running_pid=$!
-  $ crlf << EOF | nc -N localhost ${port}
+  $ crlf << EOF | ncat localhost ${port}
   > POST / HTTP/1.1
   > Content-Type: text/plain
   > Transfer-Encoding: chunked

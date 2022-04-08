@@ -2,7 +2,7 @@ Test GET
 
   $ test-server &
   $ running_pid=$!
-  $ crlf << EOF | nc -N localhost 8080
+  $ crlf << EOF | ncat localhost 8080
   > GET / HTTP/1.1
   > 
   > EOF
@@ -21,7 +21,7 @@ Test POST
 
   $ test-server &
   $ running_pid=$!
-  $ crlf << EOF | nc -N localhost 8080
+  $ crlf << EOF | ncat localhost 8080
   > POST / HTTP/1.0
   > Content-Length:12
   > 
@@ -42,7 +42,7 @@ Test POST
 Test parser
   $ test-server &
   $ running_pid=$!
-  $ crlf << EOF | nc -N localhost 8080
+  $ crlf << EOF | ncat localhost 8080
   > GET /wp-content/uploads/2010/03/hello-kitty-darth-vader-pink.jpg HTTP/1.1
   > Host: www.kittyhell.com
   > User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; ja-JP-mac; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3 Pathtraq/0.9

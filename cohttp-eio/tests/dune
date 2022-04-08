@@ -21,7 +21,7 @@
 
 (mdx
  (package cohttp-eio)
- (libraries cohttp_eio bigstringaf fmt eio cstruct))
+ (packages cohttp-eio))
 
 (cram
  (deps %{bin:test-server} %{bin:test-chunk-server} %{bin:crlf}))
