@@ -101,19 +101,25 @@ let ssl_key =
   Arg.(value & opt (some string) None & info [ "k" ] ~docv:"SSL_KEY" ~doc)
 
 let cmd =
-  let doc = "a simple http proxy" in
-  let man =
-    [
-      `S "DESCRIPTION";
-      `P "$(tname) sets up a simple http proxy with lwt as backend";
-      `S "BUGS";
-      `P
-        "Report them via e-mail to <mirageos-devel@lists.xenproject.org>, or \
-         on the issue tracker at \
-         <https://github.com/mirage/ocaml-cohttp/issues>";
-    ]
+  let info =
+    let version = Cohttp.Conf.version in
+    let doc = "a simple http proxy" in
+    let man =
+      [
+        `S "DESCRIPTION";
+        `P "$(tname) sets up a simple http proxy with lwt as backend";
+        `S "BUGS";
+        `P
+          "Report them via e-mail to <mirageos-devel@lists.xenproject.org>, or \
+           on the issue tracker at \
+           <https://github.com/mirage/ocaml-cohttp/issues>";
+      ]
+    in
+    Cmd.info "cohttp-proxy" ~version ~doc ~man
   in
-  ( Term.(pure lwt_start_proxy $ port $ host $ verb $ ssl_cert $ ssl_key),
-    Term.info "cohttp-proxy" ~version:Cohttp.Conf.version ~doc ~man )
+  let term =
+    Term.(const lwt_start_proxy $ port $ host $ verb $ ssl_cert $ ssl_key)
+  in
+  Cmd.v info term
 
-let () = match Term.eval cmd with `Error _ -> exit 1 | _ -> exit 0
+let () = exit @@ Cmd.eval cmd
