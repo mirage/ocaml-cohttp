@@ -1,6 +1,6 @@
 (executables
  (names hello_world receive_post)
- (libraries mirage-crypto http cohttp-async base async_kernel))
+ (libraries mirage-crypto http cohttp-async base async_kernel core_unix.command_unix))
 
 (alias
  (name runtest)
