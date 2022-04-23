@@ -273,7 +273,8 @@ conduit for SSL.")
   ocurl
   (http (= :version))
   stringext
-  core_kernel
+  core
+  (core_unix (>= v0.14.0))
   async_kernel
   async_unix
   (cohttp-async :with-test)

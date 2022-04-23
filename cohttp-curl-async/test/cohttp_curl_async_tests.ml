@@ -36,4 +36,4 @@ let _ =
     Async_unix.Shutdown.exit 0
   in
   Deferred.don't_wait_for run;
-  Core_kernel.never_returns (Async_unix.Scheduler.go ())
+  Core.never_returns (Async_unix.Scheduler.go ())

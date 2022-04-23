@@ -1,6 +1,5 @@
 (* This file is in the public domain *)
-
-open Core_kernel
+open Core
 open Async_kernel
 open Cohttp_async
 

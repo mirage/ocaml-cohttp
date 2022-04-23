@@ -403,4 +403,4 @@ let () =
       +> anon ("src" %: string)
       +> anon ("dst" %: string))
     main
-  |> run
+  |> Command_unix.run
