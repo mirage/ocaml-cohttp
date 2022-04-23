@@ -33,6 +33,7 @@
   + This new implementation does not depend on conduit and has a simpler and
     more flexible API
 - async: Adapt cohttp-curl-async to work with core_unix.
+- async: Add upper bound to core_kernel when testing to fix the CI
 - *Breaking changes*
   + refactor: move opam metadata to dune-project (rgrinberg #811)
   + refactor: deprecate Cohttp_async.Io (rgrinberg #807)
