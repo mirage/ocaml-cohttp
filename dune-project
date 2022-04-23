@@ -172,6 +172,7 @@ client and server respectively.
   (base (>= v0.11.0))
   (core :with-test)
   (core_unix (>= v0.14.0))
+  (core_unix (and :with-test (< v0.15))) 
   (conduit-async (>= 1.2.0))
   magic-mime
   (mirage-crypto :with-test)
