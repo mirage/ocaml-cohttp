@@ -44,10 +44,7 @@ struct
     let default_ctx =
       { resolver = R.localhost; conduit = None; authenticator = None }
 
-    module Endp = struct
-      type t = Conduit.endp
-      let compare = compare
-    end
+    type endp = Conduit.endp
 
     let resolve ~ctx uri = R.resolve_uri ~uri ctx.resolver
 
@@ -77,7 +74,7 @@ struct
 
   (* Build all the core modules from the [Cohttp_lwt] functors *)
   include Cohttp_lwt.Make_client (HTTP_IO) (Net_IO)
-  module Connection_cache = Cohttp_lwt.Make_connection_cache
+  module Connection_cache = Cohttp_lwt.Connection_cache.Make
       (Connection)
       (struct include T type 'a promise = 'a Lwt.t end)
 
