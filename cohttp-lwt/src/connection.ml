@@ -95,8 +95,8 @@ struct
 
   let rec reader connection =
     match connection.state with
-    | Connecting _ -> assert false
-    | Closed | Failed _ -> assert false
+    | Connecting _ | Failed _ -> assert false
+    | Closed -> Lwt.return_unit
     | Full (ic, _) | Closing (ic, _) | Half ic ->
       Response.read ic >>= fun res ->
       match res with
@@ -161,6 +161,7 @@ struct
         end;
         connection.finalise connection >>= fun () ->
         queue_fail connection connection.in_flight Retry;
+        queue_fail connection connection.waiting Retry;
         Lwt.return_unit
       | `Invalid reason ->
         let e = Failure ("Cohttp_lwt failed to read response: " ^ reason) in
@@ -200,9 +201,12 @@ struct
 
       (* select encoding based on header, request, body and make sure
        * the encoding in the request matches the encoding in the header. *)
-      begin match Header.get_transfer_encoding (Request.headers req) with
+      begin match Header.get_transfer_encoding headers with
         | Unknown ->
           begin match Request.encoding req with
+          | Fixed 0L
+          (* this is the default selected by Request.make.
+           * XXX: Shouldn't the default be Unknown ? *)
           | Unknown ->
             begin match Body.transfer_encoding body with
             | Fixed _ as e -> Lwt.return (e, body)
@@ -221,7 +225,10 @@ struct
       end >>= fun (encoding, body) ->
 
       let headers =
-        if connection.persistent = `False
+        if match connection.state with
+          | _ when connection.persistent = `False -> true
+          | Closing _ when Queue.is_empty connection.waiting -> true
+          | _ -> false
         then Header.add_unless_exists headers "Connection" "close"
         else headers
       in
@@ -242,7 +249,15 @@ struct
           Lwt.return_unit
         end
       >>= fun () ->
-      writer connection
+      if connection.persistent = `False
+      then begin
+        (* uncomment when https://github.com/mirage/ocaml-conduit/pull/319 is released *)
+        (* (try Net.close_out oc with _ -> ()); *)
+        connection.state <- Half ic;
+        queue_fail connection connection.waiting Retry;
+        Lwt.return_unit
+      end
+      else writer connection
     | Failed e ->
       queue_fail connection connection.waiting e;
       Lwt.return_unit
