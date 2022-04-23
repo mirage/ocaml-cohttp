@@ -37,7 +37,7 @@ pkgs.mkShell {
     yarn
     nodejs-14_x
     ocamlPackages.ocaml-lsp
-  ]) ++ [ocamlformat] ++ (with opam; [
+  ]) ++ [] ++ (with opam; [
     # test
     conf-libev
     ppx_expect
