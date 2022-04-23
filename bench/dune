@@ -1,7 +1,7 @@
 (executable
  (name bench)
  (modules bench)
- (libraries http core core_bench))
+ (libraries http core core_unix.command_unix core_bench))
 
 (executable
  (name lwt_unix_server)
@@ -11,7 +11,7 @@
 (executable
  (name async_server)
  (modules async_server)
- (libraries cohttp-async logs.fmt fmt.tty))
+ (libraries cohttp-async core_unix.command_unix logs.fmt fmt.tty))
 
 (rule
  (alias bench)

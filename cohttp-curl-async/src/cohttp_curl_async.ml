@@ -1,5 +1,5 @@
 open Async_kernel
-module Time = Core_kernel.Time
+module Time = Core.Time
 module Fd = Async_unix.Fd
 module Clock = Async_unix.Clock
 
@@ -90,9 +90,8 @@ module Context = struct
             Deferred.return
               {
                 fd =
-                  Fd.create
-                    (Fd.Kind.Socket `Active)
-                    fd (Base.Info.createf "curl");
+                  Fd.create (Fd.Kind.Socket `Active) fd
+                    (Base.Info.createf "curl");
                 read = None;
                 write = None;
               }
@@ -165,7 +164,7 @@ module Request = struct
     let base =
       let timeout_ms =
         Option.map
-          (fun timeout -> Core_kernel.Time.Span.to_ms timeout |> int_of_float)
+          (fun timeout -> Core.Time.Span.to_ms timeout |> int_of_float)
           timeout
       in
       Cohttp_curl.Request.create ?timeout_ms ?headers method_ ~uri ~input

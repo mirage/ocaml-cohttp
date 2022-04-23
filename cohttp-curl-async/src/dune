@@ -1,11 +1,4 @@
 (library
  (name cohttp_curl_async)
  (public_name cohttp-curl-async)
- (libraries
-  http
-  cohttp-curl
-  core_kernel
-  curl
-  stringext
-  async_kernel
-  async_unix))
+ (libraries http cohttp-curl core curl stringext async_kernel async_unix))

@@ -26,4 +26,4 @@ let bench_header_mem =
   Bench.Test.create ~name:"Header.mem" (fun () ->
       List.iter (fun key -> assert (Http.Header.mem header key)) header_names)
 
-let () = Command.run @@ Bench.make_command [ bench_header_mem ]
+let () = Command_unix.run @@ Bench.make_command [ bench_header_mem ]
