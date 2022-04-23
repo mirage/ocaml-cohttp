@@ -32,7 +32,9 @@ val create :
 
     To create a simple HTTP server listening on port 8089:
 
-    {[ let run = create (`TCP 8080) ]}
+    {[
+      let run = create (`TCP 8080)
+    ]}
 
     When provided, the [stop] thread will terminate the server if it ever
     becomes determined.
