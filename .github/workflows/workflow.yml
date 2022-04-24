@@ -39,7 +39,7 @@ jobs:
           opam-depext-flags: --with-test
 
       - run: yarn --frozen-lockfile
-        working-directory: cohttp_lwt_jsoo_test
+        working-directory: cohttp-lwt-jsoo/test
 
       - run: opam install . --deps-only --with-test
 
