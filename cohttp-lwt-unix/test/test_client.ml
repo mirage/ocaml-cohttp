@@ -112,7 +112,7 @@ let tests handler uri =
 
 (* Now run those tests through the different low- and highlevel interfaces *)
 
-module Connection = Cohttp_lwt_unix.Client.Connection
+module Connection = Cohttp_lwt_unix.Connection
 
 (* Use the high-level Client interface *)
 let test_client uri =
@@ -192,7 +192,7 @@ let test_unknown uri =
 (* In that difficult case one might be better of using a Connection_cache which
  * will take care of those trivial retries and reconnecting: *)
 
-module Cache = Cohttp_lwt_unix.Client.Connection_cache
+module Cache = Cohttp_lwt_unix.Connection_cache
 
 let test_cache uri =
   let uri = Uri.with_host uri (Some "localhost") in

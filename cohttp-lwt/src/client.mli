@@ -6,5 +6,5 @@
     When logging is enabled (at least {b warning} level), eventual body leaks
     will be logged and easier to track. *)
 
-module Make (IO : S.IO) (Net : S.Net with module IO = IO)
-  : S.Client with type ctx = Net.ctx
+module Make (Connection : S.Connection)
+  : S.Client with type ctx = Connection.Net.ctx

@@ -1,9 +1,9 @@
 open Lwt.Infix
 module Header = Cohttp.Header
 
-module Make (IO : S.IO) (Net : S.Net) =
+module Make (Connection : S.Connection) =
 struct
-  module Connection = Connection.Make (Net)
+  module Net = Connection.Net
   module No_cache = Connection_cache.Make_no_cache ( Connection )
   module Request = Make.Request (Net.IO)
 

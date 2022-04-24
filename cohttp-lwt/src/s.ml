@@ -159,8 +159,6 @@ end
 module type Client = sig
   type ctx
 
-  module Connection : Connection with type Net.ctx = ctx
-
   (** Provide a function used to process requests.
       Please see {!type:requester}.
       The provided function is only used when no [ctx] argument is
