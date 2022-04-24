@@ -1,6 +1,7 @@
 name: Main workflow
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
   schedule:
@@ -8,26 +9,26 @@ on:
     - cron: 0 1 * * MON
 
 jobs:
-  build:
+  build-test-ubuntu:
     strategy:
       fail-fast: false
       matrix:
         os:
-          - macos-latest
           - ubuntu-latest
         ocaml-compiler:
-          - 4.08.x
-          - 4.09.x
-          - 4.10.x
-          - 4.11.x
-          - 4.12.x
-          - 4.13.x
+          - ocaml-variants.4.08.1+afl
+          - ocaml-variants.4.09.1+afl
+          - ocaml-variants.4.10.1+afl
+          - ocaml-variants.4.11.2+afl
+          - ocaml-variants.4.12.1+options,ocaml-option-afl
+          - ocaml-variants.4.13.1+options,ocaml-option-afl
+          - ocaml-variants.4.14.0+options,ocaml-option-afl
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use OCaml ${{ matrix.ocaml-compiler }}
         uses: ocaml/setup-ocaml@v2
@@ -35,12 +36,10 @@ jobs:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
           dune-cache: true
           opam-depext: true
+          opam-depext-flags: --with-test
 
       - run: yarn --frozen-lockfile
         working-directory: cohttp_lwt_jsoo_test
-
-      - run: echo "PKG_CONFIG_PATH=$(brew --prefix openssl)/lib/pkgconfig" >>"$GITHUB_ENV"
-        if: ${{ matrix.os == 'macos-latest' }}
 
       - run: opam install . --deps-only --with-test
 
@@ -49,3 +48,37 @@ jobs:
       - run: opam exec -- make test
 
       - run: opam exec -- make js-test
+
+  build-test-macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+        ocaml-compiler:
+          - 4.14.x
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          dune-cache: true
+          opam-depext: true
+          opam-depext-flags: --with-test
+
+      - run: echo "PKG_CONFIG_PATH=$(brew --prefix openssl)/lib/pkgconfig" >>"$GITHUB_ENV"
+
+      - run: opam install --with-test --deps-only --jobs=1 http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-mirage cohttp-async cohttp-curl-async cohttp-curl-lwt cohttp-curl cohttp-top
+
+      - run: |
+          opam exec -- dune build --profile=dev -j1 --only-packages http,cohttp,cohttp-lwt,cohttp-lwt-unix,cohttp-server-lwt-unix,cohttp-mirage,cohttp-async,cohttp-curl-async,cohttp-curl-lwt,cohttp-curl,cohttp-top @install
+          opam exec -- dune build -j1 bench/ examples/ cohttp-curl-async/bin/ cohttp-curl-lwt/bin/
+
+      - run: opam exec -- dune runtest --profile=dev -j1 cohttp cohttp-async cohttp-curl cohttp-curl-async cohttp-curl-lwt cohttp-lwt cohttp-lwt-unix cohttp-mirage cohttp-server-lwt-unix cohttp-top http
+
