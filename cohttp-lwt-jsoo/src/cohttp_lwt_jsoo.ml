@@ -148,6 +148,10 @@ struct
   let call ?ctx:_ ?headers ?body ?chunked:_ meth uri =
     X.call ?headers ?body meth uri
 
+  let request ?ctx ?body r =
+    let uri, meth, headers = Request.(uri r, meth r, headers r) in
+    call ?ctx ~headers ?body meth uri
+
   (* The HEAD should not have a response body *)
   let head ?ctx ?headers uri =
     let open Lwt in
@@ -174,6 +178,10 @@ struct
     in
     let body = Cohttp_lwt.Body.of_string (Uri.encoded_of_query params) in
     post ?ctx ~chunked:false ~headers ~body uri
+
+  exception Cohttp_lwt_xhr_set_cache_not_implemented
+
+  let set_cache _ = raise Cohttp_lwt_xhr_set_cache_not_implemented
 
   (* No implementation (can it be done?).  What should the failure exception be? *)
   exception Cohttp_lwt_xhr_callv_not_implemented
