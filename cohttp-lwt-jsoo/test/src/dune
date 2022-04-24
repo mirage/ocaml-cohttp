@@ -11,5 +11,5 @@
  (action
   (setenv
    NODE_PATH
-   "%{project_root}/cohttp_lwt_jsoo_test/node_modules"
+   "%{project_root}/cohttp-lwt-jsoo/test/node_modules"
    (run ./test.js))))
