@@ -3,7 +3,7 @@
 let
   strings = pkgs.lib.strings;
   args = {
-    inherit (pkgs.ocaml-ng.ocamlPackages_4_13) ocaml;
+    inherit (pkgs.ocaml-ng.ocamlPackages_4_14) ocaml;
     selection = ./opam-selection.nix;
     src =
       let ignores = pkgs.lib.strings.fileContents ../.gitignore
