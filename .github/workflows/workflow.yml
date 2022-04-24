@@ -68,17 +68,17 @@ jobs:
         uses: ocaml/setup-ocaml@v2
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
-          dune-cache: true
+          dune-cache: false
           opam-depext: true
           opam-depext-flags: --with-test
 
       - run: echo "PKG_CONFIG_PATH=$(brew --prefix openssl)/lib/pkgconfig" >>"$GITHUB_ENV"
 
-      - run: opam install --with-test --deps-only --jobs=1 http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-mirage cohttp-async cohttp-curl-async cohttp-curl-lwt cohttp-curl cohttp-top
+      - run: opam install --with-test --deps-only http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-mirage cohttp-async cohttp-curl-async cohttp-curl-lwt cohttp-curl cohttp-top
 
       - run: |
-          opam exec -- dune build --profile=dev -j1 --only-packages http,cohttp,cohttp-lwt,cohttp-lwt-unix,cohttp-server-lwt-unix,cohttp-mirage,cohttp-async,cohttp-curl-async,cohttp-curl-lwt,cohttp-curl,cohttp-top @install
+          opam exec -- dune build --profile=dev --only-packages http,cohttp,cohttp-lwt,cohttp-lwt-unix,cohttp-server-lwt-unix,cohttp-mirage,cohttp-async,cohttp-curl-async,cohttp-curl-lwt,cohttp-curl,cohttp-top @install
           opam exec -- dune build -j1 bench/ examples/ cohttp-curl-async/bin/ cohttp-curl-lwt/bin/
 
-      - run: opam exec -- dune runtest --profile=dev -j1 cohttp cohttp-async cohttp-curl cohttp-curl-async cohttp-curl-lwt cohttp-lwt cohttp-lwt-unix cohttp-mirage cohttp-server-lwt-unix cohttp-top http
+      - run: opam exec -- dune runtest --profile=dev cohttp cohttp-async cohttp-curl cohttp-curl-async cohttp-curl-lwt cohttp-lwt cohttp-lwt-unix cohttp-mirage cohttp-server-lwt-unix cohttp-top http
 
