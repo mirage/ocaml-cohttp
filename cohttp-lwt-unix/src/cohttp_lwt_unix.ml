@@ -30,20 +30,9 @@ module Response = struct
 
 module Connection = Cohttp_lwt.Connection.Make (Net)
 
-module Connection_cache : sig
-  include Cohttp_lwt.S.Connection_cache
-
-  val create :
-    ?ctx:Net.ctx ->
-    ?keep:int64 ->
-    ?retry:int ->
-    ?parallel:int ->
-    ?depth:int ->
-    unit -> t
-end
-= Cohttp_lwt.Connection_cache.Make (Connection)
+module Connection_cache = Cohttp_lwt.Connection_cache.Make
+    (Connection)
     (struct (* : Mirage_time.S *)
-      type 'a promise = 'a Lwt.t
       let sleep_ns ns =
         Lwt_unix.sleep (Int64.to_float ns /. 1_000_000_000.)
     end)

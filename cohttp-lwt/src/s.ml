@@ -37,8 +37,32 @@ module type Net = sig
 
   val default_ctx : ctx
   val resolve : ctx:ctx -> Uri.t -> endp IO.t
+  (** [resolve ~ctx uri] resolves [uri] into an endpoint description.
+      This is [Resolver_lwt.resolve_uri ~uri ctx.resolver]. *)
+
   val connect_uri : ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) IO.t
+  (** [connect_uri ~ctx uri] starts a {i flow} on the given [uri]. The choice of
+      the protocol (with or without encryption) is done by the {i scheme} of the
+      given [uri]:
+
+      - If the scheme is [https], we will {b extend} [ctx] to be able to start a
+        TLS connection with a default TLS configuration (no authentication) on the
+        default or user-specified port.
+      - If the scheme is [http], we will {b extend} [ctx] to be able to start a
+        simple TCP/IP connection on the default or user-specified port.
+
+      These extensions have the highest priority ([Conduit] will try to initiate a
+      communication with them first). By {i extension}, we mean that the user is
+      able to fill its own [ctx] and we don't overlap resolution functions from
+      the given [ctx].
+
+      This is [resolve ~ctx uri >>= connect_endp ~ctx].
+  *)
+
   val connect_endp : ctx:ctx -> endp -> (IO.conn * IO.ic * IO.oc) IO.t
+  (** [connect_endp ~ctx endp] starts a {i flow} to the given [endp].
+      [endp] describes address and protocol of the endpoint to connect to. *)
+
   val close_in : IO.ic -> unit
   val close_out : IO.oc -> unit
   val close : IO.ic -> IO.oc -> unit
@@ -47,8 +71,7 @@ end
 (** This is compatible with [Mirage_time.S].
     It may be satisfied by mirage-time-unix [Time] or [Mirage_time]. *)
 module type Sleep = sig
-  type 'a promise
-  val sleep_ns : int64 -> unit promise
+  val sleep_ns : int64 -> unit Lwt.t
 end
 
 (** [request ?body request]
@@ -250,7 +273,7 @@ module type Client = sig
     Uri.t ->
     (Http.Response.t * Body.t) Lwt.t
 
-  (** @deprecated use a [!Connection] instead. *)
+  (** @deprecated use {!module Cohttp_lwt.Connection} instead. *)
   val callv :
     ?ctx:ctx ->
     Uri.t ->

@@ -41,7 +41,7 @@ end
 
 (** This functor keeps a cache of connecions for reuse. Connections are
     reused based on their remote {!type:Conduit.endp} (effectively IP / port). *)
-module Make (Connection : S.Connection) (Sleep : S.Sleep with type 'a promise = 'a Lwt.t) : sig
+module Make (Connection : S.Connection) (Sleep : S.Sleep) : sig
   include S.Connection_cache with module IO = Connection.Net.IO
 
   (** Create a new connection cache
