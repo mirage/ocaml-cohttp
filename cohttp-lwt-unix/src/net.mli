@@ -19,7 +19,10 @@
 type ctx = { ctx : Conduit_lwt_unix.ctx; resolver : Resolver_lwt.t }
 [@@deriving sexp_of]
 
-include Cohttp_lwt.S.Net with type ctx := ctx and type endp = Conduit.endp
+include Cohttp_lwt.S.Net
+  with module IO = Io
+   and type ctx := ctx
+   and type endp = Conduit.endp
 
 val init : ?ctx:Conduit_lwt_unix.ctx -> ?resolver:Resolver_lwt.t -> unit -> ctx
 (** [init ?ctx ?resolver ()] is a network context that is the same as the
