@@ -16,8 +16,7 @@ struct
   module IO = Net.IO
   open IO
 
-  (** See {!type:S.resolver} *)
-  type t = ?body:Body.t -> Cohttp.Request.t -> (Cohttp.Response.t * Body.t) IO.t
+  type t = S.call
 
   let request = Fun.id
 

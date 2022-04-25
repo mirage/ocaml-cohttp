@@ -74,8 +74,8 @@ module type Sleep = sig
   val sleep_ns : int64 -> unit Lwt.t
 end
 
-(** [request ?body request]
-    Function type used to process requests.
+(** [call ?headers ?body method uri]
+    Function type used to handle http requests
 
     @return [(response, response_body)]
     [response_body] is not buffered, but stays on the wire until
@@ -94,12 +94,13 @@ end
       Logs.set_level (Some Logs.Warning)
     ]}
 
-    @raise {!exception Connection.Retry} on recoverable errors like the remote endpoint closing
+    @raise {!exception Connection.Retry} on recoverable errors like the remote
+    endpoint closing
     the connection gracefully. Even non-idempotent requests are
     guaranteed to not have been processed by the remote endpoint and
     should be retried. But beware that a [`Stream] [body] may have been
     consumed. *)
-type requester = ?body:Body.t -> Cohttp.Request.t -> (Cohttp.Response.t * Body.t)
+type call = ?body:Body.t -> Cohttp.Request.t -> (Cohttp.Response.t * Body.t) Lwt.t
 
 (** The [Connection] module handles a single, possibly pipelined, http
     connection. *)
@@ -163,8 +164,7 @@ module type Connection = sig
   val notify : t -> unit Net.IO.t
 
   (** Queue a request. Please see {!type:requester}. *)
-  val request : t ->
-    ?body:Body.t -> Cohttp.Request.t -> (Cohttp.Response.t * Body.t) Net.IO.t
+  val request : t -> call
 end
 
 module type Connection_cache = sig
@@ -173,8 +173,7 @@ module type Connection_cache = sig
   type t
 
   (** Process a request. Please see {!type:requester}. *)
-  val request : t ->
-    ?body:Body.t -> Cohttp.Request.t -> (Cohttp.Response.t * Body.t) IO.t
+  val request : t -> call
 end
 
 (** The [Client] module is a collection of convenience functions for
@@ -186,17 +185,13 @@ module type Client = sig
       Please see {!type:requester}.
       The provided function is only used when no [ctx] argument is
       passed to the convenience functions below. *)
-  val set_cache :
-    (?body:Body.t -> Cohttp.Request.t -> (Cohttp.Response.t * Body.t) Lwt.t) ->
-    unit
+  val set_cache : call -> unit
 
-  (** [request ?ctx ?body request] processes a request.
+  (** processes a request.
       Please see {!type:requester}.
       @param ctx If provided, this is
       {!val:Connection_cache.Make_no_cache.create}. *)
-  val request :
-    ?ctx:ctx ->
-    ?body:Body.t -> Cohttp.Request.t -> (Cohttp.Response.t * Body.t) Lwt.t
+  val request : ?ctx:ctx -> call
 
   (** [call ?ctx ?headers ?body ?chunked meth uri]
       constructs a {!module:Request} using provided [headers],
