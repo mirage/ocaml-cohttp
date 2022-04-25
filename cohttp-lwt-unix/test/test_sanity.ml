@@ -38,11 +38,16 @@ let server =
                   else None)))
         ();
     ]
-  @ (Array.init (leak_repeat * 2) (fun _ _ _ ->
+  @ (List.init (leak_repeat * 2) (fun i _ _ ->
          (* no leaks *)
+      if i mod 2 = 0
+      then
+         Server.respond_string ~status:`OK ~body:"" () >|= fun rsp ->
+         `Response rsp
+      else
          Server.respond_string ~status:`OK ~body:"no leak" () >|= fun rsp ->
-         `Response rsp)
-    |> Array.to_list)
+         `Response rsp
+    ))
   (* pipelined_expert *)
   @ [
       (fun _ _ ->
