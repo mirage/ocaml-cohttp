@@ -53,35 +53,31 @@ let test_server tests =
     >|= Cohttp_lwt_unix_test.response
   in
   Cohttp_lwt_unix_test.test_server_s
-    ~name:"Mutable ressources"
+    ~name:"mutable ressources"
     spec tests
 
 (* Client side of the RPC interface *)
-let methods (handler :?body:_ -> _ -> _) uri =
+let methods (handler :Cohttp_lwt.S.call) uri =
   let put k v =
     let body = Body.of_string v in
-    Request.make ~meth:`PUT @@ Uri.with_path uri k
-    |> handler ~body >>= fun (res, body) ->
+    handler ~body `PUT Uri.(with_path uri k) >>= fun (res, body) ->
     Body.drain_body body >>= fun () ->
     match Response.status res with
     | `Created | `No_content | `OK -> Lwt.return_unit
     | _ -> Lwt.fail_with "put failed"
   and get k =
-    Request.make ~meth:`GET @@ Uri.with_path uri k
-    |> handler >>= fun (res, body) ->
+    handler `GET Uri.(with_path uri k) >>= fun (res, body) ->
     match Response.status res with
     | `OK | `No_content -> Body.to_string body
     | _ -> Body.drain_body body >>= fun () -> Lwt.fail Not_found
   and delete k =
-    Request.make ~meth:`DELETE @@ Uri.with_path uri k
-    |> handler >>= fun (res, body) ->
+    handler `DELETE Uri.(with_path uri k) >>= fun (res, body) ->
     Body.drain_body body >>= fun () ->
     match Response.status res with
     | `OK | `No_content -> Lwt.return_unit
     | _ -> Lwt.fail Not_found
   and mem k =
-    Request.make ~meth:`HEAD @@ Uri.with_path uri k
-    |> handler >>= fun (res, body) ->
+    handler `HEAD Uri.(with_path uri k) >>= fun (res, body) ->
     Body.drain_body body >|= fun () ->
     match Response.status res with
     | `OK | `No_content -> true
@@ -125,10 +121,10 @@ let test_client uri =
   assert_equal ~printer:Fun.id "Spring" body;
 
   (* simple request function accepting custom requests. *)
-  let handler ?body request = Client.request ?body request in
+  let handler ?headers ?body meth uri = Client.call ?headers ?body meth uri in
   tests handler uri
 
-(* The Client.{request, get, put, ...} functions by default use a new
+(* The Client.{call, get, put, ...} functions by default use a new
  * connection for each request. In a high-latency environment or when
  * connection setup is expensive due to TLS one might want to use a persistent
  * connection. This can be done by using the lower-level Connection or
@@ -141,9 +137,7 @@ let test_persistent uri =
   let uri = Uri.with_host uri (Some "localhost") in
   Connection.Net.resolve ~ctx:Connection.Net.default_ctx uri (* resolve hostname. *)
   >>= Connection.connect ~persistent:true >>= fun connection -> (* open connection *)
-  let handler ?body request = Connection.request connection ?body request in
-  (* a partial application would work nicely, too:
-  let handler = Connection.request connection in *)
+  let handler = Connection.call connection in
   tests handler uri >|= fun () ->
   Connection.close connection
 
@@ -154,9 +148,9 @@ let test_non_persistent uri =
   let uri = Uri.with_host uri (Some "localhost") in
   (* the resolved endpoint may be buffered to avoid stressing the resolver: *)
   Connection.Net.resolve ~ctx:Connection.Net.default_ctx uri >>= fun endp ->
-  let handler ?body request =
+  let handler ?headers ?body meth uri =
     Connection.connect ~persistent:false endp >>= fun connection ->
-    Connection.request connection ?body request
+    Connection.call connection ?headers ?body meth uri
   in
   tests handler uri
 
@@ -169,9 +163,9 @@ let test_unknown uri =
   >>= fun endp -> (* buffer resolved endp *)
   Connection.connect ~persistent:false endp >>= fun c ->
   let connection = ref c in (* reference to open connection *)
-  let rec handler ?body request =
+  let rec handler ?headers ?body meth uri =
     Lwt.catch
-      (fun () -> Connection.request !connection ?body request)
+      (fun () -> Connection.call !connection ?headers ?body meth uri)
       (function
         | Connection.Retry ->
           (* We may safely retry. The request has not yet been processed by the
@@ -182,7 +176,8 @@ let test_unknown uri =
           begin match body with
           (* Still, body may have been (partially) consumed and needs re-creation. *)
           | Some `Stream _ -> Lwt.fail Connection.Retry
-          | None | Some (`Empty | `String _ | `Strings _) -> handler ?body request
+          | None | Some (`Empty | `String _ | `Strings _) ->
+            handler ?headers ?body meth uri
           end
         | e -> Lwt.fail e
       )
@@ -197,15 +192,15 @@ module Cache = Cohttp_lwt_unix.Connection_cache
 let test_cache uri =
   let uri = Uri.with_host uri (Some "localhost") in
   let cache = Cache.create () in
-  let handler = Cache.request cache in (* <- this is a partial application *)
+  let handler = Cache.call cache in (* <- this is a partial application *)
   tests handler uri
 
-(* In case you want to stick with the convenience Client.{request, get, put, ...}
+(* In case you want to stick with the convenience Client.{call, get, put, ...}
  * functions, you may set another default connection cache: *)
 
 let test_client_cached uri =
   let cache = Cache.create () in
-  Client.set_cache (Cache.request cache);
+  Client.set_cache (Cache.call cache);
   test_client uri
 
 let tests uri =

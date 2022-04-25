@@ -148,10 +148,6 @@ struct
   let call ?ctx:_ ?headers ?body ?chunked:_ meth uri =
     X.call ?headers ?body meth uri
 
-  let request ?ctx ?body r =
-    let uri, meth, headers = Request.(uri r, meth r, headers r) in
-    call ?ctx ~headers ?body meth uri
-
   (* The HEAD should not have a response body *)
   let head ?ctx ?headers uri =
     let open Lwt in

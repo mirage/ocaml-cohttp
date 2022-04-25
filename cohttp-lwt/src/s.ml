@@ -100,7 +100,9 @@ end
     guaranteed to not have been processed by the remote endpoint and
     should be retried. But beware that a [`Stream] [body] may have been
     consumed. *)
-type call = ?body:Body.t -> Cohttp.Request.t -> (Cohttp.Response.t * Body.t) Lwt.t
+type call =
+  ?headers:Http.Header.t -> ?body:Body.t -> Http.Method.t -> Uri.t ->
+  (Cohttp.Response.t * Body.t) Lwt.t
 
 (** The [Connection] module handles a single, possibly pipelined, http
     connection. *)
@@ -164,7 +166,7 @@ module type Connection = sig
   val notify : t -> unit Net.IO.t
 
   (** Queue a request. Please see {!type:requester}. *)
-  val request : t -> call
+  val call : t -> call
 end
 
 module type Connection_cache = sig
@@ -172,8 +174,8 @@ module type Connection_cache = sig
 
   type t
 
-  (** Process a request. Please see {!type:requester}. *)
-  val request : t -> call
+  (** Process a request. Please see {!type:call}. *)
+  val call : t -> call
 end
 
 (** The [Client] module is a collection of convenience functions for
@@ -182,28 +184,19 @@ module type Client = sig
   type ctx
 
   (** Provide a function used to process requests.
-      Please see {!type:requester}.
+      Please see {!type:call}.
       The provided function is only used when no [ctx] argument is
       passed to the convenience functions below. *)
   val set_cache : call -> unit
 
-  (** processes a request.
-      Please see {!type:requester}.
-      @param ctx If provided, this is
-      {!val:Connection_cache.Make_no_cache.create}. *)
-  val request : ?ctx:ctx -> call
-
   (** [call ?ctx ?headers ?body ?chunked meth uri]
-      constructs a {!module:Request} using provided [headers],
-      [chunked], [meth] and [uri]. Then passes this {e request} and the
-      [body] to {!val:request}.
 
       @return [(response, response_body)] Consume [response_body] in a
-      timely fashion. Please see {!val:requester} about how and why.
+      timely fashion. Please see {!val:call} about how and why.
 
       @param chunked use chunked encoding if [true]. The default is
       [false] for compatibility reasons.
-      @param ctx If provided, {!val:request} is not used, but
+      @param ctx If provided, no connection cache is not used, but
       {!val:Connection_cache.Make_no_cache.create} is used to resolve
       uri and create a dedicated connection with [ctx].
 

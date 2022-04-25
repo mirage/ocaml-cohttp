@@ -32,7 +32,9 @@ struct
     | Closed
     | Failed of exn
   type req_resr =
-    { req :Request.t
+    { uri :Uri.t
+    ; meth :Cohttp.Code.meth
+    ; headers :Header.t
     ; body :Body.t
     ; res_r :(Response.t * Body.t) Lwt.u }
   type persistent = [ `True | `False | `Unknown ]
@@ -107,13 +109,13 @@ struct
           not (Header.mem (Response.headers res) "Connection")
         then connection.persistent <- `True;
         (* don't take from queue yet, because body may still be in flight *)
-        let {req; res_r; _} = Queue.peek connection.in_flight in
+        let {meth; res_r; _} = Queue.peek connection.in_flight in
 
         (* A response header to a HEAD request is indistinguishable from a
-         * response header to a GET request. Therefore look at the request. *)
+         * response header to a GET request. Therefore look at the method. *)
         if
           match Response.has_body res with
-          | _ when Request.meth req = `HEAD -> false
+          | _ when meth = `HEAD -> false
           | `No -> false
           | `Yes | `Unknown -> true
         then begin
@@ -170,11 +172,12 @@ struct
         queue_fail connection connection.in_flight e;
         Lwt.return_unit
 
-  let request connection ?(body = `Empty) req =
+  let call connection ?headers ?(body = `Empty) meth uri =
+    let headers = match headers with Some h -> h | None -> Header.init () in
     match connection.state with
     | Connecting _ | Full _ ->
       let res, res_r = Lwt.wait () in
-      Queue.push {req; body; res_r} connection.waiting;
+      Queue.push {uri; meth; headers; body; res_r} connection.waiting;
       Lwt_condition.broadcast connection.condition ();
       res
     | Closing _ | Half _ | Closed | Failed _ -> Lwt.fail Retry
@@ -195,31 +198,23 @@ struct
       Lwt.return_unit
     | Full (ic, oc)
     | Closing (ic, oc) ->
-      let {req; body; res_r; _} as work = Queue.take connection.waiting in
-      let uri, meth, version, headers =
-        Request.(uri req, meth req, version req, headers req) in
+      let {uri; meth; headers; body; res_r} as work =
+        Queue.take connection.waiting
+      in
 
-      (* select encoding based on header, request, body and make sure
-       * the encoding in the request matches the encoding in the header. *)
+      (* select encoding based on (1st) header or (2nd) body *)
       begin match Header.get_transfer_encoding headers with
         | Unknown ->
-          begin match Request.encoding req with
-          | Fixed 0L
-          (* this is the default selected by Request.make.
-           * XXX: Shouldn't the default be Unknown ? *)
-          | Unknown ->
-            begin match Body.transfer_encoding body with
-            | Fixed _ as e -> Lwt.return (e, body)
-            | Chunked as e when connection.persistent = `True ->
-              Lwt.return (e, body)
-            | Chunked (* connection.persistent <> `True *) ->
-              (* We don't know yet whether chunked encoding is supported.
-               * Therefore use fixed length encoding. *)
-              Body.length body >>= fun (length, body) ->
-              Lwt.return (Cohttp.Transfer.Fixed length, body)
-            | Unknown -> assert false
-            end
-          | e -> Lwt.return (e, body)
+          begin match Body.transfer_encoding body with
+          | Fixed _ as e -> Lwt.return (e, body)
+          | Chunked as e when connection.persistent = `True ->
+            Lwt.return (e, body)
+          | Chunked (* connection.persistent <> `True *) ->
+            (* We don't know yet whether chunked encoding is supported.
+             * Therefore use fixed length encoding. *)
+            Body.length body >>= fun (length, body) ->
+            Lwt.return (Cohttp.Transfer.Fixed length, body)
+          | Unknown -> assert false
           end
         | e -> Lwt.return (e, body)
       end >>= fun (encoding, body) ->
@@ -233,8 +228,10 @@ struct
         else headers
       in
 
-      let req = Request.make ~meth ~version ~encoding ~headers uri in
-      Queue.push { work with req } connection.in_flight;
+      let req = Request.make ~encoding ~meth ~headers uri in
+
+      Queue.push work connection.in_flight;
+
       Lwt.catch
         begin fun () -> (* try *)
           Request.write (fun writer ->

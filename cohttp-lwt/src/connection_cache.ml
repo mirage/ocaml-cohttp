@@ -18,13 +18,13 @@ struct
 
   type t = S.call
 
-  let request = Fun.id
+  let call = Fun.id
 
-  let create ?(ctx = Net.default_ctx) () ?body req =
-    Net.resolve ~ctx (Cohttp.Request.uri req)
+  let create ?(ctx = Net.default_ctx) () ?headers ?body meth uri =
+    Net.resolve ~ctx uri
     >>= Connection.connect ~ctx ~persistent:false
     >>= fun connection ->
-    let res = Connection.request connection ?body req in
+    let res = Connection.call connection ?headers ?body meth uri in
     (* this can be simplified when https://github.com/mirage/ocaml-conduit/pull/319 is released. *)
     Lwt.async begin fun () ->
       res >>= fun (_, body) ->
@@ -147,11 +147,11 @@ struct
           (fun _ -> get_connection self endp)
           (fun _ -> get_connection self endp)
 
-  let request self ?body req =
-    Net.resolve ~ctx:self.ctx (Cohttp.Request.uri req) >>= fun endp ->
+  let call self ?headers ?body meth uri =
+    Net.resolve ~ctx:self.ctx uri >>= fun endp ->
     let rec request retry =
       get_connection self endp >>= fun conn ->
-      Lwt.catch (fun () -> Connection.request conn ?body req)
+      Lwt.catch (fun () -> Connection.call conn ?headers ?body meth uri)
         begin function
         | Retry ->
           begin match body with
