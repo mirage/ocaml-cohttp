@@ -53,7 +53,7 @@ let test_server tests =
     >|= Cohttp_lwt_unix_test.response
   in
   Cohttp_lwt_unix_test.test_server_s
-    ~name:"mutable ressources"
+    ~name:"mutable resources"
     spec tests
 
 (* Client side of the RPC interface *)
@@ -112,8 +112,6 @@ module Connection = Cohttp_lwt_unix.Connection
 
 (* Use the high-level Client interface *)
 let test_client uri =
-  let uri = Uri.with_host uri (Some "localhost") in
-
   (* high-level convenience functions. *)
   Client.put ~body:(`String "Spring") (Uri.with_path uri "season") >>= fun _ ->
   Client.get (Uri.with_path uri "season") >>= fun (_response, body) ->
@@ -134,7 +132,6 @@ let test_client uri =
 (* Simple case: The server is known to support pipelining and won't close the
  * connection unexpectantly (timeout or number of requests may be limited). *)
 let test_persistent uri =
-  let uri = Uri.with_host uri (Some "localhost") in
   Connection.Net.resolve ~ctx:Connection.Net.default_ctx uri (* resolve hostname. *)
   >>= Connection.connect ~persistent:true >>= fun connection -> (* open connection *)
   let handler = Connection.call connection in
@@ -145,7 +142,6 @@ let test_persistent uri =
  * opened for each request.
  * This might result in a massive amount of parallel connections. *)
 let test_non_persistent uri =
-  let uri = Uri.with_host uri (Some "localhost") in
   (* the resolved endpoint may be buffered to avoid stressing the resolver: *)
   Connection.Net.resolve ~ctx:Connection.Net.default_ctx uri >>= fun endp ->
   let handler ?headers ?body meth uri =
@@ -158,7 +154,6 @@ let test_non_persistent uri =
  * not be supported or the server may close the connection unexpectedly.
  * In such a case the pending requests will fail with Connection.Retry. *)
 let test_unknown uri =
-  let uri = Uri.with_host uri (Some "localhost") in
   Connection.Net.resolve ~ctx:Connection.Net.default_ctx uri
   >>= fun endp -> (* buffer resolved endp *)
   Connection.connect ~persistent:false endp >>= fun c ->
@@ -190,7 +185,6 @@ let test_unknown uri =
 module Cache = Cohttp_lwt_unix.Connection_cache
 
 let test_cache uri =
-  let uri = Uri.with_host uri (Some "localhost") in
   let cache = Cache.create () in
   let handler = Cache.call cache in (* <- this is a partial application *)
   tests handler uri
