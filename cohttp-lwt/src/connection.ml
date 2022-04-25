@@ -151,6 +151,7 @@ struct
           reader connection;
         end
       | `Eof ->
+        Net.close_in ic;
         begin match connection.state with
         | Full (_, oc) | Closing (_, oc) ->
           Net.close_out oc;
@@ -249,8 +250,11 @@ struct
       if connection.persistent = `False
       then begin
         (* uncomment when https://github.com/mirage/ocaml-conduit/pull/319 is released *)
-        (* (try Net.close_out oc with _ -> ()); *)
+        (*
+        (try Net.close_out oc with _ -> ());
         connection.state <- Half ic;
+        *)
+        connection.state <- Closing (ic,oc);
         queue_fail connection connection.waiting Retry;
         Lwt.return_unit
       end

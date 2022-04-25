@@ -22,18 +22,19 @@ struct
 
   let create ?(ctx = Net.default_ctx) () ?headers ?body meth uri =
     Net.resolve ~ctx uri
-    >>= Connection.connect ~ctx ~persistent:false
+    (* TODO: Support chunked encoding without ~persistent:true ? *)
+    >>= Connection.connect ~ctx ~persistent:true
     >>= fun connection ->
     let res = Connection.call connection ?headers ?body meth uri in
     (* this can be simplified when https://github.com/mirage/ocaml-conduit/pull/319 is released. *)
     Lwt.async begin fun () ->
       res >>= fun (_, body) ->
-      match body with
+      begin match body with
       | `Empty | `String _ | `Strings _ -> Lwt.return_unit
-      | `Stream stream ->
-        Lwt_stream.closed stream >>= fun () ->
-        Connection.close connection;
-        Lwt.return_unit
+      | `Stream stream -> Lwt_stream.closed stream
+      end >>= fun () ->
+      Connection.close connection;
+      Lwt.return_unit
     end;
     res
 end
