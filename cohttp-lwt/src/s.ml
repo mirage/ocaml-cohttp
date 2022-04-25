@@ -196,7 +196,7 @@ module type Client = sig
 
       @param chunked use chunked encoding if [true]. The default is
       [false] for compatibility reasons.
-      @param ctx If provided, no connection cache is not used, but
+      @param ctx If provided, no connection cache is used, but
       {!val:Connection_cache.Make_no_cache.create} is used to resolve
       uri and create a dedicated connection with [ctx].
 
