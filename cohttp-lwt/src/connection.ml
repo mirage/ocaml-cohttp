@@ -31,6 +31,7 @@ struct
     (* oc has been closed, waiting for outstanding responses on ic. *)
     | Closed
     | Failed of exn
+  [@@warning "-37"] (* enable warning when https://github.com/mirage/ocaml-conduit/pull/319 is released *)
   type req_resr =
     { uri :Uri.t
     ; meth :Cohttp.Code.meth
@@ -41,8 +42,9 @@ struct
   type t =
     { mutable state :state
     ; mutable persistent :persistent
-    ; in_flight :req_resr Queue.t
-    ; waiting :req_resr Queue.t
+    (* keep alive + Chunked supported ? -> essentially HTTP 1.1 *)
+    ; in_flight :req_resr Queue.t (* writer handles and fails this queue *)
+    ; waiting :req_resr Queue.t (* reader handles and fails this queue *)
     ; condition :unit Lwt_condition.t (* watching queues *)
     ; finalise :(t -> unit Lwt.t)
     }
@@ -59,23 +61,25 @@ struct
     Queue.clear q;
     Lwt_condition.broadcast_exn connection.condition e
 
-  let close connection =
+  let close_with state connection =
     match connection.state with
     | Connecting channels ->
-      connection.state <- Closed;
+      connection.state <- state;
       Lwt.cancel channels;
       Lwt.on_success channels (fun (ic, oc) -> Net.close ic oc);
       Lwt_condition.broadcast connection.condition ()
     | Closing (ic, oc)
     | Full (ic, oc) ->
+      connection.state <- state;
       Net.close ic oc;
-      connection.state <- Closed;
       Lwt_condition.broadcast connection.condition ()
     | Half ic ->
+      connection.state <- state;
       Net.close_in ic;
-      connection.state <- Closed;
       Lwt_condition.broadcast connection.condition ()
     | Closed | Failed _ -> ()
+
+  let close = close_with Closed
 
   let shutdown connection =
     match connection.state with
@@ -113,62 +117,56 @@ struct
 
         (* A response header to a HEAD request is indistinguishable from a
          * response header to a GET request. Therefore look at the method. *)
-        if
+        begin if
           match Response.has_body res with
           | _ when meth = `HEAD -> false
           | `No -> false
           | `Yes | `Unknown -> true
+          then begin
+            let stream =
+              Body.create_stream
+                Response.read_body_chunk
+                (Response.make_body_reader res ic)
+            in
+            (* finalise could run in a thread different from the lwt main thread.
+             * You may therefore not call into Lwt from a finaliser. *)
+            let closed = ref false in
+            Gc.finalise_last
+              begin fun () ->
+                if not !closed then
+                  Log.warn (fun m ->
+                      m
+                        "Body not consumed, leaking stream! Refer to \
+                         https://github.com/mirage/ocaml-cohttp/issues/730 for \
+                         additional details")
+              end
+              stream;
+            Lwt.wakeup_later res_r (res, Body.of_stream stream);
+            Lwt_stream.closed stream >>= fun () ->
+            closed := true;
+            Lwt.return_unit
+          end
+          else begin
+            Lwt.wakeup_later res_r (res, `Empty);
+            Lwt.return_unit
+          end
+        end >>= fun () ->
+        Queue.take connection.in_flight |> ignore;
+        Lwt_condition.broadcast connection.condition ();
+        if connection.persistent = `False
         then begin
-          let stream =
-            Body.create_stream
-              Response.read_body_chunk
-              (Response.make_body_reader res ic)
-          in
-          (* finalise could run in a thread different from the lwt main thread.
-           * You may therefore not call into Lwt from a finaliser. *)
-          let closed = ref false in
-          Gc.finalise_last
-            begin fun () ->
-              if not !closed then
-                Log.warn (fun m ->
-                    m
-                      "Body not consumed, leaking stream! Refer to \
-                       https://github.com/mirage/ocaml-cohttp/issues/730 for \
-                       additional details")
-            end
-            stream;
-          Lwt.wakeup_later res_r (res, Body.of_stream stream);
-          Lwt_stream.closed stream >>= fun () ->
-          closed := true;
-          Queue.take connection.in_flight |> ignore;
-          Lwt_condition.broadcast connection.condition ();
-          reader connection
+          close_with Closed connection;
+          Lwt.return_unit
         end
-        else begin
-          Queue.take connection.in_flight |> ignore;
-          Lwt_condition.broadcast connection.condition ();
-          Lwt.wakeup_later res_r (res, `Empty);
-          reader connection;
-        end
+        else reader connection
       | `Eof ->
-        Net.close_in ic;
-        begin match connection.state with
-        | Full (_, oc) | Closing (_, oc) ->
-          Net.close_out oc;
-          connection.state <- Closed
-        | Half _ ->
-          connection.state <- Closed
-        (* Failed is no special case since we read proper EOF. *)
-        | Closed | Failed _ -> ()
-        | Connecting _ -> assert false
-        end;
+        close_with Closed connection;
         connection.finalise connection >>= fun () ->
         queue_fail connection connection.in_flight Retry;
-        queue_fail connection connection.waiting Retry;
         Lwt.return_unit
       | `Invalid reason ->
         let e = Failure ("Cohttp_lwt failed to read response: " ^ reason) in
-        connection.state <- Failed e;
+        close_with (Failed e) connection;
         connection.finalise connection >>= fun () ->
         queue_fail connection connection.in_flight e;
         Lwt.return_unit
@@ -193,9 +191,12 @@ struct
       Lwt.try_bind (fun () -> Lwt_condition.wait connection.condition)
         (fun _ -> writer connection)
         (fun _ -> writer connection)
-    | Closing (ic, oc) when Queue.is_empty connection.waiting ->
-      connection.state <- Half ic;
+    | Closing (_ic, _oc) when Queue.is_empty connection.waiting ->
+      (* uncomment when https://github.com/mirage/ocaml-conduit/pull/319 is released *)
+      (*
       Net.close_out oc;
+      connection.state <- Half ic;
+      *)
       Lwt.return_unit
     | Full (ic, oc)
     | Closing (ic, oc) ->
@@ -240,8 +241,12 @@ struct
             ) req oc
         end
         begin fun e -> (* with *)
+          (* uncomment when https://github.com/mirage/ocaml-conduit/pull/319 is released *)
+          (*
           (try Net.close_out oc with _ -> ());
           connection.state <- Half ic;
+          *)
+          connection.state <- Closing (ic,oc);
           Lwt.wakeup_later_exn res_r e;
           queue_fail connection connection.waiting Retry;
           Lwt.return_unit
@@ -251,7 +256,7 @@ struct
       then begin
         (* uncomment when https://github.com/mirage/ocaml-conduit/pull/319 is released *)
         (*
-        (try Net.close_out oc with _ -> ());
+        Net.close_out oc;
         connection.state <- Half ic;
         *)
         connection.state <- Closing (ic,oc);
@@ -259,10 +264,13 @@ struct
         Lwt.return_unit
       end
       else writer connection
+    | Closed ->
+      queue_fail connection connection.waiting Retry;
+      Lwt.return_unit
     | Failed e ->
       queue_fail connection connection.waiting e;
       Lwt.return_unit
-    | Half _ | Closed -> Lwt.return_unit
+    | Half _ -> Lwt.return_unit
     | Connecting _ -> assert false
 
   let create
