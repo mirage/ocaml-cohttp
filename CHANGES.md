@@ -1,5 +1,5 @@
 ## Unreleased
-
+- Remove unused values to help ci(@bikallem #873)
 - New curl based clients (@rgrinberg #813)
   + cohttp-curl-lwt for an Lwt backend
   + cohttp-curl-async for an Async backend
