@@ -1,17 +1,17 @@
 ## Unreleased
-- Remove unused values to help ci(@bikallem #873)
 - New curl based clients (@rgrinberg #813)
   + cohttp-curl-lwt for an Lwt backend
   + cohttp-curl-async for an Async backend
 - Completely new Parsing layers for servers (@anuragsoni #819)
   + Cohttp now uses an optimized parser for requests.
-  + The new parser produces much less temporary buffers during read operations in servers.
+  + The new parser produces much less temporary buffers during read operations
+    in servers.
 - Faster header comparison (gasche #818)
-- Introduce http package containing common signatures and structures useful for compatibility with cohttp - and no dependencies (rgrinberg #812)
-- Faster Request/Response comparison (rgrinberg #814)
-- Use raise_notrace in header short circuiting exceptions (rgrinberg #802)
+- Introduce http package containing common signatures and structures useful for
+  compatibility with cohttp - and no dependencies (rgrinberg #812)
 - async(server): allow reading number of active connections (anuragsoni #809)
-- Various internal refactors (rgrinberg, mseri #820, #800, #799, #797)
+- Various internal refactors (rgrinberg, mseri, #802, #812, #820, #800, #799,
+  #797)
 - http (all cohttp server backends): Consider the connection header in response
   in addition to the request when deciding on whether to keep a connection
   alive (anuragsoni, #843)
@@ -27,7 +27,6 @@
     async TCP server using the Tcp module from `Async_unix` and lets the user
     have more control over how the `Reader.t` and `Writer.t` are created.
 - http(header): faster `to_lines` and `to_frames` implementation (mseri #847)
-- ci: add changelog check (mseri #850)
 - cohttp(cookies): use case-insensitive comparison to check for `set-cookies` (mseri #858)
 - New lwt based server implementation: cohttp-server-lwt-unix
   + This new implementation does not depend on conduit and has a simpler and
