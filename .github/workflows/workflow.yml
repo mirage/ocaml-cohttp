@@ -45,8 +45,6 @@ jobs:
 
       - run: opam exec -- make build
 
-      - run: opam exec -- dune build bench/ examples/ cohttp-curl-async/bin/ cohttp-curl-lwt/bin/
-
       - run: opam exec -- make test
 
       - run: opam exec -- make js-test
