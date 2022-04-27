@@ -44,15 +44,6 @@ let basic_res_content =
    \r\n\
    home=Cosby&favorite+flavor=flies"
 
-let post_req =
-  "POST /path/script.cgi HTTP/1.0\r\n\
-   From: frog@jmarshall.com\r\n\
-   User-Agent: HTTPTool/1.0\r\n\
-   Content-Type: application/x-www-form-urlencoded\r\n\
-   Content-Length: 32\r\n\
-   \r\n\
-   home=Cosby&favorite+flavor=flies"
-
 let post_data_req =
   "POST /path/script.cgi HTTP/1.0\r\n\
    From: frog@jmarshall.com\r\n\
@@ -319,6 +310,7 @@ let test_cases =
       ("basic_res_parse 1", basic_res_parse basic_res);
       ("basic_res_parse 2", basic_res_parse basic_res_plus_crlf);
       ("res_content_parse", res_content_parse);
+      ("res_chunk_parse", res_chunked_parse);
       ("make_simple_req", make_simple_req);
       ("mutate_simple_req", mutate_simple_req);
       ("make_simple_res", make_simple_res);

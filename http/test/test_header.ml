@@ -46,7 +46,6 @@ let hstr =
   ]
 
 let prebuilt = H.of_list hstr
-let to_list_rev h = List.rev (H.to_list h)
 
 let to_list_tests () =
   aessl "to_list (init ())" [] H.(to_list (init ()));
@@ -236,14 +235,6 @@ let get_multi_tests () =
   aesl "get_multi h k when mem h k = true"
     [ "application/xml"; "text/html" ]
     H.(get_multi prebuilt "accept")
-
-let hstr =
-  [
-    ("accept", "application/xml");
-    ("transfer-encoding", "chunked");
-    ("accept", "text/html");
-    ("content-length", "100");
-  ]
 
 let get_multi_concat_tests () =
   let h1 = H.(add (add prebuilt "a" "a1") "a" "a2") in
