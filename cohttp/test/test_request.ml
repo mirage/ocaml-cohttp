@@ -92,8 +92,6 @@ let encoding_header_opt_argument () =
     "body encoding with content-length and transfer-encoding headers."
     (r |> Request.encoding) (Fixed 100L)
 
-let opt_default default = function None -> default | Some v -> v
-
 module Parse_result = struct
   type 'a t = [ `Ok of 'a | `Invalid of string | `Eof ]
 

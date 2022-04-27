@@ -1,14 +1,6 @@
 open Lwt.Infix
 open Cohttp_lwt_unix
 
-let ctx =
-  let resolver =
-    let h = Hashtbl.create 1 in
-    Hashtbl.add h "docker" (`Unix_domain_socket "/var/run/docker.sock");
-    Resolver_lwt_unix.static h
-  in
-  Cohttp_lwt_unix.Client.custom_ctx ~resolver ()
-
 let t =
   Client.get (Uri.of_string "http://docker/version") >>= fun (resp, body) ->
   let open Cohttp in

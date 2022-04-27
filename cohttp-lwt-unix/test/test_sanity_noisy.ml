@@ -6,9 +6,7 @@ open Cohttp_lwt_unix_test
 module Body = Cohttp_lwt.Body
 module IO = Cohttp_lwt_unix.Private.IO
 
-let message = "Hello sanity!"
 let chunk_body = [ "one"; ""; " "; "bar"; "" ]
-let leak_repeat = 1024
 let () = Logs.set_level (Some Info)
 let () = Logs.set_reporter Logs.nop_reporter
 

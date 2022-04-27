@@ -158,6 +158,22 @@ let req_parse () =
       return ()
   | _ -> assert false
 
+let post_req_parse () =
+  let open Cohttp in
+  let ic = ic_of_buffer (Lwt_bytes.of_string post_req) in
+  Req_io.read ic >>= function
+  | `Ok req ->
+      let printer = p_sexp Transfer.sexp_of_chunk in
+      let reader = Req_io.make_body_reader req ic in
+      Req_io.read_body_chunk reader >>= fun body ->
+      assert_equal ~printer
+        (Transfer.Final_chunk "home=Cosby&favorite+flavor=flies") body;
+      (* A subsequent request for the body will have consumed it, therefore None *)
+      Req_io.read_body_chunk reader >>= fun body ->
+      assert_equal ~printer Transfer.Done body;
+      return ()
+  | _ -> assert false
+
 let post_data_parse () =
   let open Cohttp in
   let ic = ic_of_buffer (Lwt_bytes.of_string post_data_req) in
@@ -314,11 +330,13 @@ let test_cases =
     [
       ("basic_req_parse", basic_req_parse);
       ("req_parse", req_parse);
+      ("post_req_parse", post_req_parse);
       ("post_data_parse", post_data_parse);
       ("post_chunked_parse", post_chunked_parse);
       ("basic_res_parse 1", basic_res_parse basic_res);
       ("basic_res_parse 2", basic_res_parse basic_res_plus_crlf);
       ("res_content_parse", res_content_parse);
+      ("res_chunk_parse", res_chunked_parse);
       ("make_simple_req", make_simple_req);
       ("mutate_simple_req", mutate_simple_req);
       ("make_simple_res", make_simple_res);
