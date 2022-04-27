@@ -169,6 +169,7 @@ module type Connection = sig
   val call : t -> call
 end
 
+(** A [Connection_cache] handles http requests. It not necessarily caches connections. *)
 module type Connection_cache = sig
   module IO : IO
 
