@@ -2,7 +2,7 @@ exception Retry = Connection.Retry
 
 (** This functor establishes a new connection for each request. *)
 module Make_no_cache (Connection : S.Connection) : sig
-  include S.Connection_cache with module IO = Connection.Net.IO
+  include S.Connection_cache
 
   (** [create ?ctx ()] creates a connection for handling a single
       request. The connection accepts only a single request and will
@@ -42,7 +42,7 @@ end
 (** This functor keeps a cache of connecions for reuse. Connections are
     reused based on their remote {!type:Conduit.endp} (effectively IP / port). *)
 module Make (Connection : S.Connection) (Sleep : S.Sleep) : sig
-  include S.Connection_cache with module IO = Connection.Net.IO
+  include S.Connection_cache
 
   (** Create a new connection cache
       @param ctx Conduit context to use. See {!type:Connection.Net.ctx}.
