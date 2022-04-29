@@ -431,6 +431,11 @@ let link_ext_star () =
       ]
     (H.get_links headers)
 
+let trim_ws () =
+  let resp = get_resp [ "Age: 281   " ] in
+  let headers = headers_of_response "trim whitespace" resp in
+  aeso "trim_ws" (H.get headers "age") (Some "281")
+
 let test_cachecontrol_concat () =
   let resp =
     get_resp [ "Cache-Control: public"; "Cache-Control: max-age:86400" ]
@@ -485,6 +490,7 @@ let () =
           ("extension star", `Quick, link_ext_star);
         ] );
       ("Media Type", [ ("Media Type", `Quick, get_media_type) ]);
+      ("Trim", [ ("Trim Whitespace", `Quick, trim_ws) ]);
       ("Auth", [ ("Valid Auth", `Quick, valid_auth) ]);
       ( "Cookie",
         [
