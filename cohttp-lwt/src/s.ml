@@ -22,23 +22,23 @@ module type Net = sig
 
   type endp
 
-  (** Conduit context. Contains configuration of resolver, local source
-      address, TLS / SSL library, certificates, keys.
-
-      Depending on [ctx], the library is able to send HTTP requests
-      unencrypted or encrypted one with a secured protocol (such as
-      TLS). Depending on how conduit is configured, [ctx] might initiate
-      a secured connection with TLS (using [ocaml-tls]) or SSL (using
-      [ocaml-ssl]), on [*:443] or on the specified port by the user. If
-      neitehr [ocaml-tls] or [ocaml-ssl] are installed on the system,
-      [cohttp]/[conduit] tries the usual ([*:80]) or the specified port
-      by the user in a non-secured way. *)
   type ctx [@@deriving sexp_of]
+  (** Conduit context. Contains configuration of resolver, local source address,
+      TLS / SSL library, certificates, keys.
+
+      Depending on [ctx], the library is able to send HTTP requests unencrypted
+      or encrypted one with a secured protocol (such as TLS). Depending on how
+      conduit is configured, [ctx] might initiate a secured connection with TLS
+      (using [ocaml-tls]) or SSL (using [ocaml-ssl]), on [*:443] or on the
+      specified port by the user. If neitehr [ocaml-tls] or [ocaml-ssl] are
+      installed on the system, [cohttp]/[conduit] tries the usual ([*:80]) or
+      the specified port by the user in a non-secured way. *)
 
   val default_ctx : ctx
+
   val resolve : ctx:ctx -> Uri.t -> endp IO.t
-  (** [resolve ~ctx uri] resolves [uri] into an endpoint description.
-      This is [Resolver_lwt.resolve_uri ~uri ctx.resolver]. *)
+  (** [resolve ~ctx uri] resolves [uri] into an endpoint description. This is
+      [Resolver_lwt.resolve_uri ~uri ctx.resolver]. *)
 
   val connect_uri : ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) IO.t
   (** [connect_uri ~ctx uri] starts a {i flow} on the given [uri]. The choice of
@@ -46,34 +46,39 @@ module type Net = sig
       given [uri]:
 
       - If the scheme is [https], we will {b extend} [ctx] to be able to start a
-        TLS connection with a default TLS configuration (no authentication) on the
-        default or user-specified port.
+        TLS connection with a default TLS configuration (no authentication) on
+        the default or user-specified port.
       - If the scheme is [http], we will {b extend} [ctx] to be able to start a
         simple TCP/IP connection on the default or user-specified port.
 
-      These extensions have the highest priority ([Conduit] will try to initiate a
-      communication with them first). By {i extension}, we mean that the user is
-      able to fill its own [ctx] and we don't overlap resolution functions from
-      the given [ctx].
+      These extensions have the highest priority ([Conduit] will try to initiate
+      a communication with them first). By {i extension}, we mean that the user
+      is able to fill its own [ctx] and we don't overlap resolution functions
+      from the given [ctx].
 
-      This is [resolve ~ctx uri >>= connect_endp ~ctx].
-  *)
+      This is [resolve ~ctx uri >>= connect_endp ~ctx]. *)
 
   val connect_endp : ctx:ctx -> endp -> (IO.conn * IO.ic * IO.oc) IO.t
-  (** [connect_endp ~ctx endp] starts a {i flow} to the given [endp].
-      [endp] describes address and protocol of the endpoint to connect to. *)
+  (** [connect_endp ~ctx endp] starts a {i flow} to the given [endp]. [endp]
+      describes address and protocol of the endpoint to connect to. *)
 
   val close_in : IO.ic -> unit
   val close_out : IO.oc -> unit
   val close : IO.ic -> IO.oc -> unit
 end
 
-(** This is compatible with [Mirage_time.S].
-    It may be satisfied by mirage-time-unix [Time] or [Mirage_time]. *)
+(** This is compatible with [Mirage_time.S]. It may be satisfied by
+    mirage-time-unix [Time] or [Mirage_time]. *)
 module type Sleep = sig
   val sleep_ns : int64 -> unit Lwt.t
 end
 
+type call =
+  ?headers:Http.Header.t ->
+  ?body:Body.t ->
+  Http.Method.t ->
+  Uri.t ->
+  (Cohttp.Response.t * Body.t) Lwt.t
 (** [call ?headers ?body method uri]
     Function type used to handle http requests
 
@@ -100,9 +105,6 @@ end
     guaranteed to not have been processed by the remote endpoint and
     should be retried. But beware that a [`Stream] [body] may have been
     consumed. *)
-type call =
-  ?headers:Http.Header.t -> ?body:Body.t -> Http.Method.t -> Uri.t ->
-  (Cohttp.Response.t * Body.t) Lwt.t
 
 (** The [Connection] module handles a single, possibly pipelined, http
     connection. *)
@@ -110,71 +112,74 @@ module type Connection = sig
   module Net : Net
 
   exception Retry
+
   type t
 
-  (** [create ?finalise ?persistent ?ctx endp] connects to [endp]. The
-      connection handle may be used immediately, although the connection
-      may not yet be established.
-      @param finalise called when the connection is closed, but before
-      still waiting requests are failed.
-      @param persistent if [false], a [Connection: close] header is sent and
-      the connection closed as soon as possible. If [true], it is
-      assumed the remote end does support pipelining and multiple
-      requests may be sent even before receiving any reply. By default
-      we wait for the first response to decide whether connection
-      keep-alive and pipelining is suppored.
-      @param ctx See [Net.ctx]
-      @param endp The remote address, port and protocol to connect to.
-  *)
   val create :
     ?finalise:(t -> unit Net.IO.t) ->
     ?persistent:bool ->
     ?ctx:Net.ctx ->
     Net.endp ->
     t
+  (** [create ?finalise ?persistent ?ctx endp] connects to [endp]. The
+      connection handle may be used immediately, although the connection may not
+      yet be established.
 
-  (** Same as [create], but returns d promise which gets fulfilled when
-      the connection is established or rejected when connecting fails. *)
+      @param finalise
+        called when the connection is closed, but before still waiting requests
+        are failed.
+      @param persistent
+        if [false], a [Connection: close] header is sent and the connection
+        closed as soon as possible. If [true], it is assumed the remote end does
+        support pipelining and multiple requests may be sent even before
+        receiving any reply. By default we wait for the first response to decide
+        whether connection keep-alive and pipelining is suppored. Chunked
+        encoding can only be used when pipelining is supported. Therefore better
+        avoid using chunked encoding on the very first request.
+      @param ctx See [Net.ctx]
+      @param endp The remote address, port and protocol to connect to. *)
+
   val connect :
     ?finalise:(t -> unit Net.IO.t) ->
     ?persistent:bool ->
     ?ctx:Net.ctx ->
     Net.endp ->
     t Net.IO.t
+  (** Same as [create], but returns d promise which gets fulfilled when the
+      connection is established or rejected when connecting fails. *)
 
-  (** Send {e EOF}.
-      On {e TCP} connections send a {e FIN} packet.
-      On {e TLS} connections send a {e close notify}.
-      No new requests can be sent afterwards, but responses may still
-      be received. *)
   val shutdown : t -> unit
+  (** Send {e EOF}. On {e TCP} connections send a {e FIN} packet. On {e TLS}
+      connections send a {e close notify}. No new requests can be sent
+      afterwards, but responses may still be received. *)
 
-  (** Immediately close connection. All outstanding requests will fail,
-      but non-idempotent requests that already went out on the wire may
-      have produced side-effects. *)
   val close : t -> unit
+  (** Immediately close connection. All outstanding requests will fail, but
+      non-idempotent requests that already went out on the wire may have
+      produced side-effects. *)
 
-  (** If [is_closed connection] is [false] the [connection] still
-      accepts new requests. *)
   val is_closed : t -> bool
+  (** If [is_closed connection] is [false] the [connection] still accepts new
+      requests. *)
 
-  (** Number of unfulfilled requests. This includes requests already
-      sent out and requests still waitung to be sent. *)
   val length : t -> int
+  (** Number of unfulfilled requests. This includes requests already sent out
+      and requests still waitung to be sent. *)
 
-  (** Request notification on change of [length] and on closing. *)
   val notify : t -> unit Net.IO.t
+  (** Request notification on change of [length] and on closing. *)
 
-  (** Queue a request. Please see {!type:requester}. *)
   val call : t -> call
+  (** Queue a request. Please see {!type:requester}. *)
 end
 
-(** A [Connection_cache] handles http requests. It not necessarily caches connections. *)
+(** A [Connection_cache] handles http requests. It not necessarily caches
+    connections. *)
 module type Connection_cache = sig
   type t
 
-  (** Process a request. Please see {!type:call}. *)
   val call : t -> call
+  (** Process a request. Please see {!type:call}. *)
 end
 
 (** The [Client] module is a collection of convenience functions for
@@ -182,27 +187,11 @@ end
 module type Client = sig
   type ctx
 
-  (** Provide a function used to process requests.
-      Please see {!type:call}.
-      The provided function is only used when no [ctx] argument is
-      passed to the convenience functions below. *)
   val set_cache : call -> unit
+  (** Provide a function used to process requests. Please see {!type:call}. The
+      provided function is only used when no [ctx] argument is passed to the
+      convenience functions below. *)
 
-  (** [call ?ctx ?headers ?body ?chunked meth uri]
-
-      @return [(response, response_body)] Consume [response_body] in a
-      timely fashion. Please see {!val:call} about how and why.
-
-      @param chunked use chunked encoding if [true]. The default is
-      [false] for compatibility reasons.
-      @param ctx If provided, no connection cache is used, but
-      {!val:Connection_cache.Make_no_cache.create} is used to resolve
-      uri and create a dedicated connection with [ctx].
-
-      In most cases you should use the more specific helper calls in the
-      interface rather than invoke this function directly. See {!head}, {!get}
-      and {!post} for some examples.
-  *)
   val call :
     ?ctx:ctx ->
     ?headers:Http.Header.t ->
@@ -211,6 +200,22 @@ module type Client = sig
     Http.Method.t ->
     Uri.t ->
     (Http.Response.t * Body.t) Lwt.t
+  (** [call ?ctx ?headers ?body ?chunked meth uri]
+
+      @return
+        [(response, response_body)] Consume [response_body] in a timely fashion.
+        Please see {!val:call} about how and why.
+      @param chunked
+        use chunked encoding if [true]. The default is [false] for compatibility
+        reasons.
+      @param ctx
+        If provided, no connection cache is used, but
+        {!val:Connection_cache.Make_no_cache.create} is used to resolve uri and
+        create a dedicated connection with [ctx].
+
+        In most cases you should use the more specific helper calls in the
+        interface rather than invoke this function directly. See {!head}, {!get}
+        and {!post} for some examples. *)
 
   val head :
     ?ctx:ctx -> ?headers:Http.Header.t -> Uri.t -> Http.Response.t Lwt.t
@@ -260,12 +265,12 @@ module type Client = sig
     Uri.t ->
     (Http.Response.t * Body.t) Lwt.t
 
-  (** @deprecated use {!module Cohttp_lwt.Connection} instead. *)
   val callv :
     ?ctx:ctx ->
     Uri.t ->
     (Http.Request.t * Body.t) Lwt_stream.t ->
     (Http.Response.t * Body.t) Lwt_stream.t Lwt.t
+  (** @deprecated use {!module Cohttp_lwt.Connection} instead. *)
 end
 
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)

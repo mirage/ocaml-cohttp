@@ -20,8 +20,7 @@
 module Make
     (P : Mirage_clock.PCLOCK)
     (R : Resolver_mirage.S)
-    (S : Conduit_mirage.S)
-=
+    (S : Conduit_mirage.S) =
 struct
   module Net = Net.Make (P) (R) (S)
   module Connection = Cohttp_lwt.Connection.Make (Net)

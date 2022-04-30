@@ -1,6 +1,7 @@
 (** IO modules *)
 
 module IO = Io.Make
+
 module Net = Net.Make
 (** The resulting {modtype:Cohttp_lwt.S.Net} module can be used to build the
     low-level client interfaces with {module:Cohttp_lwt.Connection.Make} and
@@ -14,7 +15,7 @@ module Client = Client
 
 (** server modules *)
 
-(** Serve static HTTP sites from a Mirage key-value store. *)
 module Static = Static
+(** Serve static HTTP sites from a Mirage key-value store. *)
 
 module Server = Server

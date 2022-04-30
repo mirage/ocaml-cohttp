@@ -6,9 +6,7 @@ struct
   module Channel = Mirage_channel.Make (S.Flow)
   module Input_channel = Input_channel.Make (Channel)
   module Endpoint = Conduit_mirage.Endpoint (P)
-
   module IO = Io.Make (Channel)
-
   open IO
 
   type ctx = {
@@ -36,7 +34,6 @@ struct
         Lwt.return (flow, Input_channel.create ch, ch)
 
   let connect_uri ~ctx uri = resolve ~ctx uri >>= connect_endp ~ctx
-
   let close_in _ = ()
   let close_out _ = ()
 
@@ -49,4 +46,3 @@ struct
                f "Closing channel failed: %s" (Printexc.to_string e));
            Lwt.return @@ Ok ())
 end
-

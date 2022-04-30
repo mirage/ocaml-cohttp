@@ -30,11 +30,12 @@ module Response = struct
 
 module Connection = Cohttp_lwt.Connection.Make (Net)
 
-module Connection_cache = Cohttp_lwt.Connection_cache.Make
+module Connection_cache =
+  Cohttp_lwt.Connection_cache.Make
     (Connection)
-    (struct (* : Mirage_time.S *)
-      let sleep_ns ns =
-        Lwt_unix.sleep (Int64.to_float ns /. 1_000_000_000.)
+    (struct
+      (* : Mirage_time.S *)
+      let sleep_ns ns = Lwt_unix.sleep (Int64.to_float ns /. 1_000_000_000.)
     end)
 
 module Client : sig
@@ -45,14 +46,13 @@ module Client : sig
 
   val custom_ctx :
     ?ctx:Conduit_lwt_unix.ctx -> ?resolver:Resolver_lwt.t -> unit -> Net.ctx
-    (** [custom_ctx ?ctx ?resolver ()] will return a context that is the same as the
-        {!default_ctx}, but with either the connection handling or resolution module
-        overridden with [ctx] or [resolver] respectively. This is useful to supply a
-        {!Conduit_lwt_unix.ctx} with a custom source network interface, or a
-        {!Resolver_lwt.t} with a different name resolution strategy (for instance to
-        override a hostname to point it to a Unix domain socket). *)
-end
-= struct
+  (** [custom_ctx ?ctx ?resolver ()] will return a context that is the same as
+      the {!default_ctx}, but with either the connection handling or resolution
+      module overridden with [ctx] or [resolver] respectively. This is useful to
+      supply a {!Conduit_lwt_unix.ctx} with a custom source network interface,
+      or a {!Resolver_lwt.t} with a different name resolution strategy (for
+      instance to override a hostname to point it to a Unix domain socket). *)
+end = struct
   include Cohttp_lwt.Client.Make (Connection)
 
   let custom_ctx = Net.init
