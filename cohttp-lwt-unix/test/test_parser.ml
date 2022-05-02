@@ -44,6 +44,15 @@ let basic_res_content =
    \r\n\
    home=Cosby&favorite+flavor=flies"
 
+let post_req =
+  "POST /path/script.cgi HTTP/1.0\r\n\
+   From: frog@jmarshall.com\r\n\
+   User-Agent: HTTPTool/1.0\r\n\
+   Content-Type: application/x-www-form-urlencoded\r\n\
+   Content-Length: 32\r\n\
+   \r\n\
+   home=Cosby&favorite+flavor=flies"
+
 let post_data_req =
   "POST /path/script.cgi HTTP/1.0\r\n\
    From: frog@jmarshall.com\r\n\
@@ -146,6 +155,22 @@ let req_parse () =
       assert_equal `GET (Request.meth req);
       assert_equal "/index.html" (Uri.path (Request.uri req));
       assert_equal `HTTP_1_1 (Request.version req);
+      return ()
+  | _ -> assert false
+
+let post_req_parse () =
+  let open Cohttp in
+  let ic = ic_of_buffer (Lwt_bytes.of_string post_req) in
+  Req_io.read ic >>= function
+  | `Ok req ->
+      let printer = p_sexp Transfer.sexp_of_chunk in
+      let reader = Req_io.make_body_reader req ic in
+      Req_io.read_body_chunk reader >>= fun body ->
+      assert_equal ~printer
+        (Transfer.Final_chunk "home=Cosby&favorite+flavor=flies") body;
+      (* A subsequent request for the body will have consumed it, therefore None *)
+      Req_io.read_body_chunk reader >>= fun body ->
+      assert_equal ~printer Transfer.Done body;
       return ()
   | _ -> assert false
 
@@ -305,6 +330,7 @@ let test_cases =
     [
       ("basic_req_parse", basic_req_parse);
       ("req_parse", req_parse);
+      ("post_req_parse", post_req_parse);
       ("post_data_parse", post_data_parse);
       ("post_chunked_parse", post_chunked_parse);
       ("basic_res_parse 1", basic_res_parse basic_res);
