@@ -7,19 +7,17 @@
 ```
 
 ```ocaml
-open Cohttp_eio
-module P = Private.Parser
-module R = Server.Reader
+module R = Cohttp_eio.Reader
 
 let create_reader s = 
   let flow = Eio.Flow.string_source s in
-  Private.create_reader 1 flow
+  R.create 1 flow
 
 let parse ?rdr p s = 
-  let p = P.(lift2 (fun a pos -> (a, pos)) p pos) in
+  let p = R.(lift2 (fun a pos -> (a, pos)) p pos) in
   let rdr = 
     match rdr with
-    | Some r -> (Private.commit_reader r; r)
+    | Some r -> (R.commit r; r)
     | None -> create_reader s 
   in
   p rdr
@@ -27,9 +25,9 @@ let parse ?rdr p s =
 
 ## Basic: return, fail, commit
 ```ocaml
-let p1 = P.return "hello"
-let p2 = P.fail "parse error"
-let p3 = P.(string "hello" *> commit *> char ' ' *> string "world")
+let p1 = R.return "hello"
+let p2 = R.fail "parse error"
+let p3 = R.(string "hello" *> commit *> char ' ' *> string "world")
 ```
 
 ```ocaml
@@ -37,7 +35,7 @@ let p3 = P.(string "hello" *> commit *> char ' ' *> string "world")
 - : string * int = ("hello", 0)
 
 # parse p2 "";;
-Exception: Cohttp_eio__Parser.Parse_failure "parse error".
+Exception: Cohttp_eio__Reader.Parse_failure "parse error".
 
 # parse p3 "hello world";;
 - : unit * int = ((), 6)
@@ -46,10 +44,10 @@ Exception: Cohttp_eio__Parser.Parse_failure "parse error".
 ## String/Char: char, satisfy, string, peek_string, peek_char, *>, <*
 
 ```ocaml
-let p1 = P.(string "GET" *> char ' ' *> peek_string 10)
-let p2 = P.peek_char
-let p3 = P.(satisfy (function 'A' | 'B' -> true | _ -> false))
-let p4 = P.(string "GET" *> char ' ' *> char '/' *> char ' ')
+let p1 = R.(string "GET" *> char ' ' *> peek_string 10)
+let p2 = R.peek_char
+let p3 = R.(satisfy (function 'A' | 'B' -> true | _ -> false))
+let p4 = R.(string "GET" *> char ' ' *> char '/' *> char ' ')
 ```
 
 ```ocaml
@@ -70,13 +68,13 @@ let p4 = P.(string "GET" *> char ' ' *> char '/' *> char ' ')
 
 ```ocaml
 let f = function 'A' | 'B' | 'C' -> true | _ -> false
-let p1 = P.take_while f 
-let p2 = P.take_while1 f
-let p3 = P.take_bigstring 4
-let p4 = P.take 4
-let p5 = P.take_till (function ' ' -> true | _ -> false)
-let p6 = P.(many (char 'A'))
-let p8 = P.(take_while (function 'a' -> true | _ -> false) *> commit *> take_while (function 'b' -> true| _ -> false))
+let p1 = R.take_while f 
+let p2 = R.take_while1 f
+let p3 = R.take_bigstring 4
+let p4 = R.take 4
+let p5 = R.take_till (function ' ' -> true | _ -> false)
+let p6 = R.(many (char 'A'))
+let p8 = R.(take_while (function 'a' -> true | _ -> false) *> commit *> take_while (function 'b' -> true| _ -> false))
 
 ```
 
@@ -92,21 +90,21 @@ let p8 = P.(take_while (function 'a' -> true | _ -> false) *> commit *> take_whi
 
 # parse p2 "DDD";;
 Exception:
-Cohttp_eio__Parser.Parse_failure "[take_while1] count is less than 1".
+Cohttp_eio__Reader.Parse_failure "[take_while1] count is less than 1".
 
 # parse p3 "DDDD";;
 - : Bigstringaf.t * int = (<abstr>, 4)
 
 # parse p3 "DDD";;
 Exception:
-Cohttp_eio__Parser.Parse_failure "[take_bigstring] not enough input".
+Cohttp_eio__Reader.Parse_failure "[take_bigstring] not enough input".
 
 # parse p4 "DDDD";;
 - : string * int = ("DDDD", 4)
 # parse p4 "DDD";;
-Exception: Cohttp_eio__Parser.Parse_failure "[take] not enough input".
+Exception: Cohttp_eio__Reader.Parse_failure "[take] not enough input".
 
-# parse (P.(string "GET" *> char ' ' *> take_while1 (fun c -> c != ' '))) "GET /hello  ";;
+# parse (R.(string "GET" *> char ' ' *> take_while1 (fun c -> c != ' '))) "GET /hello  ";;
 - : string * int = ("/hello", 10)
 ```
 
@@ -144,9 +142,9 @@ Exception: Cohttp_eio__Parser.Parse_failure "[take] not enough input".
 
 ```ocaml
 let f = function 'A' | 'B' | 'C' -> true | _ -> false
-let p1 = P.skip f
-let p2 = P.skip_while f
-let p3 = P.(skip_many (satisfy f))
+let p1 = R.skip f
+let p2 = R.skip_while f
+let p3 = R.(skip_many (satisfy f))
 ```
 
 ```ocaml
@@ -162,7 +160,7 @@ let p3 = P.(skip_many (satisfy f))
 ## Reuse reader in-between parsing
 
 ```ocaml
-let p4 = P.(char 'D' *> char ' ' *> string "hello world")
+let p4 = R.(char 'D' *> char ' ' *> string "hello world")
 ```
 
 ```ocaml
@@ -182,9 +180,9 @@ val pos : int = 3
 ## end_of_input
 
 ```ocaml
-# parse (P.end_of_input) "";;
+# parse (R.end_of_input) "";;
 - : bool * int = (true, 0)
 
-# parse (P.end_of_input) "a";;
+# parse (R.end_of_input) "a";;
 - : bool * int = (false, 0)
 ```

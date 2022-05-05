@@ -2,8 +2,6 @@
 
 (name cohttp)
 
-(using mdx 0.2)
-
 (license ISC)
 
 (using mdx 0.1)

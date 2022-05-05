@@ -28,13 +28,13 @@ let text =
    was coming to, but it was too dark to see anything; then she looked at the \
    sides of the well, and noticed that they were filled with cupboards......"
 
-open Cohttp_eio.Server
+open Cohttp_eio
 
-let app req =
-  match Request.resource req with
-  | "/" -> Response.text text
-  | "/html" -> Response.html text
-  | _ -> Response.not_found
+let app (req, _reader) =
+  match Http.Request.resource req with
+  | "/" -> Server.text_response text
+  | "/html" -> Server.html_response text
+  | _ -> Server.not_found_response
 
 let () =
   let port = ref 8080 in
@@ -43,4 +43,4 @@ let () =
     ignore "An HTTP/1.1 server";
 
   Eio_main.run @@ fun env ->
-  Eio.Switch.run @@ fun sw -> run ~port:!port env sw app
+  Eio.Switch.run @@ fun sw -> Server.run ~port:!port env sw app

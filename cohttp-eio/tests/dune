@@ -3,14 +3,14 @@
  (modules test_server)
  (public_name test-server)
  (package cohttp-eio)
- (libraries cohttp_eio eio_main))
+ (libraries cohttp_eio eio_main fmt))
 
 (executable
  (name test_chunk_server)
  (modules test_chunk_server)
  (public_name test-chunk-server)
  (package cohttp-eio)
- (libraries cohttp_eio eio_main))
+ (libraries cohttp_eio eio_main fmt))
 
 (executable
  (name crlf)
