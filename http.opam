@@ -31,7 +31,7 @@ depends: [
   "ppx_here" {with-test}
   "core" {with-test & >= "v0.13.0"}
   "core_bench" {with-test}
-  "crowbar" {with-test}
+  "crowbar" {with-test & >= "0.2"}
   "sexplib0" {with-test}
   "odoc" {with-doc}
 ]
