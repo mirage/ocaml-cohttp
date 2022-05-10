@@ -229,7 +229,7 @@ interoperate with Cohttp.")
   (ppx_here :with-test)
   (core (and :with-test (>= v0.13.0)))
   (core_bench :with-test)
-  (crowbar :with-test)
+  (crowbar (and :with-test (>= 0.2)))
   (sexplib0 :with-test)))
 
 (package
