@@ -23,14 +23,8 @@ let crlf = string "\r\n"
 let not_cr = function '\r' -> false | _ -> true
 let space = char '\x20'
 
-let p_meth =
-  let+ meth = token <* space in
-  Http.Method.of_string meth
-
-let p_resource = take_while1 (fun c -> c != ' ') <* space
-
-let p_version =
-  let* v = string "HTTP/1." *> any_char <* crlf in
+let version =
+  let* v = string "HTTP/1." *> any_char in
   match v with
   | '1' -> return `HTTP_1_1
   | '0' -> return `HTTP_1_0
@@ -41,7 +35,7 @@ let header =
   (key, value)
 
 let http_headers r =
-  let rec aux () =
+  let[@tail_mod_cons] rec aux () =
     match peek_char r with
     | Some '\r' ->
         crlf r;
@@ -51,13 +45,3 @@ let http_headers r =
         h :: aux ()
   in
   Http.Header.of_list (aux ())
-
-let[@warning "-3"] http_request t =
-  match at_end_of_input t with
-  | true -> Stdlib.raise_notrace End_of_file
-  | false ->
-      let meth = p_meth t in
-      let resource = p_resource t in
-      let version = p_version t in
-      let headers = http_headers t in
-      Http.Request.make ~meth ~version ~headers resource

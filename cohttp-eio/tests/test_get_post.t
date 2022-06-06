@@ -26,10 +26,10 @@ The test should respond with error message since we are trying to read request b
   > 
   > EOF
   HTTP/1.1 200 OK
-  content-length: 59
+  content-length: 4
   content-type: text/plain; charset=UTF-8
   
-  Request with HTTP method 'GET' doesn't support request body
+  PASS
   $ kill ${running_pid}
 
 Test POST

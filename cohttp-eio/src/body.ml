@@ -48,12 +48,11 @@ open Reader
 open Eio.Buf_read
 
 let read_fixed t headers =
-  match Http.Header.get headers "Content-length" with
-  | Some v ->
-      let content_length = int_of_string v in
-      let content = take content_length t in
-      content
-  | None -> raise @@ Invalid_argument "Request is not a fixed content body"
+  let ( let* ) o f = Option.bind o f in
+  let ( let+ ) o f = Option.map f o in
+  let* v = Http.Header.get headers "Content-Length" in
+  let+ content_length = int_of_string_opt v in
+  take content_length t
 
 (* Chunked encoding parser *)
 
@@ -73,7 +72,8 @@ let quoted_char =
 
 (*-- qdtext = HTAB / SP /%x21 / %x23-5B / %x5D-7E / obs-text -- *)
 let qdtext = function
-  | ('\t' | ' ' | '\x21' | '\x23' .. '\x5B' | '\x5D' .. '\x7E') as c -> c
+  | '\t' | ' ' | '\x21' | '\x23' .. '\x5B'
+  | '\x5D' .. '\x7E' as c -> c
   | c -> failwith (Printf.sprintf "Invalid quoted character %C" c)
 
 (*-- quoted-string = DQUOTE *( qdtext / quoted-pair ) DQUOTE --*)
@@ -83,35 +83,31 @@ let quoted_string r =
   let rec aux () =
     match any_char r with
     | '"' -> Buffer.contents buf
-    | '\\' ->
-        Buffer.add_char buf (quoted_char r);
-        aux ()
-    | c ->
-        Buffer.add_char buf (qdtext c);
-        aux ()
+    | '\\' -> Buffer.add_char buf (quoted_char r); aux ()
+    | c -> Buffer.add_char buf (qdtext c); aux ()
   in
   aux ()
 
 let optional c x r =
   let c2 = peek_char r in
-  if Some c = c2 then (
-    consume r 1;
-    Some (x r))
+  if Some c = c2 then (consume r 1; Some (x r))
   else None
 
 (*-- https://datatracker.ietf.org/doc/html/rfc7230#section-4.1 --*)
 let chunk_ext_val =
   let* c = peek_char in
-  match c with Some '"' -> quoted_string | _ -> token
+  match c with
+  | Some '"' -> quoted_string
+  | _ -> token
 
 let rec chunk_exts r =
   let c = peek_char r in
   match c with
   | Some ';' ->
-      consume r 1;
-      let name = token r in
-      let value = optional '=' chunk_ext_val r in
-      { name; value } :: chunk_exts r
+    consume r 1;
+    let name = token r in
+    let value = optional '=' chunk_ext_val r in
+    { name; value } :: chunk_exts r
   | _ -> []
 
 let chunk_size =
@@ -220,9 +216,10 @@ let read_chunked reader headers f =
             (chunk_loop [@tailcall]) f
         | `Last_chunk (extensions, headers) ->
             f (Last_chunk extensions);
-            headers
+            Some headers
       in
       chunk_loop f
+<<<<<<< HEAD
   | _ -> raise @@ Invalid_argument "Request is not a chunked request"
 
 (* Writes *)
@@ -262,3 +259,6 @@ let write_chunked t chunk_writer =
   chunk_writer.body_writer write_body;
   chunk_writer.trailer_writer (write_headers t);
   Write.string t "\r\n"
+=======
+  | _ -> None
+>>>>>>> 7c4b2a2e (eio(client): implement Cohttp_eio.Client module)

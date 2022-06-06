@@ -15,7 +15,7 @@ let app (req, reader, _client_addr) =
           Buffer.contents chunk_buf
           |> Format.asprintf "%a@ %s%!" Http.Request.pp req
           |> Server.text_response
-      | exception Invalid_argument _ -> Server.bad_request_response)
+      | None -> Server.bad_request_response)
   | _ -> Server.not_found_response
 
 let () =

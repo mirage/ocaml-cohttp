@@ -1,5 +1,5 @@
-(executable
- (name server1)
+(executables
+ (names server1 client1)
  (libraries cohttp-eio uri eio_main))
 
 (alias
