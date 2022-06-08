@@ -99,8 +99,9 @@ jobs:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
           dune-cache: ${{ matrix.os == 'ubuntu-latest' }}
           opam-local-packages: ${{ matrix.local-packages }}
-
-      - run: opam repo add alpha git+https://github.com/kit-ty-kate/opam-alpha-repository.git && opam update
+          opam-repositories: |
+            default: https://github.com/ocaml/opam-repository.git
+            alpha: https://github.com/kit-ty-kate/opam-alpha-repository.git
 
       - run: opam install cstruct eio_main bigstringaf fmt mdx
 
