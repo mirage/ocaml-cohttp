@@ -763,6 +763,11 @@ module Request = struct
     | `DELETE | `POST | `PUT | `PATCH | `OPTIONS | `Other _ ->
         Transfer.has_body req.encoding
 
+  let make ?(meth = `GET) ?(version = `HTTP_1_1) ?(headers = Header.empty)
+      ?scheme resource =
+    let encoding = Header.get_transfer_encoding headers in
+    { headers; meth; scheme; resource; version; encoding }
+
   let pp fmt t =
     let open Format in
     pp_open_vbox fmt 0;
@@ -800,12 +805,8 @@ module Response = struct
     | i -> i
 
   let make ?(version = `HTTP_1_1) ?(status = `OK) ?(flush = false)
-      ?(encoding = Transfer.Chunked) ?(headers = Header.empty) () =
-    let encoding =
-      match Header.get_transfer_encoding headers with
-      | Transfer.(Chunked | Fixed _) as enc -> enc
-      | Unknown -> encoding
-    in
+      ?(headers = Header.empty) () =
+    let encoding = Header.get_transfer_encoding headers in
     { encoding; headers; version; flush; status }
 
   let headers t = t.headers

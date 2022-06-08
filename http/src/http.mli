@@ -349,7 +349,12 @@ module Header : sig
 
   val get_content_range : t -> Int64.t option
   val get_connection_close : t -> bool
+
   val get_transfer_encoding : t -> Transfer.encoding
+  (** [get_transfer_encoding h] checks the "content-length", "content-range" and
+      "transfer-encoding" headers to infer the transfer encoding. Uses Unknown
+      if nothing is found.*)
+
   val add_transfer_encoding : t -> Transfer.encoding -> t
   val connection : t -> [ `Keep_alive | `Close | `Unknown of string ] option
   val get_location : t -> string option
@@ -387,6 +392,19 @@ module Request : sig
   val is_keep_alive : t -> bool
   (** Return true whether the connection should be reused *)
 
+  val make :
+    ?meth:Method.t ->
+    ?version:Version.t ->
+    ?headers:Header.t ->
+    ?scheme:string ->
+    string ->
+    t
+  (** [make resource] is a value of {!type:t}. The default values for the
+      response, if not specified, are as follows: [meth] is [`GET], [version] is
+      [`HTTP_1_1], [headers] is [Header.empty] and [scheme] is [None]. The
+      request encoding value is determined via the
+      [Header.get_transfer_encoding] function.*)
+
   val pp : Format.formatter -> t -> unit
 end
 
@@ -423,15 +441,13 @@ module Response : sig
     ?version:Version.t ->
     ?status:Status.t ->
     ?flush:bool ->
-    ?encoding:Transfer.encoding ->
     ?headers:Header.t ->
     unit ->
     t
-  (** The response creates by [make ~encoding ~headers ()] has an encoding value
-      determined from the content of [headers] or if no proper header is
-      present, using the value of [encoding]. Checked headers are
-      "content-length", "content-range" and "transfer-encoding". The default
-      value of [encoding] is chunked. *)
+  (** [make ()] is a value of {!type:t}. The default values for the request, if
+      not specified, are: [status] is [`Ok], [version] is [`HTTP_1_1], [flush]
+      is [false] and [headers] is [Header.empty]. The request encoding value is
+      determined via the [Header.get_transfer_encoding] function. *)
 
   val pp : Format.formatter -> t -> unit
 end
