@@ -108,6 +108,11 @@ module type Request = sig
     ?headers:Header.t ->
     Uri.t ->
     t
+  (** [make ()] is a value of {!type:t}. The default values for the request, if
+      not specified, are: [status] is [`Ok], [version] is [`HTTP_1_1], [flush]
+      is [false] and [headers] is [Header.empty]. The request encoding value is
+      determined via the [Header.get_transfer_encoding] function and, if not
+      found, uses the default value [Transfer.Fixed 0]. *)
 
   val is_keep_alive : t -> bool
   (** Return true whether the connection should be reused *)
@@ -152,11 +157,11 @@ module type Response = sig
     ?headers:Header.t ->
     unit ->
     t
-  (** The response creates by [make ~encoding ~headers ()] has an encoding value
-      determined from the content of [headers] or if no proper header is
-      present, using the value of [encoding]. Checked headers are
-      "content-length", "content-range" and "transfer-encoding". The default
-      value of [encoding] is chunked. *)
+  (** [make ()] is a value of {!type:t}. The default values for the request, if
+      not specified, are: [status] is [`Ok], [version] is [`HTTP_1_1], [flush]
+      is [false] and [headers] is [Header.empty]. The request encoding value is
+      determined via the [Header.get_transfer_encoding] function and, if not
+      found, uses the default value [Transfer.Chunked]. *)
 end
 
 module type Body = sig

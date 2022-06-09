@@ -49,8 +49,8 @@ let make ?(version = `HTTP_1_1) ?(status = `OK) ?(flush = false)
     ?(encoding = Transfer.Chunked) ?(headers = Header.init ()) () =
   let encoding =
     match Header.get_transfer_encoding headers with
-    | Transfer.(Chunked | Fixed _) as enc -> enc
-    | Unknown -> encoding
+    | Transfer.Unknown -> encoding
+    | encoding -> encoding
   in
   { encoding; headers; version; flush; status }
 
