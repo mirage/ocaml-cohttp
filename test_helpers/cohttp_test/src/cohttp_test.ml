@@ -27,7 +27,9 @@ module type S = sig
   val run_async_tests : OUnit.test io -> OUnit.test_results io
 end
 
-let port = Random.self_init (); ref (1024 + Random.int 40000)
+let port =
+  Random.self_init ();
+  ref (1024 + Random.int 40000)
 
 let next_port () =
   let current_port = !port in

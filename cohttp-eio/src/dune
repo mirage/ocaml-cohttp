@@ -1,0 +1,4 @@
+(library
+ (name cohttp_eio)
+ (public_name cohttp-eio)
+ (libraries eio cstruct http bigstringaf fmt))
