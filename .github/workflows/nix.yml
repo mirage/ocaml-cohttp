@@ -13,4 +13,4 @@ jobs:
     - uses: cachix/install-nix-action@v13
       with:
         nix_path: nixpkgs=channel:nixos-unstable
-    - run: nix-shell --command "dune runtest -j 1"
+    - run: nix-shell --command "dune runtest --profile=dev cohttp cohttp-async cohttp-curl cohttp-curl-async cohttp-curl-lwt cohttp-lwt cohttp-lwt-unix cohttp-mirage cohttp-server-lwt-unix cohttp-top http cohttp-lwt-jsoo"
