@@ -45,9 +45,6 @@ jobs:
           opam-depext-flags: --with-test
           opam-local-packages: ${{ matrix.local-packages }}
 
-      - run: yarn --frozen-lockfile
-        working-directory: cohttp-lwt-jsoo/test
-
       - run: |
           sudo apt update
           sudo apt upgrade
@@ -57,15 +54,13 @@ jobs:
       - run: echo "PKG_CONFIG_PATH=$(brew --prefix openssl)/lib/pkgconfig" >>"$GITHUB_ENV"
         if: ${{ matrix.os == 'macos-latest' }}
 
-      - run: opam install --with-test --deps-only http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-mirage cohttp-async cohttp-curl-async cohttp-curl-lwt cohttp-curl cohttp-top cohttp-lwt-jsoo
+      - run: opam install --with-test --deps-only http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-mirage cohttp-async cohttp-curl-async cohttp-curl-lwt cohttp-curl cohttp-top
 
       - run: |
           opam exec -- dune build --profile=dev --only-packages http,cohttp,cohttp-lwt,cohttp-lwt-unix,cohttp-server-lwt-unix,cohttp-mirage,cohttp-async,cohttp-curl-async,cohttp-curl-lwt,cohttp-curl,cohttp-top @install
           opam exec -- dune build bench/ examples/ cohttp-curl-async/bin/ cohttp-curl-lwt/bin/
       
       - run: opam exec -- dune runtest --profile=dev cohttp cohttp-async cohttp-curl cohttp-curl-async cohttp-curl-lwt cohttp-lwt cohttp-lwt-unix cohttp-mirage cohttp-server-lwt-unix cohttp-top http
-
-      - run: opam exec -- make js-test
 
   build-test-cohttp-eio:
     strategy:
