@@ -93,10 +93,10 @@ open Eio.Buf_read.Syntax
 module Buf_read = Eio.Buf_read
 
 let meth =
-  let+ meth = Reader.(token <* space) in
+  let+ meth = Parser.(token <* space) in
   Http.Method.of_string meth
 
-let resource = Reader.(take_while1 (fun c -> c != ' ') <* space)
+let resource = Parser.(take_while1 (fun c -> c != ' ') <* space)
 
 let[@warning "-3"] http_request t =
   match Buf_read.at_end_of_input t with
@@ -104,8 +104,8 @@ let[@warning "-3"] http_request t =
   | false ->
       let meth = meth t in
       let resource = resource t in
-      let version = Reader.(version <* crlf) t in
-      let headers = Reader.http_headers t in
+      let version = Parser.(version <* crlf) t in
+      let headers = Parser.http_headers t in
       let encoding = Http.Header.get_transfer_encoding headers in
       { Http.Request.meth; resource; version; headers; scheme = None; encoding }
 

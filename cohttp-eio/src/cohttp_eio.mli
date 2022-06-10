@@ -99,11 +99,12 @@ end
 
 module Client : sig
   type response = Http.Response.t * Eio.Buf_read.t
+  type env = < net : Eio.Net.t >
 
-  type body_disallowed_call =
+  type 'a body_disallowed_call =
     ?version:Http.Version.t ->
     ?headers:Http.Header.t ->
-    Eio.Stdenv.t ->
+    (< env ; .. > as 'a) ->
     Eio.Switch.t ->
     Eio.Net.Sockaddr.stream ->
     Uri.t ->
@@ -111,11 +112,11 @@ module Client : sig
   (** [body_disallowed_call] denotes HTTP client calls where a request is not
       allowed to have a request body. *)
 
-  type body_allowed_call =
+  type 'a body_allowed_call =
     ?version:Http.Version.t ->
     ?headers:Http.Header.t ->
     ?body:Body.t ->
-    Eio.Stdenv.t ->
+    (< env ; .. > as 'a) ->
     Eio.Switch.t ->
     Eio.Net.Sockaddr.stream ->
     Uri.t ->
@@ -130,7 +131,7 @@ module Client : sig
     ?version:Http.Version.t ->
     ?headers:Http.Header.t ->
     ?body:Body.t ->
-    Eio.Stdenv.t ->
+    < env ; .. > ->
     Eio.Switch.t ->
     Eio.Net.Sockaddr.stream ->
     Uri.t ->
@@ -138,15 +139,15 @@ module Client : sig
 
   (** {1 HTTP Calls with Body Disallowed} *)
 
-  val get : body_disallowed_call
-  val head : body_disallowed_call
-  val delete : body_disallowed_call
+  val get : 'a body_disallowed_call
+  val head : 'a body_disallowed_call
+  val delete : 'a body_disallowed_call
 
   (** {1 HTTP Calls with Body Allowed} *)
 
-  val post : body_allowed_call
-  val put : body_allowed_call
-  val patch : body_allowed_call
+  val post : 'a body_allowed_call
+  val put : 'a body_allowed_call
+  val patch : 'a body_allowed_call
 
   (** {1 Response Body} *)
 

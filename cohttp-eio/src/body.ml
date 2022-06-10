@@ -44,7 +44,7 @@ let pp_chunk fmt = function
         fmt chunk
   | Last_chunk extensions -> pp_chunk_extension fmt extensions
 
-open Reader
+open Parser
 open Eio.Buf_read
 
 let read_fixed t headers =
@@ -72,8 +72,7 @@ let quoted_char =
 
 (*-- qdtext = HTAB / SP /%x21 / %x23-5B / %x5D-7E / obs-text -- *)
 let qdtext = function
-  | '\t' | ' ' | '\x21' | '\x23' .. '\x5B'
-  | '\x5D' .. '\x7E' as c -> c
+  | ('\t' | ' ' | '\x21' | '\x23' .. '\x5B' | '\x5D' .. '\x7E') as c -> c
   | c -> failwith (Printf.sprintf "Invalid quoted character %C" c)
 
 (*-- quoted-string = DQUOTE *( qdtext / quoted-pair ) DQUOTE --*)
@@ -83,31 +82,35 @@ let quoted_string r =
   let rec aux () =
     match any_char r with
     | '"' -> Buffer.contents buf
-    | '\\' -> Buffer.add_char buf (quoted_char r); aux ()
-    | c -> Buffer.add_char buf (qdtext c); aux ()
+    | '\\' ->
+        Buffer.add_char buf (quoted_char r);
+        aux ()
+    | c ->
+        Buffer.add_char buf (qdtext c);
+        aux ()
   in
   aux ()
 
 let optional c x r =
   let c2 = peek_char r in
-  if Some c = c2 then (consume r 1; Some (x r))
+  if Some c = c2 then (
+    consume r 1;
+    Some (x r))
   else None
 
 (*-- https://datatracker.ietf.org/doc/html/rfc7230#section-4.1 --*)
 let chunk_ext_val =
   let* c = peek_char in
-  match c with
-  | Some '"' -> quoted_string
-  | _ -> token
+  match c with Some '"' -> quoted_string | _ -> token
 
 let rec chunk_exts r =
   let c = peek_char r in
   match c with
   | Some ';' ->
-    consume r 1;
-    let name = token r in
-    let value = optional '=' chunk_ext_val r in
-    { name; value } :: chunk_exts r
+      consume r 1;
+      let name = token r in
+      let value = optional '=' chunk_ext_val r in
+      { name; value } :: chunk_exts r
   | _ -> []
 
 let chunk_size =

@@ -1,21 +1,24 @@
 module Buf_read = Eio.Buf_read
 
 type response = Http.Response.t * Buf_read.t
+type env = < net : Eio.Net.t >
 
-type body_disallowed_call =
+type 'a body_disallowed_call =
   ?version:Http.Version.t ->
   ?headers:Http.Header.t ->
-  Eio.Stdenv.t ->
+  (< env ; .. > as 'a) ->
   Eio.Switch.t ->
   Eio.Net.Sockaddr.stream ->
   Uri.t ->
   response
+(** [body_disallowed_call] denotes HTTP client calls where a request is not
+    allowed to have a request body. *)
 
-type body_allowed_call =
+type 'a body_allowed_call =
   ?version:Http.Version.t ->
   ?headers:Http.Header.t ->
   ?body:Body.t ->
-  Eio.Stdenv.t ->
+  (< env ; .. > as 'a) ->
   Eio.Switch.t ->
   Eio.Net.Sockaddr.stream ->
   Uri.t ->
@@ -40,7 +43,7 @@ let is_digit = function '0' .. '9' -> true | _ -> false
 open Buf_read.Syntax
 
 let status_code =
-  let open Reader in
+  let open Parser in
   let+ status = take_while1 is_digit in
   Http.Status.of_int (int_of_string status)
 
@@ -54,10 +57,10 @@ let response buf_read =
   match Buf_read.at_end_of_input buf_read with
   | true -> Stdlib.raise_notrace End_of_file
   | false ->
-      let version = Reader.(version <* space) buf_read in
-      let status = Reader.(status_code <* space) buf_read in
-      let () = Reader.(reason_phrase *> crlf *> return ()) buf_read in
-      let headers = Reader.http_headers buf_read in
+      let version = Parser.(version <* space) buf_read in
+      let status = Parser.(status_code <* space) buf_read in
+      let () = Parser.(reason_phrase *> crlf *> return ()) buf_read in
+      let headers = Parser.http_headers buf_read in
       Http.Response.make ~version ~status ~headers ()
 
 (* Generic HTTP call *)

@@ -27,6 +27,7 @@ depends: [
   "cstruct"
   "bigstringaf"
   "fmt"
+  "uri"
   "mdx" {with-test}
   "eio_main" {with-test}
   "http" {= version}

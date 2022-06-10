@@ -1,3 +1,5 @@
+(* Encapsulate refactored/common parser between Client and Server module. *)
+
 open Eio.Buf_read
 open Eio.Buf_read.Syntax
 
