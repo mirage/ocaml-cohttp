@@ -4,6 +4,7 @@ module Version : sig
   val compare : t -> t -> int
   val of_string : string -> t
   val to_string : t -> string
+  val pp : Format.formatter -> t -> unit
 end
 
 module Method : sig
@@ -22,6 +23,7 @@ module Method : sig
   val compare : t -> t -> int
   val of_string : string -> t
   val to_string : t -> string
+  val pp : Format.formatter -> t -> unit
 end
 
 module Status : sig
@@ -147,6 +149,7 @@ module Status : sig
   val to_int : t -> int
   val of_int : int -> t
   val reason_phrase_of_code : int -> string
+  val pp : Format.formatter -> t -> unit
 end
 
 module Transfer : sig
@@ -383,6 +386,8 @@ module Request : sig
 
   val is_keep_alive : t -> bool
   (** Return true whether the connection should be reused *)
+
+  val pp : Format.formatter -> t -> unit
 end
 
 module Response : sig
@@ -427,6 +432,8 @@ module Response : sig
       present, using the value of [encoding]. Checked headers are
       "content-length", "content-range" and "transfer-encoding". The default
       value of [encoding] is chunked. *)
+
+  val pp : Format.formatter -> t -> unit
 end
 
 module Private : sig

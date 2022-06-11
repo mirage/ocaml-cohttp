@@ -648,6 +648,8 @@ module Status = struct
     | #standard as s ->
         let code = to_int s in
         string_of_int code ^ " " ^ reason_phrase_of_code code
+
+  let pp fmt t = Format.fprintf fmt "%s" (to_string t)
 end
 
 module Method = struct
@@ -688,6 +690,7 @@ module Method = struct
     | s -> `Other s
 
   let compare (a : t) (b : t) = Stdlib.compare a b
+  let pp fmt t = Format.fprintf fmt "%s" (to_string t)
 end
 
 module Version = struct
@@ -704,6 +707,7 @@ module Version = struct
     | s -> `Other s
 
   let compare (a : t) (b : t) = Stdlib.compare a b
+  let pp fmt t = Format.fprintf fmt "%s" (to_string t)
 end
 
 let is_keep_alive version headers =
@@ -712,6 +716,9 @@ let is_keep_alive version headers =
   | Some `Keep_alive -> true
   | Some (`Unknown _) -> false
   | None -> Version.compare version `HTTP_1_1 = 0
+
+let pp_field field_name pp_v fmt v =
+  Format.fprintf fmt "@[<1>%s:@ %a@]" field_name pp_v v
 
 module Request = struct
   type t = {
@@ -755,6 +762,18 @@ module Request = struct
     | `GET | `HEAD | `CONNECT | `TRACE -> `No
     | `DELETE | `POST | `PUT | `PATCH | `OPTIONS | `Other _ ->
         Transfer.has_body req.encoding
+
+  let pp fmt t =
+    let open Format in
+    pp_open_vbox fmt 0;
+    pp_field "meth" Method.pp fmt t.meth;
+    pp_print_cut fmt ();
+    pp_field "resource" pp_print_string fmt t.resource;
+    pp_print_cut fmt ();
+    pp_field "version" Version.pp fmt t.version;
+    pp_print_cut fmt ();
+    pp_field "headers" Header.pp_hum fmt t.headers;
+    pp_close_box fmt ()
 end
 
 module Response = struct
@@ -795,6 +814,16 @@ module Response = struct
   let status t = t.status
   let flush t = t.flush
   let is_keep_alive { version; headers; _ } = is_keep_alive version headers
+
+  let pp fmt t =
+    let open Format in
+    pp_open_vbox fmt 0;
+    pp_field "version" Version.pp fmt t.version;
+    pp_print_cut fmt ();
+    pp_field "status" Status.pp fmt t.status;
+    pp_print_cut fmt ();
+    pp_field "headers" Header.pp_hum fmt t.headers;
+    pp_close_box fmt ()
 end
 
 module Parser = struct
