@@ -48,12 +48,18 @@ let server =
       (fun _ _ ->
         Lwt.return
           (`Expert
-            ( Http.Response.make (),
-              fun _ic oc -> Lwt_io.write oc "8\r\nexpert 1\r\n0\r\n\r\n" )));
+            (let headers =
+               Http.(
+                 Header.add_transfer_encoding (Header.init ()) Transfer.Chunked)
+             in
+             ( Http.Response.make ~headers (),
+               fun _ic oc -> Lwt_io.write oc "8\r\nexpert 1\r\n0\r\n\r\n" ))));
       (fun _ _ ->
         Lwt.return
           (`Expert
-            ( Http.Response.make (),
+            ( (* Alternatively, cohttp.response.make injects the Chunked encoding when no
+                 encoding is already in the headers. *)
+              Cohttp.Response.make (),
               fun ic oc ->
                 Lwt_io.write oc "8\r\nexpert 2\r\n0\r\n\r\n" >>= fun () ->
                 Lwt_io.flush oc >>= fun () ->
