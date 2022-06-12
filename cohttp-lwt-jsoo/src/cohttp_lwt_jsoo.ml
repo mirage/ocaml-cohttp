@@ -229,7 +229,7 @@ module Make_client_async (P : Params) = Make_api (struct
                 let response =
                   Lwt.(
                     Header_io.parse channel >|= fun resp_headers ->
-                    Http.Response.make ~version:`HTTP_1_1
+                    Cohttp.Response.make ~version:`HTTP_1_1
                       ~status:(C.Code.status_of_code xml##.status)
                       ~flush:false (* ??? *)
                       ~encoding:(CLB.transfer_encoding body)
