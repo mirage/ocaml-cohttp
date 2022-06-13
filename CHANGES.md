@@ -1,4 +1,5 @@
 ## Unreleased
+- http: add pretty printer functions (bikallem #880) 
 - New eio based client and server on top of the http library (bikallem #857)
 - New curl based clients (rgrinberg #813)
   + cohttp-curl-lwt for an Lwt backend
