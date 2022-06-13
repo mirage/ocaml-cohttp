@@ -94,7 +94,7 @@ let handle_client handle_request sock rd wr =
 let respond ?(flush = true) ?(headers = Http.Header.init ()) ?(body = `Empty)
     status : response Deferred.t =
   let encoding = Body.transfer_encoding body in
-  let resp = Http.Response.make ~status ~flush ~encoding ~headers () in
+  let resp = Cohttp.Response.make ~status ~flush ~encoding ~headers () in
   return (resp, body)
 
 let respond_with_pipe ?flush ?headers ?(code = `OK) body =
