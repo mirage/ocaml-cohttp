@@ -2,7 +2,7 @@ open Eio.Std
 
 type middleware = handler -> handler
 and handler = request -> response
-and request = Http.Request.t * Reader.t
+and request = Http.Request.t * Eio.Buf_read.t
 and response = Http.Response.t * Body.t
 
 let domain_count =
@@ -12,7 +12,7 @@ let domain_count =
 
 (* Request *)
 
-let read_fixed ((request, reader) : Http.Request.t * Reader.t) =
+let read_fixed ((request, reader) : request) =
   match request.meth with
   | `POST | `PUT | `PATCH -> Body.read_fixed reader request.headers
   | _ ->
@@ -98,7 +98,7 @@ let rec handle_request reader writer flow handler =
       else Eio.Flow.close flow
   | (exception End_of_file) | (exception Eio.Net.Connection_reset _) ->
       Eio.Flow.close flow
-  | exception Reader.Parse_failure _e ->
+  | exception Failure _e ->
       write_response writer bad_request_response;
       Writer.wakeup writer;
       Eio.Flow.close flow
@@ -108,15 +108,15 @@ let rec handle_request reader writer flow handler =
       Eio.Flow.close flow
 
 let run_domain ssock handler =
-  let on_accept_error exn =
-    Printf.fprintf stderr "Error while accepting connection: %s"
+  let on_error exn =
+    Printf.fprintf stderr "Error handling connection: %s\n%!"
       (Printexc.to_string exn)
   in
   Switch.run (fun sw ->
       while true do
-        Eio.Net.accept_sub ~sw ssock ~on_error:on_accept_error
+        Eio.Net.accept_sub ~sw ssock ~on_error
           (fun ~sw flow _addr ->
-            let reader = Reader.create 0x1000 (flow :> Eio.Flow.source) in
+            let reader = Eio.Buf_read.of_flow ~initial_size:0x1000 ~max_size:max_int (flow :> Eio.Flow.source) in
             let writer = Writer.create (flow :> Eio.Flow.sink) in
             Eio.Fiber.fork ~sw (fun () -> Writer.run writer);
             handle_request reader writer flow handler)
