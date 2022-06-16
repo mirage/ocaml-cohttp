@@ -7,7 +7,7 @@ module Body = Cohttp_lwt.Body
 module IO = Cohttp_lwt_unix.Private.IO
 
 let chunk_body = [ "one"; ""; " "; "bar"; "" ]
-let () = Logs.set_level (Some Warning)
+let () = Logs.set_level (Some Info)
 let () = Logs.set_reporter Logs.nop_reporter
 
 let check_logs test () =
