@@ -50,7 +50,7 @@ let respond_file ?headers ~fname () =
       let headers =
         Http.Header.add_opt_unless_exists headers "content-type" mime_type
       in
-      let res = Http.Response.make ~status:`OK ~encoding ~headers () in
+      let res = Cohttp.Response.make ~status:`OK ~encoding ~headers () in
       Lwt.return (res, body))
     (function
       | Unix.Unix_error (Unix.ENOENT, _, _) | Isnt_a_file ->

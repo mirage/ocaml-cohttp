@@ -49,15 +49,9 @@ let scheme t = t.scheme
 let resource t = t.resource
 let version t = t.version
 let encoding t = t.encoding
-let fixed_zero = Transfer.Fixed Int64.zero
 
-let guess_encoding ?(encoding = fixed_zero) headers =
-  match Header.get_transfer_encoding headers with
-  | Transfer.(Chunked | Fixed _) as enc -> enc
-  | Unknown -> encoding
-
-let make ?(meth = `GET) ?(version = `HTTP_1_1) ?encoding ?headers uri =
-  let headers = match headers with None -> Header.init () | Some h -> h in
+let make ?(meth = `GET) ?(version = `HTTP_1_1) ?(encoding = Transfer.Unknown)
+    ?(headers = Header.init ()) uri =
   let headers =
     Header.add_unless_exists headers "host"
       (match Uri.scheme uri with
@@ -81,15 +75,14 @@ let make ?(meth = `GET) ?(version = `HTTP_1_1) ?encoding ?headers uri =
         Header.add_authorization headers auth
     | _, _, _ -> headers
   in
-  let encoding = guess_encoding ?encoding headers in
-  {
-    meth;
-    version;
-    headers;
-    scheme = Uri.scheme uri;
-    resource = Uri.path_and_query uri;
-    encoding;
-  }
+  let scheme = Uri.scheme uri in
+  let resource = Uri.path_and_query uri in
+  let encoding =
+    match Header.get_transfer_encoding headers with
+    | Transfer.Unknown -> encoding
+    | encoding -> encoding
+  in
+  { headers; meth; scheme; resource; version; encoding }
 
 let is_keep_alive t = Http.Request.is_keep_alive t
 
