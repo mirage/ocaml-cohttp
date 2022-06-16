@@ -317,6 +317,5 @@ let[@warning "-3"] http_request t =
       let resource = p_resource t in
       let version = p_version t in
       let headers = http_headers t in
-      let encoding = Http.Header.get_transfer_encoding headers in
       commit t;
-      { Http.Request.meth; resource; version; headers; scheme = None; encoding }
+      Http.Request.make ~meth ~version ~headers resource
