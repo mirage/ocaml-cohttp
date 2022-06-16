@@ -18,7 +18,7 @@ type async_test = unit -> unit io
 
 let response rsp = `Response rsp
 
-let expert ?(rsp = Http.Response.make ()) f _req _body =
+let expert ?(rsp = Cohttp.Response.make ()) f _req _body =
   return (`Expert (rsp, f))
 
 let const rsp _req _body = rsp >>| response
