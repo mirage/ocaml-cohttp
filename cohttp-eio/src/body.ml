@@ -1,7 +1,9 @@
+module Write = Eio.Buf_write
+
 type t =
   | Fixed of string
   | Chunked of chunk_writer
-  | Custom of (Eio.Flow.sink -> unit)
+  | Custom of (Write.t -> unit)
   | Empty
 
 and chunk_writer = {
@@ -228,10 +230,10 @@ let read_chunked reader headers f =
 let write_headers t headers =
   Http.Header.iter
     (fun k v ->
-      Writer.write_string t k;
-      Writer.write_string t ": ";
-      Writer.write_string t v;
-      Writer.write_string t "\r\n")
+      Write.string t k;
+      Write.string t ": ";
+      Write.string t v;
+      Write.string t "\r\n")
     headers
 
 (* https://datatracker.ietf.org/doc/html/rfc7230#section-4.1 *)
@@ -242,21 +244,21 @@ let write_chunked t chunk_writer =
         let v =
           match value with None -> "" | Some v -> Printf.sprintf "=%s" v
         in
-        Writer.write_string t (Printf.sprintf ";%s%s" name v))
+        Write.string t (Printf.sprintf ";%s%s" name v))
       exts
   in
   let write_body = function
     | Chunk { size; data; extensions = exts } ->
-        Writer.write_string t (Printf.sprintf "%X" size);
+        Write.string t (Printf.sprintf "%X" size);
         write_extensions exts;
-        Writer.write_string t "\r\n";
-        Writer.write_string t data;
-        Writer.write_string t "\r\n"
+        Write.string t "\r\n";
+        Write.string t data;
+        Write.string t "\r\n"
     | Last_chunk exts ->
-        Writer.write_string t "0";
+        Write.string t "0";
         write_extensions exts;
-        Writer.write_string t "\r\n"
+        Write.string t "\r\n"
   in
   chunk_writer.body_writer write_body;
   chunk_writer.trailer_writer (write_headers t);
-  Writer.write_string t "\r\n"
+  Write.string t "\r\n"

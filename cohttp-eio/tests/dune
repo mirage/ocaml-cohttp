@@ -13,6 +13,10 @@
  (modules crlf)
  (libraries unix))
 
+(mdx
+ (package cohttp-eio)
+ (packages cohttp-eio))
+
 (env
  (_
   (binaries

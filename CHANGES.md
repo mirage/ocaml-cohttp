@@ -1,4 +1,5 @@
 ## Unreleased
+- cohttp-eio: use Eio.Buf_write and improve server API (talex5 #887)
 - cohttp-eio: update to Eio 0.3 (talex5 #886)
 - cohttp-eio: convert to Eio.Buf_read (talex5 #882)
 - cohttp lwt client: Connection cache and explicit pipelining (madroach #853)

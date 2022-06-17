@@ -21,12 +21,13 @@ bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
 depends: [
   "dune" {>= "2.9"}
   "base-domains"
-  "eio" {>= "0.3"}
+  "eio" {>= "0.4"}
   "eio_main" {with-test}
   "uri" {with-test}
   "cstruct"
   "bigstringaf"
   "fmt"
+  "mdx" {with-test}
   "eio_main" {with-test}
   "http" {= version}
   "odoc" {with-doc}

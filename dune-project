@@ -4,6 +4,8 @@
 
 (license ISC)
 
+(using mdx 0.1)
+
 (cram enable)
 
 (maintainers "Anil Madhavapeddy <anil@recoil.org>")
@@ -337,12 +339,13 @@ should also be fine under Windows too.
   "A CoHTTP server and client implementation based on `eio` library. `cohttp-eio`features a multicore capable HTTP 1.1 server. The library promotes and is built with direct style of coding as opposed to a monadic.")
  (depends
   base-domains
-  (eio (>= 0.3))
+  (eio (>= 0.4))
   (eio_main :with-test)
   (uri :with-test)
   cstruct
   bigstringaf
   fmt
+  (mdx :with-test)
   (eio_main :with-test)
   (http
    (= :version))))
