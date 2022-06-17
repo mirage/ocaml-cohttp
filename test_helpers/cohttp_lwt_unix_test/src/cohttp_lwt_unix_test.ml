@@ -29,7 +29,7 @@ let temp_server ?port spec callback =
   let server =
     Server.make_response_action ~callback:(fun _ req body -> spec req body) ()
   in
-  let uri = Uri.of_string ("http://0.0.0.0:" ^ string_of_int port) in
+  let uri = Uri.of_string ("http://localhost:" ^ string_of_int port) in
   let server_failed, server_failed_wake = Lwt.task () in
   let server =
     Lwt.catch

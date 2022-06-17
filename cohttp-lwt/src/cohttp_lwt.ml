@@ -18,8 +18,18 @@ module type IO = S.IO
 
 module Request = Cohttp.Request [@@deprecated "Use Cohttp.Request directly"]
 module Response = Cohttp.Response [@@deprecated "Use Cohttp.Response directly"]
-module Make_client = Client.Make
+module Connection = Connection
+module Connection_cache = Connection_cache
+module Client = Client
+module Server = Server
+
+(** @deprecated use {!module:Client.Make} instead. *)
+module Make_client (IO : IO) (Net : S.Net with module IO = IO) =
+  Client.Make (Connection.Make (Net))
+
 module Make_server = Server.Make
+(** @deprecated use {!module:Server.Make} instead. *)
+
 module S = S
 module Body = Body
 

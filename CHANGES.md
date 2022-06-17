@@ -1,5 +1,6 @@
 ## Unreleased
-- http: add Http.Request.make (bikallem #878)
+- cohttp lwt client: Connection cache and explicit pipelining (madroach #853)
+- http: add Http.Request.make and simplify Http.Response.make (bikallem mseri #878)
 - http: add pretty printer functions (bikallem #880) 
 - New eio based client and server on top of the http library (bikallem #857)
 - New curl based clients (rgrinberg #813)

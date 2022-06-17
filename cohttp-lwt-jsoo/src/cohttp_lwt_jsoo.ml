@@ -175,6 +175,10 @@ struct
     let body = Cohttp_lwt.Body.of_string (Uri.encoded_of_query params) in
     post ?ctx ~chunked:false ~headers ~body uri
 
+  exception Cohttp_lwt_xhr_set_cache_not_implemented
+
+  let set_cache _ = raise Cohttp_lwt_xhr_set_cache_not_implemented
+
   (* No implementation (can it be done?).  What should the failure exception be? *)
   exception Cohttp_lwt_xhr_callv_not_implemented
 

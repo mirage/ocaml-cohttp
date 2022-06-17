@@ -41,3 +41,14 @@
  (package cohttp-lwt-unix)
  (action
   (run ./test_body.exe)))
+
+(executable
+ (modules test_client)
+ (name test_client)
+ (libraries cohttp_lwt_unix_test cohttp-lwt-unix))
+
+(rule
+ (alias runtest)
+ (package cohttp-lwt-unix)
+ (action
+  (run ./test_client.exe)))
