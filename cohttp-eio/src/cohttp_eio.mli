@@ -1,67 +1,3 @@
-(** [Reader] is a mutable, buffered reader with back-tracking support. *)
-module Reader : sig
-  type t
-
-  exception Parse_failure of string
-
-  type 'a parser = t -> 'a
-
-  val create : int -> Eio.Flow.source -> t
-
-  val length : t -> int
-  (** [length t] is the count of unconsumed bytes in [t]. *)
-
-  val consume : t -> int -> unit
-  (** [consume t n] marks [n] bytes of data as consumed in [t]. *)
-
-  val fill : t -> int -> int
-  (** [fill t n] attempts to fill [t] with [n] bytes and returns the actual
-      number of bytes filled.
-
-      @raise End_of_file if end of file is reached. *)
-
-  val unsafe_get : t -> int -> char
-  val sub : t -> off:int -> len:int -> bytes
-  val substring : t -> off:int -> len:int -> string
-  val copy : t -> off:int -> len:int -> Bigstringaf.t
-
-  (** {1 Parser/Reader Combinators} *)
-
-  val return : 'a -> 'a parser
-  val fail : string -> 'a parser
-  val commit : unit parser
-  val pos : int parser
-  val ( <?> ) : 'a parser -> string -> 'a parser
-  val ( >>= ) : 'a parser -> ('a -> 'b parser) -> 'b parser
-  val ( let* ) : 'a parser -> ('a -> 'b parser) -> 'b parser
-  val ( >>| ) : 'a parser -> ('a -> 'b) -> 'b parser
-  val ( let+ ) : 'a parser -> ('a -> 'b) -> 'b parser
-  val ( <* ) : 'a parser -> _ parser -> 'a parser
-  val ( *> ) : _ parser -> 'b parser -> 'b parser
-  val ( <|> ) : 'a parser -> 'a parser -> 'a parser
-  val lift : ('a -> 'b) -> 'a parser -> 'b parser
-  val lift2 : ('a -> 'b -> 'c) -> 'a parser -> 'b parser -> 'c parser
-  val end_of_input : bool parser
-  val option : 'a -> 'a parser -> 'a parser
-  val peek_char : char parser
-  val peek_string : int -> string parser
-  val char : char -> unit parser
-  val any_char : char parser
-  val satisfy : (char -> bool) -> char parser
-  val string : string -> unit parser
-  val take_while1 : (char -> bool) -> string parser
-  val take_while : (char -> bool) -> string parser
-  val take_bigstring : int -> Bigstringaf.t parser
-  val take_bytes : int -> bytes parser
-  val take : int -> string parser
-  val take_till : (char -> bool) -> string parser
-  val many : 'a parser -> 'a list parser
-  val many_till : 'a parser -> _ parser -> 'a list parser
-  val skip : (char -> bool) -> unit parser
-  val skip_while : (char -> bool) -> unit parser
-  val skip_many : 'a parser -> unit parser
-end
-
 module Body : sig
   type t =
     | Fixed of string
@@ -94,12 +30,12 @@ end
 module Server : sig
   type middleware = handler -> handler
   and handler = request -> response
-  and request = Http.Request.t * Reader.t
+  and request = Http.Request.t * Eio.Buf_read.t
   and response = Http.Response.t * Body.t
 
   (** {1 Request} *)
 
-  val read_fixed : request -> bytes
+  val read_fixed : request -> string
   (** [read_fixed (request,reader)] is bytes of length [n] if "Content-Length"
       header is a valid integer value [n] in [request]. [reader] is updated to
       reflect that [n] bytes was read.
