@@ -70,7 +70,7 @@ jobs:
           - ubuntu-latest
           - macos-latest
         ocaml-compiler:
-          - ocaml-variants.5.0.0+trunk
+          - ocaml-variants.5.0.0~alpha0
         local-packages:
           - |
             http.opam
