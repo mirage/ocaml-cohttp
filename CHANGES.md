@@ -46,6 +46,7 @@
   + fix: deprecate more aliases (rgrinberg #803)
   + refactor: deprecate connection value(rgrinberg #798)
   + refactor: deprecate using attributes (rgrinberg #796)
+  + fix: remove cohttp-{curl,server}-async (rgrinberg #..)
 
 ## v5.0.0 (2021-12-15)
 
