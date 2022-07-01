@@ -58,7 +58,7 @@ jobs:
 
       - run: |
           opam exec -- dune build --profile=dev --only-packages http,cohttp,cohttp-lwt,cohttp-lwt-unix,cohttp-server-lwt-unix,cohttp-mirage,cohttp-async,cohttp-curl-async,cohttp-curl-lwt,cohttp-curl,cohttp-top @install
-          opam exec -- dune build bench/ examples/ cohttp-curl-async/bin/ cohttp-curl-lwt/bin/
+          opam exec -- dune build cohttp-bench/ examples/ cohttp-curl-async/bin/ cohttp-curl-lwt/bin/
       
       - run: opam exec -- dune runtest --profile=dev cohttp cohttp-async cohttp-curl cohttp-curl-async cohttp-curl-lwt cohttp-lwt cohttp-lwt-unix cohttp-mirage cohttp-server-lwt-unix cohttp-top http
 
