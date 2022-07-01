@@ -98,7 +98,7 @@ jobs:
             default: https://github.com/ocaml/opam-repository.git
             alpha: https://github.com/kit-ty-kate/opam-alpha-repository.git
 
-      - run: opam install cstruct eio_main bigstringaf fmt mdx
+      - run: opam install cstruct eio_main bigstringaf fmt
 
       - run: opam exec -- dune build -p http,cohttp-eio --profile release
 
