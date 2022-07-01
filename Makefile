@@ -1,4 +1,4 @@
-.PHONY: build clean test clean eio eio-shell eio-test
+.PHONY: build clean test clean eio eio-shell eio-test fmt js-test
 
 build:
 	dune build
