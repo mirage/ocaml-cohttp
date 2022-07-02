@@ -110,24 +110,28 @@ module Body = struct
 end
 
 module Input_channel = struct
-  open Lwt.Infix
   module Bytebuffer = Cohttp_lwt.Private.Bytebuffer
 
-  type t = { buf : Bytebuffer.t; chan : Lwt_io.input_channel }
+  type t = { buf : Bytebuffer.t; da : Lwt_io.direct_access }
 
-  let refill ic buf ~pos ~len =
+  let rec refill (da : Lwt_io.direct_access) buf ~pos ~len =
     Lwt.catch
       (fun () ->
-        Lwt_io.read_into ic buf pos len >|= fun c ->
-        if c > 0 then `Ok c else `Eof)
+        let available = da.da_max - da.da_ptr in
+        if available = 0 then
+          let* read = da.da_perform () in
+          if read = 0 then Lwt.return `Eof else refill da buf ~pos ~len
+        else
+          let read_len = min available len in
+          Lwt_bytes.blit_to_bytes da.da_buffer da.da_ptr buf pos read_len;
+          da.da_ptr <- da.da_ptr + read_len;
+          Lwt.return (`Ok read_len))
       (function Lwt_io.Channel_closed _ -> Lwt.return `Eof | exn -> raise exn)
 
-  let create ?(buf_len = 0x4000) chan =
-    { buf = Bytebuffer.create buf_len; chan }
-
-  let read_line_opt t = Bytebuffer.read_line t.buf (refill t.chan)
-  let read t count = Bytebuffer.read t.buf (refill t.chan) count
-  let refill t = Bytebuffer.refill t.buf (refill t.chan)
+  let create ?(buf_len = 0x4000) da = { buf = Bytebuffer.create buf_len; da }
+  let read_line_opt t = Bytebuffer.read_line t.buf (refill t.da)
+  let read t count = Bytebuffer.read t.buf (refill t.da) count
+  let refill t = Bytebuffer.refill t.buf (refill t.da)
   let remaining t = Bytebuffer.length t.buf
 
   let with_input_buffer (t : t) ~f =
@@ -320,7 +324,6 @@ let rec read_request ic =
   | `Invalid msg -> Lwt.return (`Error msg)
 
 let handle_connection { callback; on_exn } (ic, oc) =
-  let ic = Input_channel.create ic in
   let on_exn =
     match on_exn with
     | Hook -> fun exn -> !Lwt.async_exception_hook exn
@@ -350,4 +353,6 @@ let handle_connection { callback; on_exn } (ic, oc) =
         in
         if keep_alive then loop callback ic oc else Lwt.return_unit
   in
-  loop callback ic oc
+  Lwt_io.direct_access ic (fun da ->
+      let ic = Input_channel.create da in
+      loop callback ic oc)
