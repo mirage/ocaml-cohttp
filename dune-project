@@ -70,6 +70,7 @@
  (depends
   (ocaml
    (>= 4.08))
+  (ppx_expect :with-test)
   (http
    (= :version))
   (cohttp
