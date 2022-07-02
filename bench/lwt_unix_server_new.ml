@@ -2,14 +2,14 @@ open Lwt.Syntax
 module Context = Cohttp_server_lwt_unix.Context
 module Body = Cohttp_server_lwt_unix.Body
 
-let server_callback =
-  let text = String.make 2053 'a' in
-  fun ctx ->
-    Lwt.join
-      [
-        Context.discard_body ctx;
-        Context.respond ctx (Http.Response.make ()) (Body.string text);
-      ]
+let text = String.make 2053 'a'
+
+let server_callback ctx =
+  Lwt.join
+    [
+      Context.discard_body ctx;
+      Context.respond ctx (Http.Response.make ()) (Body.string text);
+    ]
 
 let main () =
   let* _server =
