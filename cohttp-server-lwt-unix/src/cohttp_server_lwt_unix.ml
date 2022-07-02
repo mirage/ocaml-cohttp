@@ -16,6 +16,24 @@
 
 open Lwt.Syntax
 
+module Direct_access = struct
+  let rec write_sub (da : Lwt_io.direct_access) s ~pos ~len =
+    if len = 0 then Lwt.return_unit
+    else
+      let remaining = da.da_max - da.da_ptr in
+      if remaining = 0 then
+        let* (_ : int) = da.da_perform () in
+        write_sub da s ~pos ~len
+      else
+        let write_len = min remaining len in
+        Lwt_bytes.blit_from_string s pos da.da_buffer da.da_ptr write_len;
+        da.da_ptr <- da.da_ptr + write_len;
+        write_sub da s ~pos:(pos + write_len) ~len:(len - write_len)
+
+  let write da s = write_sub da ~pos:0 ~len:(String.length s) s
+  let write_char da c = write da (String.make 1 c)
+end
+
 module Body = struct
   module Substring = struct
     type t = { base : string; pos : int; len : int }
@@ -45,50 +63,50 @@ module Body = struct
   let stream ?(encoding = Encoding.Chunked) f : t = (encoding, `Stream f)
   let chunk_size = 4096
 
-  let write_chunk oc (sub : Substring.t) =
-    let* () = Lwt_io.write oc (Printf.sprintf "%x\r\n" sub.len) in
-    let* () = Lwt_io.write_from_string_exactly oc sub.base sub.pos sub.len in
-    Lwt_io.write oc "\r\n"
+  let write_chunk da (sub : Substring.t) =
+    let* () = Direct_access.write da (Printf.sprintf "%x\r\n" sub.len) in
+    let* () = Direct_access.write_sub da sub.base ~pos:sub.pos ~len:sub.len in
+    Direct_access.write da "\r\n"
 
   let next_chunk base ~pos =
     let len = String.length base in
     if pos >= len then None
     else Some { Substring.base; pos; len = min chunk_size (len - pos) }
 
-  let rec write_string_as_chunks oc s ~pos =
+  let rec write_string_as_chunks da s ~pos =
     match next_chunk s ~pos with
-    | None -> Lwt_io.write oc "\r\n"
+    | None -> Direct_access.write da "\r\n"
     | Some chunk ->
-        let* () = write_chunk oc chunk in
+        let* () = write_chunk da chunk in
         let pos = pos + chunk.len in
-        write_string_as_chunks oc s ~pos
+        write_string_as_chunks da s ~pos
 
-  let rec write_fixed_stream oc f =
+  let rec write_fixed_stream da f =
     let* chunk = f () in
     match chunk with
     | None -> Lwt.return_unit
     | Some { Substring.base; pos; len } ->
-        let* () = Lwt_io.write_from_string_exactly oc base pos len in
-        write_fixed_stream oc f
+        let* () = Direct_access.write_sub da base ~pos ~len in
+        write_fixed_stream da f
 
-  let rec write_chunks_stream oc f =
+  let rec write_chunks_stream da f =
     let* chunk = f () in
     match chunk with
-    | None -> Lwt_io.write oc "\r\n"
+    | None -> Direct_access.write da "\r\n"
     | Some chunk ->
-        let* () = write_chunk oc chunk in
-        write_chunks_stream oc f
+        let* () = write_chunk da chunk in
+        write_chunks_stream da f
 
-  let write ((encoding, body) : t) oc =
+  let write ((encoding, body) : t) da =
     match body with
     | `String s -> (
         match encoding with
-        | Fixed _ -> Lwt_io.write oc s
-        | Chunked -> write_string_as_chunks oc s ~pos:0)
+        | Fixed _ -> Direct_access.write da s
+        | Chunked -> write_string_as_chunks da s ~pos:0)
     | `Stream f -> (
         match encoding with
-        | Fixed _ -> write_fixed_stream oc f
-        | Chunked -> write_chunks_stream oc f)
+        | Fixed _ -> write_fixed_stream da f
+        | Chunked -> write_chunks_stream da f)
 end
 
 module Input_channel = struct
@@ -255,20 +273,25 @@ module Context = struct
       Http.Header.add_transfer_encoding response.headers encoding
     in
     let* () =
-      let* () = Lwt_io.write t.oc (Http.Version.to_string response.version) in
-      let* () = Lwt_io.write_char t.oc ' ' in
-      let* () = Lwt_io.write t.oc (Http.Status.to_string response.status) in
-      let* () = Lwt_io.write t.oc "\r\n" in
-      let* () =
-        Http.Header.to_list headers
-        |> Lwt_list.iter_s (fun (k, v) ->
-               let* () = Lwt_io.write t.oc k in
-               let* () = Lwt_io.write t.oc ": " in
-               let* () = Lwt_io.write t.oc v in
-               Lwt_io.write t.oc "\r\n")
-      in
-      let* () = Lwt_io.write t.oc "\r\n" in
-      Body.write body t.oc
+      Lwt_io.direct_access t.oc (fun (da : Lwt_io.direct_access) ->
+          let* () =
+            Direct_access.write da (Http.Version.to_string response.version)
+          in
+          let* () = Direct_access.write_char da ' ' in
+          let* () =
+            Direct_access.write da (Http.Status.to_string response.status)
+          in
+          let* () = Direct_access.write da "\r\n" in
+          let* () =
+            Http.Header.to_list headers
+            |> Lwt_list.iter_s (fun (k, v) ->
+                   let* () = Direct_access.write da k in
+                   let* () = Direct_access.write da ": " in
+                   let* () = Direct_access.write da v in
+                   Direct_access.write da "\r\n")
+          in
+          let* () = Direct_access.write da "\r\n" in
+          Body.write body da)
     in
     Lwt.wakeup_later t.response_send response;
     Lwt_io.flush t.oc
