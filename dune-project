@@ -122,8 +122,6 @@ should also be fine under Windows too.
    (>= 4.08))
   (http
    (= :version))
-  (cohttp
-   (= :version))
   (cohttp-lwt
    (= :version))
   (conduit-lwt-unix :with-test)
