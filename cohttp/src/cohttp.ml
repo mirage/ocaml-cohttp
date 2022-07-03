@@ -17,5 +17,4 @@ module Private = struct
   module Transfer_io = Transfer_io
   module String_io = String_io
   module Header_io = Header_io
-  module Bytebuffer = Bytebuffer
 end

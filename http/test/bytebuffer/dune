@@ -1,9 +1,7 @@
 (library
- (name cohttp_lwt_tests)
+ (name bytebuffer_tests)
  (libraries
-  cohttp-lwt
-  lwt
-  lwt.unix
+  http_bytebuffer
   ;; This is because of the (implicit_transitive_deps false)
   ;; in dune-project
   ppx_expect.config
@@ -12,4 +10,5 @@
   base
   ppx_inline_test.config)
  (inline_tests)
- (preprocess (pps ppx_expect)))
+ (preprocess
+  (pps ppx_expect)))
