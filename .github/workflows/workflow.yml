@@ -100,6 +100,6 @@ jobs:
 
       - run: opam install cstruct eio_main bigstringaf fmt mdx
 
-      - run: opam exec -- dune build -p http,cohttp-eio --profile release
+      - run: opam exec -- dune build cohttp-eio
 
-      - run: opam exec -- dune runtest cohttp-eio --profile release
+      - run: opam exec -- dune runtest cohttp-eio
