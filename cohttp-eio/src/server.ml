@@ -95,17 +95,13 @@ let rec handle_request reader writer flow handler =
       if not (is_custom body) then Writer.wakeup writer;
       if Http.Request.is_keep_alive request then
         handle_request reader writer flow handler
-      else Eio.Flow.close flow
-  | (exception End_of_file) | (exception Eio.Net.Connection_reset _) ->
-      Eio.Flow.close flow
+  | (exception End_of_file) | (exception Eio.Net.Connection_reset _) -> ()
   | exception Failure _e ->
       write_response writer bad_request_response;
-      Writer.wakeup writer;
-      Eio.Flow.close flow
+      Writer.wakeup writer
   | exception _ ->
       write_response writer internal_server_error_response;
-      Writer.wakeup writer;
-      Eio.Flow.close flow
+      Writer.wakeup writer
 
 let run_domain ssock handler =
   let on_error exn =
@@ -114,7 +110,8 @@ let run_domain ssock handler =
   in
   Switch.run (fun sw ->
       while true do
-        Eio.Net.accept_sub ~sw ssock ~on_error (fun ~sw flow _addr ->
+        Eio.Net.accept_fork ~sw ssock ~on_error (fun flow _addr ->
+            Eio.Switch.run @@ fun sw ->
             let reader =
               Eio.Buf_read.of_flow ~initial_size:0x1000 ~max_size:max_int
                 (flow :> Eio.Flow.source)
