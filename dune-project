@@ -70,7 +70,6 @@
  (depends
   (ocaml
    (>= 4.08))
-  (ppx_expect :with-test)
   (http
    (= :version))
   (cohttp
@@ -240,6 +239,7 @@ should also be fine under Windows too.
  (depends
   (ocaml
    (>= 4.08))
+  (ppx_expect :with-test)
   (alcotest :with-test)
   (base_quickcheck :with-test)
   (ppx_assert :with-test)

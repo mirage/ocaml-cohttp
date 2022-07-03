@@ -2,11 +2,11 @@ open! Core
 open! Async
 
 module Bytebuffer = struct
-  open Async
-  include Cohttp.Private.Bytebuffer
+  module Bytebuffer = Http_bytebuffer.Bytebuffer
+  include Bytebuffer
 
   include
-    Cohttp.Private.Bytebuffer.Make
+    Bytebuffer.Make
       (Deferred)
       (struct
         type src = Reader.t

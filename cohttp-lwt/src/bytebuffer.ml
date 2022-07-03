@@ -1,7 +1,7 @@
-include Cohttp.Private.Bytebuffer
+include Http_bytebuffer.Bytebuffer
 
 include
-  Cohttp.Private.Bytebuffer.Make
+  Http_bytebuffer.Bytebuffer.Make
     (struct
       include Lwt
 
