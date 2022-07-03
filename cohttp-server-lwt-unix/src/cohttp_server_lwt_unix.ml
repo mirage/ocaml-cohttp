@@ -110,28 +110,40 @@ module Body = struct
 end
 
 module Input_channel = struct
-  module Bytebuffer = Cohttp_lwt.Private.Bytebuffer
+  module Bytebuffer = Http_bytebuffer.Bytebuffer
+
+  module Refill =
+    Bytebuffer.Make
+      (struct
+        include Lwt
+
+        let ( >>| ) = ( >|= )
+      end)
+      (struct
+        type src = Lwt_io.direct_access
+
+        let rec refill (da : Lwt_io.direct_access) buf ~pos ~len =
+          Lwt.catch
+            (fun () ->
+              let available = da.da_max - da.da_ptr in
+              if available = 0 then
+                let* read = da.da_perform () in
+                if read = 0 then Lwt.return `Eof else refill da buf ~pos ~len
+              else
+                let read_len = min available len in
+                Lwt_bytes.blit_to_bytes da.da_buffer da.da_ptr buf pos read_len;
+                da.da_ptr <- da.da_ptr + read_len;
+                Lwt.return (`Ok read_len))
+            (function
+              | Lwt_io.Channel_closed _ -> Lwt.return `Eof | exn -> raise exn)
+      end)
 
   type t = { buf : Bytebuffer.t; da : Lwt_io.direct_access }
 
-  let rec refill (da : Lwt_io.direct_access) buf ~pos ~len =
-    Lwt.catch
-      (fun () ->
-        let available = da.da_max - da.da_ptr in
-        if available = 0 then
-          let* read = da.da_perform () in
-          if read = 0 then Lwt.return `Eof else refill da buf ~pos ~len
-        else
-          let read_len = min available len in
-          Lwt_bytes.blit_to_bytes da.da_buffer da.da_ptr buf pos read_len;
-          da.da_ptr <- da.da_ptr + read_len;
-          Lwt.return (`Ok read_len))
-      (function Lwt_io.Channel_closed _ -> Lwt.return `Eof | exn -> raise exn)
-
   let create ?(buf_len = 0x4000) da = { buf = Bytebuffer.create buf_len; da }
-  let read_line_opt t = Bytebuffer.read_line t.buf (refill t.da)
-  let read t count = Bytebuffer.read t.buf (refill t.da) count
-  let refill t = Bytebuffer.refill t.buf (refill t.da)
+  let read_line_opt t = Refill.read_line t.buf t.da
+  let read t count = Refill.read t.buf t.da count
+  let refill t = Refill.refill t.buf t.da
   let remaining t = Bytebuffer.length t.buf
 
   let with_input_buffer (t : t) ~f =

@@ -1,4 +1,4 @@
 (library
  (name cohttp_server_lwt_unix)
  (public_name cohttp-server-lwt-unix)
- (libraries lwt lwt.unix http cohttp-lwt))
+ (libraries lwt lwt.unix http http_bytebuffer))
