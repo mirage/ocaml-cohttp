@@ -141,6 +141,7 @@ Create this `dune` file
 ```
 cat - > dune <<EOF
 (executable
+ (public_name client_example)
  (name client_example)
  (libraries cohttp-lwt-unix))
 EOF
