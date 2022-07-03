@@ -141,9 +141,9 @@ Create this `dune` file
 ```
 cat - > dune <<EOF
 (executable
-  ; (public_name client_example)
-  (name client_example)
-  (libraries cohttp-lwt-unix))
+ (public_name client_example)
+ (name client_example)
+ (libraries cohttp-lwt-unix))
 EOF
 ```
 then build and execute the example with
@@ -253,9 +253,9 @@ To build and execute with `dune`, first create the following `dune` file
 ```
 $ cat - > dune <<EOF
 (executable
-  ;(public_name docker_example)
-  (name docker_example)
-  (libraries cohttp-lwt-unix conduit-lwt))
+ (public_name docker_example)
+ (name docker_example)
+ (libraries cohttp-lwt-unix conduit-lwt))
 EOF
 ```
 then run the example with
@@ -409,9 +409,9 @@ Create this `dune` file
 ```
 cat - > dune <<EOF
 (executable
-  ; (public_name server_example)
-  (name server_example)
-  (libraries cohttp-lwt-unix conduit-lwt))
+ (public_name server_example)
+ (name server_example)
+ (libraries cohttp-lwt-unix conduit-lwt))
 EOF
 ```
 then build and execute the example with
