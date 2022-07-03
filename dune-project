@@ -120,8 +120,6 @@ should also be fine under Windows too.
    (>= 4.08))
   (http
    (= :version))
-  (cohttp-lwt
-   (= :version))
   (conduit-lwt-unix :with-test)
   (cohttp-lwt-unix
    (and

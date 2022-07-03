@@ -24,7 +24,6 @@ depends: [
   "dune" {>= "2.9"}
   "ocaml" {>= "4.08"}
   "http" {= version}
-  "cohttp-lwt" {= version}
   "conduit-lwt-unix" {with-test}
   "cohttp-lwt-unix" {with-test & = version}
   "cohttp-lwt" {with-test & = version}
