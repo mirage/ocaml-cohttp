@@ -34,4 +34,4 @@ let%expect_test "read" =
   test (String.length line);
   [%expect {| read line: "foobar" |}];
   test (String.length line - 1);
-  [%expect {| failed to read |}]
+  [%expect {| read line: "foobar" |}]

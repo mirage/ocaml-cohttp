@@ -77,18 +77,39 @@ struct
         t.pos_fill <- t.pos_fill + count;
         `Ok
 
-  let rec read_line t reader =
-    let idx = index t '\n' in
-    if idx = -1 then (
+  let rec read_line_slow t reader acc =
+    if length t = 0 then
       refill t reader >>= function
-      | `Ok -> read_line t reader
-      | `Eof ->
-          let len = length t in
-          if len = 0 then IO.return None
-          else
-            let line = Bytes.sub_string t.buf ~pos:t.pos_read ~len in
-            drop t len;
-            IO.return (Some line))
+      | `Eof -> (
+          match acc with
+          | [] -> IO.return `Eof
+          | xs -> IO.return (`Eof_with_unconsumed xs))
+      | `Ok -> read_line_slow t reader acc
+    else
+      let idx = index t '\n' in
+      if idx > -1 then (
+        let len = idx - t.pos_read in
+        if len >= 1 && Char.equal (Bytes.unsafe_get t.buf (idx - 1)) '\r' then (
+          let line = Bytes.sub_string t.buf ~pos:t.pos_read ~len:(len - 1) in
+          drop t (len + 1);
+          IO.return (`Ok (line :: acc)))
+        else
+          let line = Bytes.sub_string t.buf ~pos:t.pos_read ~len in
+          drop t (len + 1);
+          IO.return (`Ok (line :: acc)))
+      else
+        let len = length t in
+        let curr = Bytes.sub_string t.buf ~pos:t.pos_read ~len in
+        drop t len;
+        read_line_slow t reader (curr :: acc)
+
+  let read_line t reader =
+    let idx = index t '\n' in
+    if idx = -1 then
+      read_line_slow t reader [] >>| function
+      | `Eof -> None
+      | `Eof_with_unconsumed chunks | `Ok chunks ->
+          Some (String.concat "" (List.rev chunks))
     else
       let len = idx - t.pos_read in
       if len >= 1 && Char.equal (Bytes.unsafe_get t.buf (idx - 1)) '\r' then (
