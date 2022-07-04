@@ -4,8 +4,6 @@
 
 (license ISC)
 
-(using mdx 0.1)
-
 (cram enable)
 
 (maintainers "Anil Madhavapeddy <anil@recoil.org>")
@@ -346,7 +344,6 @@ should also be fine under Windows too.
   cstruct
   bigstringaf
   fmt
-  (mdx :with-test)
   (eio_main :with-test)
   (conf-nmap :with-test)
   (http
