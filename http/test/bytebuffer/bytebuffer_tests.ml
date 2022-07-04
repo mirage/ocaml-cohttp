@@ -45,3 +45,20 @@ let%expect_test "read line" =
   [%expect {| read line: "foobar" |}];
   test (String.length line - 1);
   [%expect {| read line: "foobar" |}]
+
+let%expect_test "read fixed" =
+  let src = "foobar" in
+  let src_len = String.length src in
+  let test buf_size =
+    let src = Src.create src in
+    let buf = Bytebuffer.create buf_size in
+    match Refill.read buf src src_len with
+    | res ->
+        Printf.printf "buf size=%d: reading %d bytes we get %d bytes\n" buf_size
+          src_len (String.length res)
+    | exception Exit -> print_endline "failed to read - infinite loop"
+  in
+  test src_len;
+  [%expect {| buf size=6: reading 6 bytes we get 6 bytes |}];
+  test (src_len - 1);
+  [%expect {| buf size=5: reading 6 bytes we get 5 bytes |}]
