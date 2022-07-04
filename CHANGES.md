@@ -1,4 +1,5 @@
 ## Unreleased
+- cohttp-eio: update to Eio 0.3 (talex5 #886)
 - cohttp-eio: convert to Eio.Buf_read (talex5 #882)
 - cohttp lwt client: Connection cache and explicit pipelining (madroach #853)
 - http: add Http.Request.make and simplify Http.Response.make (bikallem mseri #878)
