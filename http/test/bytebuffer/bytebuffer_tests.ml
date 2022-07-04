@@ -30,18 +30,18 @@ module Refill =
     end)
     (Src)
 
-let%expect_test "read" =
+let%expect_test "read line" =
   let line = "foobar\n" in
-  let src = Src.create line in
   let test buf_size =
+    let src = Src.create line in
     let buf = Bytebuffer.create buf_size in
     let res = Refill.read_line buf src in
     match res with
     | None -> print_endline "failed to read line"
     | Some line -> Printf.printf "read line: %S\n" line
-    | exception Exit -> print_endline "failed to read"
+    | exception Exit -> print_endline "failed to read - infinite loop"
   in
   test (String.length line);
   [%expect {| read line: "foobar" |}];
   test (String.length line - 1);
-  [%expect {| failed to read line |}]
+  [%expect {| read line: "foobar" |}]
