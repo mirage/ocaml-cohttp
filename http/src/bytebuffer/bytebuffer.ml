@@ -77,26 +77,31 @@ struct
         t.pos_fill <- t.pos_fill + count;
         `Ok
 
+  let get_line t idx =
+    let len = idx - t.pos_read in
+    let line =
+      let len =
+        if len >= 1 && Char.equal (Bytes.unsafe_get t.buf (idx - 1)) '\r' then
+          len - 1
+        else len
+      in
+      Bytes.sub_string t.buf ~pos:t.pos_read ~len
+    in
+    drop t (len + 1);
+    line
+
   let rec read_line_slow t reader acc =
     if length t = 0 then
       refill t reader >>= function
-      | `Eof -> (
-          match acc with
-          | [] -> IO.return `Eof
-          | xs -> IO.return (`Eof_with_unconsumed xs))
       | `Ok -> read_line_slow t reader acc
+      | `Eof -> (
+          IO.return
+          @@ match acc with [] -> `Eof | xs -> `Eof_with_unconsumed xs)
     else
       let idx = index t '\n' in
-      if idx > -1 then (
-        let len = idx - t.pos_read in
-        if len >= 1 && Char.equal (Bytes.unsafe_get t.buf (idx - 1)) '\r' then (
-          let line = Bytes.sub_string t.buf ~pos:t.pos_read ~len:(len - 1) in
-          drop t (len + 1);
-          IO.return (`Ok (line :: acc)))
-        else
-          let line = Bytes.sub_string t.buf ~pos:t.pos_read ~len in
-          drop t (len + 1);
-          IO.return (`Ok (line :: acc)))
+      if idx > -1 then
+        let line = get_line t idx in
+        IO.return (`Ok (line :: acc))
       else
         let len = length t in
         let curr = Bytes.sub_string t.buf ~pos:t.pos_read ~len in
@@ -111,15 +116,8 @@ struct
       | `Eof_with_unconsumed chunks | `Ok chunks ->
           Some (String.concat "" (List.rev chunks))
     else
-      let len = idx - t.pos_read in
-      if len >= 1 && Char.equal (Bytes.unsafe_get t.buf (idx - 1)) '\r' then (
-        let line = Bytes.sub_string t.buf ~pos:t.pos_read ~len:(len - 1) in
-        drop t (len + 1);
-        IO.return (Some line))
-      else
-        let line = Bytes.sub_string t.buf ~pos:t.pos_read ~len in
-        drop t (len + 1);
-        IO.return (Some line)
+      let line = get_line t idx in
+      IO.return (Some line)
 
   let rec read t reader len =
     let length = length t in
