@@ -340,7 +340,7 @@ should also be fine under Windows too.
  (depends
   base-domains
   (eio (>= 0.3))
-  (eio_main :with_test)
+  (eio_main :with-test)
   (uri :with-test)
   cstruct
   bigstringaf

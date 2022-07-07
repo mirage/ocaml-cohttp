@@ -22,7 +22,7 @@ depends: [
   "dune" {>= "2.9"}
   "base-domains"
   "eio" {>= "0.3"}
-  "eio_main" {with_test}
+  "eio_main" {with-test}
   "uri" {with-test}
   "cstruct"
   "bigstringaf"
