@@ -341,6 +341,7 @@ should also be fine under Windows too.
   base-domains
   (eio (>= 0.3))
   (eio_main :with_test)
+  (uri :with-test)
   cstruct
   bigstringaf
   fmt

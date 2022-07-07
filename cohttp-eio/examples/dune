@@ -1,3 +1,7 @@
 (executable
  (name server1)
  (libraries cohttp-eio uri eio_main))
+
+(alias
+ (name runtest)
+ (deps server1.exe))
