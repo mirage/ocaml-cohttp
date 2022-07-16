@@ -90,31 +90,41 @@ struct
     drop t (len + 1);
     line
 
-  let rec read_line_slow t reader acc =
+  let get_line_buf t buf idx =
+    let len = idx - t.pos_read in
+    Buffer.add_subbytes buf t.buf t.pos_read len;
+    drop t (len + 1)
+
+  let rec read_line_slow t reader buf =
     if length t = 0 then
       refill t reader >>= function
-      | `Ok -> read_line_slow t reader acc
-      | `Eof -> (
-          IO.return
-          @@ match acc with [] -> `Eof | xs -> `Eof_with_unconsumed xs)
+      | `Ok -> read_line_slow t reader buf
+      | `Eof -> IO.return `Eof
     else
       let idx = index t '\n' in
-      if idx > -1 then
-        let line = get_line t idx in
-        IO.return (`Ok (line :: acc))
+      if idx > -1 then (
+        get_line_buf t buf idx;
+        IO.return `Ok)
       else
         let len = length t in
-        let curr = Bytes.sub_string t.buf ~pos:t.pos_read ~len in
+        Buffer.add_subbytes buf t.buf t.pos_read len;
         drop t len;
-        read_line_slow t reader (curr :: acc)
+        read_line_slow t reader buf
 
   let read_line t reader =
     let idx = index t '\n' in
     if idx = -1 then
-      read_line_slow t reader [] >>| function
+      let buf = Buffer.create (length t + 1) in
+      read_line_slow t reader buf >>| function
       | `Eof -> None
-      | `Eof_with_unconsumed chunks | `Ok chunks ->
-          Some (String.concat "" (List.rev chunks))
+      | `Ok ->
+          let len = Buffer.length buf in
+          if len = 0 then None
+          else
+            Some
+              (if len >= 2 && Buffer.nth buf (len - 1) = '\r' then
+               Buffer.sub buf 0 (len - 1)
+              else Buffer.contents buf)
     else
       let line = get_line t idx in
       IO.return (Some line)
