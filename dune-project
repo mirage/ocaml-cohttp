@@ -346,6 +346,5 @@ should also be fine under Windows too.
   bigstringaf
   fmt
   (eio_main :with-test)
-  (conf-nmap :with-test)
   (http
    (= :version))))
