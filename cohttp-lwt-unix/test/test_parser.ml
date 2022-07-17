@@ -29,7 +29,8 @@ let basic_res =
    Accept-Ranges:  none\r\n\
    Content-Length: 0\r\n\
    Connection: close\r\n\
-   Content-Type: text/html; charset=UTF-8"
+   Content-Type: text/html; charset=UTF-8\r\n\
+   \r\n"
 
 let basic_res_content =
   "HTTP/1.1 200 OK\r\n\
