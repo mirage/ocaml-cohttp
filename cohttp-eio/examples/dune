@@ -1,6 +1,6 @@
 (executables
  (names server1 client1)
- (libraries cohttp-eio uri eio_main))
+ (libraries cohttp-eio uri eio_main eio.unix unix))
 
 (alias
  (name runtest)
