@@ -1,18 +1,26 @@
 open Cohttp_eio
 
-let read_body req reader =
-  let body = Server.read_fixed req reader in
-  Server.text_response @@ Fmt.str "%a\n\n%s" Http.Request.pp req body
-
-let app (req, reader, _client_addr) =
+let app (req, reader,_) =
   match Http.Request.resource req with
-  | "/get" -> Server.text_response (Fmt.to_to_string Http.Request.pp req)
+  | "/get" ->
+      let buf = Buffer.create 0 in
+      let fmt = Format.formatter_of_buffer buf in
+      Http.Request.pp fmt req;
+      Format.fprintf fmt "%!";
+      Server.text_response (Buffer.contents buf)
   | "/get_error" -> (
-      try
-        let _ = Server.read_fixed req reader in
-        assert false
-      with Invalid_argument e -> Server.text_response e)
-  | "/post" -> read_body req reader
+      match Server.read_fixed (req, reader) with
+      | Some _ -> Server.text_response "FAIL"
+      | None -> Server.text_response "PASS")
+  | "/post" ->
+      let body = Server.read_fixed (req, reader) |> Option.get in
+      let buf = Buffer.create 0 in
+      let fmt = Format.formatter_of_buffer buf in
+      Http.Request.pp fmt req;
+      Format.fprintf fmt "\n\n%s%!" body;
+      Server.text_response (Buffer.contents buf)
   | _ -> Server.bad_request_response
 
-let () = Eio_main.run @@ fun env -> Server.run ~port:8080 env app
+let () =
+  Eio_main.run @@ fun env ->
+  Eio.Switch.run @@ fun sw -> Server.run ~port:8080 env sw app

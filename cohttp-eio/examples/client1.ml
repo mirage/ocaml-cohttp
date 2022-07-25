@@ -2,7 +2,7 @@ open Eio
 open Cohttp_eio
 
 let connect_info url =
-  let uri  = Uri.of_string url in
+  let uri = Uri.of_string url in
   let host = Uri.host uri |> Option.get in
   let port = Uri.port uri |> Option.value ~default:80 in
   let path = Uri.of_string (Uri.path uri) in
@@ -15,7 +15,7 @@ let connect_info url =
 let () =
   Eio_main.run @@ fun env ->
   Switch.run @@ fun sw ->
-  let (addr, port, path) = connect_info "http://www.reddit.com/" in
+  let addr, port, path = connect_info "http://www.reddit.com/" in
   let res =
     Client.get
       ~headers:(Http.Header.of_list [ ("Accept", "application/json") ])
