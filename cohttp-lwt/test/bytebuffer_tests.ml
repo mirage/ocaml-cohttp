@@ -1,7 +1,7 @@
 module Bytebuffer = Cohttp_lwt.Private.Bytebuffer
 
 let%expect_test "read" =
-  let line = "foobar\n" in
+  let line = "foobar\r\n" in
   let test buf_size =
     let buf = Bytebuffer.create buf_size in
     let refill =
