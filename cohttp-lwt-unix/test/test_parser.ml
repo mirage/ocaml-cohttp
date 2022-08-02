@@ -214,12 +214,15 @@ let res_content_parse () =
   let ic = ic_of_buffer (Lwt_bytes.of_string basic_res_content) in
   Rep_io.read ic >>= function
   | `Ok res ->
-      assert_equal `HTTP_1_1 (Response.version res);
-      assert_equal `OK (Response.status res);
+      assert_equal ~printer:Http.Version.to_string `HTTP_1_1
+        (Response.version res);
+      assert_equal ~printer:Http.Status.to_string `OK (Response.status res);
       let reader = Rep_io.make_body_reader res ic in
       Rep_io.read_body_chunk reader >>= fun body ->
-      assert_equal (Transfer.Final_chunk "home=Cosby&favorite+flavor=flies")
-        body;
+      assert_equal
+        ~printer:(fun chunk ->
+          Transfer.sexp_of_chunk chunk |> Sexplib.Sexp.to_string_hum)
+        (Transfer.Final_chunk "home=Cosby&favorite+flavor=flies") body;
       return ()
   | _ -> assert false
 
