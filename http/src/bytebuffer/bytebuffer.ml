@@ -79,16 +79,14 @@ struct
 
   let get_line t idx =
     let len = idx - t.pos_read in
-    let line =
-      let len =
-        if len >= 1 && Char.equal (Bytes.unsafe_get t.buf (idx - 1)) '\r' then
-          len - 1
-        else len
+    if len >= 1 && Char.equal (Bytes.unsafe_get t.buf (idx - 1)) '\r' then (
+      let res =
+        let len = len - 1 in
+        Bytes.sub_string t.buf ~pos:t.pos_read ~len
       in
-      Bytes.sub_string t.buf ~pos:t.pos_read ~len
-    in
-    drop t (len + 1);
-    line
+      drop t (len + 1);
+      Some res)
+    else None
 
   let get_line_buf t buf idx =
     let len = idx - t.pos_read in
@@ -120,14 +118,12 @@ struct
       | `Ok ->
           let len = Buffer.length buf in
           if len = 0 then None
-          else
-            Some
-              (if len >= 2 && Buffer.nth buf (len - 1) = '\r' then
-               Buffer.sub buf 0 (len - 1)
-              else Buffer.contents buf)
+          else if len >= 2 && Buffer.nth buf (len - 1) = '\r' then
+            Some (Buffer.sub buf 0 (len - 1))
+          else None
     else
       let line = get_line t idx in
-      IO.return (Some line)
+      IO.return line
 
   let rec read t reader len =
     let length = length t in

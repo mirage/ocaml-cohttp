@@ -49,6 +49,8 @@
   + refactor: deprecate using attributes (rgrinberg #796)
   + cleanup: remove cohttp-{curl,server}-async (rgrinberg #904)
   + cleanup: remove cohttp-{curl,server,proxy}-lwt (rgrinberg #904)
+  + fix: all parsers now follow the spec and require `\r\n` endings.
+    Previously, the `\r` was optional. (rgrinberg, #921)
 
 ## v5.0.0 (2021-12-15)
 
