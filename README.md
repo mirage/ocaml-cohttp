@@ -308,7 +308,7 @@ and handle_redirect ~permanent ~max_redirects request_uri response =
         let uri = Uri.of_string url in
         let* () =
           if permanent then
-            Logs.warn (fun m ->
+            Logs_lwt.warn (fun m ->
                 m "Permanent redirection from %s to %s"
                   (Uri.to_string request_uri)
                   url)
