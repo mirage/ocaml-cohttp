@@ -1,6 +1,6 @@
 open Core
 open Async
-open Cohttp_async
+module Server = Cohttp_async.Server
 
 let length = 2053
 let text = String.make length 'a'
