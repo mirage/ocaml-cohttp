@@ -18,7 +18,7 @@
 open Base
 open Async_kernel
 open Async_unix
-open Cohttp_async
+module Server = Cohttp_async.Server
 open Cohttp_server
 
 let method_filter meth (res, body) =

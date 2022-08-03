@@ -1,7 +1,7 @@
 (* This file is in the public domain *)
 open Core
 open Async_kernel
-open Cohttp_async
+module Server = Cohttp_async.Server
 
 (* given filename: hello_world.ml compile with:
    $ corebuild hello_world.native -pkg cohttp.async
@@ -20,7 +20,7 @@ let handler ~body:_ _sock req =
 let start_server port () =
   Caml.Printf.eprintf "Listening for HTTP on port %d\n" port;
   Caml.Printf.eprintf "Try 'curl http://localhost:%d/test?hello=xyz'\n%!" port;
-  Cohttp_async.Server.create ~on_handler_error:`Raise
+  Server.create ~on_handler_error:`Raise
     (Async.Tcp.Where_to_listen.of_port port)
     handler
   >>= fun server ->

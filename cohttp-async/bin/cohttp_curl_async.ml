@@ -16,7 +16,8 @@
 
 open Base
 open Async_kernel
-open Cohttp_async
+module Body = Cohttp_async.Body
+module Client = Cohttp_async.Client
 
 let show_headers h =
   Cohttp.Header.iter (fun k v -> Logs.info (fun m -> m "%s: %s%!" k v)) h

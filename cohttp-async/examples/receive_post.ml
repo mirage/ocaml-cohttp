@@ -1,7 +1,8 @@
 (* This file is in the public domain *)
 open Base
 open Async_kernel
-open Cohttp_async
+module Body = Cohttp_async.Body
+module Server = Cohttp_async.Server
 
 (* compile with: $ corebuild receive_post.native -pkg cohttp.async *)
 
