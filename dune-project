@@ -341,12 +341,7 @@ should also be fine under Windows too.
   base-domains
   (eio (>= 0.4))
   (eio_main :with-test)
-  (uri :with-test)
-  cstruct
-  bigstringaf
   fmt
-  uri
   (mdx :with-test)
-  (eio_main :with-test)
   (http
    (= :version))))

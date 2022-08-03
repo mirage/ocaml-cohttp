@@ -1,9 +1,10 @@
-module Write = Eio.Buf_write
+module Buf_read = Eio.Buf_read
+module Buf_write = Eio.Buf_write
 
 type t =
   | Fixed of string
   | Chunked of chunk_writer
-  | Custom of (Write.t -> unit)
+  | Custom of (Buf_write.t -> unit)
   | Empty
 
 and chunk_writer = {
@@ -44,19 +45,14 @@ let pp_chunk fmt = function
         fmt chunk
   | Last_chunk extensions -> pp_chunk_extension fmt extensions
 
-open Parser
-open Eio.Buf_read
-
 let read_fixed t headers =
   let ( let* ) o f = Option.bind o f in
   let ( let+ ) o f = Option.map f o in
   let* v = Http.Header.get headers "Content-Length" in
   let+ content_length = int_of_string_opt v in
-  take content_length t
+  Buf_read.take content_length t
 
 (* Chunked encoding parser *)
-
-open Eio.Buf_read.Syntax
 
 let hex_digit = function
   | '0' .. '9' -> true
@@ -65,7 +61,8 @@ let hex_digit = function
   | _ -> false
 
 let quoted_char =
-  let+ c = any_char in
+  let open Buf_read.Syntax in
+  let+ c = Buf_read.any_char in
   match c with
   | ' ' | '\t' | '\x21' .. '\x7E' -> c
   | c -> failwith (Printf.sprintf "Invalid escape \\%C" c)
@@ -77,10 +74,10 @@ let qdtext = function
 
 (*-- quoted-string = DQUOTE *( qdtext / quoted-pair ) DQUOTE --*)
 let quoted_string r =
-  char '"' r;
+  Buf_read.char '"' r;
   let buf = Buffer.create 100 in
   let rec aux () =
-    match any_char r with
+    match Buf_read.any_char r with
     | '"' -> Buffer.contents buf
     | '\\' ->
         Buffer.add_char buf (quoted_char r);
@@ -92,30 +89,32 @@ let quoted_string r =
   aux ()
 
 let optional c x r =
-  let c2 = peek_char r in
+  let c2 = Buf_read.peek_char r in
   if Some c = c2 then (
-    consume r 1;
+    Buf_read.consume r 1;
     Some (x r))
   else None
 
 (*-- https://datatracker.ietf.org/doc/html/rfc7230#section-4.1 --*)
 let chunk_ext_val =
-  let* c = peek_char in
-  match c with Some '"' -> quoted_string | _ -> token
+  let open Buf_read.Syntax in
+  let* c = Buf_read.peek_char in
+  match c with Some '"' -> quoted_string | _ -> Rwer.token
 
 let rec chunk_exts r =
-  let c = peek_char r in
+  let c = Buf_read.peek_char r in
   match c with
   | Some ';' ->
-      consume r 1;
-      let name = token r in
+      Buf_read.consume r 1;
+      let name = Rwer.token r in
       let value = optional '=' chunk_ext_val r in
       { name; value } :: chunk_exts r
   | _ -> []
 
 let chunk_size =
-  let* sz = take_while1 hex_digit in
-  try return (Format.sprintf "0x%s" sz |> int_of_string)
+  let open Buf_read.Syntax in
+  let* sz = Rwer.take_while1 hex_digit in
+  try Rwer.return (Format.sprintf "0x%s" sz |> int_of_string)
   with _ -> failwith (Format.sprintf "Invalid chunk_size: %s" sz)
 
 (* Be strict about headers allowed in trailer headers to minimize security
@@ -150,21 +149,22 @@ let request_trailer_headers headers =
 (* Chunk decoding algorithm is explained at
    https://datatracker.ietf.org/doc/html/rfc7230#section-4.1.3 *)
 let chunk (total_read : int) (headers : Http.Header.t) =
+  let open Buf_read.Syntax in
   let* sz = chunk_size in
   match sz with
   | sz when sz > 0 ->
-      let* extensions = chunk_exts <* crlf in
-      let* data = take sz <* crlf in
-      return @@ `Chunk (sz, data, extensions)
+      let* extensions = chunk_exts <* Rwer.crlf in
+      let* data = Buf_read.take sz <* Rwer.crlf in
+      Rwer.return @@ `Chunk (sz, data, extensions)
   | 0 ->
-      let* extensions = chunk_exts <* crlf in
+      let* extensions = chunk_exts <* Rwer.crlf in
       (* Read trailer headers if any and append those to request headers.
          Only headers names appearing in 'Trailer' request headers and "allowed" trailer
          headers are appended to request.
          The spec at https://datatracker.ietf.org/doc/html/rfc7230#section-4.1.3
          specifies that 'Content-Length' and 'Transfer-Encoding' headers must be
          updated. *)
-      let* trailer_headers = http_headers in
+      let* trailer_headers = Rwer.http_headers in
       let request_trailer_headers = request_trailer_headers headers in
       let trailer_headers =
         List.filter
@@ -203,7 +203,7 @@ let chunk (total_read : int) (headers : Http.Header.t) =
       let headers =
         Http.Header.add headers "Content-Length" (string_of_int total_read)
       in
-      return @@ `Last_chunk (extensions, headers)
+      Rwer.return @@ `Last_chunk (extensions, headers)
   | sz -> failwith (Format.sprintf "Invalid chunk size: %d" sz)
 
 let read_chunked reader headers f =
@@ -222,46 +222,38 @@ let read_chunked reader headers f =
             Some headers
       in
       chunk_loop f
-<<<<<<< HEAD
-  | _ -> raise @@ Invalid_argument "Request is not a chunked request"
-
-(* Writes *)
-
-let write_headers t headers =
-  Http.Header.iter
-    (fun k v ->
-      Write.string t k;
-      Write.string t ": ";
-      Write.string t v;
-      Write.string t "\r\n")
-    headers
+  | _ -> None
 
 (* https://datatracker.ietf.org/doc/html/rfc7230#section-4.1 *)
-let write_chunked t chunk_writer =
+let write_chunked writer chunk_writer =
   let write_extensions exts =
     List.iter
       (fun { name; value } ->
         let v =
           match value with None -> "" | Some v -> Printf.sprintf "=%s" v
         in
-        Write.string t (Printf.sprintf ";%s%s" name v))
+        Buf_write.string writer (Printf.sprintf ";%s%s" name v))
       exts
   in
   let write_body = function
     | Chunk { size; data; extensions = exts } ->
-        Write.string t (Printf.sprintf "%X" size);
+        Buf_write.string writer (Printf.sprintf "%X" size);
         write_extensions exts;
-        Write.string t "\r\n";
-        Write.string t data;
-        Write.string t "\r\n"
+        Buf_write.string writer "\r\n";
+        Buf_write.string writer data;
+        Buf_write.string writer "\r\n"
     | Last_chunk exts ->
-        Write.string t "0";
+        Buf_write.string writer "0";
         write_extensions exts;
-        Write.string t "\r\n"
+        Buf_write.string writer "\r\n"
   in
   chunk_writer.body_writer write_body;
-  chunk_writer.trailer_writer (write_headers t);
-  Write.string t "\r\n"
-=======
-  | _ -> None
->>>>>>> 7c4b2a2e (eio(client): implement Cohttp_eio.Client module)
+  chunk_writer.trailer_writer (Rwer.write_headers writer);
+  Buf_write.string writer "\r\n"
+
+let write_body writer body =
+  match body with
+  | Fixed s -> Buf_write.string writer s
+  | Chunked chunk_writer -> write_chunked writer chunk_writer
+  | Custom f -> f writer
+  | Empty -> ()

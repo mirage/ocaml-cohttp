@@ -1,24 +1,28 @@
 Test Client.get
 
-  $ test-server &
+  $ port=8082
+  $ test-server -p ${port} &
   $ running_pid=$!
-  $ test-client get
+  $ test-client -p ${port} -t get
   meth: GET
   resource: /get
   version: HTTP/1.1
-  headers: Header { Accept = "application/json" }
+  headers: Header { Accept = "application/json"; Host = "localhost:8082" }
 
   $ kill ${running_pid}
 
 Test Client.post
 
-  $ test-server &
+  $ port=8082
+  $ test-server -p ${port} &
   $ running_pid=$!
-  $ test-client post
+  $ test-client -p ${port} -t post
   meth: POST
   resource: /post
   version: HTTP/1.1
-  headers: Header { Accept = "application/json"; Content-Length = "12" }
+  headers: Header {
+   Accept = "application/json"; Content-Length = "12"; Host = "localhost:8082"
+   }
   
   hello world!
 
