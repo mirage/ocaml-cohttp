@@ -31,9 +31,10 @@ end
 
 let xhr_response_supported =
   (* from http://stackoverflow.com/questions/8926505/how-to-feature-detect-if-xmlhttprequest-supports-responsetype-arraybuffer *)
-  let xhr = XmlHttpRequest.create () in
-  let rt = xhr##.responseType in
-  Js.to_string (Js.typeof rt) = "string"
+  lazy
+    (let xhr = XmlHttpRequest.create () in
+     let rt = xhr##.responseType in
+     Js.to_string (Js.typeof rt) = "string")
 
 let binary_string str =
   let len = String.length str in
@@ -111,7 +112,7 @@ module Body_builder (P : Params) = struct
           (fun () -> `String (Js.string ""))
           (fun s -> `String s)
       in
-      match xhr_response_supported with
+      match Lazy.force xhr_response_supported with
       | true when Js.Opt.return xml##.response == Js.null ->
           Log.warn (fun m -> m "XHR Response is null; using empty string");
           `String (Js.string "")
@@ -195,7 +196,8 @@ module Make_client_async (P : Params) = Make_api (struct
   let call ?headers ?body meth uri =
     let xml = XmlHttpRequest.create () in
     xml##.withCredentials := Js.bool P.with_credentials;
-    if xhr_response_supported then xml##.responseType := Js.string "arraybuffer";
+    if Lazy.force xhr_response_supported then
+      xml##.responseType := Js.string "arraybuffer";
     let (res : (Http.Response.t Lwt.t * CLB.t) Lwt.t), wake = Lwt.task () in
     let () =
       xml
@@ -283,7 +285,8 @@ module Make_client_sync (P : Params) = Make_api (struct
   let call ?headers ?body meth uri =
     let xml = XmlHttpRequest.create () in
     xml##.withCredentials := Js.bool P.with_credentials;
-    if xhr_response_supported then xml##.responseType := Js.string "arraybuffer";
+    if Lazy.force xhr_response_supported then
+      xml##.responseType := Js.string "arraybuffer";
     let () =
       xml
       ## (_open

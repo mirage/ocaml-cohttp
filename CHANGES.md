@@ -51,6 +51,7 @@
   + cleanup: remove cohttp-{curl,server,proxy}-lwt (rgrinberg #904)
   + fix: all parsers now follow the spec and require `\r\n` endings.
     Previously, the `\r` was optional. (rgrinberg, #921)
+- `cohttp-lwt-jsoo`: do not instantiate `XMLHttpRequest` object on boot (mefyl #922)
 
 ## v5.0.0 (2021-12-15)
 
