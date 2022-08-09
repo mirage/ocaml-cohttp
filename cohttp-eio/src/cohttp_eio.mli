@@ -2,7 +2,7 @@ module Body : sig
   type t =
     | Fixed of string
     | Chunked of chunk_writer
-    | Custom of (Eio.Flow.sink -> unit)
+    | Custom of (Eio.Buf_write.t -> unit)
     | Empty
 
   and chunk_writer = {
@@ -28,25 +28,27 @@ end
 
 (** [Server] is a HTTP 1.1 server. *)
 module Server : sig
-  type middleware = handler -> handler
-  and handler = request -> response
-  and request = Http.Request.t * Eio.Buf_read.t
-  and response = Http.Response.t * Body.t
+  type request = Http.Request.t * Eio.Buf_read.t * Eio.Net.Sockaddr.stream
+  (** The request headers, a reader for the socket, and the address of the
+      client. To read the request body, use {!read_fixed} or {!read_chunked}. *)
+
+  type response = Http.Response.t * Body.t
+  type handler = request -> response
 
   (** {1 Request} *)
 
-  val read_fixed : request -> string
-  (** [read_fixed (request,reader)] is bytes of length [n] if "Content-Length"
-      header is a valid integer value [n] in [request]. [reader] is updated to
-      reflect that [n] bytes was read.
+  val read_fixed : Http.Request.t -> Eio.Buf_read.t -> string
+  (** [read_fixed request body] reads a string of length [n] if "Content-Length"
+      header is a valid integer value [n] in [request].
 
       @raise Invalid_argument
         if ["Content-Length"] header is missing or is an invalid value in
         [headers] OR if the request http method is not one of [POST], [PUT] or
         [PATCH]. *)
 
-  val read_chunked : request -> (Body.chunk -> unit) -> Http.Header.t
-  (** [read_chunked request chunk_handler] is [updated_headers] if
+  val read_chunked :
+    Http.Request.t -> Eio.Buf_read.t -> (Body.chunk -> unit) -> Http.Header.t
+  (** [read_chunked request body chunk_handler] is [updated_headers] if
       "Transfer-Encoding" header value is "chunked" in [headers] and all chunks
       in [reader] are read successfully. [updated_headers] is the updated
       headers as specified by the chunked encoding algorithm in
@@ -81,10 +83,14 @@ module Server : sig
     ?socket_backlog:int ->
     ?domains:int ->
     port:int ->
-    Eio.Stdenv.t ->
-    Eio.Switch.t ->
+    < domain_mgr : Eio.Domain_manager.t ; net : Eio.Net.t ; .. > ->
     handler ->
-    unit
+    'a
+
+  val connection_handler :
+    handler -> #Eio.Net.stream_socket -> Eio.Net.Sockaddr.stream -> unit
+  (** [connection_handler request_handler] is a connection handler, suitable for
+      passing to {!Eio.Net.accept_fork}. *)
 
   (** {1 Basic Handlers} *)
 
