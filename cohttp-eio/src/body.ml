@@ -114,7 +114,7 @@ let rec chunk_exts r =
 let chunk_size =
   let open Buf_read.Syntax in
   let* sz = Rwer.take_while1 hex_digit in
-  try Rwer.return (Format.sprintf "0x%s" sz |> int_of_string)
+  try Buf_read.return (Format.sprintf "0x%s" sz |> int_of_string)
   with _ -> failwith (Format.sprintf "Invalid chunk_size: %s" sz)
 
 (* Be strict about headers allowed in trailer headers to minimize security
@@ -155,7 +155,7 @@ let chunk (total_read : int) (headers : Http.Header.t) =
   | sz when sz > 0 ->
       let* extensions = chunk_exts <* Rwer.crlf in
       let* data = Buf_read.take sz <* Rwer.crlf in
-      Rwer.return @@ `Chunk (sz, data, extensions)
+      Buf_read.return @@ `Chunk (sz, data, extensions)
   | 0 ->
       let* extensions = chunk_exts <* Rwer.crlf in
       (* Read trailer headers if any and append those to request headers.
@@ -203,7 +203,7 @@ let chunk (total_read : int) (headers : Http.Header.t) =
       let headers =
         Http.Header.add headers "Content-Length" (string_of_int total_read)
       in
-      Rwer.return @@ `Last_chunk (extensions, headers)
+      Buf_read.return @@ `Last_chunk (extensions, headers)
   | sz -> failwith (Format.sprintf "Invalid chunk size: %d" sz)
 
 let read_chunked reader headers f =

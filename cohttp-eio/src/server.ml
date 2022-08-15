@@ -84,15 +84,12 @@ let resource =
 
 let[@warning "-3"] http_request t =
   let open Eio.Buf_read.Syntax in
-  match Buf_read.at_end_of_input t with
-  | true -> Stdlib.raise_notrace End_of_file
-  | false ->
-      let meth = meth t in
-      let resource = resource t in
-      let version = Rwer.(version <* crlf) t in
-      let headers = Rwer.http_headers t in
-      let encoding = Http.Header.get_transfer_encoding headers in
-      { Http.Request.meth; resource; version; headers; scheme = None; encoding }
+  let meth = meth t in
+  let resource = resource t in
+  let version = Rwer.(version <* crlf) t in
+  let headers = Rwer.http_headers t in
+  let encoding = Http.Header.get_transfer_encoding headers in
+  { Http.Request.meth; resource; version; headers; scheme = None; encoding }
 
 (* main *)
 

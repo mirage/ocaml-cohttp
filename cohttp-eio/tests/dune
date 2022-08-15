@@ -1,6 +1,6 @@
 (executables
  (names test_server test_client crlf)
- (libraries cohttp_eio eio_main fmt))
+ (libraries cohttp_eio eio_main fmt uri))
 
 (mdx
  (package cohttp-eio)
@@ -14,4 +14,9 @@
    (test_client.exe as test-client))))
 
 (cram
- (deps %{bin:test-server} %{bin:crlf} %{bin:test-client}))
+ (deps
+  %{bin:test-server}
+  %{bin:crlf}
+  %{bin:test-client}
+  chunks.txt
+  server_chunks.txt))

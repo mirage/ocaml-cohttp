@@ -4,23 +4,23 @@ module Buf_write = Eio.Buf_write
 type response = Http.Response.t * Buf_read.t
 type host = string * int option
 type resource_path = string
-type 'a conn = unit -> (host * Eio.Flow.two_way as 'a)
+type ('a, 'b) conn = 'a -> (resource_path * host * #Eio.Flow.two_way as 'b)
 
-type 'a body_disallowed_call =
+type ('a, 'b) body_disallowed_call =
   ?version:Http.Version.t ->
   ?headers:Http.Header.t ->
-  'a conn ->
-  resource_path ->
+  ('a, 'b) conn ->
+  'a ->
   response
 (** [body_disallowed_call] denotes HTTP client calls where a request is not
     allowed to have a request body. *)
 
-type 'a body_allowed_call =
+type ('a, 'b) body_allowed_call =
   ?version:Http.Version.t ->
   ?headers:Http.Header.t ->
   ?body:Body.t ->
-  'a conn ->
-  resource_path ->
+  ('a, 'b) conn ->
+  'a ->
   response
 
 (* Request line https://datatracker.ietf.org/doc/html/rfc7230#section-3.1.1 *)
@@ -53,20 +53,17 @@ let reason_phrase =
 (* https://datatracker.ietf.org/doc/html/rfc7230#section-3.1.2 *)
 let response buf_read =
   let open Buf_read.Syntax in
-  match Buf_read.at_end_of_input buf_read with
-  | true -> Stdlib.raise_notrace End_of_file
-  | false ->
-      let version = Rwer.(version <* space) buf_read in
-      let status = Rwer.(status_code <* space) buf_read in
-      let () = Rwer.(reason_phrase *> crlf *> return ()) buf_read in
-      let headers = Rwer.http_headers buf_read in
-      Http.Response.make ~version ~status ~headers ()
+  let version = Rwer.(version <* space) buf_read in
+  let status = Rwer.(status_code <* space) buf_read in
+  let () = Rwer.(reason_phrase *> crlf *> Buf_read.return ()) buf_read in
+  let headers = Rwer.http_headers buf_read in
+  Http.Response.make ~version ~status ~headers ()
 
 (* Generic HTTP call *)
 
 let call ?(meth = `GET) ?(version = `HTTP_1_1) ?(headers = Http.Header.init ())
-    ?(body = Body.Empty) flow_fn resource_path =
-  let (host_name, host_port), flow = flow_fn () in
+    ?(body = Body.Empty) conn_fn uri =
+  let (resource_path, (host_name, host_port), flow) = conn_fn uri in
   let host =
     match host_port with
     | Some port -> host_name ^ ":" ^ string_of_int port
@@ -83,8 +80,8 @@ let call ?(meth = `GET) ?(version = `HTTP_1_1) ?(headers = Http.Header.init ())
 
 (*  HTTP Calls with Body Disallowed *)
 
-let get ?version ?headers stream uri =
-  call ~meth:`GET ?version ?headers stream uri
+let get ?version ?headers conn_fn uri =
+  call ~meth:`GET ?version ?headers conn_fn uri
 
 let head ?version ?headers stream uri =
   call ~meth:`HEAD ?version ?headers stream uri

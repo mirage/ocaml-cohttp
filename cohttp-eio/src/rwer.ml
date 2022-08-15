@@ -7,12 +7,8 @@
 module Buf_read = Eio.Buf_read
 module Buf_write = Eio.Buf_write
 
-let return v _ = v
-
 let take_while1 p r =
-  match Buf_read.take_while p r with
-  | "" -> failwith "[take_while1] count is less than 1"
-  | x -> x
+  match Buf_read.take_while p r with "" -> raise End_of_file | x -> x
 
 let token =
   take_while1 (function
@@ -33,8 +29,8 @@ let version =
   let open Eio.Buf_read.Syntax in
   let* v = Buf_read.string "HTTP/1." *> Buf_read.any_char in
   match v with
-  | '1' -> return `HTTP_1_1
-  | '0' -> return `HTTP_1_0
+  | '1' -> Buf_read.return `HTTP_1_1
+  | '0' -> Buf_read.return `HTTP_1_0
   | v -> failwith (Format.sprintf "Invalid HTTP version: %C" v)
 
 let header =

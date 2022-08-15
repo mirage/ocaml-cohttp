@@ -53,13 +53,14 @@ module Server : sig
     Eio.Buf_read.t ->
     (Body.chunk -> unit) ->
     Http.Header.t option
-  (** [read_chunked request chunk_handler] is [Some updated_headers] if
+  (** [read_chunked request buf_read chunk_handler] is [Some updated_headers] if
       "Transfer-Encoding" header value is "chunked" in [request] and all chunks
-      in [reader] are read successfully. [updated_headers] is the updated
+      in [buf_read] are read successfully. [updated_headers] is the updated
       headers as specified by the chunked encoding algorithm in https:
-      //datatracker.ietf.org/doc/html/rfc7230#section-4.1.3. [reader] is updated
-      to reflect the number of bytes read. Returns [None] if [Transfer-Encoding]
-      header in [headers] is not specified as "chunked" *)
+      //datatracker.ietf.org/doc/html/rfc7230#section-4.1.3.
+
+      [buf_read] is updated to reflect the number of bytes read. Returns [None]
+      if [Transfer-Encoding] header in [headers] is not specified as "chunked" *)
 
   (** {1 Response} *)
 
@@ -104,49 +105,35 @@ module Client : sig
   type response = Http.Response.t * Eio.Buf_read.t
 
   type host = string * int option
-  (** Represents a server host domain name and port, e.g. www.example.org:8080,
-      www.reddit.com *)
+  (** Represents a server host - as ip address or domain name - and an optional
+      port value, e.g. www.example.org:8080, www.reddit.com *)
 
   type resource_path = string
   (** Represents HTTP request resource path, e.g. "/shop/purchase",
       "/shop/items", "/shop/categories/" etc. *)
 
-  type 'a conn = unit -> (host * Eio.Flow.two_way as 'a)
-  (** [a 'conn] is [(host, flow)] where [host] represents a server host domain name
-      or address along with the optional tcp/ip port.
+  type ('a, 'b) conn = 'a -> (resource_path * host * #Eio.Flow.two_way as 'b)
+  (** [('a, 'b conn)] is [(resource_path, host, flow)]. [flow] is the Eio flow
+      value which is connected to the [host]. *)
 
-      [flow] is the Eio flow value which is connected to the [host]. *)
-
-  type 'a body_disallowed_call =
+  type ('a, 'b) body_disallowed_call =
     ?version:Http.Version.t ->
     ?headers:Http.Header.t ->
-    'a conn ->
-    resource_path ->
+    ('a, 'b) conn ->
+    'a ->
     response
   (** [body_disallowed_call] denotes HTTP client calls where a request is not
-      allowed to have a request body.
+      allowed to have a request body. *)
 
-      It is a lambda [fun ?version ?headers conn_fn uri -> .. response)]. The
-      [uri] represents a valid and full http uri, e.g.
-      http://www.example.org/hello?q=123
-
-      @raise invalid_arg If [uri] doesn't containt full and valid HTTP uri *)
-
-  type 'a body_allowed_call =
+  type ('a, 'b) body_allowed_call =
     ?version:Http.Version.t ->
     ?headers:Http.Header.t ->
     ?body:Body.t ->
-    'a conn ->
-    resource_path ->
+    ('a, 'b) conn ->
+    'a ->
     response
   (** [body_allowed_call] denotes HTTP client calls where a request can
-      optionally have a request body.
-
-      It is a lambda [fun ?version ?headers ?body conn_fn uri -> .. response)].
-      The [uri] represents a valid and full http uri, e.g.
-      http://www.example.org/hello?q=123
-
-      @raise invalid_arg If [uri] doesn't containt full and valid HTTP uri *)
+      optionally have a request body. *)
 
   (** {1 Generic HTTP call} *)
 
@@ -155,21 +142,21 @@ module Client : sig
     ?version:Http.Version.t ->
     ?headers:Http.Header.t ->
     ?body:Body.t ->
-    'a conn ->
-    resource_path ->
+    ('a, 'b) conn ->
+    'a ->
     response
 
   (** {1 HTTP Calls with Body Disallowed} *)
 
-  val get : 'a body_disallowed_call
-  val head : 'a body_disallowed_call
-  val delete : 'a body_disallowed_call
+  val get : ('a, 'b) body_disallowed_call
+  val head : ('a, 'b) body_disallowed_call
+  val delete : ('a, 'b) body_disallowed_call
 
   (** {1 HTTP Calls with Body Allowed} *)
 
-  val post : 'a body_allowed_call
-  val put : 'a body_allowed_call
-  val patch : 'a body_allowed_call
+  val post : ('a, 'b) body_allowed_call
+  val put : ('a, 'b) body_allowed_call
+  val patch : ('a, 'b) body_allowed_call
 
   (** {1 Response Body} *)
 

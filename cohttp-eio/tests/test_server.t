@@ -57,7 +57,7 @@ Test POST
   hello world!
   $ kill ${running_pid}
 
-Test chunk request processing.
+Test chunk request processing:
 1. Test chunks
 2. Test chunk extension parsing
 3. Test chunk trailer header processing
@@ -66,7 +66,7 @@ Test chunk request processing.
   $ test-server -p ${port} &
   $ running_pid=$!
   $ crlf << EOF | ncat localhost ${port}
-  > POST /chunk HTTP/1.1
+  > POST /handle_chunk HTTP/1.1
   > Content-Type: text/plain
   > Transfer-Encoding: chunked
   > Trailer: Expires, Header1
@@ -84,11 +84,11 @@ Test chunk request processing.
   > 
   > EOF
   HTTP/1.1 200 OK
-  content-length: 347
+  content-length: 354
   content-type: text/plain; charset=UTF-8
   
   meth: POST
-  resource: /chunk
+  resource: /handle_chunk
   version: HTTP/1.1
   headers: Header {
    Content-Length = "23"; Header1 = "Header1 value text";

@@ -5,12 +5,12 @@ module Client = Cohttp_eio.Client
 module Response = Http.Response
 module Status = Http.Status
 
-let conn env sw () =
+let conn env sw resource_path =
   let hostname = "docker" in
   let addr = `Unix "/var/run/docker.sock" in
-  let flow = (Net.connect ~sw (Stdenv.net env) addr :> Eio.Flow.two_way) in
+  let flow = Net.connect ~sw env#net addr in
   let host = (hostname, None) in
-  (host, flow)
+  (resource_path, host, flow)
 
 let () =
   Eio_main.run @@ fun env ->
