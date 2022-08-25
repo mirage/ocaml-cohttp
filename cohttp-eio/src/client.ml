@@ -63,7 +63,7 @@ let response buf_read =
 
 let call ?(meth = `GET) ?(version = `HTTP_1_1) ?(headers = Http.Header.init ())
     ?(body = Body.Empty) conn_fn uri =
-  let (resource_path, (host_name, host_port), flow) = conn_fn uri in
+  let resource_path, (host_name, host_port), flow = conn_fn uri in
   let host =
     match host_port with
     | Some port -> host_name ^ ":" ^ string_of_int port
@@ -103,7 +103,13 @@ let patch ?version ?headers ?body stream uri =
 (* Response Body *)
 
 let read_fixed ((response, reader) : Http.Response.t * Buf_read.t) =
-  Body.read_fixed reader response.headers
+  match
+    Http.Header.get response.headers "Content-Length"
+    |> Option.get
+    |> int_of_string
+  with
+  | content_length -> Buf_read.take content_length reader
+  | exception _ -> Buf_read.take_all reader
 
 let read_chunked : response -> (Body.chunk -> unit) -> Http.Header.t option =
  fun (response, reader) f -> Body.read_chunked reader response.headers f

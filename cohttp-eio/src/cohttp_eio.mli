@@ -160,10 +160,11 @@ module Client : sig
 
   (** {1 Response Body} *)
 
-  val read_fixed : response -> string option
-  (** [read_fixed (response,reader)] is [Some bytes], where [bytes] is of length
-      [n] if "Content-Length" header is a valid integer value [n] in [response].
-      [reader] is updated to reflect that [n] bytes was read. *)
+  val read_fixed : response -> string
+  (** [read_fixed (response,reader)] is [body_content], where [body_content] is
+      of length [n] if "Content-Length" header exists and is a valid integer
+      value [n] in [response]. Otherwise [body_content] holds all bytes until
+      eof. *)
 
   val read_chunked : response -> (Body.chunk -> unit) -> Http.Header.t option
   (** [read_chunked response chunk_handler] is [Some updated_headers] if

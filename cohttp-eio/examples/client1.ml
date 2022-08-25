@@ -13,4 +13,4 @@ let () =
   Eio_main.run @@ fun env ->
   Switch.run @@ fun sw ->
   let res = Client.get (conn env sw) "/" in
-  match Client.read_fixed res with Some b -> print_string b | None -> ()
+  print_string @@ Client.read_fixed res

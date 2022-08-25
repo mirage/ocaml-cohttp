@@ -45,13 +45,6 @@ let pp_chunk fmt = function
         fmt chunk
   | Last_chunk extensions -> pp_chunk_extension fmt extensions
 
-let read_fixed t headers =
-  let ( let* ) o f = Option.bind o f in
-  let ( let+ ) o f = Option.map f o in
-  let* v = Http.Header.get headers "Content-Length" in
-  let+ content_length = int_of_string_opt v in
-  Buf_read.take content_length t
-
 (* Chunked encoding parser *)
 
 let hex_digit = function

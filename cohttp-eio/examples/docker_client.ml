@@ -20,8 +20,6 @@ let () =
   Printf.printf "Response code: %d\n" code;
   Printf.printf "Headers: %s\n"
     (fst res |> Response.headers |> Http.Header.to_string);
-  match Client.read_fixed res with
-  | Some body ->
-      Printf.printf "Body of length: %d\n" (String.length body);
-      print_endline ("Received body\n" ^ body)
-  | None -> ()
+  let body = Client.read_fixed res in
+  Printf.printf "Body of length: %d\n" (String.length body);
+  print_endline ("Received body\n" ^ body)

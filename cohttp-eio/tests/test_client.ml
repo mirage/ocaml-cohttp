@@ -15,7 +15,7 @@ let get env sw port =
       ~headers:(Http.Header.of_list [ ("Accept", "application/json") ])
       (conn env sw port) "/get"
   in
-  match Client.read_fixed res with Some s -> print_string s | None -> ()
+  print_string @@ Client.read_fixed res
 
 let post env sw port =
   let content = "hello world!" in
@@ -29,7 +29,7 @@ let post env sw port =
            ])
       ~body:(Body.Fixed content) (conn env sw port) "/post"
   in
-  match Client.read_fixed res with Some s -> print_string s | None -> ()
+  print_string @@ Client.read_fixed res
 
 (** Write chunk test.
 
@@ -82,9 +82,7 @@ let post_chunk env sw port =
           (Body.Chunked { body_writer = body_writer chan 0; trailer_writer })
         (conn env sw port) "/handle_chunk")
   |> Client.read_fixed
-  |> function
-  | Some r -> print_string r
-  | None -> ()
+  |> print_string
 
 (* Read chunk and dump to a "client_chunks2.txt" *)
 let get_chunk env sw port =

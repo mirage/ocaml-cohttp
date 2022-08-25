@@ -16,7 +16,12 @@ let domain_count =
 
 let read_fixed request reader =
   match Http.Request.meth request with
-  | `POST | `PUT | `PATCH -> Body.read_fixed reader request.headers
+  | `POST | `PUT | `PATCH ->
+      let ( let* ) o f = Option.bind o f in
+      let ( let+ ) o f = Option.map f o in
+      let* v = Http.Header.get request.headers "Content-Length" in
+      let+ content_length = int_of_string_opt v in
+      Buf_read.take content_length reader
   | _ -> None
 
 let read_chunked request reader f =
