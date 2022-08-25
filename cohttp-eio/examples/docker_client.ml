@@ -5,17 +5,12 @@ module Client = Cohttp_eio.Client
 module Response = Http.Response
 module Status = Http.Status
 
-let conn env sw resource_path =
-  let hostname = "docker" in
-  let addr = `Unix "/var/run/docker.sock" in
-  let flow = Net.connect ~sw env#net addr in
-  let host = (hostname, None) in
-  (resource_path, host, flow)
-
 let () =
   Eio_main.run @@ fun env ->
   Switch.run @@ fun sw ->
-  let res = Client.get (conn env sw) "/version" in
+  let addr = `Unix "/var/run/docker.sock" in
+  let conn = Net.connect ~sw env#net addr in
+  let res = Client.get ~conn ("docker", None) "/version" in
   let code = fst res |> Response.status |> Status.to_int in
   Printf.printf "Response code: %d\n" code;
   Printf.printf "Headers: %s\n"

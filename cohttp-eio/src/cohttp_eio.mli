@@ -101,6 +101,7 @@ module Server : sig
   val not_found_handler : handler
 end
 
+(** [Client] is a HTTP/1.1 client. *)
 module Client : sig
   type response = Http.Response.t * Eio.Buf_read.t
 
@@ -112,25 +113,23 @@ module Client : sig
   (** Represents HTTP request resource path, e.g. "/shop/purchase",
       "/shop/items", "/shop/categories/" etc. *)
 
-  type ('a, 'b) conn = 'a -> (resource_path * host * #Eio.Flow.two_way as 'b)
-  (** [('a, 'b conn)] is [(resource_path, host, flow)]. [flow] is the Eio flow
-      value which is connected to the [host]. *)
-
-  type ('a, 'b) body_disallowed_call =
+  type 'a body_disallowed_call =
     ?version:Http.Version.t ->
     ?headers:Http.Header.t ->
-    ('a, 'b) conn ->
-    'a ->
+    conn:(#Eio.Flow.two_way as 'a) ->
+    host ->
+    resource_path ->
     response
   (** [body_disallowed_call] denotes HTTP client calls where a request is not
       allowed to have a request body. *)
 
-  type ('a, 'b) body_allowed_call =
+  type 'a body_allowed_call =
     ?version:Http.Version.t ->
     ?headers:Http.Header.t ->
     ?body:Body.t ->
-    ('a, 'b) conn ->
-    'a ->
+    conn:(#Eio.Flow.two_way as 'a) ->
+    host ->
+    resource_path ->
     response
   (** [body_allowed_call] denotes HTTP client calls where a request can
       optionally have a request body. *)
@@ -142,21 +141,22 @@ module Client : sig
     ?version:Http.Version.t ->
     ?headers:Http.Header.t ->
     ?body:Body.t ->
-    ('a, 'b) conn ->
-    'a ->
+    conn:#Eio.Flow.two_way ->
+    host ->
+    resource_path ->
     response
 
   (** {1 HTTP Calls with Body Disallowed} *)
 
-  val get : ('a, 'b) body_disallowed_call
-  val head : ('a, 'b) body_disallowed_call
-  val delete : ('a, 'b) body_disallowed_call
+  val get : 'a body_disallowed_call
+  val head : 'a body_disallowed_call
+  val delete : 'a body_disallowed_call
 
   (** {1 HTTP Calls with Body Allowed} *)
 
-  val post : ('a, 'b) body_allowed_call
-  val put : ('a, 'b) body_allowed_call
-  val patch : ('a, 'b) body_allowed_call
+  val post : 'a body_allowed_call
+  val put : 'a body_allowed_call
+  val patch : 'a body_allowed_call
 
   (** {1 Response Body} *)
 
