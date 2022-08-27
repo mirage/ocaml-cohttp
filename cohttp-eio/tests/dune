@@ -1,17 +1,6 @@
-(executable
- (name test_server)
- (modules test_server)
- (libraries cohttp_eio eio_main fmt))
-
-(executable
- (name test_chunk_server)
- (modules test_chunk_server)
- (libraries cohttp_eio eio_main fmt))
-
-(executable
- (name crlf)
- (modules crlf)
- (libraries unix))
+(executables
+ (names test_server test_client crlf)
+ (libraries cohttp_eio eio_main fmt uri))
 
 (mdx
  (package cohttp-eio)
@@ -22,7 +11,12 @@
   (binaries
    (test_server.exe as test-server)
    crlf.exe
-   (test_chunk_server.exe as test-chunk-server))))
+   (test_client.exe as test-client))))
 
 (cram
- (deps %{bin:test-server} %{bin:test-chunk-server} %{bin:crlf}))
+ (deps
+  %{bin:test-server}
+  %{bin:crlf}
+  %{bin:test-client}
+  chunks.txt
+  server_chunks.txt))

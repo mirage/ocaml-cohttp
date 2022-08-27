@@ -1,6 +1,6 @@
-(executable
- (name server1)
- (libraries cohttp-eio uri eio_main))
+(executables
+ (names server1 client1 docker_client client_timeout)
+ (libraries cohttp-eio eio_main eio.unix unix))
 
 (alias
  (name runtest)

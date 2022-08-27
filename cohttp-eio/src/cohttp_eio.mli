@@ -35,28 +35,32 @@ module Server : sig
   type response = Http.Response.t * Body.t
   type handler = request -> response
 
-  (** {1 Request} *)
+  (** {1 Request Body} *)
 
-  val read_fixed : Http.Request.t -> Eio.Buf_read.t -> string
-  (** [read_fixed request body] reads a string of length [n] if "Content-Length"
-      header is a valid integer value [n] in [request].
+  val read_fixed : Http.Request.t -> Eio.Buf_read.t -> string option
+  (** [read_fixed (request, buf_read)] is [Some content], where [content] is of
+      length [n] if "Content-Length" header is a valid integer value [n] in
+      [request].
 
-      @raise Invalid_argument
-        if ["Content-Length"] header is missing or is an invalid value in
-        [headers] OR if the request http method is not one of [POST], [PUT] or
-        [PATCH]. *)
+      [buf_read] is updated to reflect that [n] bytes was read.
+
+      If ["Content-Length"] header is missing or is an invalid value in
+      [request] OR if the request http method is not one of [POST], [PUT] or
+      [PATCH], then [None] is returned. *)
 
   val read_chunked :
-    Http.Request.t -> Eio.Buf_read.t -> (Body.chunk -> unit) -> Http.Header.t
-  (** [read_chunked request body chunk_handler] is [updated_headers] if
-      "Transfer-Encoding" header value is "chunked" in [headers] and all chunks
-      in [reader] are read successfully. [updated_headers] is the updated
-      headers as specified by the chunked encoding algorithm in
-      https://datatracker.ietf.org/doc/html/rfc7230#section-4.1.3. Otherwise it
-      is [Error err] where [err] is the error text.
+    Http.Request.t ->
+    Eio.Buf_read.t ->
+    (Body.chunk -> unit) ->
+    Http.Header.t option
+  (** [read_chunked request buf_read chunk_handler] is [Some updated_headers] if
+      "Transfer-Encoding" header value is "chunked" in [request] and all chunks
+      in [buf_read] are read successfully. [updated_headers] is the updated
+      headers as specified by the chunked encoding algorithm in https:
+      //datatracker.ietf.org/doc/html/rfc7230#section-4.1.3.
 
-      @raise Invalid_argument
-        if [Transfer-Encoding] header in [headers] is not specified as "chunked" *)
+      [buf_read] is updated to reflect the number of bytes read. Returns [None]
+      if [Transfer-Encoding] header in [headers] is not specified as "chunked" *)
 
   (** {1 Response} *)
 
@@ -95,4 +99,82 @@ module Server : sig
   (** {1 Basic Handlers} *)
 
   val not_found_handler : handler
+end
+
+(** [Client] is a HTTP/1.1 client. *)
+module Client : sig
+  type response = Http.Response.t * Eio.Buf_read.t
+
+  type host = string * int option
+  (** Represents a server host - as ip address or domain name - and an optional
+      port value, e.g. www.example.org:8080, www.reddit.com *)
+
+  type resource_path = string
+  (** Represents HTTP request resource path, e.g. "/shop/purchase",
+      "/shop/items", "/shop/categories/" etc. *)
+
+  type 'a body_disallowed_call =
+    ?version:Http.Version.t ->
+    ?headers:Http.Header.t ->
+    conn:(#Eio.Flow.two_way as 'a) ->
+    host ->
+    resource_path ->
+    response
+  (** [body_disallowed_call] denotes HTTP client calls where a request is not
+      allowed to have a request body. *)
+
+  type 'a body_allowed_call =
+    ?version:Http.Version.t ->
+    ?headers:Http.Header.t ->
+    ?body:Body.t ->
+    conn:(#Eio.Flow.two_way as 'a) ->
+    host ->
+    resource_path ->
+    response
+  (** [body_allowed_call] denotes HTTP client calls where a request can
+      optionally have a request body. *)
+
+  (** {1 Generic HTTP call} *)
+
+  val call :
+    ?meth:Http.Method.t ->
+    ?version:Http.Version.t ->
+    ?headers:Http.Header.t ->
+    ?body:Body.t ->
+    conn:#Eio.Flow.two_way ->
+    host ->
+    resource_path ->
+    response
+
+  (** {1 HTTP Calls with Body Disallowed} *)
+
+  val get : 'a body_disallowed_call
+  val head : 'a body_disallowed_call
+  val delete : 'a body_disallowed_call
+
+  (** {1 HTTP Calls with Body Allowed} *)
+
+  val post : 'a body_allowed_call
+  val put : 'a body_allowed_call
+  val patch : 'a body_allowed_call
+
+  (** {1 Response Body} *)
+
+  val read_fixed : response -> string
+  (** [read_fixed (response,reader)] is [body_content], where [body_content] is
+      of length [n] if "Content-Length" header exists and is a valid integer
+      value [n] in [response]. Otherwise [body_content] holds all bytes until
+      eof. *)
+
+  val read_chunked : response -> (Body.chunk -> unit) -> Http.Header.t option
+  (** [read_chunked response chunk_handler] is [Some updated_headers] if
+      "Transfer-Encoding" header value is "chunked" in [response] and all chunks
+      in [reader] are read successfully. [updated_headers] is the updated
+      headers as specified by the chunked encoding algorithm in https:
+      //datatracker.ietf.org/doc/html/rfc7230#section-4.1.3.
+
+      [reader] is updated to reflect the number of bytes read.
+
+      Returns [None] if [Transfer-Encoding] header in [headers] is not specified
+      as "chunked" *)
 end
