@@ -81,6 +81,7 @@ A missing page:
 +socket: read "GET /missing HTTP/1.1\r\n"
 +             "\r\n"
 +socket: wrote "HTTP/1.1 404 Not Found\r\n"
++              "Content-Length: 0\r\n"
 +              "\r\n"
 - : unit = ()
 ```
