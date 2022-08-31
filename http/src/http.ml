@@ -756,6 +756,9 @@ module Request = struct
 
   let is_keep_alive { version; headers; _ } = is_keep_alive version headers
 
+  let requires_content_length t =
+    match t.meth with `POST | `PUT | `PATCH -> true | _ -> false
+
   (* Defined for method types in RFC7231 *)
   let has_body req =
     match req.meth with
@@ -815,6 +818,13 @@ module Response = struct
   let status t = t.status
   let flush t = t.flush
   let is_keep_alive { version; headers; _ } = is_keep_alive version headers
+
+  let requires_content_length ?request_meth t =
+    match (Status.to_int t.status, request_meth) with
+    | 204, _ -> false
+    | s, _ when s >= 100 && s < 200 -> false
+    | s, Some meth when s >= 200 && s < 300 && meth = `CONNECT -> false
+    | _, _ -> not (Header.mem t.headers "Transfer-Encoding")
 
   let pp fmt t =
     let open Format in

@@ -250,3 +250,20 @@ let write_body writer body =
   | Chunked chunk_writer -> write_chunked writer chunk_writer
   | Custom f -> f writer
   | Empty -> ()
+
+(* Adds "Content-Length" header if required. *)
+let add_content_length (requires_content_length : unit -> bool) headers body :
+    Http.Header.t =
+  let content_length_hdr = "Content-Length" in
+  if
+    requires_content_length ()
+    && not (Http.Header.mem headers content_length_hdr)
+  then
+    match body with
+    | Fixed s ->
+        String.length s
+        |> string_of_int
+        |> Http.Header.add headers content_length_hdr
+    | Empty -> Http.Header.add headers content_length_hdr "0"
+    | _ -> headers
+  else headers

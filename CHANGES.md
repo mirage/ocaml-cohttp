@@ -1,4 +1,5 @@
 ## Unreleased
+- cohttp-eio: add Content-Length header to request/response (bikallem #929)
 - cohttp-eio: add cohttp-eio client api - Cohttp_eio.Client (bikallem #879)
 - cohttp-eio: use Eio.Buf_write and improve server API (talex5 #887)
 - cohttp-eio: update to Eio 0.3 (talex5 #886)
