@@ -720,6 +720,14 @@ let is_keep_alive version headers =
 let pp_field field_name pp_v fmt v =
   Format.fprintf fmt "@[<1>%s:@ %a@]" field_name pp_v v
 
+let content_length requires_content_length headers =
+  let ( let* ) o f = Option.bind o f in
+  if requires_content_length then
+    let* x = Header.get headers "Content-Length" in
+    let* x = int_of_string_opt x in
+    if x >= 0 then Some x else None
+  else None
+
 module Request = struct
   type t = {
     headers : Header.t;  (** HTTP request headers *)
@@ -758,6 +766,8 @@ module Request = struct
 
   let requires_content_length t =
     match t.meth with `POST | `PUT | `PATCH -> true | _ -> false
+
+  let content_length t = content_length (requires_content_length t) t.headers
 
   (* Defined for method types in RFC7231 *)
   let has_body req =
@@ -825,6 +835,8 @@ module Response = struct
     | s, _ when s >= 100 && s < 200 -> false
     | s, Some meth when s >= 200 && s < 300 && meth = `CONNECT -> false
     | _, _ -> not (Header.mem t.headers "Transfer-Encoding")
+
+  let content_length t = content_length (requires_content_length t) t.headers
 
   let pp fmt t =
     let open Format in

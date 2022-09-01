@@ -401,6 +401,15 @@ module Request : sig
 
       See https://www.rfc-editor.org/rfc/rfc7230#section-3.3.2 *)
 
+  val content_length : t -> int option
+  (** [content_length t] is [Some x] if the "Content-Length" header in [t]
+      exists and its value [x] is a non negative integer, [x>=0]
+
+      It is [None] if [requires_content_length t = false] or the value encoded
+      in "Content-Length" is not a valid integer value, i.e [>= 0].
+
+      See https://www.rfc-editor.org/rfc/rfc7230#section-3.3.2 *)
+
   val make :
     ?meth:Method.t ->
     ?version:Version.t ->
@@ -456,6 +465,15 @@ module Response : sig
         header.
 
       https://www.rfc-editor.org/rfc/rfc7230#section-3.3.2 *)
+
+  val content_length : t -> int option
+  (** [content_length t] is [Some x] if the "Content-Length" header in [t]
+      exists and its value [x] is a non negative integer, [x>=0]
+
+      It is [None] if [requires_content_length t = false] or the value encoded
+      in "Content-Length" is not a valid integer value, i.e [>= 0].
+
+      See https://www.rfc-editor.org/rfc/rfc7230#section-3.3.2 *)
 
   val make :
     ?version:Version.t ->
