@@ -116,13 +116,9 @@ let patch ?version ?headers ?body ~conn host resource_path =
 (* Response Body *)
 
 let read_fixed ((response, reader) : Http.Response.t * Buf_read.t) =
-  match
-    Http.Header.get response.headers "Content-Length"
-    |> Option.get
-    |> int_of_string
-  with
-  | content_length -> Buf_read.take content_length reader
-  | exception _ -> Buf_read.take_all reader
+  match Http.Response.content_length response with
+  | Some content_length -> Buf_read.take content_length reader
+  | None -> Buf_read.take_all reader
 
 let read_chunked : response -> (Body.chunk -> unit) -> Http.Header.t option =
  fun (response, reader) f -> Body.read_chunked reader response.headers f
