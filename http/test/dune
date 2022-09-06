@@ -22,3 +22,15 @@
    ppx_compare
    ppx_here))
  (libraries http core base_quickcheck alcotest))
+
+(test
+ (name test_request)
+ (modules test_request)
+ (package http)
+ (libraries http alcotest))
+
+(test
+ (name test_response)
+ (modules test_response)
+ (package http)
+ (libraries http alcotest))

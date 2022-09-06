@@ -392,6 +392,24 @@ module Request : sig
   val is_keep_alive : t -> bool
   (** Return true whether the connection should be reused *)
 
+  val requires_content_length : t -> bool
+  (** [requires_content_length t] is [true] if [t.meth] is one of
+      [`POST, `PUT or `PATCH]. Otherwise it is [false].
+
+      A [true] value indicates that a request must include a "Content-Length"
+      header.
+
+      See https://www.rfc-editor.org/rfc/rfc7230#section-3.3.2 *)
+
+  val content_length : t -> int option
+  (** [content_length t] is [Some x] if the "Content-Length" header in [t]
+      exists and its value [x] is a non negative integer, [x>=0]
+
+      It is [None] if [requires_content_length t = false] or the value encoded
+      in "Content-Length" is not a valid integer value, i.e [>= 0].
+
+      See https://www.rfc-editor.org/rfc/rfc7230#section-3.3.2 *)
+
   val make :
     ?meth:Method.t ->
     ?version:Version.t ->
@@ -436,6 +454,26 @@ module Response : sig
 
   val is_keep_alive : t -> bool
   (** Return true whether the connection should be reused *)
+
+  val requires_content_length : ?request_meth:Method.t -> t -> bool
+  (** [requires_content_length ~request_meth t] is [true] if a combination of
+      [t] and [request_meth] indicates that a response message must include
+      "Content-Length" header. However, please note exceptions to this:
+
+      - Response with status code of [304] may or may not include the header.
+      - Response to request with method [HEAD] may or may not include the
+        header.
+
+      https://www.rfc-editor.org/rfc/rfc7230#section-3.3.2 *)
+
+  val content_length : t -> int option
+  (** [content_length t] is [Some x] if the "Content-Length" header in [t]
+      exists and its value [x] is a non negative integer, [x>=0]
+
+      It is [None] if [requires_content_length t = false] or the value encoded
+      in "Content-Length" is not a valid integer value, i.e [>= 0].
+
+      See https://www.rfc-editor.org/rfc/rfc7230#section-3.3.2 *)
 
   val make :
     ?version:Version.t ->

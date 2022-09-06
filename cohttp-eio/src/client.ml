@@ -25,12 +25,20 @@ type 'a body_allowed_call =
   response
 
 (* Request line https://datatracker.ietf.org/doc/html/rfc7230#section-3.1.1 *)
-let write_request writer (meth, version, headers, resource_path, body) =
-  Buf_write.string writer (Http.Method.to_string meth);
+let write_request writer request body =
+  let headers =
+    Body.add_content_length
+      (Http.Request.requires_content_length request)
+      (Http.Request.headers request)
+      body
+  in
+  let meth = Http.Method.to_string @@ Http.Request.meth request in
+  let version = Http.Version.to_string @@ Http.Request.version request in
+  Buf_write.string writer meth;
   Buf_write.char writer ' ';
-  Buf_write.string writer resource_path;
+  Buf_write.string writer @@ Http.Request.resource request;
   Buf_write.char writer ' ';
-  Buf_write.string writer (Http.Version.to_string version);
+  Buf_write.string writer version;
   Buf_write.string writer "\r\n";
   Rwer.write_headers writer headers;
   Buf_write.string writer "\r\n";
@@ -62,16 +70,21 @@ let response buf_read =
 
 (* Generic HTTP call *)
 
-let call ?(meth = `GET) ?(version = `HTTP_1_1) ?(headers = Http.Header.init ())
-    ?(body = Body.Empty) ~conn host resource_path =
-  let host =
-    match host with
-    | host, Some port -> host ^ ":" ^ string_of_int port
-    | host, None -> host
+let call ?meth ?version ?(headers = Http.Header.init ()) ?(body = Body.Empty)
+    ~conn host resource_path =
+  let headers =
+    if not (Http.Header.mem headers "Host") then
+      let host =
+        match host with
+        | host, Some port -> host ^ ":" ^ string_of_int port
+        | host, None -> host
+      in
+      Http.Header.add headers "Host" host
+    else headers
   in
+  let request = Http.Request.make ?meth ?version ~headers resource_path in
   Buf_write.with_flow ~initial_size:0x1000 conn (fun writer ->
-      let headers = Http.Header.add_unless_exists headers "Host" host in
-      write_request writer (meth, version, headers, resource_path, body);
+      write_request writer request body;
       let reader =
         Eio.Buf_read.of_flow ~initial_size:0x1000 ~max_size:max_int conn
       in
@@ -103,13 +116,9 @@ let patch ?version ?headers ?body ~conn host resource_path =
 (* Response Body *)
 
 let read_fixed ((response, reader) : Http.Response.t * Buf_read.t) =
-  match
-    Http.Header.get response.headers "Content-Length"
-    |> Option.get
-    |> int_of_string
-  with
-  | content_length -> Buf_read.take content_length reader
-  | exception _ -> Buf_read.take_all reader
+  match Http.Response.content_length response with
+  | Some content_length -> Buf_read.take content_length reader
+  | None -> Buf_read.take_all reader
 
 let read_chunked : response -> (Body.chunk -> unit) -> Http.Header.t option =
  fun (response, reader) f -> Body.read_chunked reader response.headers f
