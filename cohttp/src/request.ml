@@ -126,8 +126,8 @@ let uri { scheme; resource; headers; meth; _ } =
         let uri = Uri.of_string path in
         match Uri.scheme uri with
         | Some _ -> (
-            (* we have an absoluteURI *)
             Uri.(
+              (* we have an absoluteURI *)
               match path uri with "" -> with_path uri "/" | _ -> uri))
         | None ->
             let empty = Uri.of_string "" in
