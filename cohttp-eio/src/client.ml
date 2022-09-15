@@ -74,16 +74,15 @@ let response buf_read =
 
 let call ?meth ?version ?(headers = Http.Header.init ()) ?(body = Body.Empty)
     ~conn host resource_path =
-  let host_hdr = "Host" in
   let headers =
-    if not (Http.Header.mem headers host_hdr) then
+    if not (Http.Header.mem headers "Host") then
       let host =
         match host with
         | host, Some port -> host ^ ":" ^ string_of_int port
         | host, None -> host
       in
-      Http.Header.add headers host_hdr host
-    else Http.Header.move_to_front headers host_hdr
+      Http.Header.add headers "Host" host
+    else headers
   in
   let headers =
     Http.Header.add_unless_exists headers "User-Agent" "cohttp-eio"

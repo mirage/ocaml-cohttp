@@ -175,11 +175,13 @@ let move_to_front_tests () =
     ]
   in
   aeso {|move_to_front h "Host"|} (Some "Host")
-    (H.(move_to_front (H.of_list headers1) "Host") |> H.first |> function
+    (H.(Private.move_to_front (H.of_list headers1) "Host" |> Private.first)
+     |> function
      | Some (k, _) -> Some k
      | None -> Some "");
   aeso {|move_to_front h "Host"|} (Some "Host")
-    (H.(move_to_front (H.of_list headers2) "Host") |> H.first |> function
+    (H.(Private.move_to_front (H.of_list headers2) "Host" |> Private.first)
+     |> function
      | Some (k, _) -> Some k
      | None -> Some "")
 

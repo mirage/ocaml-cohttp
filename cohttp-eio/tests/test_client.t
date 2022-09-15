@@ -8,9 +8,8 @@ Test Client.get
   resource: /get
   version: HTTP/1.1
   headers: Header {
-   Accept = "application/json"; Host = "localhost:8082";
-   User-Agent = "cohttp-eio"; TE = "trailers"; Connection = "TE" }
-
+   Accept = "application/json"; User-Agent = "cohttp-eio"; TE = "trailers";
+   Connection = "TE"; Host = "localhost:8082" }
   $ kill ${running_pid}
 
 Test Client.post
@@ -23,11 +22,11 @@ Test Client.post
   resource: /post
   version: HTTP/1.1
   headers: Header {
-   Accept = "application/json"; Content-Length = "12"; Host = "localhost:8082";
-   User-Agent = "cohttp-eio"; TE = "trailers"; Connection = "TE" }
+   Accept = "application/json"; Content-Length = "12";
+   User-Agent = "cohttp-eio"; TE = "trailers"; Connection = "TE";
+   Host = "localhost:8082" }
   
   hello world!
-
   $ kill ${running_pid}
 
 
@@ -41,8 +40,8 @@ Test posting "chunked" data
   version: HTTP/1.1
   headers: Header {
    Content-Length = "23"; Header1 = "Header1 value text";
-   Content-Type = "text/plain"; Host = "localhost:8082";
-   User-Agent = "cohttp-eio"; TE = "trailers"; Connection = "TE" }
+   Content-Type = "text/plain"; User-Agent = "cohttp-eio"; TE = "trailers";
+   Connection = "TE"; Host = "localhost:8082" }
   
   size: 7
    data: Mozilla
