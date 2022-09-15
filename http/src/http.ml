@@ -108,6 +108,8 @@ module Header = struct
     in
     loop h
 
+  let first t = match t with [] -> None | (k, v) :: _ -> Some (k, v)
+
   let get_multi (h : t) (k : string) =
     let rec loop h acc =
       match h with
@@ -163,6 +165,16 @@ module Header = struct
     | xs, _ ->
         let h = remove h k in
         add_multi h k xs
+
+  let move_to_front t hdr_name =
+    match t with
+    | (k, _) :: _ when caseless_equal k hdr_name -> t
+    | _ -> (
+        match get t hdr_name with
+        | Some v ->
+            let headers = remove t hdr_name in
+            add headers hdr_name v
+        | None -> t)
 
   let map (f : string -> string -> string) (h : t) : t =
     List.map

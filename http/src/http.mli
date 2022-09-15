@@ -202,8 +202,8 @@ module Header : sig
       name [k] and value [v]. *)
 
   val add : t -> string -> string -> t
-  (** [add h k v] adds the header name [k] and it associated value [v] at the
-      end of header list [h]. *)
+  (** [add h k v] adds the header name [k] and its associated value [v] at the
+      front of header list [h]. *)
 
   val add_list : t -> (string * string) list -> t
   (** [add_list h l] adds in order all header pairs contained in [l] to the
@@ -256,6 +256,10 @@ module Header : sig
   (** [get h k] returns [Some v] where [v] is the last added value associated
       with [k] in [h] if it exists and [None] otherwise *)
 
+  val first : t -> (string * string) option
+  (** [first t] is [Some (hdr_name, hdr_value)], which represents the first
+      header in headers list [t]. It is [None] if [t] is empty. *)
+
   val get_multi : t -> string -> string list
   (** [get_multi h k] returns a list of all values associated with [k] in [h] in
       order they appear in it. *)
@@ -302,6 +306,11 @@ module Header : sig
 
       - If [k] was already associated in [h] to a list that is equal to [vs],
         [h] is returned unchanged. *)
+
+  val move_to_front : t -> string -> t
+  (** [move_to_front t hdr_name] is [t] with header name [hdr_name] moved to the
+      front of the headers list [t]. If the header doesn't exist in [t] or the
+      header is already at the front, then [t] is unchanged. *)
 
   val iter : (string -> string -> unit) -> t -> unit
   val map : (string -> string -> string) -> t -> t
