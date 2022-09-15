@@ -32,6 +32,8 @@ let write_request request writer body =
       (Http.Request.headers request)
       body
   in
+  let headers = Http.Header.clean_dup headers in
+  let headers = Http.Header.Private.move_to_front headers "Host" in
   let meth = Http.Method.to_string @@ Http.Request.meth request in
   let version = Http.Version.to_string @@ Http.Request.version request in
   Buf_write.string writer meth;
@@ -72,15 +74,16 @@ let response buf_read =
 
 let call ?meth ?version ?(headers = Http.Header.init ()) ?(body = Body.Empty)
     ~conn host resource_path =
+  let host_hdr = "Host" in
   let headers =
-    if not (Http.Header.mem headers "Host") then
+    if not (Http.Header.mem headers host_hdr) then
       let host =
         match host with
         | host, Some port -> host ^ ":" ^ string_of_int port
         | host, None -> host
       in
-      Http.Header.add headers "Host" host
-    else headers
+      Http.Header.add headers host_hdr host
+    else Http.Header.move_to_front headers host_hdr
   in
   let headers =
     Http.Header.add_unless_exists headers "User-Agent" "cohttp-eio"
