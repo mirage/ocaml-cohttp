@@ -22,6 +22,8 @@ and chunk_body = {
 
 and chunk_extension = { name : string; value : string option }
 
+let is_chunked = function Chunked _ -> true | _ -> false
+
 let pp_chunk_extension fmt =
   Fmt.(
     vbox

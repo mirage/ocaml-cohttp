@@ -9,7 +9,7 @@ Test Client.get
   version: HTTP/1.1
   headers: Header {
    Accept = "application/json"; Host = "localhost:8082";
-   User-Agent = "cohttp-eio" }
+   User-Agent = "cohttp-eio"; TE = "trailers"; Connection = "TE" }
 
   $ kill ${running_pid}
 
@@ -24,7 +24,7 @@ Test Client.post
   version: HTTP/1.1
   headers: Header {
    Accept = "application/json"; Content-Length = "12"; Host = "localhost:8082";
-   User-Agent = "cohttp-eio" }
+   User-Agent = "cohttp-eio"; TE = "trailers"; Connection = "TE" }
   
   hello world!
 
@@ -42,7 +42,7 @@ Test posting "chunked" data
   headers: Header {
    Content-Length = "23"; Header1 = "Header1 value text";
    Content-Type = "text/plain"; Host = "localhost:8082";
-   User-Agent = "cohttp-eio" }
+   User-Agent = "cohttp-eio"; TE = "trailers"; Connection = "TE" }
   
   size: 7
    data: Mozilla
