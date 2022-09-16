@@ -82,6 +82,9 @@ let call ?meth ?version ?(headers = Http.Header.init ()) ?(body = Body.Empty)
       Http.Header.add headers "Host" host
     else headers
   in
+  let headers =
+    Http.Header.add_unless_exists headers "User-Agent" "cohttp-eio"
+  in
   let request = Http.Request.make ?meth ?version ~headers resource_path in
   Buf_write.with_flow ~initial_size:0x1000 conn (fun writer ->
       write_request writer request body;

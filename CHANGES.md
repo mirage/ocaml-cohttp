@@ -1,4 +1,5 @@
 ## Unreleased
+- cohttp-eio: add User-Agent header to request from Client (bikallem #940)
 - cohttp-eio: add Content-Length header to request/response (bikallem #929)
 - cohttp-eio: add cohttp-eio client api - Cohttp_eio.Client (bikallem #879)
 - http: add requires_content_length function for requests and responses (bikallem #879)
