@@ -65,8 +65,9 @@ let internal_server_error_response =
 let bad_request_response =
   (Http.Response.make ~status:`Bad_request (), Body.Empty)
 
-let write_response writer ?request_meth (response, body) =
+let write_response ?request writer (response, body) =
   let headers =
+    let request_meth = Option.map Http.Request.meth request in
     Body.add_content_length
       (Http.Response.requires_content_length ?request_meth response)
       (Http.Response.headers response)
@@ -80,7 +81,10 @@ let write_response writer ?request_meth (response, body) =
   Buf_write.string writer "\r\n";
   Rwer.write_headers writer headers;
   Buf_write.string writer "\r\n";
-  Body.write_body writer body
+  let write_chunked_trailers =
+    Option.map Http.Request.supports_chunked_trailers request
+  in
+  Body.write_body ?write_chunked_trailers writer body
 
 (* request parsers *)
 
@@ -108,9 +112,7 @@ let rec handle_request client_addr reader writer flow handler =
   match http_request reader with
   | request ->
       let response, body = handler (request, reader, client_addr) in
-      write_response writer
-        ~request_meth:(Http.Request.meth request)
-        (response, body);
+      write_response ~request writer (response, body);
       if Http.Request.is_keep_alive request then
         handle_request client_addr reader writer flow handler
   | (exception End_of_file) | (exception Eio.Net.Connection_reset _) -> ()

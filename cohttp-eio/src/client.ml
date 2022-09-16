@@ -25,7 +25,7 @@ type 'a body_allowed_call =
   response
 
 (* Request line https://datatracker.ietf.org/doc/html/rfc7230#section-3.1.1 *)
-let write_request writer request body =
+let write_request request writer body =
   let headers =
     Body.add_content_length
       (Http.Request.requires_content_length request)

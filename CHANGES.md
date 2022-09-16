@@ -1,4 +1,5 @@
 ## Unreleased
+- cohttp-eio: add TE header in client. Check TE header is server (bikallem #941)
 - cohttp-eio: add User-Agent header to request from Client (bikallem #940)
 - cohttp-eio: add Content-Length header to request/response (bikallem #929)
 - cohttp-eio: add cohttp-eio client api - Cohttp_eio.Client (bikallem #879)
