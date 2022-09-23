@@ -1,3 +1,6 @@
+module Header = Header
+module Request = Request
+
 module Body : sig
   type t =
     | Fixed of string
