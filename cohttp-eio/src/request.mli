@@ -6,7 +6,7 @@ type 'a Header.t += Host : host Header.t | User_agent : string Header.t
 module Headers : sig
   include Gmap.S with type 'a key = 'a Header.t
 
-  val header_to_name_value : b -> string * string
+  val name_value : b -> string * string
 end
 
 type t

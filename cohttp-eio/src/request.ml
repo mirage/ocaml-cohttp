@@ -19,8 +19,7 @@ module Headers = struct
 
   include Gmap.Make (K)
 
-  let header_to_name_value (B (hdr, v)) =
-    let open Header in
+  let name_value (B (hdr, v)) =
     match (hdr, v) with
     | Host, (hostname, port) ->
         let v =
@@ -29,22 +28,8 @@ module Headers = struct
           | None -> hostname
         in
         ("Host", v)
-    | Content_length, len -> ("Content-Length", string_of_int len)
-    | Transfer_encoding, l ->
-        let v =
-          List.map
-            (function
-              | `chunked -> "chunked"
-              | `compress -> "compress"
-              | `deflate -> "deflate"
-              | `gzip -> "gzip")
-            l
-          |> String.concat ","
-        in
-        ("Transfer-Encoding", v)
     | User_agent, user_agent -> ("User-Agent", user_agent)
-    | Header nm, v -> (nm, v)
-    | _ -> failwith "x"
+    | _ -> Header.name_value hdr v
 end
 
 type t = {
