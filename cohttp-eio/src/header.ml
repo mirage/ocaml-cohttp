@@ -10,6 +10,9 @@ type 'a t +=
 
 exception Unrecognized_header of string
 
+(* equal case insensitive. *)
+let equal_ci = Http.Header.Private.caseless_equal
+
 let compare (type a b) (a : a t) (b : b t) : (a, b) Gmap.Order.t =
   let open Gmap.Order in
   match (a, b) with
@@ -24,7 +27,7 @@ let compare (type a b) (a : a t) (b : b t) : (a, b) Gmap.Order.t =
   | _, Date -> Gt
   | Header h1, Header h2 ->
       (* TODO optimize compare *)
-      if Http.Header.Private.caseless_equal h1 h2 then Eq
+      if equal_ci h1 h2 then Eq
       else
         let x1 = String.lowercase_ascii h1 and x2 = String.lowercase_ascii h2 in
         let cmp = String.compare x1 x2 in
@@ -88,3 +91,10 @@ let name_value (type a) (hdr : a t) (v : a) : string * string =
   | _ ->
       let nm = Obj.Extension_constructor.of_val hdr in
       raise (Unrecognized_header (Obj.Extension_constructor.name nm))
+
+let of_name_value (type a) (name, value) : a t * a =
+  match name with
+  | nm when equal_ci nm "content-length" ->
+      let len = int_of_string value in
+      Obj.magic (Content_length, len)
+  | _ -> Obj.magic (Header name, value)
