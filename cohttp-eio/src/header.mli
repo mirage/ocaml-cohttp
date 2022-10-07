@@ -1,18 +1,29 @@
 type name = string
 type value = string
-type 'a t = ..
+type 'a header = ..
 
-type 'a t +=
-  | Content_length : int t
-  | Transfer_encoding : [ `chunked | `compress | `deflate | `gzip ] list t
-  | Date : Ptime.t t
-  | Header : name -> value t
+type 'a header +=
+  | Content_length : int header
+  | Transfer_encoding : [ `chunked | `compress | `deflate | `gzip ] list header
+  | Date : Ptime.t header
+
+type (_, _) eq = Eq : ('a, 'a) eq
+
+type header_ext = {
+  decode : 'a. 'a header -> string -> string -> ('a, string) result;
+  equal : 'a 'b. 'a header -> 'b header -> ('a, 'b) eq option;
+}
 
 exception Unrecognized_header of string
+exception Duplicate_header of string
 
-val compare : 'a t -> 'b t -> ('a, 'b) Gmap.Order.t
+val extend : 'a header -> header_ext -> unit
+(** [extend t header] extends [t] with [header].
 
-val name_value : 'a t -> 'a -> name * value
-(** [name_value hdr v] is a tuple of [(name, value)]. *)
+    @raise Duplicate_header if [header] already exists *)
 
-val of_name_value : name * value -> 'a t * 'a
+val equal : 'a header -> 'b header -> ('a, 'b) eq option
+
+val name_value : 'a header -> 'a -> name * value
+(** [name_value hdr v] is [(name, value)] which represents a string value of
+    [hdr] and [v] respectively. *)

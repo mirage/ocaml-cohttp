@@ -1,41 +1,42 @@
-type 'a t = ..
 type name = string
 type value = string
+type 'a header = ..
 
-type 'a t +=
-  | Content_length : int t
-  | Transfer_encoding : [ `chunked | `compress | `deflate | `gzip ] list t
-  | Date : Ptime.t t
-  | Header : name -> value t
+type 'a header +=
+  | Content_length : int header
+  | Transfer_encoding : [ `chunked | `compress | `deflate | `gzip ] list header
+  | Date : Ptime.t header
+
+type (_, _) eq = Eq : ('a, 'a) eq
+
+type header_ext = {
+  decode : 'a. 'a header -> string -> string -> ('a, string) result;
+  equal : 'a 'b. 'a header -> 'b header -> ('a, 'b) eq option;
+}
 
 exception Unrecognized_header of string
+exception Duplicate_header of string
 
-(* equal case insensitive. *)
-let equal_ci = Http.Header.Private.caseless_equal
+let hdr_ext : (int, header_ext) Hashtbl.t = Hashtbl.create 5
+let id t = Obj.Extension_constructor.(of_val t |> id)
 
-let compare (type a b) (a : a t) (b : b t) : (a, b) Gmap.Order.t =
-  let open Gmap.Order in
-  match (a, b) with
-  | Content_length, Content_length -> Eq
-  | Content_length, _ -> Lt
-  | _, Content_length -> Gt
-  | Transfer_encoding, Transfer_encoding -> Eq
-  | Transfer_encoding, _ -> Lt
-  | _, Transfer_encoding -> Gt
-  | Date, Date -> Eq
-  | Date, _ -> Lt
-  | _, Date -> Gt
-  | Header h1, Header h2 ->
-      (* TODO optimize compare *)
-      if equal_ci h1 h2 then Eq
-      else
-        let x1 = String.lowercase_ascii h1 and x2 = String.lowercase_ascii h2 in
-        let cmp = String.compare x1 x2 in
-        if cmp = -1 then Lt else Gt
+let extend (type a) (t : a header) header =
+  let id = id t in
+  match Hashtbl.find hdr_ext id with
   | _ ->
-      let nm1 = Obj.Extension_constructor.(of_val a |> name) in
-      let nm2 = Obj.Extension_constructor.(of_val b |> name) in
-      raise @@ Unrecognized_header (nm1 ^ ", " ^ nm2)
+      let hdr = Obj.Extension_constructor.(of_val t |> name) in
+      raise @@ Duplicate_header hdr
+  | exception Not_found -> Hashtbl.replace hdr_ext id header
+
+let equal (type a b) (a : a header) (b : b header) : (a, b) eq option =
+  let ( let* ) = Option.bind in
+  match (a, b) with
+  | Content_length, Content_length -> Some Eq
+  | Transfer_encoding, Transfer_encoding -> Some Eq
+  | Date, Date -> Some Eq
+  | _ ->
+      let* header = Hashtbl.find_opt hdr_ext (id a) in
+      header.equal a b
 
 let http_date ptime =
   let (year, mm, dd), ((hh, min, ss), _) = Ptime.to_date_time ptime in
@@ -69,7 +70,7 @@ let http_date ptime =
   Format.sprintf "%s, %02d %s %04d %02d:%02d:%02d GMT" weekday dd month year hh
     min ss
 
-let name_value (type a) (hdr : a t) (v : a) : string * string =
+let name_value (type a) (hdr : a header) (v : a) : string * string =
   match hdr with
   | Content_length -> ("Content-Length", string_of_int v)
   | Transfer_encoding ->
@@ -87,14 +88,6 @@ let name_value (type a) (hdr : a t) (v : a) : string * string =
   | Date ->
       let http_date = http_date v in
       ("Date", http_date)
-  | Header nm -> (nm, v)
   | _ ->
       let nm = Obj.Extension_constructor.of_val hdr in
       raise (Unrecognized_header (Obj.Extension_constructor.name nm))
-
-let of_name_value (type a) (name, value) : a t * a =
-  match name with
-  | nm when equal_ci nm "content-length" ->
-      let len = int_of_string value in
-      Obj.magic (Content_length, len)
-  | _ -> Obj.magic (Header name, value)
