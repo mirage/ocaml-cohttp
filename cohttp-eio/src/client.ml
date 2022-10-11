@@ -25,7 +25,7 @@ type 'a body_allowed_call =
   response
 
 (* Request line https://datatracker.ietf.org/doc/html/rfc7230#section-3.1.1 *)
-let write_request writer request body =
+let write_request request writer body =
   let headers =
     Body.add_content_length
       (Http.Request.requires_content_length request)
@@ -42,7 +42,7 @@ let write_request writer request body =
   Buf_write.string writer "\r\n";
   Rwer.write_headers writer headers;
   Buf_write.string writer "\r\n";
-  Body.write_body writer body
+  Body.write_body ~write_chunked_trailers:true writer body
 
 (* response parser *)
 
@@ -85,12 +85,12 @@ let call ?meth ?version ?(headers = Http.Header.init ()) ?(body = Body.Empty)
   let headers =
     Http.Header.add_unless_exists headers "User-Agent" "cohttp-eio"
   in
-  let request = Http.Request.make ?meth ?version ~headers resource_path in
-  Buf_write.with_flow ~initial_size:0x1000 conn (fun writer ->
-      write_request writer request body;
-      let reader =
-        Eio.Buf_read.of_flow ~initial_size:0x1000 ~max_size:max_int conn
-      in
+  let initial_size = 0x1000 in
+  Buf_write.with_flow ~initial_size conn (fun writer ->
+      let request = Http.Request.make ?meth ?version ~headers resource_path in
+      let request = Http.Request.add_te_trailers request in
+      write_request request writer body;
+      let reader = Eio.Buf_read.of_flow ~initial_size ~max_size:max_int conn in
       let response = response reader in
       (response, reader))
 

@@ -218,7 +218,7 @@ let read_chunked reader headers f =
   | _ -> None
 
 (* https://datatracker.ietf.org/doc/html/rfc7230#section-4.1 *)
-let write_chunked writer chunk_writer =
+let write_chunked ?(write_chunked_trailers = false) writer chunk_writer =
   let write_extensions exts =
     List.iter
       (fun { name; value } ->
@@ -241,13 +241,15 @@ let write_chunked writer chunk_writer =
         Buf_write.string writer "\r\n"
   in
   chunk_writer.body_writer write_body;
-  chunk_writer.trailer_writer (Rwer.write_headers writer);
+  if write_chunked_trailers then
+    chunk_writer.trailer_writer (Rwer.write_headers writer);
   Buf_write.string writer "\r\n"
 
-let write_body writer body =
+let write_body ?write_chunked_trailers writer body =
   match body with
   | Fixed s -> Buf_write.string writer s
-  | Chunked chunk_writer -> write_chunked writer chunk_writer
+  | Chunked chunk_writer ->
+      write_chunked ?write_chunked_trailers writer chunk_writer
   | Custom f -> f writer
   | Empty -> ()
 

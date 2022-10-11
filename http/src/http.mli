@@ -410,6 +410,14 @@ module Request : sig
 
       See https://www.rfc-editor.org/rfc/rfc7230#section-3.3.2 *)
 
+  val supports_chunked_trailers : t -> bool
+  (** [supports_chunked_trailers t] is [true] if [t] contains HTTP header "TE:
+      trailers". Otherwise it is [false]. *)
+
+  val add_te_trailers : t -> t
+  (** [add_te_trailers t] adds HTTP headers, 'TE' and 'Connection' to
+      indicate that a user-agent can handle HTTP chunked trailers headers. *)
+
   val make :
     ?meth:Method.t ->
     ?version:Version.t ->

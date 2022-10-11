@@ -769,6 +769,14 @@ module Request = struct
 
   let content_length t = content_length (requires_content_length t) t.headers
 
+  let supports_chunked_trailers t =
+    Header.get_multi t.headers "TE" |> List.mem "trailers"
+
+  let add_te_trailers t =
+    let headers = Header.add t.headers "TE" "trailers" in
+    let headers = Header.add headers "Connection" "TE" in
+    { t with headers }
+
   (* Defined for method types in RFC7231 *)
   let has_body req =
     match req.meth with
