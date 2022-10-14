@@ -26,4 +26,4 @@ eio-test:
 	dune runtest cohttp-eio
 
 eio-shell: # nix-shell for eio dev
-	nix-shell -p gmp libev nmap 
+	nix-shell -p gmp libev nmap curl

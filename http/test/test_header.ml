@@ -167,6 +167,24 @@ let replace_tests () =
     ]
     H.(to_list (replace prebuilt "accept" "text/*"))
 
+let move_to_front_tests () =
+  let headers1 = [ ("accept", "text/*"); ("Host", "www.example.com") ] in
+  let headers2 =
+    [
+      ("content-length", "23"); ("Host", "www.example.com"); ("accept", "text/*");
+    ]
+  in
+  aeso {|move_to_front h "Host"|} (Some "Host")
+    (H.(Private.move_to_front (H.of_list headers1) "Host" |> Private.first)
+     |> function
+     | Some (k, _) -> Some k
+     | None -> Some "");
+  aeso {|move_to_front h "Host"|} (Some "Host")
+    (H.(Private.move_to_front (H.of_list headers2) "Host" |> Private.first)
+     |> function
+     | Some (k, _) -> Some k
+     | None -> Some "")
+
 let h =
   H.init () |> fun h ->
   H.add h "first" "1" |> fun h ->
@@ -380,6 +398,7 @@ let tests =
       ("Header.iter", `Quick, iter_tests);
       ("Header.update", `Quick, update_tests);
       ("Header.update_all", `Quick, update_all_tests);
+      ("Header.move_to_front", `Quick, move_to_front_tests);
       ("many headers", `Slow, many_headers);
       ("transfer encoding is in correct order", `Quick, transfer_encoding_tests);
     ]

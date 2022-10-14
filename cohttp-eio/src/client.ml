@@ -32,6 +32,8 @@ let write_request request writer body =
       (Http.Request.headers request)
       body
   in
+  let headers = Http.Header.clean_dup headers in
+  let headers = Http.Header.Private.move_to_front headers "Host" in
   let meth = Http.Method.to_string @@ Http.Request.meth request in
   let version = Http.Version.to_string @@ Http.Request.version request in
   Buf_write.string writer meth;
