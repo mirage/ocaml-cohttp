@@ -275,7 +275,8 @@ should also be fine under Windows too.
   ocurl
   (http
    (= :version))
-  cohttp-curl
+  (cohttp-curl
+   (= :version))
   stringext
   lwt
   (uri
@@ -299,6 +300,8 @@ should also be fine under Windows too.
   (http
    (= :version))
   stringext
+  (cohttp-curl
+   (= :version))
   core
   (core_unix (>= v0.14.0))
   async_kernel
