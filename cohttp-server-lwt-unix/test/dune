@@ -1,5 +1,6 @@
 (test
  (name test)
+ (package cohttp-server-lwt-unix)
  (libraries
   lwt.unix
   lwt

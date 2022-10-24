@@ -24,7 +24,7 @@ depends: [
   "ocaml" {>= "4.08"}
   "ocurl"
   "http" {= version}
-  "cohttp-curl"
+  "cohttp-curl" {= version}
   "stringext"
   "lwt"
   "uri" {with-test & >= "4.2.0"}

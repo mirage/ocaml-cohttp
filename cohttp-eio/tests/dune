@@ -14,6 +14,7 @@
    (test_client.exe as test-client))))
 
 (cram
+ (package cohttp-eio)
  (deps
   %{bin:test-server}
   %{bin:crlf}

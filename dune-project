@@ -122,6 +122,8 @@ should also be fine under Windows too.
    (>= 4.08))
   (http
    (= :version))
+  (lwt
+   (>= 5.3.0))
   (conduit-lwt-unix :with-test)
   (cohttp-lwt-unix
    (and
@@ -220,6 +222,8 @@ should also be fine under Windows too.
    (>= 2.4.3))
   (cohttp-lwt
    (= :version))
+  (cstruct
+   (>= 6.0.0))
   (fmt
    (>= 0.8.7))
   astring
@@ -275,7 +279,8 @@ should also be fine under Windows too.
   ocurl
   (http
    (= :version))
-  cohttp-curl
+  (cohttp-curl
+   (= :version))
   stringext
   lwt
   (uri
@@ -299,6 +304,8 @@ should also be fine under Windows too.
   (http
    (= :version))
   stringext
+  (cohttp-curl
+   (= :version))
   core
   (core_unix (>= v0.14.0))
   async_kernel

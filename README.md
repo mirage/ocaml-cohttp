@@ -4,6 +4,9 @@ Cohttp is an OCaml library for creating HTTP daemons. It has a portable
 HTTP parser, and implementations using various asynchronous programming
 libraries:
 
+* `Http` provides essential type definitions used in Cohttp and an extremely
+  fast http parser. It is designed to have no dependencies and make it easy
+  for other packages to easily interoperate with Cohttp.
 * `Cohttp_lwt_unix` uses the [Lwt](https://ocsigen.org/lwt/) library, and
   specifically the UNIX bindings. It uses [ocaml-tls](https://github.com/mirleft/ocaml-tls)
   as the TLS implementation to handle HTTPS connections.
@@ -15,6 +18,9 @@ libraries:
 * `Cohttp_lwt_jsoo` compiles to a JavaScript module that maps the Cohttp
   calls to XMLHTTPRequests.  This is used to compile OCaml libraries like
   the GitHub bindings to JavaScript and still run efficiently.
+* `Cohttp_curl` uses `libcurl`, via `ocurl`, as backend. It also comes
+  with lwt (`Cohttp_curl_lwt`) and async backends (`Cohttp_curl_async`).
+* `Cohttp_eio` uses `ei`o to leverage new features from multicore ocaml 5.0.
 
 You can implement other targets using the parser very easily. Look at the `IO`
 signature in `lib/s.mli` and implement that in the desired backend.
