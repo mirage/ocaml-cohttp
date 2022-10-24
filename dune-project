@@ -220,6 +220,8 @@ should also be fine under Windows too.
    (>= 2.4.3))
   (cohttp-lwt
    (= :version))
+  (cstruct
+   (>= 6.0.0))
   (fmt
    (>= 0.8.7))
   astring
