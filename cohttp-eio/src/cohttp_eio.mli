@@ -35,6 +35,14 @@ module Server : sig
   type response = Http.Response.t * Body.t
   type handler = request -> response
 
+  type 'a env =
+    < domain_mgr : Eio.Domain_manager.t
+    ; net : Eio.Net.t
+    ; clock : Eio.Time.clock
+    ; .. >
+    as
+    'a
+
   (** {1 Request Body} *)
 
   val read_fixed : Http.Request.t -> Eio.Buf_read.t -> string option
@@ -84,15 +92,14 @@ module Server : sig
   (** {1 Run Server} *)
 
   val run :
-    ?socket_backlog:int ->
-    ?domains:int ->
-    port:int ->
-    < domain_mgr : Eio.Domain_manager.t ; net : Eio.Net.t ; .. > ->
-    handler ->
-    'a
+    ?socket_backlog:int -> ?domains:int -> port:int -> 'b env -> handler -> 'a
 
   val connection_handler :
-    handler -> #Eio.Net.stream_socket -> Eio.Net.Sockaddr.stream -> unit
+    handler ->
+    'a env ->
+    #Eio.Net.stream_socket ->
+    Eio.Net.Sockaddr.stream ->
+    unit
   (** [connection_handler request_handler] is a connection handler, suitable for
       passing to {!Eio.Net.accept_fork}. *)
 
