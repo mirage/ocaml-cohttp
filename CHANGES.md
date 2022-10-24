@@ -1,4 +1,4 @@
-## Unreleased
+## v6.0.0~alpha0 (2022-10-24) 
 - cohttp-eio: ensure "Host" header is the first header in http client requests (bikallem #939)
 - cohttp-eio: add TE header in client. Check TE header is server (bikallem #941)
 - cohttp-eio: add User-Agent header to request from Client (bikallem #940)
