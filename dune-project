@@ -282,7 +282,8 @@ should also be fine under Windows too.
   (cohttp-curl
    (= :version))
   stringext
-  lwt
+  (lwt
+   (>= 5.3.0))
   (uri
    (and
     :with-test
