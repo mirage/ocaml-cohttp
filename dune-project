@@ -1,10 +1,10 @@
-(lang dune 2.9)
+(lang dune 3.0)
 
 (name cohttp)
 
 (license ISC)
 
-(using mdx 0.1)
+(using mdx 0.2)
 
 (cram enable)
 
@@ -306,6 +306,7 @@ should also be fine under Windows too.
 
 (package
  (name cohttp-curl-async)
+ (allow_empty)
  (synopsis "Cohttp client using Curl & Async as the backend")
  (description
   "An HTTP client that relies on Curl + Async for the backend. Does not require\nconduit for SSL.")
@@ -334,6 +335,7 @@ should also be fine under Windows too.
 
 (package
  (name cohttp-bench)
+ (allow_empty)
  (synopsis "Benchmarks binaries for Cohttp")
  (description
   "This package contains some benchmarks for http and cohttp.\nThe benchmarks for the server latency will require wrk2\n(https://github.com/giltene/wrk2) to run. The latency graphs\ncan then be generated with HdrHistogram plotter, also available\nonline at https://hdrhistogram.github.io/HdrHistogram/plotFiles.html.")

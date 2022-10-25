@@ -25,7 +25,7 @@ homepage: "https://github.com/mirage/ocaml-cohttp"
 doc: "https://mirage.github.io/ocaml-cohttp/"
 bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
 depends: [
-  "dune" {>= "2.9"}
+  "dune" {>= "3.0"}
   "ocaml" {>= "4.08"}
   "http" {= version}
   "cohttp" {= version}
