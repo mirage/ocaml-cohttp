@@ -123,7 +123,7 @@ should also be fine under Windows too.
   (http
    (= :version))
   (lwt
-   (>= 5.3.0))
+   (>= 5.5.0))
   (conduit-lwt-unix :with-test)
   (cohttp-lwt-unix
    (and
@@ -282,7 +282,8 @@ should also be fine under Windows too.
   (cohttp-curl
    (= :version))
   stringext
-  lwt
+  (lwt
+   (>= 5.3.0))
   (uri
    (and
     :with-test
