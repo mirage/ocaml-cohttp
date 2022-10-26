@@ -9,9 +9,8 @@ build: [
     jobs
     "--promote-install-files=false"
     "@install"
-    "@cohttp-async/runtest" {with-test}
+    "@cohttp/runtest" {with-test}
     "@doc" {with-doc}
   ]
   ["dune" "install" "-p" name "--create-install-files" name]
 ]
-available: arch != "s390x"
