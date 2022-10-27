@@ -1,6 +1,5 @@
 (library
  (name bytebuffer_tests)
- (package http)
  (libraries
   http_bytebuffer
   ;; This is because of the (implicit_transitive_deps false)
