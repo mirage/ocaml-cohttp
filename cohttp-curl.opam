@@ -25,6 +25,7 @@ depends: [
   "stringext"
   "odoc" {with-doc}
 ]
+dev-repo: "git+https://github.com/mirage/ocaml-cohttp.git"
 build: [
   ["dune" "subst"] {dev}
   [
@@ -36,9 +37,8 @@ build: [
     jobs
     "--promote-install-files=false"
     "@install"
-    "@runtest" {with-test}
+    "@cohttp-curl/runtest" {with-test}
     "@doc" {with-doc}
   ]
   ["dune" "install" "-p" name "--create-install-files" name]
 ]
-dev-repo: "git+https://github.com/mirage/ocaml-cohttp.git"
