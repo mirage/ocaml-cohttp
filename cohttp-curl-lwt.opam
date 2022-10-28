@@ -29,9 +29,9 @@ depends: [
   "lwt" {>= "5.3.0"}
   "uri" {with-test & >= "4.2.0"}
   "alcotest" {with-test}
-  "cohttp-lwt-unix" {with-test}
-  "cohttp" {with-test}
-  "cohttp-lwt" {with-test}
+  "cohttp-lwt-unix" {with-test & = version}
+  "cohttp" {with-test & = version}
+  "cohttp-lwt" {with-test & = version}
   "conduit-lwt" {with-test}
   "ounit" {with-test}
   "odoc" {with-doc}

@@ -289,9 +289,18 @@ should also be fine under Windows too.
     :with-test
     (>= 4.2.0)))
   (alcotest :with-test)
-  (cohttp-lwt-unix :with-test)
-  (cohttp :with-test)
-  (cohttp-lwt :with-test)
+  (cohttp-lwt-unix
+   (and
+    :with-test
+    (= :version)))
+  (cohttp
+   (and
+    :with-test
+    (= :version)))
+  (cohttp-lwt
+   (and
+    :with-test
+    (= :version)))
   (conduit-lwt :with-test)
   (ounit :with-test)))
 
@@ -311,7 +320,10 @@ should also be fine under Windows too.
   (core_unix (>= v0.14.0))
   async_kernel
   async_unix
-  (cohttp-async :with-test)
+  (cohttp-async
+   (and
+    :with-test
+    (= :version)))
   (uri
    (and
     :with-test
