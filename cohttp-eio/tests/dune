@@ -4,7 +4,8 @@
 
 (mdx
  (package cohttp-eio)
- (packages cohttp-eio))
+ (deps
+  (package cohttp-eio)))
 
 (env
  (_

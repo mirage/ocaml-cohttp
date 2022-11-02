@@ -21,7 +21,7 @@ homepage: "https://github.com/mirage/ocaml-cohttp"
 doc: "https://mirage.github.io/ocaml-cohttp/"
 bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
 depends: [
-  "dune" {>= "2.9"}
+  "dune" {>= "3.0"}
   "ocaml" {>= "4.08"}
   "ppx_expect" {with-test}
   "alcotest" {with-test}
@@ -46,10 +46,8 @@ build: [
     name
     "-j"
     jobs
-    "--promote-install-files=false"
     "@install"
     "@http/runtest" {with-test}
     "@doc" {with-doc}
   ]
-  ["dune" "install" "-p" name "--create-install-files" name]
 ]

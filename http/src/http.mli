@@ -424,8 +424,8 @@ module Request : sig
       trailers". Otherwise it is [false]. *)
 
   val add_te_trailers : t -> t
-  (** [add_te_trailers t] adds HTTP headers, 'TE' and 'Connection' to
-      indicate that a user-agent can handle HTTP chunked trailers headers. *)
+  (** [add_te_trailers t] adds HTTP headers, 'TE' and 'Connection' to indicate
+      that a user-agent can handle HTTP chunked trailers headers. *)
 
   val make :
     ?meth:Method.t ->

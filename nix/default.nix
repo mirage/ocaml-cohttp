@@ -13,8 +13,10 @@ let
   };
   opam-selection = opam2nix.build args;
   localPackages =
-    let contents = builtins.attrNames (builtins.readDir ../.);
-    in builtins.filter (strings.hasSuffix ".opam") contents;
+    let 
+      contents = builtins.attrNames (builtins.readDir ../.);
+      filter = p: strings.hasSuffix ".opam" p && "cohttp-eio.opam" != p;
+    in builtins.filter filter contents;
   resolve = opam2nix.resolve args (localPackages ++ [
     # dev deps
     "ppx_expect"
