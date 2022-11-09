@@ -1,24 +1,3 @@
-(executables
- (names test_server test_client crlf)
- (libraries cohttp_eio eio_main fmt uri))
-
 (mdx
  (package cohttp-eio)
- (deps
-  (package cohttp-eio)))
-
-(env
- (_
-  (binaries
-   (test_server.exe as test-server)
-   crlf.exe
-   (test_client.exe as test-client))))
-
-(cram
- (package cohttp-eio)
- (deps
-  %{bin:test-server}
-  %{bin:crlf}
-  %{bin:test-client}
-  chunks.txt
-  server_chunks.txt))
+ (libraries eio eio.core eio.mock cohttp-eio http))
