@@ -6,6 +6,7 @@ type host = string * int option
 type resource_path = string
 
 type 'a body_disallowed_call =
+  ?pipeline_requests:bool ->
   ?version:Http.Version.t ->
   ?headers:Http.Header.t ->
   conn:(#Eio.Flow.two_way as 'a) ->
@@ -16,6 +17,7 @@ type 'a body_disallowed_call =
     allowed to have a request body. *)
 
 type 'a body_allowed_call =
+  ?pipeline_requests:bool ->
   ?version:Http.Version.t ->
   ?headers:Http.Header.t ->
   ?body:Body.t ->
@@ -25,7 +27,7 @@ type 'a body_allowed_call =
   response
 
 (* Request line https://datatracker.ietf.org/doc/html/rfc7230#section-3.1.1 *)
-let write_request request writer body =
+let write_request pipeline_requests request writer body =
   let headers =
     Body.add_content_length
       (Http.Request.requires_content_length request)
@@ -44,7 +46,8 @@ let write_request request writer body =
   Buf_write.string writer "\r\n";
   Rwer.write_headers writer headers;
   Buf_write.string writer "\r\n";
-  Body.write_body ~write_chunked_trailers:true writer body
+  Body.write_body ~write_chunked_trailers:true writer body;
+  if not pipeline_requests then Buf_write.flush writer
 
 (* response parser *)
 
@@ -72,8 +75,9 @@ let response buf_read =
 
 (* Generic HTTP call *)
 
-let call ?meth ?version ?(headers = Http.Header.init ()) ?(body = Body.Empty)
-    ~conn host resource_path =
+let call ?(pipeline_requests = false) ?meth ?version
+    ?(headers = Http.Header.init ()) ?(body = Body.Empty) ~conn host
+    resource_path =
   let headers =
     if not (Http.Header.mem headers "Host") then
       let host =
@@ -91,32 +95,36 @@ let call ?meth ?version ?(headers = Http.Header.init ()) ?(body = Body.Empty)
   Buf_write.with_flow ~initial_size conn (fun writer ->
       let request = Http.Request.make ?meth ?version ~headers resource_path in
       let request = Http.Request.add_te_trailers request in
-      write_request request writer body;
+      write_request pipeline_requests request writer body;
       let reader = Eio.Buf_read.of_flow ~initial_size ~max_size:max_int conn in
       let response = response reader in
       (response, reader))
 
 (*  HTTP Calls with Body Disallowed *)
 
-let get ?version ?headers ~conn host resource_path =
-  call ~meth:`GET ?version ?headers ~conn host resource_path
+let get ?pipeline_requests ?version ?headers ~conn host resource_path =
+  call ?pipeline_requests ~meth:`GET ?version ?headers ~conn host resource_path
 
-let head ?version ?headers ~conn host resource_path =
-  call ~meth:`HEAD ?version ?headers ~conn host resource_path
+let head ?pipeline_requests ?version ?headers ~conn host resource_path =
+  call ?pipeline_requests ~meth:`HEAD ?version ?headers ~conn host resource_path
 
-let delete ?version ?headers ~conn host resource_path =
-  call ~meth:`DELETE ?version ?headers ~conn host resource_path
+let delete ?pipeline_requests ?version ?headers ~conn host resource_path =
+  call ?pipeline_requests ~meth:`DELETE ?version ?headers ~conn host
+    resource_path
 
 (*  HTTP Calls with Body Allowed *)
 
-let post ?version ?headers ?body ~conn host resource_path =
-  call ~meth:`POST ?version ?headers ?body ~conn host resource_path
+let post ?pipeline_requests ?version ?headers ?body ~conn host resource_path =
+  call ?pipeline_requests ~meth:`POST ?version ?headers ?body ~conn host
+    resource_path
 
-let put ?version ?headers ?body ~conn host resource_path =
-  call ~meth:`PUT ?version ?headers ?body ~conn host resource_path
+let put ?pipeline_requests ?version ?headers ?body ~conn host resource_path =
+  call ?pipeline_requests ~meth:`PUT ?version ?headers ?body ~conn host
+    resource_path
 
-let patch ?version ?headers ?body ~conn host resource_path =
-  call ~meth:`PATCH ?version ?headers ?body ~conn host resource_path
+let patch ?pipeline_requests ?version ?headers ?body ~conn host resource_path =
+  call ?pipeline_requests ~meth:`PATCH ?version ?headers ?body ~conn host
+    resource_path
 
 (* Response Body *)
 
