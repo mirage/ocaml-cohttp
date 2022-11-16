@@ -399,6 +399,8 @@ let server =
     >>= fun body -> Server.respond_string ~status:`OK ~body ()
   in
   Server.create ~mode:(`TCP (`Port 8000)) (Server.make ~callback ())
+
+let () = ignore (Lwt_main.run server)
 ```
 
 ### Compile and execute with ocamlbuild
