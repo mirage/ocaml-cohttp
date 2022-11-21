@@ -8,6 +8,10 @@ on:
     # Prime the caches every Monday
     - cron: 0 1 * * MON
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'pull_request' || github.sha }}
+  cancel-in-progress: true      
+
 jobs:
   build-test-default:
     strategy:
