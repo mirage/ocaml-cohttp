@@ -361,7 +361,7 @@ should also be fine under Windows too.
   "A CoHTTP server and client implementation based on `eio` library. `cohttp-eio`features a multicore capable HTTP 1.1 server. The library promotes and is built with direct style of coding as opposed to a monadic.")
  (depends
   base-domains
-  (eio (>= 0.6))
+  (eio (>= 0.7))
   (eio_main :with-test)
   (mdx :with-test)
   (uri :with-test)

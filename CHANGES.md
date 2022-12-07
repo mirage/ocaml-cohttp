@@ -1,6 +1,7 @@
 ## Unreleased
 - Upgrade dune to v3.0 (bikallem #947)
 - cohttp-eio: allow client to optionally configure request pipelining (bikallem #949)
+- cohttp-eio: update to Eio 0.7 (talex5 #952)
 
 ## v6.0.0~alpha0 (2022-10-24)
 - cohttp-eio: ensure "Host" header is the first header in http client requests (bikallem #939)
