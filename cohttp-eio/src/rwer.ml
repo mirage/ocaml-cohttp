@@ -8,7 +8,9 @@ module Buf_read = Eio.Buf_read
 module Buf_write = Eio.Buf_write
 
 let take_while1 p r =
-  match Buf_read.take_while p r with "" -> raise End_of_file | x -> x
+  match Buf_read.take_while1 p r with
+  | exception Failure _ -> raise End_of_file
+  | x -> x
 
 let token =
   take_while1 (function

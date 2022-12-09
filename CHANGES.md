@@ -1,4 +1,5 @@
 ## Unreleased
+- cohttp-eio : upgrade to eio 0.7 (bikallem #954)
 - Upgrade dune to v3.0 (bikallem #947)
 - cohttp-eio: allow client to optionally configure request pipelining (bikallem #949)
 
