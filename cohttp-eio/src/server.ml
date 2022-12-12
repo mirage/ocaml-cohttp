@@ -115,7 +115,7 @@ let rec handle_request client_addr reader writer flow handler =
       write_response ~request writer (response, body);
       if Http.Request.is_keep_alive request then
         handle_request client_addr reader writer flow handler
-  | (exception End_of_file) | (exception Eio.Net.Connection_reset _) -> ()
+  | exception End_of_file | exception Eio.Io (Eio.Net.E Connection_reset _, _) -> ()
   | exception (Failure _ as ex) ->
       write_response writer bad_request_response;
       raise ex
