@@ -111,6 +111,19 @@ module Make (IO : S.IO) = struct
                 `Response rsp))
       (fun () -> Body.drain_body body)
 
+  let handle_response ~keep_alive oc res body handle_client =
+    IO.catch (fun () ->
+        let flush = Response.flush res in
+        Response.write ~flush
+          (fun writer -> Body.write_body (Response.write_body writer) body)
+          res oc
+        >>= fun () -> if keep_alive then handle_client oc else Lwt.return_unit)
+    >>= function
+    | Ok () -> Lwt.return_unit
+    | Error e ->
+        Log.info (fun m -> m "IO error while writing body: %a" IO.pp_error e);
+        Body.drain_body body
+
   let rec handle_client ic oc conn callback =
     Request.read ic >>= function
     | `Eof -> Lwt.return_unit
@@ -121,16 +134,13 @@ module Make (IO : S.IO) = struct
         let body = read_body ic req in
         handle_request callback conn req body >>= function
         | `Response (res, body) ->
-            let flush = Response.flush res in
-            Response.write ~flush
-              (fun writer -> Body.write_body (Response.write_body writer) body)
-              res oc
-            >>= fun () ->
-            if Request.is_keep_alive req then handle_client ic oc conn callback
-            else Lwt.return_unit
+            let keep_alive = Request.is_keep_alive req in
+            handle_response ~keep_alive oc res body (fun oc ->
+                handle_client ic oc conn callback)
         | `Expert (res, io_handler) ->
             Response.write_header res oc >>= fun () ->
-            io_handler ic oc >>= fun () -> handle_client ic oc conn callback)
+            io_handler ic oc >>= fun () -> 
+            handle_client ic oc conn callback)
 
   let callback spec io_id ic oc =
     let conn_id = Cohttp.Connection.create () in
