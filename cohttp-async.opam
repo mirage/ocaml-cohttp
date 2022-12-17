@@ -25,19 +25,19 @@ bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
 depends: [
   "ocaml" {>= "4.08"}
   "dune" {>= "2.0"}
-  "async_kernel" {>= "v0.14.0"}
-  "async_unix" {>= "v0.14.0"}
-  "async" {>= "v0.14.0"}
-  "base" {>= "v0.11.0"}
-  "core" {with-test}
-  "cohttp" {= version}
-  "conduit-async" {>= "1.2.0"}
+  "async_kernel" {>= "v0.14.0" & < "v0.15"}
+  "async_unix" {>= "v0.14.0" & < "v0.15"}
+  "async" {>= "v0.14.0" & < "v0.15"}
+  "base" {>= "v0.11.0" & < "v0.15"}
+  "core" {with-test & < "v0.15"}
+  "cohttp" {=version}
+  "conduit-async" {>="1.2.0"}
   "magic-mime"
   "mirage-crypto" {with-test}
   "logs"
   "fmt" {>= "0.8.2"}
   "sexplib0"
-  "ppx_sexp_conv" {>= "v0.13.0"}
+  "ppx_sexp_conv" {>= "v0.13.0" & < "v0.15"}
   "ounit" {with-test}
   "uri" {>= "2.0.0"}
   "uri-sexp"
