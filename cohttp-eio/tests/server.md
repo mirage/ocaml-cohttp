@@ -107,7 +107,22 @@ let app (req, body, _client_addr) =
   | "/handle_chunk" -> handle_chunk_request req body
   | _ -> Server.not_found_response
 
-let connection_handler = Server.connection_handler app
+let mock_env =
+  let mock_clock = Eio_mock.Clock.make () in
+  Eio_mock.Clock.set_time mock_clock 1666627935.85052109 ;
+  let fake_domain_mgr = 
+    object (_ : #Eio.Domain_manager.t)
+      method run fn = fn ()
+      method run_raw fn = fn ()
+    end 
+  in
+  object 
+    method net        = (Eio_mock.Net.make "mock net" :> Eio.Net.t)
+    method clock      = (mock_clock :> Eio.Time.clock)
+    method domain_mgr = fake_domain_mgr
+  end
+
+let connection_handler = Server.connection_handler app mock_env
 ```
 
 To test it, we run the connection handler with our mock socket:
@@ -134,6 +149,7 @@ Asking for the root:
 +socket: read "GET / HTTP/1.1\r\n"
 +             "\r\n"
 +socket: wrote "HTTP/1.1 200 OK\r\n"
++              "Date: Mon, 24 Oct 2022 16:12:15 GMT\r\n"
 +              "content-length: 4\r\n"
 +              "content-type: text/plain; charset=UTF-8\r\n"
 +              "\r\n"
@@ -152,6 +168,7 @@ A missing page:
 +socket: read "GET /missing HTTP/1.1\r\n"
 +             "\r\n"
 +socket: wrote "HTTP/1.1 404 Not Found\r\n"
++              "Date: Mon, 24 Oct 2022 16:12:15 GMT\r\n"
 +              "Content-Length: 0\r\n"
 +              "\r\n"
 - : unit = ()
@@ -168,6 +185,7 @@ Streaming a response:
 +socket: read "GET /stream HTTP/1.1\r\n"
 +             "\r\n"
 +socket: wrote "HTTP/1.1 200 OK\r\n"
++              "Date: Mon, 24 Oct 2022 16:12:15 GMT\r\n"
 +              "transfer-encoding: chunked\r\n"
 +              "\r\n"
 +              "5\r\n"
@@ -195,6 +213,7 @@ Handle POST request:
 +             "\r\n"
 +socket: read "hello world!"
 +socket: wrote "HTTP/1.1 200 OK\r\n"
++              "Date: Mon, 24 Oct 2022 16:12:15 GMT\r\n"
 +              "content-length: 100\r\n"
 +              "content-type: text/plain; charset=UTF-8\r\n"
 +              "\r\n"
@@ -220,6 +239,7 @@ HTTP chunk-stream response with chunk extensions and trailers:
 +socket: read "TE:trailers\r\n"
 +             "\r\n"
 +socket: wrote "HTTP/1.1 200 OK\r\n"
++              "Date: Mon, 24 Oct 2022 16:12:15 GMT\r\n"
 +              "Trailer: Expires, Header1\r\n"
 +              "Content-Type: text/plain\r\n"
 +              "Transfer-Encoding: chunked\r\n"
@@ -251,6 +271,7 @@ a HTTP client agent has support for HTTP chunk trailer headers:
 +socket: read "GET /get_chunks HTTP/1.1\r\n"
 +             "\r\n"
 +socket: wrote "HTTP/1.1 200 OK\r\n"
++              "Date: Mon, 24 Oct 2022 16:12:15 GMT\r\n"
 +              "Trailer: Expires, Header1\r\n"
 +              "Content-Type: text/plain\r\n"
 +              "Transfer-Encoding: chunked\r\n"
@@ -304,6 +325,7 @@ Server should handle chunk requests from clients:
 +socket: read "Header2: Header2 value text\r\n"
 +             "\r\n"
 +socket: wrote "HTTP/1.1 200 OK\r\n"
++              "Date: Mon, 24 Oct 2022 16:12:15 GMT\r\n"
 +              "content-length: 354\r\n"
 +              "content-type: text/plain; charset=UTF-8\r\n"
 +              "\r\n"
