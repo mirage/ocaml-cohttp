@@ -114,7 +114,12 @@ let write_response ?request env writer (response, body) =
       (Http.Response.headers response)
       body
   in
-  let headers = Http.Header.add headers "Date" (http_date env) in
+  let headers =
+    (* https://www.rfc-editor.org/rfc/rfc9110#section-6.6.1 *)
+    match Http.Response.status response with
+    | #Http.Status.informational | #Http.Status.server_error -> headers
+    | _ -> Http.Header.add headers "Date" (http_date env)
+  in
   let version = Http.Version.to_string response.version in
   let status = Http.Status.to_string response.status in
   Buf_write.string writer version;

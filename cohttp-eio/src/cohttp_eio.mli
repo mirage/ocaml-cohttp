@@ -92,7 +92,7 @@ module Server : sig
   (** {1 Run Server} *)
 
   val run :
-    ?socket_backlog:int -> ?domains:int -> port:int -> 'b env -> handler -> 'a
+    ?socket_backlog:int -> ?domains:int -> port:int -> 'a env -> handler -> 'b
 
   val connection_handler :
     handler ->
