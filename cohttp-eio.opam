@@ -26,6 +26,7 @@ depends: [
   "mdx" {with-test}
   "uri" {with-test}
   "fmt"
+  "ptime"
   "http" {= version}
   "odoc" {with-doc}
 ]

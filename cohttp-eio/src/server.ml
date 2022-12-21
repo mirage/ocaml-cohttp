@@ -7,6 +7,14 @@ and handler = request -> response
 and request = Http.Request.t * Eio.Buf_read.t * Eio.Net.Sockaddr.stream
 and response = Http.Response.t * Body.t
 
+type 'a env =
+  < domain_mgr : Eio.Domain_manager.t
+  ; net : Eio.Net.t
+  ; clock : Eio.Time.clock
+  ; .. >
+  as
+  'a
+
 let domain_count =
   match Sys.getenv_opt "COHTTP_DOMAINS" with
   | Some d -> int_of_string d
@@ -65,13 +73,52 @@ let internal_server_error_response =
 let bad_request_response =
   (Http.Response.make ~status:`Bad_request (), Body.Empty)
 
-let write_response ?request writer (response, body) =
+let http_date env =
+  let now = Eio.Time.now env#clock |> Ptime.of_float_s |> Option.get in
+  let (year, mm, dd), ((hh, min, ss), _) = Ptime.to_date_time now in
+  let weekday = Ptime.weekday now in
+  let weekday =
+    match weekday with
+    | `Mon -> "Mon"
+    | `Tue -> "Tue"
+    | `Wed -> "Wed"
+    | `Thu -> "Thu"
+    | `Fri -> "Fri"
+    | `Sat -> "Sat"
+    | `Sun -> "Sun"
+  in
+  let month =
+    match mm with
+    | 1 -> "Jan"
+    | 2 -> "Feb"
+    | 3 -> "Mar"
+    | 4 -> "Apr"
+    | 5 -> "May"
+    | 6 -> "Jun"
+    | 7 -> "Jul"
+    | 8 -> "Aug"
+    | 9 -> "Sep"
+    | 10 -> "Oct"
+    | 11 -> "Nov"
+    | 12 -> "Dec"
+    | _ -> failwith "Invalid HTTP datetime value"
+  in
+  Format.sprintf "%s, %02d %s %04d %02d:%02d:%02d GMT" weekday dd month year hh
+    min ss
+
+let write_response ?request env writer (response, body) =
   let headers =
     let request_meth = Option.map Http.Request.meth request in
     Body.add_content_length
       (Http.Response.requires_content_length ?request_meth response)
       (Http.Response.headers response)
       body
+  in
+  let headers =
+    (* https://www.rfc-editor.org/rfc/rfc9110#section-6.6.1 *)
+    match Http.Response.status response with
+    | #Http.Status.informational | #Http.Status.server_error -> headers
+    | _ -> Http.Header.add headers "Date" (http_date env)
   in
   let version = Http.Version.to_string response.version in
   let status = Http.Status.to_string response.status in
@@ -108,32 +155,34 @@ let[@warning "-3"] http_request t =
 
 (* main *)
 
-let rec handle_request client_addr reader writer flow handler =
+let rec handle_request env client_addr reader writer flow handler =
   match http_request reader with
   | request ->
       let response, body = handler (request, reader, client_addr) in
-      write_response ~request writer (response, body);
+      write_response ~request env writer (response, body);
       if Http.Request.is_keep_alive request then
-        handle_request client_addr reader writer flow handler
-  | exception End_of_file | exception Eio.Io (Eio.Net.E Connection_reset _, _) -> ()
+        handle_request env client_addr reader writer flow handler
+  | (exception End_of_file)
+  | (exception Eio.Io (Eio.Net.E (Connection_reset _), _)) ->
+      ()
   | exception (Failure _ as ex) ->
-      write_response writer bad_request_response;
+      write_response env writer bad_request_response;
       raise ex
   | exception ex ->
-      write_response writer internal_server_error_response;
+      write_response env writer internal_server_error_response;
       raise ex
 
-let connection_handler (handler : handler) flow client_addr =
+let connection_handler (handler : handler) env flow client_addr =
   let reader = Buf_read.of_flow ~initial_size:0x1000 ~max_size:max_int flow in
   Buf_write.with_flow flow (fun writer ->
-      handle_request client_addr reader writer flow handler)
+      handle_request env client_addr reader writer flow handler)
 
-let run_domain ssock handler =
+let run_domain env ssock handler =
   let on_error exn =
     Printf.fprintf stderr "Error handling connection: %s\n%!"
       (Printexc.to_string exn)
   in
-  let handler = connection_handler handler in
+  let handler = connection_handler handler env in
   Switch.run (fun sw ->
       let rec loop () =
         Eio.Net.accept_fork ~sw ssock ~on_error handler;
@@ -151,9 +200,10 @@ let run ?(socket_backlog = 128) ?(domains = domain_count) ~port env handler =
   in
   for _ = 2 to domains do
     Eio.Std.Fiber.fork ~sw (fun () ->
-        Eio.Domain_manager.run domain_mgr (fun () -> run_domain ssock handler))
+        Eio.Domain_manager.run domain_mgr (fun () ->
+            run_domain env ssock handler))
   done;
-  run_domain ssock handler
+  run_domain env ssock handler
 
 (* Basic handlers *)
 
