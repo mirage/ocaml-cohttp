@@ -2,6 +2,7 @@
 - Upgrade dune to v3.0 (bikallem #947)
 - cohttp-eio: allow client to optionally configure request pipelining (bikallem #949)
 - cohttp-eio: update to Eio 0.7 (talex5 #952)
+- cohttp-eio: update examples to use eio 0.7 primitives (bikallem #?)
 - cohttp-eio: generate Date header in responses (bikallem #955)
 
 ## v6.0.0~alpha0 (2022-10-24)
