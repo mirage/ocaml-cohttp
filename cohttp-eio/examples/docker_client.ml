@@ -10,7 +10,7 @@ let () =
   Switch.run @@ fun sw ->
   let addr = `Unix "/var/run/docker.sock" in
   let conn = Net.connect ~sw env#net addr in
-  let res = Client.get ~conn ("docker", None) "/version" in
+  let res = Client.get ~conn ~host:"docker" env "/version" in
   let code = fst res |> Response.status |> Status.to_int in
   Printf.printf "Response code: %d\n" code;
   Printf.printf "Headers: %s\n"
