@@ -8,8 +8,13 @@ open Cohttp_eio
 A mock client socket and host for testing:
 
 ```ocaml
-let host = ("localhost", None)
+let host = "localhost"
 let conn = Eio_mock.Flow.make "socket"
+let mock_env =
+  object 
+    method net = (Eio_mock.Net.make "mock net" :> Eio.Net.t)
+  end
+
 let run ~response ~test =
   Eio_mock.Backend.run @@ fun () ->
   Fiber.both
@@ -33,7 +38,8 @@ GET method request:
       (Client.get
         ~headers:(Http.Header.of_list [ ("Accept", "application/json") ])
         ~conn
-        host
+        ~host
+        mock_env
         "/")
       |> Client.read_fixed
       |> print_string);;
@@ -68,7 +74,11 @@ POST request:
       Client.post
         ~headers:
           (Http.Header.of_list [("Accept", "application/json"); ("Content-Length", content_length);])
-          ~body:(Body.Fixed content) ~conn host "/post"
+          ~body:(Body.Fixed content) 
+          ~conn 
+          ~host
+                  mock_env
+          "/post"
       |> Client.read_fixed
       |> print_string);;
 +socket: wrote "POST /post HTTP/1.1\r\n"
@@ -140,7 +150,11 @@ Chunk request:
                  ])
             ~body:
               (Body.Chunked { body_writer = body_writer chan 0; trailer_writer })
-            ~conn host "/handle_chunk")
+            ~conn 
+            ~host
+            mock_env
+            "/handle_chunk"
+      )
       |> Client.read_fixed
       |> print_string);;
 +socket: wrote "POST /handle_chunk HTTP/1.1\r\n"
@@ -188,7 +202,7 @@ Chunk request:
     ]
     ~test:(fun () ->
         let print_chunk chunk = traceln "chunk body: %a\n" Body.pp_chunk chunk in
-        let res = Client.get ~conn host "/get_chunk" in
+        let res = Client.get ~conn ~host mock_env "/get_chunk" in
         match Client.read_chunked res print_chunk with
         | None -> print_string "FAIL"
         | Some _ -> print_string "PASS"
