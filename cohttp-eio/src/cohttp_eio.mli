@@ -112,20 +112,27 @@ end
 module Client : sig
   type response = Http.Response.t * Eio.Buf_read.t
 
-  type host = string * int option
-  (** Represents a server host - as ip address or domain name - and an optional
-      port value, e.g. www.example.org:8080, www.reddit.com *)
+  type host = string
+  (** Represents a server host - as ip address or domain name, e.g.
+      www.example.org:8080, www.reddit.com*)
+
+  type port = int
+  (** Represents a tcp/ip port value *)
 
   type resource_path = string
   (** Represents HTTP request resource path, e.g. "/shop/purchase",
       "/shop/items", "/shop/categories/" etc. *)
 
-  type 'a body_disallowed_call =
+  type 'a env = < net : Eio.Net.t ; .. > as 'a
+
+  type ('a, 'b) body_disallowed_call =
     ?pipeline_requests:bool ->
     ?version:Http.Version.t ->
     ?headers:Http.Header.t ->
-    conn:(#Eio.Flow.two_way as 'a) ->
-    host ->
+    ?conn:(#Eio.Flow.two_way as 'a) ->
+    ?port:port ->
+    'b env ->
+    host:host ->
     resource_path ->
     response
   (** [body_disallowed_call] denotes HTTP client calls where a request is not
@@ -136,13 +143,15 @@ module Client : sig
         request/reponse throughput. Set this to [false] if you want to improve
         latency of individual client request/response. Default is [false]. *)
 
-  type 'a body_allowed_call =
+  type ('a, 'b) body_allowed_call =
     ?pipeline_requests:bool ->
     ?version:Http.Version.t ->
     ?headers:Http.Header.t ->
     ?body:Body.t ->
-    conn:(#Eio.Flow.two_way as 'a) ->
-    host ->
+    ?conn:(#Eio.Flow.two_way as 'a) ->
+    ?port:port ->
+    'b env ->
+    host:host ->
     resource_path ->
     response
   (** [body_allowed_call] denotes HTTP client calls where a request can
@@ -161,22 +170,24 @@ module Client : sig
     ?version:Http.Version.t ->
     ?headers:Http.Header.t ->
     ?body:Body.t ->
-    conn:#Eio.Flow.two_way ->
-    host ->
+    ?conn:#Eio.Flow.two_way ->
+    ?port:port ->
+    'a env ->
+    host:host ->
     resource_path ->
     response
 
   (** {1 HTTP Calls with Body Disallowed} *)
 
-  val get : 'a body_disallowed_call
-  val head : 'a body_disallowed_call
-  val delete : 'a body_disallowed_call
+  val get : ('a, 'b) body_disallowed_call
+  val head : ('a, 'b) body_disallowed_call
+  val delete : ('a, 'b) body_disallowed_call
 
   (** {1 HTTP Calls with Body Allowed} *)
 
-  val post : 'a body_allowed_call
-  val put : 'a body_allowed_call
-  val patch : 'a body_allowed_call
+  val post : ('a, 'b) body_allowed_call
+  val put : ('a, 'b) body_allowed_call
+  val patch : ('a, 'b) body_allowed_call
 
   (** {1 Response Body} *)
 

@@ -2,27 +2,33 @@ module Buf_read = Eio.Buf_read
 module Buf_write = Eio.Buf_write
 
 type response = Http.Response.t * Buf_read.t
-type host = string * int option
+type host = string
+type port = int
 type resource_path = string
+type 'a env = < net : Eio.Net.t ; .. > as 'a
 
-type 'a body_disallowed_call =
+type ('a, 'b) body_disallowed_call =
   ?pipeline_requests:bool ->
   ?version:Http.Version.t ->
   ?headers:Http.Header.t ->
-  conn:(#Eio.Flow.two_way as 'a) ->
-  host ->
+  ?conn:(#Eio.Flow.two_way as 'a) ->
+  ?port:port ->
+  'b env ->
+  host:host ->
   resource_path ->
   response
 (** [body_disallowed_call] denotes HTTP client calls where a request is not
     allowed to have a request body. *)
 
-type 'a body_allowed_call =
+type ('a, 'b) body_allowed_call =
   ?pipeline_requests:bool ->
   ?version:Http.Version.t ->
   ?headers:Http.Header.t ->
   ?body:Body.t ->
-  conn:(#Eio.Flow.two_way as 'a) ->
-  host ->
+  ?conn:(#Eio.Flow.two_way as 'a) ->
+  ?port:port ->
+  'b env ->
+  host:host ->
   resource_path ->
   response
 
@@ -76,14 +82,14 @@ let response buf_read =
 (* Generic HTTP call *)
 
 let call ?(pipeline_requests = false) ?meth ?version
-    ?(headers = Http.Header.init ()) ?(body = Body.Empty) ~conn host
+    ?(headers = Http.Header.init ()) ?(body = Body.Empty) ?conn ?port env ~host
     resource_path =
   let headers =
     if not (Http.Header.mem headers "Host") then
       let host =
-        match host with
-        | host, Some port -> host ^ ":" ^ string_of_int port
-        | host, None -> host
+        match port with
+        | Some port -> host ^ ":" ^ string_of_int port
+        | None -> host
       in
       Http.Header.add headers "Host" host
     else headers
@@ -91,40 +97,42 @@ let call ?(pipeline_requests = false) ?meth ?version
   let headers =
     Http.Header.add_unless_exists headers "User-Agent" "cohttp-eio"
   in
-  let initial_size = 0x1000 in
-  Buf_write.with_flow ~initial_size conn (fun writer ->
-      let request = Http.Request.make ?meth ?version ~headers resource_path in
-      let request = Http.Request.add_te_trailers request in
-      write_request pipeline_requests request writer body;
-      let reader = Eio.Buf_read.of_flow ~initial_size ~max_size:max_int conn in
-      let response = response reader in
-      (response, reader))
+  let buf_write conn =
+    let initial_size = 0x1000 in
+    Buf_write.with_flow ~initial_size:0x1000 conn (fun writer ->
+        let request = Http.Request.make ?meth ?version ~headers resource_path in
+        let request = Http.Request.add_te_trailers request in
+        write_request pipeline_requests request writer body;
+        let reader =
+          Eio.Buf_read.of_flow ~initial_size ~max_size:max_int conn
+        in
+        let response = response reader in
+        (response, reader))
+  in
+  match conn with
+  | None ->
+      let service =
+        match port with Some p -> string_of_int p | None -> "80"
+      in
+      Eio.Net.with_tcp_connect ~host ~service env#net (fun conn ->
+          buf_write conn)
+  | Some conn -> buf_write conn
 
 (*  HTTP Calls with Body Disallowed *)
-
-let get ?pipeline_requests ?version ?headers ~conn host resource_path =
-  call ?pipeline_requests ~meth:`GET ?version ?headers ~conn host resource_path
-
-let head ?pipeline_requests ?version ?headers ~conn host resource_path =
-  call ?pipeline_requests ~meth:`HEAD ?version ?headers ~conn host resource_path
-
-let delete ?pipeline_requests ?version ?headers ~conn host resource_path =
-  call ?pipeline_requests ~meth:`DELETE ?version ?headers ~conn host
+let call_without_body ?pipeline_requests ?meth ?version ?headers ?conn ?port env
+    ~host resource_path =
+  call ?pipeline_requests ?meth ?version ?headers ?conn ?port env ~host
     resource_path
+
+let get = call_without_body ~meth:`GET
+let head = call_without_body ~meth:`HEAD
+let delete = call_without_body ~meth:`DELETE
 
 (*  HTTP Calls with Body Allowed *)
 
-let post ?pipeline_requests ?version ?headers ?body ~conn host resource_path =
-  call ?pipeline_requests ~meth:`POST ?version ?headers ?body ~conn host
-    resource_path
-
-let put ?pipeline_requests ?version ?headers ?body ~conn host resource_path =
-  call ?pipeline_requests ~meth:`PUT ?version ?headers ?body ~conn host
-    resource_path
-
-let patch ?pipeline_requests ?version ?headers ?body ~conn host resource_path =
-  call ?pipeline_requests ~meth:`PATCH ?version ?headers ?body ~conn host
-    resource_path
+let post = call ~meth:`POST
+let put = call ~meth:`PUT
+let patch = call ~meth:`PATCH
 
 (* Response Body *)
 
