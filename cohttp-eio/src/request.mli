@@ -7,6 +7,8 @@ type 'a Header.header +=
 
 type t
 
+module Header : Header.S
+
 val make :
   ?meth:Http.Method.t -> ?version:Http.Version.t -> host -> resource_path -> t
 

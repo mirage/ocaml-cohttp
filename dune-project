@@ -367,5 +367,6 @@ should also be fine under Windows too.
   (uri :with-test)
   fmt
   ptime
+  gmap
   (http
    (= :version))))

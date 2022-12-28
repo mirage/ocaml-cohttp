@@ -10,9 +10,18 @@ type 'a header +=
 type (_, _) eq = Eq : ('a, 'a) eq
 
 type header_ext = {
-  decode : 'a. 'a header -> string -> string -> ('a, string) result;
+  decode : 'a. 'a header -> string -> 'a lazy_t;
   equal : 'a 'b. 'a header -> 'b header -> ('a, 'b) eq option;
 }
+
+let compare : type a b. a header -> b header -> (a, b) Gmap.Order.t =
+ fun t t' ->
+  let open Gmap.Order in
+  match (t, t') with
+  | Content_length, Content_length -> Eq
+  | Content_length, _ -> Lt
+  | _, Content_length -> Gt
+  | _, _ -> assert false
 
 exception Unrecognized_header of string
 exception Duplicate_header of string
@@ -37,6 +46,29 @@ let equal (type a b) (a : a header) (b : b header) : (a, b) eq option =
   | _ ->
       let* header = Hashtbl.find_opt hdr_ext (id a) in
       header.equal a b
+
+let err_unrecognized_header hdr =
+  let nm = Obj.Extension_constructor.of_val hdr in
+  raise (Unrecognized_header (Obj.Extension_constructor.name nm))
+
+let decode : type a. a header -> string -> a lazy_t =
+ fun hdr s ->
+  match hdr with
+  | Content_length -> lazy (int_of_string s)
+  | Transfer_encoding ->
+      lazy
+        (String.split_on_char ',' s
+        |> List.map (fun te ->
+               match te with
+               | "chunked" -> `chunked
+               | "compress" -> `compress
+               | "deflate" -> `deflate
+               | "gzip" -> `gzip
+               | v -> failwith @@ "invalid 'Transfer-Encoding' value " ^ v))
+  | _ -> (
+      match Hashtbl.find_opt hdr_ext (id hdr) with
+      | Some ext -> ext.decode hdr s
+      | None -> err_unrecognized_header hdr)
 
 let http_date ptime =
   let (year, mm, dd), ((hh, min, ss), _) = Ptime.to_date_time ptime in
@@ -91,3 +123,23 @@ let name_value (type a) (hdr : a header) (v : a) : string * string =
   | _ ->
       let nm = Obj.Extension_constructor.of_val hdr in
       raise (Unrecognized_header (Obj.Extension_constructor.name nm))
+
+module type S = sig
+  type t
+  type 'a key
+
+  val empty : t
+  val add_raw : 'a key -> string -> t -> t
+  val get : 'a lazy_t key -> t -> 'a
+end
+
+module Make (K : Gmap.KEY) : S = struct
+  module M = Gmap.Make (K)
+
+  type t = M.t
+  type 'a key = 'a M.key
+
+  let empty = M.empty
+  let add_raw _k _v _t = failwith "x"
+  let get k t = Lazy.force @@ M.get k t
+end
