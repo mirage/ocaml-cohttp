@@ -27,7 +27,6 @@ depends: [
   "uri" {with-test}
   "fmt"
   "ptime"
-  "gmap"
   "http" {= version}
   "odoc" {with-doc}
 ]

@@ -5,12 +5,11 @@ type 'a Header.header +=
   | Host : host Header.header
   | User_agent : string Header.header
 
-module Key : Gmap.KEY = struct
+module Key = struct
   type 'a t = 'a Header.header
 
-  let compare : type a b. a t -> b t -> (a, b) Gmap.Order.t =
+  let compare : type a b. a t -> b t -> (a, b) Header.Order.t =
    fun t t' ->
-    let open Gmap.Order in
     match (t, t') with
     | Host, Host -> Eq
     | Host, _ -> Lt
@@ -19,6 +18,8 @@ module Key : Gmap.KEY = struct
     | User_agent, _ -> Lt
     | _, User_agent -> Gt
     | a, b -> Header.compare a b
+
+  let decode = Header.decode
 end
 
 module Header = Header.Make (Key)
