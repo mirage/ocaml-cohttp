@@ -8,7 +8,7 @@ type 'a Header.header +=
 module Key = struct
   type 'a t = 'a Header.header
 
-  let compare : type a b. a t -> b t -> (a, b) Header.Order.t =
+  let compare : type a b. a t -> b t -> (a, b) Header.Cmp.t =
    fun t t' ->
     match (t, t') with
     | Host, Host -> Eq

@@ -7,16 +7,17 @@ type 'a header +=
   | Transfer_encoding : [ `chunked | `compress | `deflate | `gzip ] list header
   | Date : Ptime.t header
 
-type (_, _) eq = Eq : ('a, 'a) eq
-
-(* (c) 2017, 2018 Hannes Mehnert, all rights reserved *)
-module Order = struct
+(* The following code is based on
+   https://github.com/hannesm/gmap/blob/main/gmap.mli
+   It has the copyright as below:
+   (c) 2017, 2018 Hannes Mehnert, all rights reserved *)
+module Cmp = struct
   type (_, _) t = Lt : ('a, 'b) t | Eq : ('a, 'a) t | Gt : ('a, 'b) t
 end
 
 type header_ext = {
   decode : 'a. 'a header -> string -> 'a;
-  compare : 'a 'b. 'a header -> 'b header -> ('a, 'b) Order.t;
+  compare : 'a 'b. 'a header -> 'b header -> ('a, 'b) Cmp.t;
 }
 
 exception Unrecognized_header of string
@@ -37,7 +38,7 @@ let err_unrecognized_header hdr =
   let nm = Obj.Extension_constructor.of_val hdr in
   raise (Unrecognized_header (Obj.Extension_constructor.name nm))
 
-let compare : type a b. a header -> b header -> (a, b) Order.t =
+let compare : type a b. a header -> b header -> (a, b) Cmp.t =
  fun t t' ->
   match (t, t') with
   | Content_length, Content_length -> Eq
@@ -126,7 +127,7 @@ let name_value (type a) (hdr : a header) (v : a) : string * string =
 module type HEADER = sig
   type 'a t = 'a header
 
-  val compare : 'a t -> 'b t -> ('a, 'b) Order.t
+  val compare : 'a t -> 'b t -> ('a, 'b) Cmp.t
   val decode : 'a t -> string -> 'a lazy_t
 end
 
@@ -141,6 +142,10 @@ module type S = sig
   val find_opt : 'a key -> t -> 'a option
 end
 
+(* The following code is based on
+   https://github.com/hannesm/gmap/blob/main/gmap.mli
+   It has the copyright as below:
+   (c) 2017, 2018 Hannes Mehnert, all rights reserved *)
 module Make (H : HEADER) : S = struct
   type 'a key = 'a H.t
   type h = H : 'a key -> h
@@ -150,7 +155,7 @@ module Make (H : HEADER) : S = struct
     type t = h
 
     let compare (H a) (H b) =
-      match H.compare a b with Order.Lt -> -1 | Order.Eq -> 0 | Order.Gt -> 1
+      match H.compare a b with Lt -> -1 | Eq -> 0 | Gt -> 1
   end)
 
   type t = v M.t
@@ -163,7 +168,7 @@ module Make (H : HEADER) : S = struct
    fun k t ->
     match M.find (H k) t with
     | V (k', v) -> (
-        match H.compare k k' with Order.Eq -> Lazy.force v | _ -> assert false)
+        match H.compare k k' with Eq -> Lazy.force v | _ -> assert false)
 
   let find_opt : type a. a key -> t -> a option =
    fun k t -> match find k t with v -> Some v | exception Not_found -> None
