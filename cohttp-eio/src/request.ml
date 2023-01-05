@@ -8,19 +8,14 @@ type 'a Header.header +=
 module Key = struct
   type 'a t = 'a Header.header
 
-  let compare : type a b. a t -> b t -> (a, b) Header.Cmp.t =
+  let equal : type a b. a t -> b t -> (a, b) Header.eq option =
    fun t t' ->
-    (* Host header is always first in a request. *)
     match (t, t') with
-    | Host, Host -> Eq
-    | Host, _ -> Lt
-    | _, Host -> Gt
-    | User_agent, User_agent -> Eq
-    | User_agent, _ -> Lt
-    | _, User_agent -> Gt
-    | a, b -> Header.compare a b
+    | Host, Host -> Some Eq
+    | User_agent, User_agent -> Some Eq
+    | _, _ -> None
 
-  let decode = Header.decode
+  let decode = failwith "not implemented"
 end
 
 module Header = Header.Make (Key)

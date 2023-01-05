@@ -1,60 +1,18 @@
-type name = string
-type value = string
 type 'a header = ..
 
 (** Defines headers common to both Request and Response. *)
 type 'a header +=
   | Content_length : int header
   | Transfer_encoding : [ `chunked | `compress | `deflate | `gzip ] list header
-(*   | Date : Ptime.t header *)
+  | Hdr : string -> string header  (** A generic header *)
 
-(* The following module 'Cmp' is based on `Order' module defined at
-   https://github.com/hannesm/gmap/blob/main/gmap.mli
-   It has the copyright as below:
-   (c) 2017, 2018 Hannes Mehnert, all rights reserved *)
-module Cmp = struct
-  type (_, _) t = Lt : ('a, 'b) t | Eq : ('a, 'a) t | Gt : ('a, 'b) t
-end
+type (_, _) eq = Eq : ('a, 'a) eq
 
 exception Unrecognized_header of string
 
 let err_unrecognized_header hdr =
   let nm = Obj.Extension_constructor.of_val hdr in
   raise (Unrecognized_header (Obj.Extension_constructor.name nm))
-
-let compare : type a b. a header -> b header -> (a, b) Cmp.t =
- fun t t' ->
-  match (t, t') with
-  | Content_length, Content_length -> Eq
-  | Content_length, _ -> Lt
-  | _, Content_length -> Gt
-  | Transfer_encoding, Transfer_encoding -> Eq
-  | Transfer_encoding, _ -> Lt
-  | _, Transfer_encoding -> Gt
-  (*
-  | Date, Date -> Eq
-  | Date, _ -> Lt
-  | _, Date -> Gt
-*)
-  | hdr, _ -> err_unrecognized_header hdr
-
-let decode : type a. a header -> string -> a lazy_t =
- fun hdr s ->
-  match hdr with
-  | Content_length -> lazy (int_of_string s)
-  | Transfer_encoding ->
-      lazy
-        (String.split_on_char ',' s
-        |> List.map String.trim
-        |> List.filter (fun s -> s <> "")
-        |> List.map (fun te ->
-               match te with
-               | "chunked" -> `chunked
-               | "compress" -> `compress
-               | "deflate" -> `deflate
-               | "gzip" -> `gzip
-               | v -> failwith @@ "Invalid 'Transfer-Encoding' value " ^ v))
-  | _ -> err_unrecognized_header hdr
 
 let name_value (type a) (hdr : a header) (v : a) : string * string =
   match hdr with
@@ -78,8 +36,8 @@ let name_value (type a) (hdr : a header) (v : a) : string * string =
 module type HEADER = sig
   type 'a t = 'a header
 
-  val compare : 'a t -> 'b t -> ('a, 'b) Cmp.t
-  val decode : 'a t -> string -> 'a lazy_t
+  val equal : 'a t -> 'b t -> ('a, 'b) eq option
+  val decode : 'a t -> string -> 'a Lazy.t
 end
 
 module type S = sig
@@ -88,34 +46,66 @@ module type S = sig
 
   val empty : t
   val add_string_val : 'a key -> string -> t -> t
-  val add : 'a key -> 'a lazy_t -> t -> t
+  val add : 'a key -> 'a Lazy.t -> t -> t
   val find : 'a key -> t -> 'a
   val find_opt : 'a key -> t -> 'a option
 end
 
 module Make (Header : HEADER) : S = struct
   type 'a key = 'a Header.t
-  type h = H : 'a key -> h
-  type v = V : 'a key * 'a lazy_t -> v
+  type v = V : 'a key * 'a Lazy.t -> v
 
   module M = Map.Make (struct
-    type t = h
+    type t = int
 
-    let compare (H a) (H b) =
-      match Header.compare a b with Lt -> -1 | Eq -> 0 | Gt -> 1
+    let compare (a : int) (b : int) = Int.compare a b
   end)
+
+  let equal : type a b. a header -> b header -> (a, b) eq option =
+   fun t t' ->
+    match (t, t') with
+    | Content_length, Content_length -> Some Eq
+    | Transfer_encoding, Transfer_encoding -> Some Eq
+    | Hdr a, Hdr b -> if String.equal a b then Some Eq else None
+    | a, b -> Header.equal a b
+
+  let decode : type a. a header -> string -> a Lazy.t =
+   fun hdr s ->
+    match hdr with
+    | Content_length -> lazy (int_of_string s)
+    | Transfer_encoding ->
+        lazy
+          (String.split_on_char ',' s
+          |> List.map String.trim
+          |> List.filter (fun s -> s <> "")
+          |> List.map (fun te ->
+                 match te with
+                 | "chunked" -> `chunked
+                 | "compress" -> `compress
+                 | "deflate" -> `deflate
+                 | "gzip" -> `gzip
+                 | v -> failwith @@ "Invalid 'Transfer-Encoding' value " ^ v))
+    | Hdr _ -> lazy s
+    | hdr -> Header.decode hdr s
 
   type t = v M.t
 
   let empty = M.empty
-  let add_string_val k s t = M.add (H k) (V (k, decode k s)) t
-  let add k v t = M.add (H k) (V (k, v)) t
+  let hash = Hashtbl.hash
+
+  let add_string_val k s t =
+    let key = hash k in
+    M.add key (V (k, decode k s)) t
+
+  let add k v t = M.add (hash k) (V (k, v)) t
 
   let find : type a. a key -> t -> a =
    fun k t ->
-    match M.find (H k) t with
+    match M.find (hash k) t with
     | V (k', v) -> (
-        match Header.compare k k' with Eq -> Lazy.force v | _ -> assert false)
+        match equal k k' with
+        | Some Eq -> Lazy.force v
+        | None -> raise Not_found)
 
   let find_opt : type a. a key -> t -> a option =
    fun k t -> match find k t with v -> Some v | exception Not_found -> None
