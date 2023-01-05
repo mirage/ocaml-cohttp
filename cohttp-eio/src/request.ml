@@ -5,7 +5,7 @@ type 'a Header.header +=
   | Host : host Header.header
   | User_agent : string Header.header
 
-module Key = struct
+module Header = Header.Make (struct
   type 'a t = 'a Header.header
 
   let equal : type a b. a t -> b t -> (a, b) Header.eq option =
@@ -16,9 +16,7 @@ module Key = struct
     | _, _ -> None
 
   let decode = failwith "not implemented"
-end
-
-module Header = Header.Make (Key)
+end)
 
 type t = {
   headers : Header.t;
