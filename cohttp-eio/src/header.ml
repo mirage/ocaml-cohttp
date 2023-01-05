@@ -2,10 +2,11 @@ type name = string
 type value = string
 type 'a header = ..
 
+(** Defines headers common to both Request and Response. *)
 type 'a header +=
   | Content_length : int header
   | Transfer_encoding : [ `chunked | `compress | `deflate | `gzip ] list header
-  | Date : Ptime.t header
+(*   | Date : Ptime.t header *)
 
 (* The following module 'Cmp' is based on `Order' module defined at
    https://github.com/hannesm/gmap/blob/main/gmap.mli
@@ -30,9 +31,11 @@ let compare : type a b. a header -> b header -> (a, b) Cmp.t =
   | Transfer_encoding, Transfer_encoding -> Eq
   | Transfer_encoding, _ -> Lt
   | _, Transfer_encoding -> Gt
+  (*
   | Date, Date -> Eq
   | Date, _ -> Lt
   | _, Date -> Gt
+*)
   | hdr, _ -> err_unrecognized_header hdr
 
 let decode : type a. a header -> string -> a lazy_t =
@@ -51,40 +54,7 @@ let decode : type a. a header -> string -> a lazy_t =
                | "deflate" -> `deflate
                | "gzip" -> `gzip
                | v -> failwith @@ "Invalid 'Transfer-Encoding' value " ^ v))
-  | Date -> failwith "Date decode not implemented"
   | _ -> err_unrecognized_header hdr
-
-let http_date ptime =
-  let (year, mm, dd), ((hh, min, ss), _) = Ptime.to_date_time ptime in
-  let weekday = Ptime.weekday ptime in
-  let weekday =
-    match weekday with
-    | `Mon -> "Mon"
-    | `Tue -> "Tue"
-    | `Wed -> "Wed"
-    | `Thu -> "Thu"
-    | `Fri -> "Fri"
-    | `Sat -> "Sat"
-    | `Sun -> "Sun"
-  in
-  let month =
-    match mm with
-    | 1 -> "Jan"
-    | 2 -> "Feb"
-    | 3 -> "Mar"
-    | 4 -> "Apr"
-    | 5 -> "May"
-    | 6 -> "Jun"
-    | 7 -> "Jul"
-    | 8 -> "Aug"
-    | 9 -> "Sep"
-    | 10 -> "Oct"
-    | 11 -> "Nov"
-    | 12 -> "Dec"
-    | _ -> failwith "Invalid HTTP datetime value"
-  in
-  Format.sprintf "%s, %02d %s %04d %02d:%02d:%02d GMT" weekday dd month year hh
-    min ss
 
 let name_value (type a) (hdr : a header) (v : a) : string * string =
   match hdr with
@@ -101,9 +71,6 @@ let name_value (type a) (hdr : a header) (v : a) : string * string =
         |> String.concat ","
       in
       ("Transfer-Encoding", v)
-  | Date ->
-      let http_date = http_date v in
-      ("Date", http_date)
   | _ ->
       let nm = Obj.Extension_constructor.of_val hdr in
       raise (Unrecognized_header (Obj.Extension_constructor.name nm))
