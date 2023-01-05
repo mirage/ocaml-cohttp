@@ -7,7 +7,7 @@ type 'a header +=
   | Transfer_encoding : [ `chunked | `compress | `deflate | `gzip ] list header
   | Date : Ptime.t header
 
-(* The following code is based on
+(* The following module 'Cmp' is based on `Order' module defined at
    https://github.com/hannesm/gmap/blob/main/gmap.mli
    It has the copyright as below:
    (c) 2017, 2018 Hannes Mehnert, all rights reserved *)
@@ -15,24 +15,7 @@ module Cmp = struct
   type (_, _) t = Lt : ('a, 'b) t | Eq : ('a, 'a) t | Gt : ('a, 'b) t
 end
 
-type header_ext = {
-  decode : 'a. 'a header -> string -> 'a;
-  compare : 'a 'b. 'a header -> 'b header -> ('a, 'b) Cmp.t;
-}
-
 exception Unrecognized_header of string
-exception Duplicate_header of string
-
-let hdr_ext : (int, header_ext) Hashtbl.t = Hashtbl.create 5
-let id t = Obj.Extension_constructor.(of_val t |> id)
-
-let extend (type a) (t : a header) header =
-  let id = id t in
-  match Hashtbl.find hdr_ext id with
-  | _ ->
-      let hdr = Obj.Extension_constructor.(of_val t |> name) in
-      raise @@ Duplicate_header hdr
-  | exception Not_found -> Hashtbl.replace hdr_ext id header
 
 let err_unrecognized_header hdr =
   let nm = Obj.Extension_constructor.of_val hdr in
@@ -44,10 +27,13 @@ let compare : type a b. a header -> b header -> (a, b) Cmp.t =
   | Content_length, Content_length -> Eq
   | Content_length, _ -> Lt
   | _, Content_length -> Gt
-  | a, b -> (
-      match Hashtbl.find_opt hdr_ext (id a) with
-      | Some ext -> ext.compare a b
-      | None -> err_unrecognized_header a)
+  | Transfer_encoding, Transfer_encoding -> Eq
+  | Transfer_encoding, _ -> Lt
+  | _, Transfer_encoding -> Gt
+  | Date, Date -> Eq
+  | Date, _ -> Lt
+  | _, Date -> Gt
+  | hdr, _ -> err_unrecognized_header hdr
 
 let decode : type a. a header -> string -> a lazy_t =
  fun hdr s ->
@@ -65,10 +51,8 @@ let decode : type a. a header -> string -> a lazy_t =
                | "deflate" -> `deflate
                | "gzip" -> `gzip
                | v -> failwith @@ "Invalid 'Transfer-Encoding' value " ^ v))
-  | _ -> (
-      match Hashtbl.find_opt hdr_ext (id hdr) with
-      | Some ext -> lazy (ext.decode hdr s)
-      | None -> err_unrecognized_header hdr)
+  | Date -> failwith "Date decode not implemented"
+  | _ -> err_unrecognized_header hdr
 
 let http_date ptime =
   let (year, mm, dd), ((hh, min, ss), _) = Ptime.to_date_time ptime in
@@ -142,10 +126,6 @@ module type S = sig
   val find_opt : 'a key -> t -> 'a option
 end
 
-(* The following code is based on
-   https://github.com/hannesm/gmap/blob/main/gmap.mli
-   It has the copyright as below:
-   (c) 2017, 2018 Hannes Mehnert, all rights reserved *)
 module Make (H : HEADER) : S = struct
   type 'a key = 'a H.t
   type h = H : 'a key -> h

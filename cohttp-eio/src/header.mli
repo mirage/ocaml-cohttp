@@ -11,18 +11,7 @@ module Cmp : sig
   type (_, _) t = Lt : ('a, 'b) t | Eq : ('a, 'a) t | Gt : ('a, 'b) t
 end
 
-type header_ext = {
-  decode : 'a. 'a header -> string -> 'a;
-  compare : 'a 'b. 'a header -> 'b header -> ('a, 'b) Cmp.t;
-}
-
 exception Unrecognized_header of string
-exception Duplicate_header of string
-
-val extend : 'a header -> header_ext -> unit
-(** [extend t header] extends [t] with [header].
-
-    @raise Duplicate_header if [header] already exists *)
 
 val compare : 'a header -> 'b header -> ('a, 'b) Cmp.t
 val decode : 'a header -> string -> 'a lazy_t
