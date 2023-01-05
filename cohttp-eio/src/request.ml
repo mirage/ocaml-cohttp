@@ -10,6 +10,7 @@ module Key = struct
 
   let compare : type a b. a t -> b t -> (a, b) Header.Cmp.t =
    fun t t' ->
+    (* Host header is always first in a request. *)
     match (t, t') with
     | Host, Host -> Eq
     | Host, _ -> Lt

@@ -126,8 +126,8 @@ module type S = sig
   val find_opt : 'a key -> t -> 'a option
 end
 
-module Make (H : HEADER) : S = struct
-  type 'a key = 'a H.t
+module Make (Header : HEADER) : S = struct
+  type 'a key = 'a Header.t
   type h = H : 'a key -> h
   type v = V : 'a key * 'a lazy_t -> v
 
@@ -135,7 +135,7 @@ module Make (H : HEADER) : S = struct
     type t = h
 
     let compare (H a) (H b) =
-      match H.compare a b with Lt -> -1 | Eq -> 0 | Gt -> 1
+      match Header.compare a b with Lt -> -1 | Eq -> 0 | Gt -> 1
   end)
 
   type t = v M.t
@@ -148,7 +148,7 @@ module Make (H : HEADER) : S = struct
    fun k t ->
     match M.find (H k) t with
     | V (k', v) -> (
-        match H.compare k k' with Eq -> Lazy.force v | _ -> assert false)
+        match Header.compare k k' with Eq -> Lazy.force v | _ -> assert false)
 
   let find_opt : type a. a key -> t -> a option =
    fun k t -> match find k t with v -> Some v | exception Not_found -> None
