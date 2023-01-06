@@ -14,6 +14,7 @@ concurrency:
 
 jobs:
   build-test-default:
+    if: github.event.pull_request.draft == false
     strategy:
       fail-fast: false
       matrix:
@@ -63,6 +64,7 @@ jobs:
       - run: opam exec -- dune runtest http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-mirage cohttp-async cohttp-curl-async cohttp-curl-lwt cohttp-curl cohttp-top cohttp-bench
 
   build-test-cohttp-eio:
+    if: github.event.pull_request.draft == false
     strategy:
       fail-fast: false
       matrix:
@@ -79,12 +81,6 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - run: sudo apt-get install ncat
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-
-      - run: brew install nmap
-        if: ${{ matrix.os == 'macos-latest' }}
-
       - name: Checkout code
         uses: actions/checkout@v3
 
