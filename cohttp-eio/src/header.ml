@@ -33,7 +33,7 @@ end
 
 module type S = sig
   type t
-  type 'a key = 'a header
+  type 'a key
 
   val empty : t
   val add_string_val : 'a key -> string -> t -> t
@@ -44,7 +44,7 @@ end
 
 module Make (Header : HEADER) : sig
   type t
-  type 'a key = 'a header
+  type 'a key
 
   val empty : t
   val add_string_val : 'a key -> string -> t -> t
@@ -52,7 +52,8 @@ module Make (Header : HEADER) : sig
   val add : 'a key -> 'a Lazy.t -> t -> t
   val find : 'a key -> t -> 'a
   val find_opt : 'a key -> t -> 'a option
-end = struct
+end
+with type 'a key = 'a Header.t = struct
   type 'a key = 'a Header.t
   type v = V : 'a key * 'a Lazy.t -> v
 
@@ -68,7 +69,7 @@ end = struct
     let nm = Obj.Extension_constructor.of_val hdr in
     Obj.Extension_constructor.name nm
 
-  let equal : type a b. a header -> b header -> (a, b) eq option =
+  let equal : type a b. a key -> b key -> (a, b) eq option =
    fun a b ->
     match Header.equal a b with
     | Some _ as s -> s
@@ -79,7 +80,7 @@ end = struct
         | Hdr a, Hdr b -> if String.equal a b then Some Eq else None
         | a, _ -> raise @@ Equal_undefined (constructor_name a))
 
-  let decode : type a. a header -> string -> a Lazy.t =
+  let decode : type a. a key -> string -> a Lazy.t =
    fun hdr hdr_val ->
     match Header.decoder hdr with
     | Some decode -> lazy (decode hdr_val)
@@ -102,7 +103,7 @@ end = struct
         | Hdr _ -> lazy hdr_val
         | hdr -> raise @@ Decoder_undefined (constructor_name hdr))
 
-  let id : type a. a header -> string =
+  let id : type a. a key -> string =
    fun hdr ->
     match Header.id hdr with
     | Some id -> id
@@ -113,7 +114,7 @@ end = struct
         | Hdr h -> h
         | _ -> raise @@ Id_undefined (constructor_name hdr))
 
-  let header_t : type a. string -> a header =
+  let header_t : type a. string -> a key =
    fun s ->
     match Header.t s with
     | Some t -> t
