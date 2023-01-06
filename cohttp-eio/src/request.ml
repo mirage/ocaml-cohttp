@@ -15,7 +15,18 @@ module Header = Header.Make (struct
     | User_agent, User_agent -> Some Eq
     | _, _ -> None
 
-  let decode = failwith "not implemented"
+  let id (type a) (hdr : a Header.header) =
+    match hdr with
+    | Host -> Some "host"
+    | User_agent -> Some "user-agent"
+    | _ -> None
+
+  let t : type a. Header.lowercase_id -> a Header.header option = function
+    | "host" -> Obj.magic Host
+    | "user-agent" -> Obj.magic User_agent
+    | _ -> None
+
+  let decoder _hdr = None
 end)
 
 type t = {
@@ -25,8 +36,8 @@ type t = {
   resource_path : resource_path;
 }
 
-let make ?(meth = `GET) ?(version = `HTTP_1_1) _host resource_path =
-  let headers = Header.empty in
+let make ?(meth = `GET) ?(version = `HTTP_1_1) ?(headers = Header.empty) _host
+    resource_path =
   { headers; meth; version; resource_path }
 
 let meth t = t.meth
