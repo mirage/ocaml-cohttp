@@ -43,15 +43,9 @@ module type S = sig
 end
 
 module Make (Header : HEADER) : sig
-  type t
-  type 'a key
+  include S
 
-  val empty : t
-  val add_string_val : 'a key -> string -> t -> t
   val add_key_val : key:lowercase_id -> value:string -> t -> t
-  val add : 'a key -> 'a Lazy.t -> t -> t
-  val find : 'a key -> t -> 'a
-  val find_opt : 'a key -> t -> 'a option
 end
 with type 'a key = 'a Header.t = struct
   type 'a key = 'a Header.t
