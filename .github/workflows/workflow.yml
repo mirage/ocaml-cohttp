@@ -81,12 +81,6 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - run: sudo apt-get install ncat
-        if: ${{ matrix.os == 'ubuntu-latest' }}
-
-      - run: brew install nmap
-        if: ${{ matrix.os == 'macos-latest' }}
-
       - name: Checkout code
         uses: actions/checkout@v3
 
