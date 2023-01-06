@@ -27,6 +27,7 @@ module Header = Header.Make (struct
     | _ -> None
 
   let decoder _hdr = None
+  let encoder _hdr = None
 end)
 
 type t = {

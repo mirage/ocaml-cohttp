@@ -29,6 +29,7 @@ module type HEADER = sig
 
   val equal : 'a t -> 'b t -> ('a, 'b) eq option
   val decoder : 'a t -> (string -> 'a) option
+  val encoder : 'a t -> ('a -> string) option
 end
 
 module type S = sig
