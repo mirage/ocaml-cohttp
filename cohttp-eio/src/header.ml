@@ -48,7 +48,7 @@ module Make (Header : HEADER) : sig
 
   val empty : t
   val add_string_val : 'a key -> string -> t -> t
-  val add_key_val : key:string -> value:string -> t -> t
+  val add_key_val : key:lowercase_id -> value:string -> t -> t
   val add : 'a key -> 'a Lazy.t -> t -> t
   val find : 'a key -> t -> 'a
   val find_opt : 'a key -> t -> 'a option
