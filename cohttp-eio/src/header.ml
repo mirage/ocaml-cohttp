@@ -47,6 +47,7 @@ module type S = sig
   val map : mapper -> t -> t
   val fold : (b -> 'a -> 'a) -> t -> 'a -> 'a
   val remove : 'a key -> t -> t
+  val update : 'a key -> ('a option -> 'a option) -> t -> t
 end
 
 module Make (Header : HEADER) : sig
@@ -174,4 +175,9 @@ with type 'a key = 'a Header.t = struct
       t
 
   let remove key t = M.remove (id key) t
+
+  let update key f t =
+    match f (find_opt key t) with
+    | None -> remove key t
+    | Some v -> add key (lazy v) t
 end
