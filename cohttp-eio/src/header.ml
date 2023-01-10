@@ -41,7 +41,6 @@ module type S = sig
   val empty : t
   val add_string_val : 'a key -> string -> t -> t
   val add : 'a key -> 'a -> t -> t
-  val add_lazy : 'a key -> 'a Lazy.t -> t -> t
   val find : 'a key -> t -> 'a
   val find_opt : 'a key -> t -> 'a option
   val iter : (b -> unit) -> t -> unit
@@ -58,13 +57,7 @@ module Make (Header : HEADER) : sig
 end
 with type 'a key = 'a Header.t = struct
   type 'a key = 'a Header.t
-
-  (* Header value can be stored as either as a Lazy undecoded value
-     or as a decoded value. *)
-  type v =
-    | L : 'a key * 'a Lazy.t -> v  (** Lazy value *)
-    | V : 'a key * 'a -> v  (** Decoded value *)
-
+  type v = V : 'a key * 'a Lazy.t -> v  (** Lazy value *)
   type b = B : 'a key * 'a -> b
   type mapper = { f : 'a. 'a key -> 'a -> 'a }
 
@@ -89,7 +82,7 @@ with type 'a key = 'a Header.t = struct
         | Content_length, Content_length -> Some Eq
         | Transfer_encoding, Transfer_encoding -> Some Eq
         | Hdr a, Hdr b -> if String.equal a b then Some Eq else None
-        | a, _ -> raise @@ Equal_undefined (constructor_name a))
+        | _, _ -> None)
 
   let decode : type a. a key -> string -> a Lazy.t =
    fun hdr hdr_val ->
@@ -139,55 +132,43 @@ with type 'a key = 'a Header.t = struct
 
   let add_string_val k s t =
     let key = id k in
-    M.add key (L (k, decode k s)) t
+    M.add key (V (k, decode k s)) t
 
   let add_key_val ~key ~value t =
     let k = header_t key in
-    add_string_val k value t
+    M.add key (V (k, decode k value)) t
 
-  let add k v t = M.add (id k) (V (k, v)) t
-  let add_lazy k v t = M.add (id k) (L (k, v)) t
+  let add k v t = M.add (id k) (V (k, lazy v)) t
 
   let find : type a. a key -> t -> a =
    fun k t ->
     let key = id k in
     match M.find key t with
-    | L (k', v) -> (
+    | V (k', v) -> (
         match equal k k' with
         | Some Eq -> Lazy.force v
         | None -> raise Not_found)
-    | V (k', v) -> (
-        match equal k k' with Some Eq -> v | None -> raise Not_found)
 
   let find_opt : type a. a key -> t -> a option =
    fun k t -> match find k t with v -> Some v | exception Not_found -> None
 
-  let iter : (b -> unit) -> t -> unit =
-   fun f t ->
+  let iter f t =
     M.iter
-      (fun _k v ->
-        let b =
-          match v with
-          | L (key, v) -> B (key, Lazy.force v)
-          | V (key, v) -> B (key, v)
-        in
-        f b)
+      (fun _k v -> match v with V (key, v) -> f @@ B (key, Lazy.force v))
       t
 
   let map mapper t =
     M.map
       (fun v ->
         match v with
-        | L (k, v) -> V (k, mapper.f k @@ Lazy.force v)
-        | V (k, v) -> V (k, mapper.f k v))
+        | V (k, v) ->
+            let v = mapper.f k @@ Lazy.force v in
+            V (k, lazy v))
       t
 
   let fold f t =
     M.fold
-      (fun _key v acc ->
-        match v with
-        | L (k, v) -> f (B (k, Lazy.force v)) acc
-        | V (k, v) -> f (B (k, v)) acc)
+      (fun _key v acc -> match v with V (k, v) -> f (B (k, Lazy.force v)) acc)
       t
 
   let remove key t = M.remove (id key) t
