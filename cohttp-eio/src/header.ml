@@ -45,6 +45,7 @@ module type S = sig
   val find_opt : 'a key -> t -> 'a option
   val iter : (b -> unit) -> t -> unit
   val map : mapper -> t -> t
+  val fold : (b -> 'a -> 'a) -> t -> 'a -> 'a
 end
 
 module Make (Header : HEADER) : sig
@@ -162,5 +163,12 @@ with type 'a key = 'a Header.t = struct
       (fun (V (k, v)) ->
         let v = mapper.f k @@ Lazy.force v in
         V (k, lazy v))
+      t
+
+  let fold f t =
+    M.fold
+      (fun _key (V (k, v)) acc ->
+        let b = B (k, Lazy.force v) in
+        f b acc)
       t
 end
