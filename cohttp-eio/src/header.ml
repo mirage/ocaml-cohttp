@@ -35,12 +35,14 @@ end
 module type S = sig
   type t
   type 'a key
+  type b = B : 'a key * 'a -> b
 
   val empty : t
   val add_string_val : 'a key -> string -> t -> t
   val add : 'a key -> 'a Lazy.t -> t -> t
   val find : 'a key -> t -> 'a
   val find_opt : 'a key -> t -> 'a option
+  val iter : (b -> unit) -> t -> unit
 end
 
 module Make (Header : HEADER) : sig
@@ -51,6 +53,7 @@ end
 with type 'a key = 'a Header.t = struct
   type 'a key = 'a Header.t
   type v = V : 'a key * 'a Lazy.t -> v
+  type b = B : 'a key * 'a -> b
 
   module M = Map.Make (struct
     type t = string
@@ -142,4 +145,12 @@ with type 'a key = 'a Header.t = struct
 
   let find_opt : type a. a key -> t -> a option =
    fun k t -> match find k t with v -> Some v | exception Not_found -> None
+
+  let iter : (b -> unit) -> t -> unit =
+   fun f t ->
+    M.iter
+      (fun _k (V (key, v)) ->
+        let b = B (key, Lazy.force v) in
+        f b)
+      t
 end
