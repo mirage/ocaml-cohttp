@@ -46,6 +46,7 @@ module type S = sig
   val iter : (b -> unit) -> t -> unit
   val map : mapper -> t -> t
   val fold : (b -> 'a -> 'a) -> t -> 'a -> 'a
+  val remove : 'a key -> t -> t
 end
 
 module Make (Header : HEADER) : sig
@@ -171,4 +172,6 @@ with type 'a key = 'a Header.t = struct
         let b = B (k, Lazy.force v) in
         f b acc)
       t
+
+  let remove key t = M.remove (id key) t
 end
