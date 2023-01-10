@@ -2,6 +2,9 @@ type host = string * int option
 type resource_path = string
 
 type 'a Header.header +=
+  | Content_length = Header.Content_length
+  | Transfer_encoding = Header.Transfer_encoding
+  | Hdr = Header.Hdr
   | Host : host Header.header
   | User_agent : string Header.header
 
