@@ -53,9 +53,9 @@ with type 'a key = 'a Header.t = struct
   type v = V : 'a key * 'a Lazy.t -> v
 
   module M = Map.Make (struct
-    type t = int
+    type t = string
 
-    let compare = Int.compare
+    let compare = String.compare
   end)
 
   type t = v M.t
@@ -120,21 +120,20 @@ with type 'a key = 'a Header.t = struct
         | h -> Obj.magic (Hdr h))
 
   let empty = M.empty
-  let hash = Hashtbl.hash
 
   let add_string_val k s t =
-    let key = hash (id k) in
+    let key = id k in
     M.add key (V (k, decode k s)) t
 
   let add_key_val ~key ~value t =
     let k = header_t key in
     add_string_val k value t
 
-  let add k v t = M.add (hash k) (V (k, v)) t
+  let add k v t = M.add (id k) (V (k, v)) t
 
   let find : type a. a key -> t -> a =
    fun k t ->
-    let key = hash (id k) in
+    let key = id k in
     match M.find key t with
     | V (k', v) -> (
         match equal k k' with
