@@ -16,7 +16,6 @@ type (_, _) eq = Eq : ('a, 'a) eq
 
 exception Decoder_undefined of string
 exception Id_undefined of string
-exception Equal_undefined of string
 
 module type HEADER = sig
   type 'a t = 'a header
