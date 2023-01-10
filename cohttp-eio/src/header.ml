@@ -36,6 +36,7 @@ module type S = sig
   type t
   type 'a key
   type b = B : 'a key * 'a -> b
+  type mapper = { f : 'a. 'a key -> 'a -> 'a }
 
   val empty : t
   val add_string_val : 'a key -> string -> t -> t
@@ -43,6 +44,7 @@ module type S = sig
   val find : 'a key -> t -> 'a
   val find_opt : 'a key -> t -> 'a option
   val iter : (b -> unit) -> t -> unit
+  val map : mapper -> t -> t
 end
 
 module Make (Header : HEADER) : sig
@@ -54,6 +56,7 @@ with type 'a key = 'a Header.t = struct
   type 'a key = 'a Header.t
   type v = V : 'a key * 'a Lazy.t -> v
   type b = B : 'a key * 'a -> b
+  type mapper = { f : 'a. 'a key -> 'a -> 'a }
 
   module M = Map.Make (struct
     type t = string
@@ -152,5 +155,12 @@ with type 'a key = 'a Header.t = struct
       (fun _k (V (key, v)) ->
         let b = B (key, Lazy.force v) in
         f b)
+      t
+
+  let map mapper t =
+    M.map
+      (fun (V (k, v)) ->
+        let v = mapper.f k @@ Lazy.force v in
+        V (k, lazy v))
       t
 end
