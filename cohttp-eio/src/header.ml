@@ -60,11 +60,7 @@ with type 'a key = 'a Header.t = struct
   type binding = B : 'a key * 'a -> binding
   type mapper = { f : 'a. 'a key -> 'a -> 'a }
 
-  module M = Map.Make (struct
-    type t = string
-
-    let compare = String.compare
-  end)
+  module M = Map.Make (String)
 
   type t = v M.t
 

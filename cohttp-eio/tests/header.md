@@ -1,11 +1,10 @@
 # Setup
 
 ```ocaml
-# module H = Cohttp_eio.Request.Header ;;
-module H = Cohttp_eio.Request.Header
-
-# module R = Cohttp_eio.Request ;;
-module R = Cohttp_eio.Request
+# module R = Cohttp_eio.Request.R ;;
+module R = Cohttp_eio.Request.R
+# module H = R.Header ;;
+module H = R.Header
 ```
 
 Add header key values using type-safe API - add, add_lazy.
@@ -42,5 +41,4 @@ val h : H.t = <abstr>
 
 # H.find_opt R.Content_length h ;;
 - : int option = Some 100
-
 ```
