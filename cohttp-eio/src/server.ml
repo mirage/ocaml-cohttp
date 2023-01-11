@@ -15,11 +15,6 @@ type 'a env =
   as
   'a
 
-let domain_count =
-  match Sys.getenv_opt "COHTTP_DOMAINS" with
-  | Some d -> int_of_string d
-  | None -> 1
-
 (* Request *)
 
 let read_fixed request reader =
@@ -190,7 +185,7 @@ let run_domain env ssock handler =
       in
       loop ())
 
-let run ?(socket_backlog = 128) ?(domains = domain_count) ~port env handler =
+let run ?(socket_backlog = 128) ?(domains = 1) ~port env handler =
   Switch.run @@ fun sw ->
   let domain_mgr = Eio.Stdenv.domain_mgr env in
   let ssock =
