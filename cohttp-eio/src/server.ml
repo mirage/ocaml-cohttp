@@ -73,8 +73,8 @@ let internal_server_error_response =
 let bad_request_response =
   (Http.Response.make ~status:`Bad_request (), Body.Empty)
 
-let http_date env =
-  let now = Eio.Time.now env#clock |> Ptime.of_float_s |> Option.get in
+let http_date clock =
+  let now = Eio.Time.now clock |> Ptime.of_float_s |> Option.get in
   let (year, mm, dd), ((hh, min, ss), _) = Ptime.to_date_time now in
   let weekday = Ptime.weekday now in
   let weekday =
@@ -106,7 +106,7 @@ let http_date env =
   Format.sprintf "%s, %02d %s %04d %02d:%02d:%02d GMT" weekday dd month year hh
     min ss
 
-let write_response ?request env writer (response, body) =
+let write_response ?request clock writer (response, body) =
   let headers =
     let request_meth = Option.map Http.Request.meth request in
     Body.add_content_length
@@ -118,7 +118,7 @@ let write_response ?request env writer (response, body) =
     (* https://www.rfc-editor.org/rfc/rfc9110#section-6.6.1 *)
     match Http.Response.status response with
     | #Http.Status.informational | #Http.Status.server_error -> headers
-    | _ -> Http.Header.add headers "Date" (http_date env)
+    | _ -> Http.Header.add headers "Date" (http_date clock)
   in
   let version = Http.Version.to_string response.version in
   let status = Http.Status.to_string response.status in
@@ -155,34 +155,34 @@ let[@warning "-3"] http_request t =
 
 (* main *)
 
-let rec handle_request env client_addr reader writer flow handler =
+let rec handle_request clock client_addr reader writer flow handler =
   match http_request reader with
   | request ->
       let response, body = handler (request, reader, client_addr) in
-      write_response ~request env writer (response, body);
+      write_response ~request clock writer (response, body);
       if Http.Request.is_keep_alive request then
-        handle_request env client_addr reader writer flow handler
+        handle_request clock client_addr reader writer flow handler
   | (exception End_of_file)
   | (exception Eio.Io (Eio.Net.E (Connection_reset _), _)) ->
       ()
   | exception (Failure _ as ex) ->
-      write_response env writer bad_request_response;
+      write_response clock writer bad_request_response;
       raise ex
   | exception ex ->
-      write_response env writer internal_server_error_response;
+      write_response clock writer internal_server_error_response;
       raise ex
 
-let connection_handler (handler : handler) env flow client_addr =
+let connection_handler (handler : handler) clock flow client_addr =
   let reader = Buf_read.of_flow ~initial_size:0x1000 ~max_size:max_int flow in
   Buf_write.with_flow flow (fun writer ->
-      handle_request env client_addr reader writer flow handler)
+      handle_request clock client_addr reader writer flow handler)
 
 let run_domain env ssock handler =
   let on_error exn =
     Printf.fprintf stderr "Error handling connection: %s\n%!"
       (Printexc.to_string exn)
   in
-  let handler = connection_handler handler env in
+  let handler = connection_handler handler env#clock in
   Switch.run (fun sw ->
       let rec loop () =
         Eio.Net.accept_fork ~sw ssock ~on_error handler;
