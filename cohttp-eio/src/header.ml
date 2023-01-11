@@ -34,7 +34,7 @@ end
 module type S = sig
   type t
   type 'a key
-  type b = B : 'a key * 'a -> b
+  type binding = B : 'a key * 'a -> binding
   type mapper = { f : 'a. 'a key -> 'a -> 'a }
 
   val empty : t
@@ -42,9 +42,9 @@ module type S = sig
   val add : 'a key -> 'a -> t -> t
   val find : 'a key -> t -> 'a
   val find_opt : 'a key -> t -> 'a option
-  val iter : (b -> unit) -> t -> unit
+  val iter : (binding -> unit) -> t -> unit
   val map : mapper -> t -> t
-  val fold : (b -> 'a -> 'a) -> t -> 'a -> 'a
+  val fold : (binding -> 'a -> 'a) -> t -> 'a -> 'a
   val remove : 'a key -> t -> t
   val update : 'a key -> ('a option -> 'a option) -> t -> t
 end
@@ -57,7 +57,7 @@ end
 with type 'a key = 'a Header.t = struct
   type 'a key = 'a Header.t
   type v = V : 'a key * 'a Lazy.t -> v  (** Lazy value *)
-  type b = B : 'a key * 'a -> b
+  type binding = B : 'a key * 'a -> binding
   type mapper = { f : 'a. 'a key -> 'a -> 'a }
 
   module M = Map.Make (struct
