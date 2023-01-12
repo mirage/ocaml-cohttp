@@ -122,7 +122,7 @@ let mock_env =
     method domain_mgr = fake_domain_mgr
   end
 
-let connection_handler = Server.connection_handler app mock_env
+let connection_handler = Server.connection_handler app mock_env#clock
 ```
 
 To test it, we run the connection handler with our mock socket:

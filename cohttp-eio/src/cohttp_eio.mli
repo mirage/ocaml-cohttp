@@ -93,10 +93,20 @@ module Server : sig
 
   val run :
     ?socket_backlog:int -> ?domains:int -> port:int -> 'a env -> handler -> 'b
+  (** [run ~socket_backlog ~domains ~port env handler] runs a HTTP/1.1 server
+      executing [handler] and listening on [port]. [env] corresponds to
+      {!val:Eio.Stdenv.t}.
+
+      [socket_backlog] is the number of pending connections for tcp server
+      socket. The default is [128].
+
+      [domains] is the number of OCaml 5.0 domains the server will use. The
+      default is [1]. You may use {!val:Domain.recommended_domain_count} to
+      configure a multicore capable server. *)
 
   val connection_handler :
     handler ->
-    'a env ->
+    #Eio.Time.clock ->
     #Eio.Net.stream_socket ->
     Eio.Net.Sockaddr.stream ->
     unit
@@ -106,6 +116,7 @@ module Server : sig
   (** {1 Basic Handlers} *)
 
   val not_found_handler : handler
+  (** [not_found_handler] return HTTP 404 response. *)
 end
 
 (** [Client] is a HTTP/1.1 client. *)
