@@ -42,3 +42,13 @@ val h : H.t = <abstr>
 # H.find_opt R.Content_length h ;;
 - : int option = Some 100
 ```
+
+Headers which are undefined can be retrieved via `Hdr "hdr"`
+
+```ocaml
+# let h = H.add_key_val ~key:"age" ~value:"9" h;;
+val h : H.t = <abstr>
+
+# H.find_opt (R.Hdr "age") h;;
+- : string option = Some "9"
+```
