@@ -81,7 +81,8 @@ let constructor_name hdr =
   Obj.Extension_constructor.name nm
 
 (* Defines header definition for headers included in this module, such as
-   Content-Length, Transfer-Encoding and so on. If a typed defnition for a header is not given, then 'Hdr h' is used. *)
+   Content-Length, Transfer-Encoding and so on. If a typed defnition for a
+   header is not given, then 'Hdr h' is used. *)
 let default_header_def : header_definition =
   object
     method header : type a. string -> a header option =
@@ -221,7 +222,7 @@ let make_header_t : #header_definition -> 'a header_t =
 
 type v = V : 'a header * 'a Lazy.t -> v (* Header values are stored lazily. *)
 type binding = B : 'a header * 'a -> binding
-type mapper = { f : 'a. 'a header -> 'a -> 'a }
+type mapper = < f : 'a. 'a header -> 'a -> 'a >
 
 module M = Map.Make (String)
 
@@ -265,13 +266,13 @@ let find_opt k t =
 let iter f t =
   M.iter (fun _key v -> match v with V (k, v) -> f @@ B (k, Lazy.force v)) t.m
 
-let map mapper t =
+let map (m : mapper) t =
   let m =
     M.map
       (fun v ->
         match v with
         | V (k, v) ->
-            let v = mapper.f k @@ Lazy.force v in
+            let v = m#f k @@ Lazy.force v in
             V (k, lazy v))
       t.m
   in
