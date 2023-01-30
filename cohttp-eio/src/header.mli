@@ -220,3 +220,18 @@ val find_all : t -> 'a header -> 'a undecoded list
 (** [find_all t h] is a list of undecoded values [v] corresponding to header
     [h]. It is an empty list if [h] doesn't exist in [t]. See {!val:decode} to
     decode [v]. *)
+
+(** {2 Update, Remove} *)
+
+val update : t -> < f : 'a. 'a header -> 'a undecoded -> 'a option > -> unit
+(** [update t f] iterates over [t] and applies [f#f h v] where [h] and [v] are
+    respectively header and undecoded value as it exists in [t]. If
+    [f#f h v = Some v'] then the value of [h] is updated to [v']. If [None] then
+    [h] is removed from [t]. See {!val:decode} to decode [v]. *)
+
+val remove : ?all:bool -> t -> 'a header -> unit
+(** [remove t h] removes the last added header [h] from [t].
+
+    @param all
+      if [true] then all headers equal to [h] are removed from [t]. Default
+      value is [false]. *)

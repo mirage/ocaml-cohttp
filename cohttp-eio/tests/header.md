@@ -182,3 +182,74 @@ val blah : Header.lname = "blah"
 # Header.(find_all t (H blah)) |> List.map Header.decode ;;
 - : string list = ["blah 3"; "blah 2"; "blah 1"]
 ```
+
+## Update, Remove
+
+`update`
+
+First we add a new header item (H "blah2"), which we will remove via `update`. Additionally
+we will update Content_length and Age header.
+
+```ocaml
+# let blah2 = Header.lname "blah2";;
+val blah2 : Header.lname = "blah2"
+
+# Header.(add t (H blah2) "blah2") ;;
+- : unit = ()
+
+# Header.(find_opt t (H blah2)) ;;
+- : string option = Some "blah2"
+```
+
+Apply `update`.
+
+```ocaml
+# let f = object
+  method f: type a. a Header.header -> a Header.undecoded -> a option =
+    fun h v ->
+      let v = Header.decode v in
+      match h, v with
+      | Header.Content_length, 200 -> Some 2000
+      | Header.H nm, "20" when ((nm :> string) = "age") -> Some "40"
+      | Header.H nm, "blah2" when ((nm :> string) = "blah2") -> None
+      | _ -> Some v
+  end;;
+val f : < f : 'a. 'a Header.header -> 'a Header.undecoded -> 'a option > =
+  <obj>
+
+# Header.update t f ;;
+- : unit = ()
+```
+
+`remove` with parameter `~all:false` - the default value - removes the last added header item.
+
+```ocaml
+# Header.length t ;;
+- : int = 7
+
+# Header.(remove t (H blah)) ;;
+- : unit = ()
+
+# Header.(find_opt t (H blah)) ;;
+- : string option = Some "blah 1"
+
+# Header.length t ;;
+- : int = 6
+```
+
+`remove ~all:true` removes all occurences of a given header.
+
+
+```ocaml
+# Header.length t;;
+- : int = 6
+
+# Header.(remove ~all:true t (H blah)) ;;
+- : unit = ()
+
+# Header.(find_all t (H blah)) ;;
+- : string Header.undecoded list = []
+
+# Header.length t ;;
+- : int = 4
+```

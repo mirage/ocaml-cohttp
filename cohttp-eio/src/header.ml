@@ -203,3 +203,23 @@ let find_all (type a) (t : #t) (h : a header) : a undecoded list =
         | None -> aux tl)
   in
   aux t#to_list
+
+let update (t : #t) (f : < f : 'a. 'a header -> 'a undecoded -> 'a option >) =
+  t#modify
+    (List.filter_map (fun (V (h, v)) ->
+         let v = f#f h v in
+         Option.map (fun v -> V (h, lazy v)) v))
+
+let remove (type a) ?(all = false) (t : #t) (h : a header) =
+  t#modify (fun headers ->
+      let _, headers =
+        List.fold_left
+          (fun (first, acc) (V (h', _v) as orig_v) ->
+            match t#equal h h' with
+            | Some Eq ->
+                if first || ((not first) && all) then (false, acc)
+                else (first, orig_v :: acc)
+            | None -> (first, orig_v :: acc))
+          (true, []) headers
+      in
+      headers)
