@@ -132,3 +132,53 @@ val t3 : Header.t = <obj>
 # Header.(encode t Content_length 10) ;;
 - : string = "10"
 ```
+
+## Find
+
+`exists`, `find`, `find_opt`, `find_all`
+
+```ocaml
+# let f = object
+  method f: type a. a Header.header -> a Header.undecoded -> bool =
+    fun t v ->
+      let v = Header.decode v in
+      match t, v with
+      | Header.Content_length, 200 -> true
+      | _ -> false
+  end ;;
+val f : < f : 'a. 'a Header.header -> 'a Header.undecoded -> bool > = <obj>
+
+# Header.exists t f ;;
+- : bool = true
+
+# Header.(find t Content_length) ;;
+- : int = 200
+
+# Header.(find t Transfer_encoding) ;;
+- : [ `chunked | `compress | `deflate | `gzip ] list = [`chunked]
+
+# Header.(find_opt t Content_length) ;;
+- : int option = Some 200
+
+# Header.(find t (H age)) ;;
+- : string = "20"
+
+# Header.(find t (H content_type)) ;;
+- : string = "text/html"
+```
+
+`find_all` returns all values of a given header.
+
+```ocaml
+# let blah = Header.lname "blah";;
+val blah : Header.lname = "blah"
+
+# Header.length t ;;
+- : int = 4
+
+# Header.(add t (H blah) "blah 1"; add t (H blah) "blah 2"; add t (H blah) "blah 3");;
+- : unit = ()
+
+# Header.(find_all t (H blah)) |> List.map Header.decode ;;
+- : string list = ["blah 3"; "blah 2"; "blah 1"]
+```

@@ -197,3 +197,26 @@ val decode : 'a undecoded -> 'a
 (** [decode codec v] decodes [v].
 
     @raise exn if decoding results in an error. *)
+
+(** {2 Find} *)
+
+val exists : t -> < f : 'a. 'a header -> 'a undecoded -> bool > -> bool
+(** [exists t f] iterates over [t] and applies [f#f h v] where [h] and [v] are
+    respectively header and undecoded value as it exists in [t]. It returns
+    [true] if any of the items in [t] returns [true] for [f#f h v]. See
+    {!val:decode} to decode [v]. *)
+
+val find_opt : t -> 'a header -> 'a option
+(** [find_opt t h] is [Some v] if [h] exists in [t]. It is [None] if [h] doesn't
+    exist in [t] or decoding a header value results in an error. *)
+
+val find : t -> 'a header -> 'a
+(** [find t h] returns [v] if [h] exists in [t].
+
+    @raise Not_found if [h] is not found in [t].
+    @raise exn if decoding [h] results in an error. *)
+
+val find_all : t -> 'a header -> 'a undecoded list
+(** [find_all t h] is a list of undecoded values [v] corresponding to header
+    [h]. It is an empty list if [h] doesn't exist in [t]. See {!val:decode} to
+    decode [v]. *)

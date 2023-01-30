@@ -166,3 +166,40 @@ let encode : type a. #Codec.t -> a header -> a -> string =
  fun codec h v -> codec#encoder h v
 
 let decode : type a. a undecoded -> a = Lazy.force
+
+let exists (t : #t) (f : < f : 'a. 'a header -> 'a undecoded -> bool >) =
+  let rec aux = function
+    | [] -> false
+    | V (h, v) :: tl -> if f#f h v then true else aux tl
+  in
+  aux t#to_list
+
+let find_opt (type a) (t : #t) (h : a header) =
+  let rec aux = function
+    | [] -> None
+    | V (h', v) :: tl -> (
+        match t#equal h h' with
+        | Some Eq -> ( try Some (Lazy.force v :> a) with _ -> None)
+        | None -> aux tl)
+  in
+  aux t#to_list
+
+let find (type a) (t : #t) (h : a header) =
+  let rec aux = function
+    | [] -> raise Not_found
+    | V (h', v) :: tl -> (
+        match t#equal h h' with
+        | Some Eq -> (Lazy.force v :> a)
+        | None -> aux tl)
+  in
+  aux t#to_list
+
+let find_all (type a) (t : #t) (h : a header) : a undecoded list =
+  let[@tail_mod_cons] rec aux = function
+    | [] -> []
+    | V (h', v) :: tl -> (
+        match t#equal h h' with
+        | Some Eq -> (v :> a undecoded) :: aux tl
+        | None -> aux tl)
+  in
+  aux t#to_list
