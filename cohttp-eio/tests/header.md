@@ -105,3 +105,30 @@ val t3 : Header.t = <obj>
 # Header.length t3 = List.length l ;;
 - : bool = true
 ```
+
+## Add
+
+`add`, `add_lazy`, `add_value` and `add_name_value`
+
+```ocaml
+# Header.(add t Content_length 200) ;;
+- : unit = ()
+
+# Header.(add_lazy t Transfer_encoding (lazy [`chunked])) ;;
+- : unit = ()
+
+# Header.(add_value t (H age) "20") ;; 
+- : unit = ()
+
+# Header.(add_name_value t ~name:content_type ~value:"text/html") ;;
+- : unit = ()
+```
+
+## Encode, Decode
+
+`encode`
+
+```ocaml
+# Header.(encode t Content_length 10) ;;
+- : string = "10"
+```

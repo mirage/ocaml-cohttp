@@ -147,3 +147,22 @@ let of_name_values (c : #Codec.t) l =
   |> make_n c
 
 let length (t : #t) = List.length t#to_list
+
+let add_lazy (type a) (t : t) (h : a header) v =
+  t#modify (fun l -> V (h, v) :: l)
+
+let add (type a) (t : t) (h : a header) v = add_lazy t h (lazy v)
+
+let add_value (t : t) h value =
+  let v = lazy (t#decoder h value) in
+  add_lazy t h v
+
+let add_name_value (t : t) ~name ~value =
+  let h = t#header name in
+  let v = lazy (t#decoder h value) in
+  add_lazy t h v
+
+let encode : type a. #Codec.t -> a header -> a -> string =
+ fun codec h v -> codec#encoder h v
+
+let decode : type a. a undecoded -> a = Lazy.force

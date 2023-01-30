@@ -169,3 +169,31 @@ val of_name_values : #Codec.t -> (string * string) list -> t
 
 val length : t -> int
 (** [length t] is total count of headers in [t]. *)
+
+(** {2 Add} *)
+
+val add_lazy : t -> 'a header -> 'a Lazy.t -> unit
+(** [add_lazy t h lazy_v] adds header [h] and its corresponding typed lazy value
+    [lazy_v] to [t]. *)
+
+val add : t -> 'a header -> 'a -> unit
+(** [add t h v] add header [h] and its corresponding typed value [v] to [t].*)
+
+val add_value : t -> 'a header -> value -> unit
+(** [add_value t h s] adds header [h] and its corresponding untyped, undecoded
+    string value to [t].*)
+
+val add_name_value : t -> name:lname -> value:value -> unit
+(** [add_name_value t ~name ~value] lazily (i.e. undecoded) add header with
+    [name] and [value] to [t]. *)
+
+(** {2 Encode, Decode} *)
+
+val encode : #Codec.t -> 'a header -> 'a -> value
+(** [encode codec h v] encodes the value of header [h]. The encoder is used as
+    defined in [codec]. *)
+
+val decode : 'a undecoded -> 'a
+(** [decode codec v] decodes [v].
+
+    @raise exn if decoding results in an error. *)
