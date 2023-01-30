@@ -78,6 +78,44 @@ type 'a Cohttp_eio.Header.header +=
       | hdr -> Header.Codec.v#name hdr
   end ;;
 val custom_codec : Header.Codec.t = <obj>
+
+# let ch = Header.make custom_codec ;;
+val ch : Header.t = <obj>
+
+# Header.add ch Header1 1000;;
+- : unit = ()
+
+# Header.add ch Header2 100.232 ;; 
+- : unit = ()
+
+# Header.length ch ;;
+- : int = 2
+
+# Header.find ch Header2 ;;
+- : float = 100.232
+
+# Header.find ch Header1 ;;
+- : int = 1000
+
+# Header.name ch Header2 ;;
+- : Header.name = "Header2"
+
+# Header.encode ch Header1 1000 ;;
+- : string = "1000"
+
+# Header.to_name_values ch ;;
+- : (Header.name * string) list =
+[("Header2", "100.232"); ("Header1", "1000")]
+```
+
+`name`
+
+```ocaml
+# Header.(name ch Content_length) ;;
+- : Header.name = "Content-Length"
+
+# Header.name ch Header1 ;;
+- : Header.name = "Header1"
 ```
 
 ## Create 
@@ -264,7 +302,7 @@ val f : < f : 'a. 'a Header.header -> 'a Header.undecoded -> 'a option > =
     fun h v ->
       let v = Header.decode v in
       let value = Header.encode t h v in
-      let name = (t#name h :> string) in
+      let name = (Header.name t h :> string) in
       Printf.printf "\n%s: %s" name value
   end;;
 val f : < f : 'a. 'a Header.header -> 'a Header.undecoded -> unit > = <obj>
@@ -311,7 +349,7 @@ val headers : Header.binding Seq.t = <fun>
 # Seq.iter (fun (Header.B (h, v)) ->
     let v = Header.decode v in
     let value = Header.encode t h v in
-    let name = (t#name h :> string) in
+    let name = (Header.name t h :> string) in
     Printf.printf "\n%s: %s" name value
   ) headers
   ;;

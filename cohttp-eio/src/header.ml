@@ -107,6 +107,8 @@ module Codec = struct
     end
 end
 
+let name (c : #Codec.t) = c#name
+
 type v = V : 'a header * 'a Lazy.t -> v
 
 class type virtual t =

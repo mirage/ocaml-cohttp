@@ -150,6 +150,9 @@ module Codec : sig
       - {!val:H} *)
 end
 
+val name : #Codec.t -> 'a header -> name
+(** [name codec h] is the canonical name for header [h]. *)
+
 (** {1 Collection of Headers} *)
 
 type t = private < Codec.t ; .. >
