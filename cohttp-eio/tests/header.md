@@ -253,3 +253,80 @@ val f : < f : 'a. 'a Header.header -> 'a Header.undecoded -> 'a option > =
 # Header.length t ;;
 - : int = 4
 ```
+
+## Iter, Fold, Seq
+
+`iter` - print Age header using `iter`.
+
+```ocaml
+# let f = object
+  method f: type a. a Header.header -> a Header.undecoded -> unit =
+    fun h v ->
+      let v = Header.decode v in
+      let value = Header.encode t h v in
+      let name = (t#name h :> string) in
+      Printf.printf "\n%s: %s" name value
+  end;;
+val f : < f : 'a. 'a Header.header -> 'a Header.undecoded -> unit > = <obj>
+
+# Header.iter t f ;;
+Content-Type: text/html
+Age: 40
+Transfer-Encoding: chunked
+Content-Length: 2000
+- : unit = ()
+```
+
+`fold_left
+
+We get a list of headers in string form using `fold_left`.
+
+```ocaml
+# let f = object
+  method f: type a. a Header.header -> a Header.undecoded -> 'b -> 'b =
+    fun h v acc ->
+      let v = Header.decode v in
+      match h with
+      | Header.Content_length -> ("Content-Length", string_of_int v) :: acc
+      | Header.H nm when ((nm :> string) = "age") -> ("Age", v) :: acc
+      | _ -> acc
+  end;;
+val f :
+  < f : 'a.
+          'a Header.header ->
+          'a Header.undecoded ->
+          (string * string) list -> (string * string) list > =
+  <obj>
+
+# Header.fold_left t f [];;
+- : (string * string) list = [("Content-Length", "2000"); ("Age", "40")]
+```
+
+`to_seq`
+
+```ocaml
+# let headers = Header.to_seq t;;
+val headers : Header.binding Seq.t = <fun>
+
+# Seq.iter (fun (Header.B (h, v)) ->
+    let v = Header.decode v in
+    let value = Header.encode t h v in
+    let name = (t#name h :> string) in
+    Printf.printf "\n%s: %s" name value
+  ) headers
+  ;;
+Content-Type: text/html
+Age: 40
+Transfer-Encoding: chunked
+Content-Length: 2000
+- : unit = ()
+```
+
+`to_name_values`
+
+```ocaml
+# let l = Header.to_name_values t ;;
+val l : (Header.name * string) list =
+  [("Content-Type", "text/html"); ("Age", "40");
+   ("Transfer-Encoding", "chunked"); ("Content-Length", "2000")]
+```

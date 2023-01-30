@@ -235,3 +235,28 @@ val remove : ?all:bool -> t -> 'a header -> unit
     @param all
       if [true] then all headers equal to [h] are removed from [t]. Default
       value is [false]. *)
+
+(** {2 Iter, Fold, Seq} *)
+
+(** [binding] represents a typed header and its corresponding undecoded value.
+    See {!type:undecoded} and {!val:decode}. *)
+type binding = B : 'a header * 'a undecoded -> binding
+
+val iter : t -> < f : 'a. 'a header -> 'a undecoded -> unit > -> unit
+(** [iter t f] iterates over [t] and applies [f#f h v] where [h] and [v] are
+    respectively header and undecoded value as it exists in [t]. See
+    {!val:decode} to decode [v]. *)
+
+val fold_left :
+  t -> < f : 'a. 'a header -> 'a undecoded -> 'b -> 'b > -> 'b -> 'b
+(** [fold_left t f acc] folds over [t] and applies [f#f h v acc] where [h] and
+    [v] are respectively header and undecoded value as it exists in [t]. See
+    {!val:decode} to decode [v]. *)
+
+val to_seq : t -> binding Seq.t
+(** [to_seq t] returns a sequence of {!type:binding}s. *)
+
+val to_name_values : t -> (name * value) list
+(** [to_name_values t] a list of [(name,value)] tuple.
+
+    @raise exn if decoding any of the values results in an error. *)

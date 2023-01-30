@@ -223,3 +223,23 @@ let remove (type a) ?(all = false) (t : #t) (h : a header) =
           (true, []) headers
       in
       headers)
+
+type binding = B : 'a header * 'a undecoded -> binding
+
+let iter (t : #t) (f : < f : 'a. 'a header -> 'a undecoded -> unit >) =
+  List.iter (fun (V (h, v)) -> f#f h v) t#to_list
+
+let fold_left (t : #t) (f : < f : 'a. 'a header -> 'a undecoded -> 'b -> 'b >)
+    acc =
+  List.fold_left (fun acc (V (h, v)) -> f#f h v acc) acc t#to_list
+
+let to_seq (t : #t) =
+  List.map (fun (V (h, v)) -> B (h, v)) t#to_list |> List.to_seq
+
+let to_name_values (t : #t) =
+  List.map
+    (fun (V (h, v)) ->
+      let name = t#name h in
+      let value = encode t h (Lazy.force v) in
+      (name, value))
+    t#to_list
