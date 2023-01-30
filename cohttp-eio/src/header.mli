@@ -149,3 +149,23 @@ module Codec : sig
       - {!val:Transfer_encoding}
       - {!val:H} *)
 end
+
+(** {1 Collection of Headers} *)
+
+type t = private < Codec.t ; .. >
+(** [t] represents a collection of HTTP headers. {b Note} [t] is concurrency
+    safe. *)
+
+(** {2 Create} *)
+
+val make : #Codec.t -> t
+(** [make codec] is an empty [t]. *)
+
+val of_name_values : #Codec.t -> (string * string) list -> t
+(** [of_name_values codec l] is [t] with header items initialized to [l] such
+    that [List.length seq = Header.length t]. *)
+
+(** {1 Length} *)
+
+val length : t -> int
+(** [length t] is total count of headers in [t]. *)

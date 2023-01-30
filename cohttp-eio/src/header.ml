@@ -21,11 +21,6 @@ type 'a encoder = 'a -> value
 type 'a undecoded = 'a Lazy.t
 type (_, _) eq = Eq : ('a, 'a) eq
 
-let canonical_name nm =
-  String.split_on_char '-' nm
-  |> List.map (fun s -> String.(lowercase_ascii s |> capitalize_ascii))
-  |> String.concat "-"
-
 module Codec = struct
   class type t =
     object
@@ -111,3 +106,44 @@ module Codec = struct
             raise @@ Invalid_argument err
     end
 end
+
+type v = V : 'a header * 'a Lazy.t -> v
+
+class type virtual t =
+  object
+    inherit Codec.t
+    method virtual headers : v list Atomic.t
+    method virtual to_list : v list
+    method virtual modify : (v list -> v list) -> unit
+  end
+
+let make_n (c : #Codec.t) values : t =
+  let headers = Atomic.make values in
+  let rec modify f r =
+    let v_old = Atomic.get r in
+    let v_new = f v_old in
+    if Atomic.compare_and_set r v_old v_new then () else modify f r
+  in
+  object
+    method header : 'a. lname -> 'a header = c#header
+    method equal : type a b. a header -> b header -> (a, b) eq option = c#equal
+    method decoder : type a. a header -> a decoder = c#decoder
+    method encoder : type a. a header -> a encoder = c#encoder
+    method name : type a. a header -> name = c#name
+    method headers : v list Atomic.t = headers
+    method to_list : v list = Atomic.get headers
+    method modify : (v list -> v list) -> unit = fun f -> modify f headers
+  end
+
+let make code = make_n code []
+
+let of_name_values (c : #Codec.t) l =
+  List.map
+    (fun (name, value) ->
+      let h = c#header (lname name) in
+      let v = lazy (c#decoder h value) in
+      V (h, v))
+    l
+  |> make_n c
+
+let length (t : #t) = List.length t#to_list

@@ -4,6 +4,8 @@
 open Cohttp_eio
 ```
 
+## Name Value
+
 `canonical_name`
 
 ```ocaml
@@ -29,6 +31,8 @@ val content_type : Header.lname = "content-type"
 # let age = Header.lname "Age";;
 val age : Header.lname = "age"
 ```
+
+## Codec
 
 User defined custom headers.
 
@@ -74,4 +78,30 @@ type 'a Cohttp_eio.Header.header +=
       | hdr -> Header.Codec.v#name hdr
   end ;;
 val custom_codec : Header.Codec.t = <obj>
+```
+
+## Create 
+
+`make` 
+
+```ocaml
+# let t = Header.(make Codec.v) ;;
+val t : Header.t = <obj>
+```
+
+`of_name_values`
+
+```ocaml
+# let l : (string * string) list =
+  [("Content-Type", "text/html"); ("Age", "40");
+   ("Transfer-Encoding", "chunked"); ("Content-Length", "2000")];;
+val l : (string * string) list =
+  [("Content-Type", "text/html"); ("Age", "40");
+   ("Transfer-Encoding", "chunked"); ("Content-Length", "2000")]
+
+# let t3 = Header.(of_name_values t l);;
+val t3 : Header.t = <obj>
+
+# Header.length t3 = List.length l ;;
+- : bool = true
 ```
