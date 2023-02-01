@@ -107,22 +107,10 @@ let app (req, body, _client_addr) =
   | "/handle_chunk" -> handle_chunk_request req body
   | _ -> Server.not_found_response
 
-let mock_env =
-  let mock_clock = Eio_mock.Clock.make () in
-  Eio_mock.Clock.set_time mock_clock 1666627935.85052109 ;
-  let fake_domain_mgr = 
-    object (_ : #Eio.Domain_manager.t)
-      method run fn = fn ()
-      method run_raw fn = fn ()
-    end 
-  in
-  object 
-    method net        = (Eio_mock.Net.make "mock net" :> Eio.Net.t)
-    method clock      = (mock_clock :> Eio.Time.clock)
-    method domain_mgr = fake_domain_mgr
-  end
+let mock_clock = Eio_mock.Clock.make ()
+let () = Eio_mock.Clock.set_time mock_clock 1666627935.85052109
 
-let connection_handler = Server.connection_handler app mock_env#clock
+let connection_handler = Server.connection_handler app mock_clock
 ```
 
 To test it, we run the connection handler with our mock socket:
