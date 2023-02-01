@@ -45,39 +45,41 @@ type 'a Cohttp_eio.Header.header +=
     Header1 : int Header.header
   | Header2 : float Header.header
 
-# let custom_codec : Header.Codec.t = object
-  method header : type a. Header.lname -> a Header.header =
+# let custom_codec : Header.codec = 
+  object 
+  inherit Header.codec as super
+  method! header : type a. Header.lname -> a Header.header =
     fun nm ->
     match (nm :> string) with
     | "header1" -> Obj.magic Header1
     | "header2" -> Obj.magic Header2
-    | _ -> Header.Codec.v#header nm
+    | _ -> super#header nm
 
-  method equal: type a b. a Header.header -> b Header.header -> (a, b) Header.eq option =
+  method! equal: type a b. a Header.header -> b Header.header -> (a, b) Header.eq option =
     fun a b ->
       match a, b with
       | Header1, Header1 -> Some Eq
       | Header2, Header2 -> Some Eq
-      | _ -> Header.Codec.v#equal a b
+      | _ -> super#equal a b
 
-  method decoder: type a. a Header.header -> a Header.decoder = function
+  method! decoder: type a. a Header.header -> a Header.decoder = function
     | Header1 -> int_of_string
     | Header2 -> float_of_string
-    | hdr -> Header.Codec.v#decoder hdr
+    | hdr -> super#decoder hdr
 
-  method encoder: type a. a Header.header -> a Header.encoder = function
+  method! encoder: type a. a Header.header -> a Header.encoder = function
     | Header1 -> string_of_int
     | Header2 -> string_of_float
-    | hdr -> Header.Codec.v#encoder hdr
+    | hdr -> super#encoder hdr
 
-  method name: type a. a Header.header -> Header.name =
+  method! name: type a. a Header.header -> Header.name =
     fun hdr -> 
       match hdr with
       | Header1 -> Header.canonical_name "header1"
       | Header2 -> Header.canonical_name "header2"
-      | hdr -> Header.Codec.v#name hdr
+      | hdr -> super#name hdr
   end ;;
-val custom_codec : Header.Codec.t = <obj>
+val custom_codec : Header.codec = <obj>
 
 # let ch = Header.make custom_codec ;;
 val ch : Header.t = <obj>
@@ -123,7 +125,7 @@ val ch : Header.t = <obj>
 `make` 
 
 ```ocaml
-# let t = Header.(make Codec.v) ;;
+# let t = Header.(make (new codec)) ;;
 val t : Header.t = <obj>
 ```
 

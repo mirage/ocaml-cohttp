@@ -43,9 +43,9 @@ type 'a header = ..
       or found.
 
     Users should extend this type to define custom headers along with a custom
-    {!class:Codec.t} instance.
+    {!class:codec} instance.
 
-    See {!class:Codec.t}. *)
+    See {!class:codec}. *)
 
 type 'a header +=
   | Content_length : int header
@@ -65,15 +65,20 @@ type 'a undecoded
 (** ['a undecoded] represents a lazy value that is as yet undecoded. See
     {!val:decode}. *)
 
-(** [eq] is the OCaml GADT equality. *)
+(** [eq] is OCaml GADT equality. *)
 type (_, _) eq = Eq : ('a, 'a) eq
 
-(** {1 Codec}
+(** {2 codec}
 
-    [Codec] defines encoders, decoders and equality for {!type:header}.
+    [codec] defines encoders, decoders and equality for the following HTTP
+    headers:
+
+    - {!val:Content_Length}
+    - {!val:Transfer_encoding}
+    - {!val:H}
 
     Users looking to combine both custom headers and headers defined in this
-    module should implement {!type:Codec.t} and use {!val:Codec.v}.
+    module are recommended to inherit this class.
 
     {i Example} Here we define two custom headers [Header1] and [Header2] and
     implement codec for it in object [custom_codec].
@@ -83,88 +88,87 @@ type (_, _) eq = Eq : ('a, 'a) eq
         | Header1 : string Header.header
         | Header2 : int Header.header
 
-      let custom_codec : Header.Codec.t =
+      let custom_codec : Header.codec =
         object
-          method header : type a. Header.lname -> a Header.header =
+          inherit Header.codec as super
+
+          method! header : type a. Header.lname -> a Header.header =
             fun nm ->
               match (nm :> string) with
               | "header1" -> Obj.magic Header1
               | "header2" -> Obj.magic Header2
-              | _ -> Header.Codec.v#header nm
+              | _ -> super#header nm
 
-          method equal : type a b.
+          method! equal : type a b.
               a Header.header -> b Header.header -> (a, b) Header.eq option =
             fun a b ->
               match (a, b) with
               | Header1, Header1 -> Some Eq
               | Header2, Header2 -> Some Eq
-              | _ -> Header.Codec.v#equal a b
+              | _ -> super#equal a b
 
-          method decoder : type a. a Header.header -> a Header.decoder =
+          method! decoder : type a. a Header.header -> a Header.decoder =
             function
             | Header1 -> int_of_string
             | Header2 -> float_of_string
-            | hdr -> Header.Codec.v#decoder hdr
+            | hdr -> super#decoder hdr
 
-          method encoder : type a. a Header.header -> a Header.encoder =
+          method! encoder : type a. a Header.header -> a Header.encoder =
             function
             | Header1 -> string_of_int
             | Header2 -> string_of_float
-            | hdr -> Header.Codec.v#encoder hdr
+            | hdr -> super#encoder hdr
 
-          method name : type a. a Header.header -> Header.name =
+          method! name : type a. a Header.header -> Header.name =
             fun hdr ->
               match hdr with
               | Header1 -> Header.canonical_name "header1"
               | Header2 -> Header.canonical_name "header2"
-              | hdr -> Header.Codec.v#name hdr
+              | hdr -> super#name hdr
         end
+    ]}
+
+    The headers can then used used as such:
+
+    {[
+      let h = Header.make custom_codec in
+      Header.add c Header1 1000;
+      Header.add c Header2 100.222
     ]} *)
+class codec :
+  object
+    method header : 'a. lname -> 'a header
+    (** [header lname] converts [lname] to {!type:header}. *)
 
-module Codec : sig
-  (** [t] defines the class type that all codecs has to implement. *)
-  class type t =
-    object
-      method header : 'a. lname -> 'a header
-      (** [header lname] converts [lname] to {!type:header}. *)
+    method equal : 'a 'b. 'a header -> 'b header -> ('a, 'b) eq option
+    (** [equal h1 h2] if [Some Eq] if [h1] and [h2] are equal. It is [None]
+        otherwise. *)
 
-      method equal : 'a 'b. 'a header -> 'b header -> ('a, 'b) eq option
-      (** [equal h1 h2] if [Some Eq] if [h1] and [h2] are equal. It is [None]
-          otherwise. *)
+    method decoder : 'a. 'a header -> 'a decoder
+    (** [decoder h] is decoder for header [h]. *)
 
-      method decoder : 'a. 'a header -> 'a decoder
-      (** [decoder h] is decoder for header [h]. *)
+    method encoder : 'a. 'a header -> 'a encoder
+    (** [encoder h] is encoder for header [h]. *)
 
-      method encoder : 'a. 'a header -> 'a encoder
-      (** [encoder h] is encoder for header [h]. *)
+    method name : 'a. 'a header -> name
+    (** [name h] is the canonical name for header [h]. *)
+  end
 
-      method name : 'a. 'a header -> name
-      (** [name h] is the canonical name for header [h]. *)
-    end
-
-  val v : t
-  (** [v] defines [codec]s for the following HTTP headers:
-
-      - {!val:Content_Length}
-      - {!val:Transfer_encoding}
-      - {!val:H} *)
-end
-
-val name : #Codec.t -> 'a header -> name
+val name : #codec -> 'a header -> name
 (** [name codec h] is the canonical name for header [h]. *)
 
 (** {1 Collection of Headers} *)
 
-type t = private < Codec.t ; .. >
+type t = private < codec ; .. >
 (** [t] represents a collection of HTTP headers. {b Note} [t] is concurrency
     safe. *)
 
 (** {2 Create} *)
 
-val make : #Codec.t -> t
+val make : #codec -> t
 (** [make codec] is an empty [t]. *)
 
-val of_name_values : #Codec.t -> (string * string) list -> t
+val of_name_values : #codec -> (string * string) list -> t
 (** [of_name_values codec l] is [t] with header items initialized to [l] such
     that [List.length seq = Header.length t]. *)
 
@@ -192,7 +196,7 @@ val add_name_value : t -> name:lname -> value:value -> unit
 
 (** {2 Encode, Decode} *)
 
-val encode : #Codec.t -> 'a header -> 'a -> value
+val encode : t -> 'a header -> 'a -> value
 (** [encode codec h v] encodes the value of header [h]. The encoder is used as
     defined in [codec]. *)
 
