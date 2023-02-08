@@ -15,9 +15,6 @@ type lname = private string
     [Content-Type -> content-type], [Date -> date],
     [Transfer-Encoding -> transfer-encoding] etc. See {!val:lname}. *)
 
-type value = string
-(** [value] is an untyped HTTP header value, eg 10, text/html, chunked etc *)
-
 val canonical_name : string -> name
 (** [canonical_name s] converts [s] to a canonical header name value. See
     {!type:name}. *)
@@ -50,25 +47,21 @@ type 'a header = ..
 type 'a header +=
   | Content_length : int header
   | Transfer_encoding : [ `chunked | `compress | `deflate | `gzip ] list header
-  | H : lname -> value header  (** A generic header. *)
+  | H : lname -> string header  (** A generic header. *)
 
-(** {1 Codec - Header Encoder & Decoder} *)
+(** {1 Encoder/Decoder} *)
 
-type 'a decoder = value -> 'a
-(** [decoder] converts {!type:value} to type ['a]. To denote an error while
-    decoding, an OCaml exception value is raised. *)
-
-type 'a encoder = 'a -> value
+type 'a encoder = 'a -> string
 (** [encoder] converts a typed value ['a] to its string representation. *)
 
-type 'a undecoded
-(** ['a undecoded] represents a lazy value that is as yet undecoded. See
-    {!val:decode}. *)
+type 'a decoder = string -> 'a
+(** [decoder] converts {!type:value} to type ['a]. To denote an error while
+    decoding, an OCaml exception value is raised. *)
 
 (** [eq] is OCaml GADT equality. *)
 type (_, _) eq = Eq : ('a, 'a) eq
 
-(** {2 codec}
+(** {1 codec}
 
     [codec] defines encoders, decoders and equality for the following HTTP
     headers:
@@ -80,8 +73,8 @@ type (_, _) eq = Eq : ('a, 'a) eq
     Users looking to combine both custom headers and headers defined in this
     module are recommended to inherit this class.
 
-    {i Example} Here we define two custom headers [Header1] and [Header2] and
-    implement codec for it in object [custom_codec].
+    Here we define two custom headers [Header1] and [Header2] and implement
+    codec for it in object [custom_codec].
 
     {[
       type 'a Header.header +=
@@ -157,13 +150,37 @@ class codec :
 val name : #codec -> 'a header -> name
 (** [name codec h] is the canonical name for header [h]. *)
 
-(** {1 Collection of Headers} *)
+(** {1 Headers} *)
 
 type t = private < codec ; .. >
-(** [t] represents a collection of HTTP headers. {b Note} [t] is concurrency
-    safe. *)
+(** [t] represents a collection of HTTP headers.
 
-(** {2 Create} *)
+    Accessing - find/add/remove/udpate [t] is concurrency safe. Howerver, note
+    decoding a value is not concurrency-safe.
+
+    See {!val:decode}. *)
+
+type 'a value
+(** ['a value] represents a HTTP header value that is lazily created.
+
+    See {!val:decode}. *)
+
+val value : 'a Lazy.t -> 'a value
+(** [value lazy_val] creates a {!type:value} value.
+
+    {[
+      Header.value (lazy (int_of_string "19"))
+    ]} *)
+
+val decode : 'a value -> 'a
+(** [decode v] decodes [v].
+
+    Note: [Header.decode] is not concurrency-safe. Consider using locks
+    {!module:Eio.Mutex} or {!module:Stdlib.Mutex}.
+
+    @raise exn if decoding results in an error. *)
+
+(** {1 Create} *)
 
 val make : #codec -> t
 (** [make codec] is an empty [t]. *)
@@ -177,7 +194,7 @@ val of_name_values : #codec -> (string * string) list -> t
 val length : t -> int
 (** [length t] is total count of headers in [t]. *)
 
-(** {2 Add} *)
+(** {1 Add} *)
 
 val add_lazy : t -> 'a header -> 'a Lazy.t -> unit
 (** [add_lazy t h lazy_v] adds header [h] and its corresponding typed lazy value
@@ -186,32 +203,28 @@ val add_lazy : t -> 'a header -> 'a Lazy.t -> unit
 val add : t -> 'a header -> 'a -> unit
 (** [add t h v] add header [h] and its corresponding typed value [v] to [t].*)
 
-val add_value : t -> 'a header -> value -> unit
+val add_value : t -> 'a header -> string -> unit
 (** [add_value t h s] adds header [h] and its corresponding untyped, undecoded
     string value to [t].*)
 
-val add_name_value : t -> name:lname -> value:value -> unit
+val add_name_value : t -> name:lname -> value:string -> unit
 (** [add_name_value t ~name ~value] lazily (i.e. undecoded) add header with
     [name] and [value] to [t]. *)
 
-(** {2 Encode, Decode} *)
+(** {1 Encode} *)
 
-val encode : t -> 'a header -> 'a -> value
+val encode : t -> 'a header -> 'a -> string
 (** [encode codec h v] encodes the value of header [h]. The encoder is used as
     defined in [codec]. *)
 
-val decode : 'a undecoded -> 'a
-(** [decode codec v] decodes [v].
+(** {1 Find} *)
 
-    @raise exn if decoding results in an error. *)
-
-(** {2 Find} *)
-
-val exists : t -> < f : 'a. 'a header -> 'a undecoded -> bool > -> bool
+val exists : t -> < f : 'a. 'a header -> 'a value -> bool > -> bool
 (** [exists t f] iterates over [t] and applies [f#f h v] where [h] and [v] are
     respectively header and undecoded value as it exists in [t]. It returns
-    [true] if any of the items in [t] returns [true] for [f#f h v]. See
-    {!val:decode} to decode [v]. *)
+    [true] if any of the items in [t] returns [true] for [f#f h v].
+
+    See {!val:decode} to decode [v]. *)
 
 val find_opt : t -> 'a header -> 'a option
 (** [find_opt t h] is [Some v] if [h] exists in [t]. It is [None] if [h] doesn't
@@ -223,18 +236,21 @@ val find : t -> 'a header -> 'a
     @raise Not_found if [h] is not found in [t].
     @raise exn if decoding [h] results in an error. *)
 
-val find_all : t -> 'a header -> 'a undecoded list
+val find_all : t -> 'a header -> 'a value list
 (** [find_all t h] is a list of undecoded values [v] corresponding to header
-    [h]. It is an empty list if [h] doesn't exist in [t]. See {!val:decode} to
-    decode [v]. *)
+    [h]. It is an empty list if [h] doesn't exist in [t].
 
-(** {2 Update, Remove} *)
+    See {!val:decode} to decode [v]. *)
 
-val update : t -> < f : 'a. 'a header -> 'a undecoded -> 'a option > -> unit
-(** [update t f] iterates over [t] and applies [f#f h v] where [h] and [v] are
-    respectively header and undecoded value as it exists in [t]. If
+(** {1 Update, Remove} *)
+
+val update : t -> < f : 'a. 'a header -> 'a value -> 'a value option > -> unit
+(** [update t f] iterates over [t] and applies [f#f h v] to each element. [h]
+    and [v] are respectively header and undecoded value as it exists in [t]. If
     [f#f h v = Some v'] then the value of [h] is updated to [v']. If [None] then
-    [h] is removed from [t]. See {!val:decode} to decode [v]. *)
+    [h] is removed from [t].
+
+    See {!val:decode} to decode [v]. *)
 
 val remove : ?all:bool -> t -> 'a header -> unit
 (** [remove t h] removes the last added header [h] from [t].
@@ -243,27 +259,31 @@ val remove : ?all:bool -> t -> 'a header -> unit
       if [true] then all headers equal to [h] are removed from [t]. Default
       value is [false]. *)
 
-(** {2 Iter, Fold, Seq} *)
+(** {1 Iter, Fold, Seq} *)
 
 (** [binding] represents a typed header and its corresponding undecoded value.
-    See {!type:undecoded} and {!val:decode}. *)
-type binding = B : 'a header * 'a undecoded -> binding
 
-val iter : t -> < f : 'a. 'a header -> 'a undecoded -> unit > -> unit
+    See {!type:value} and {!val:decode}. *)
+type binding = B : 'a header * 'a value -> binding
+
+val iter : t -> < f : 'a. 'a header -> 'a value -> unit > -> unit
 (** [iter t f] iterates over [t] and applies [f#f h v] where [h] and [v] are
-    respectively header and undecoded value as it exists in [t]. See
-    {!val:decode} to decode [v]. *)
+    respectively header and undecoded value as it exists in [t].
 
-val fold_left :
-  t -> < f : 'a. 'a header -> 'a undecoded -> 'b -> 'b > -> 'b -> 'b
+    See {!val:decode} to decode [v]. *)
+
+val fold_left : t -> < f : 'a. 'a header -> 'a value -> 'b -> 'b > -> 'b -> 'b
 (** [fold_left t f acc] folds over [t] and applies [f#f h v acc] where [h] and
-    [v] are respectively header and undecoded value as it exists in [t]. See
-    {!val:decode} to decode [v]. *)
+    [v] are respectively header and undecoded value as it exists in [t].
+
+    See {!val:decode} to decode [v]. *)
 
 val to_seq : t -> binding Seq.t
-(** [to_seq t] returns a sequence of {!type:binding}s. *)
+(** [to_seq t] returns a sequence of {!type:binding}s.
 
-val to_name_values : t -> (name * value) list
+    See {!val:decode} to decode [v]. *)
+
+val to_name_values : t -> (name * string) list
 (** [to_name_values t] a list of [(name,value)] tuple.
 
     @raise exn if decoding any of the values results in an error. *)

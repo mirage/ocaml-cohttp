@@ -179,14 +179,14 @@ val t3 : Header.t = <obj>
 
 ```ocaml
 # let f = object
-  method f: type a. a Header.header -> a Header.undecoded -> bool =
+  method f: type a. a Header.header -> a Header.value -> bool =
     fun t v ->
       let v = Header.decode v in
       match t, v with
       | Header.Content_length, 200 -> true
       | _ -> false
   end ;;
-val f : < f : 'a. 'a Header.header -> 'a Header.undecoded -> bool > = <obj>
+val f : < f : 'a. 'a Header.header -> 'a Header.value -> bool > = <obj>
 
 # Header.exists t f ;;
 - : bool = true
@@ -245,16 +245,17 @@ Apply `update`.
 
 ```ocaml
 # let f = object
-  method f: type a. a Header.header -> a Header.undecoded -> a option =
+  method f: type a. a Header.header -> a Header.value -> a Header.value option =
     fun h v ->
-      let v = Header.decode v in
-      match h, v with
-      | Header.Content_length, 200 -> Some 2000
-      | Header.H nm, "20" when ((nm :> string) = "age") -> Some "40"
+      let v' = Header.decode v in
+      match h, v' with
+      | Header.Content_length, 200 -> Some (Header.value (lazy 2000))
+      | Header.H nm, "20" when ((nm :> string) = "age") -> Some (Header.value (lazy "40"))
       | Header.H nm, "blah2" when ((nm :> string) = "blah2") -> None
       | _ -> Some v
   end;;
-val f : < f : 'a. 'a Header.header -> 'a Header.undecoded -> 'a option > =
+val f :
+  < f : 'a. 'a Header.header -> 'a Header.value -> 'a Header.value option > =
   <obj>
 
 # Header.update t f ;;
@@ -288,7 +289,7 @@ val f : < f : 'a. 'a Header.header -> 'a Header.undecoded -> 'a option > =
 - : unit = ()
 
 # Header.(find_all t (H blah)) ;;
-- : string Header.undecoded list = []
+- : string Header.value list = []
 
 # Header.length t ;;
 - : int = 4
@@ -300,14 +301,14 @@ val f : < f : 'a. 'a Header.header -> 'a Header.undecoded -> 'a option > =
 
 ```ocaml
 # let f = object
-  method f: type a. a Header.header -> a Header.undecoded -> unit =
+  method f: type a. a Header.header -> a Header.value -> unit =
     fun h v ->
       let v = Header.decode v in
       let value = Header.encode t h v in
       let name = (Header.name t h :> string) in
       Printf.printf "\n%s: %s" name value
   end;;
-val f : < f : 'a. 'a Header.header -> 'a Header.undecoded -> unit > = <obj>
+val f : < f : 'a. 'a Header.header -> 'a Header.value -> unit > = <obj>
 
 # Header.iter t f ;;
 Content-Type: text/html
@@ -323,7 +324,7 @@ We get a list of headers in string form using `fold_left`.
 
 ```ocaml
 # let f = object
-  method f: type a. a Header.header -> a Header.undecoded -> 'b -> 'b =
+  method f: type a. a Header.header -> a Header.value -> 'b -> 'b =
     fun h v acc ->
       let v = Header.decode v in
       match h with
@@ -334,8 +335,7 @@ We get a list of headers in string form using `fold_left`.
 val f :
   < f : 'a.
           'a Header.header ->
-          'a Header.undecoded ->
-          (string * string) list -> (string * string) list > =
+          'a Header.value -> (string * string) list -> (string * string) list > =
   <obj>
 
 # Header.fold_left t f [];;

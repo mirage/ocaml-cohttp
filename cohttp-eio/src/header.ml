@@ -1,5 +1,4 @@
 type name = string (* Header name, e.g. Date, Content-Length etc *)
-type value = string (* Header value, eg 10, text/html, chunked etc *)
 type lname = string
 
 let canonical_name nm =
@@ -14,11 +13,10 @@ type 'a header = ..
 type 'a header +=
   | Content_length : int header
   | Transfer_encoding : [ `chunked | `compress | `deflate | `gzip ] list header
-  | H : lname -> value header
+  | H : lname -> string header
 
-type 'a decoder = value -> 'a
-type 'a encoder = 'a -> value
-type 'a undecoded = 'a Lazy.t
+type 'a encoder = 'a -> string
+type 'a decoder = string -> 'a
 type (_, _) eq = Eq : ('a, 'a) eq
 
 class codec =
@@ -98,7 +96,12 @@ class codec =
 
 let name (c : #codec) = c#name
 
-type v = V : 'a header * 'a Lazy.t -> v
+type 'a value = 'a Lazy.t
+
+let value = Fun.id
+let decode : type a. a value -> a = fun v -> Lazy.force v
+
+type v = V : 'a header * 'a value -> v
 
 class virtual t =
   object
@@ -130,9 +133,9 @@ let make code = make_n code []
 
 let of_name_values (c : #codec) l =
   List.map
-    (fun (name, value) ->
+    (fun (name, v) ->
       let h = c#header (lname name) in
-      let v = lazy (c#decoder h value) in
+      let v = value (lazy (c#decoder h v)) in
       V (h, v))
     l
   |> make_n c
@@ -140,6 +143,7 @@ let of_name_values (c : #codec) l =
 let length (t : #t) = List.length t#to_list
 
 let add_lazy (type a) (t : t) (h : a header) v =
+  let v = value v in
   t#modify (fun l -> V (h, v) :: l)
 
 let add (type a) (t : t) (h : a header) v = add_lazy t h (lazy v)
@@ -154,9 +158,8 @@ let add_name_value (t : t) ~name ~value =
   add_lazy t h v
 
 let encode : type a. t -> a header -> a -> string = fun t h v -> t#encoder h v
-let decode : type a. a undecoded -> a = Lazy.force
 
-let exists (t : #t) (f : < f : 'a. 'a header -> 'a undecoded -> bool >) =
+let exists (t : #t) (f : < f : 'a. 'a header -> 'a value -> bool >) =
   let rec aux = function
     | [] -> false
     | V (h, v) :: tl -> if f#f h v then true else aux tl
@@ -168,7 +171,7 @@ let find_opt (type a) (t : #t) (h : a header) =
     | [] -> None
     | V (h', v) :: tl -> (
         match t#equal h h' with
-        | Some Eq -> ( try Some (Lazy.force v :> a) with _ -> None)
+        | Some Eq -> ( try Some (decode v :> a) with _ -> None)
         | None -> aux tl)
   in
   aux t#to_list
@@ -177,27 +180,25 @@ let find (type a) (t : #t) (h : a header) =
   let rec aux = function
     | [] -> raise Not_found
     | V (h', v) :: tl -> (
-        match t#equal h h' with
-        | Some Eq -> (Lazy.force v :> a)
-        | None -> aux tl)
+        match t#equal h h' with Some Eq -> (decode v :> a) | None -> aux tl)
   in
   aux t#to_list
 
-let find_all (type a) (t : #t) (h : a header) : a undecoded list =
+let find_all (type a) (t : #t) (h : a header) : a value list =
   let[@tail_mod_cons] rec aux = function
     | [] -> []
     | V (h', v) :: tl -> (
         match t#equal h h' with
-        | Some Eq -> (v :> a undecoded) :: aux tl
+        | Some Eq -> (v : a value) :: aux tl
         | None -> aux tl)
   in
   aux t#to_list
 
-let update (t : #t) (f : < f : 'a. 'a header -> 'a undecoded -> 'a option >) =
+let update (t : #t) (f : < f : 'a. 'a header -> 'a value -> 'a value option >) =
   t#modify
     (List.filter_map (fun (V (h, v)) ->
          let v = f#f h v in
-         Option.map (fun v -> V (h, lazy v)) v))
+         Option.map (fun v -> V (h, v)) v))
 
 let remove (type a) ?(all = false) (t : #t) (h : a header) =
   t#modify (fun headers ->
@@ -213,13 +214,12 @@ let remove (type a) ?(all = false) (t : #t) (h : a header) =
       in
       headers)
 
-type binding = B : 'a header * 'a undecoded -> binding
+type binding = B : 'a header * 'a value -> binding
 
-let iter (t : #t) (f : < f : 'a. 'a header -> 'a undecoded -> unit >) =
+let iter (t : #t) (f : < f : 'a. 'a header -> 'a value -> unit >) =
   List.iter (fun (V (h, v)) -> f#f h v) t#to_list
 
-let fold_left (t : #t) (f : < f : 'a. 'a header -> 'a undecoded -> 'b -> 'b >)
-    acc =
+let fold_left (t : #t) (f : < f : 'a. 'a header -> 'a value -> 'b -> 'b >) acc =
   List.fold_left (fun acc (V (h, v)) -> f#f h v acc) acc t#to_list
 
 let to_seq (t : #t) =
@@ -229,6 +229,6 @@ let to_name_values (t : #t) =
   List.map
     (fun (V (h, v)) ->
       let name = t#name h in
-      let value = encode t h (Lazy.force v) in
+      let value = encode t h (decode v) in
       (name, value))
     t#to_list
