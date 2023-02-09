@@ -16,7 +16,6 @@
   uri
   uri-sexp
   sexplib0
-  bytes
   base64))
 
 (ocamllex accept_lexer)
