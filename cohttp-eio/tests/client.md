@@ -1,251 +1,258 @@
-## Setup
+# Client
+
+## Client.get and Connection caching/reuse
+
+Setup
 
 ```ocaml
-open Eio.Std
 open Cohttp_eio
-```
 
-A mock client socket and host for testing:
+let addr1 = `Tcp (Eio.Net.Ipaddr.V4.loopback, 80)
+let addr2 = `Tcp (Eio.Net.Ipaddr.of_raw "\001\002\003\004", 8080)
+let net = Eio_mock.Net.make "net"
+let () = Eio_mock.Net.on_getaddrinfo net [`Return [addr1;addr2]; `Return [addr1;addr2]]
 
-```ocaml
-let host = "localhost"
-let conn = Eio_mock.Flow.make "socket"
-let mock_env =
-  object 
-    method net = (Eio_mock.Net.make "mock net" :> Eio.Net.t)
-  end
+let example_com_conn = Eio_mock.Flow.make "www.example.com"
+let () = Eio_mock.Flow.on_read 
+  example_com_conn
+  [
+   `Yield_then (`Return "HTTP/1.1 200 OK\r\n");
+   `Return "content-length: 5\r\n\r\n";
+   `Return "hello";
+   `Yield_then (`Return "HTTP/1.1 200 OK\r\n");
+   `Return "content-length: 5\r\n\r\n";
+   `Return "world";
+   `Raise End_of_file
+  ]
 
-let run ~response ~test =
+let mirage_org_conn = Eio_mock.Flow.make "www.mirage.org"
+let () = Eio_mock.Flow.on_read
+  mirage_org_conn 
+  [
+   `Yield_then (`Return "HTTP/1.1 200 OK\r\n");
+   `Return "content-length: 12\r\n\r\n";
+   `Return "Hello again!";
+   `Raise End_of_file
+  ]
+
+let () = Eio_mock.Net.on_connect net [ `Return example_com_conn; `Return mirage_org_conn]
+
+let test_client f =
   Eio_mock.Backend.run @@ fun () ->
-  Fiber.both
-    (fun () -> Eio_mock.Flow.on_read conn response)
-    test
+  Eio.Switch.run @@ fun sw ->
+  let t = Client.make sw net in
+  f t
 ```
 
-## Tests
+The first call `Client.get "www.example.com"` establishes a connection to host "www.example.com".
+The second `Client.get t "www.example.com/products"` doesn't establish the connection since the connection 
+to host "www.example.com" is already established and is cached in `t`.
 
-GET method request:
+The third call "Client.get t "www.mirage.org:8080" establishes a new connection as it is a new host. Additionally,
+note that we can specify port in the url.
 
 ```ocaml
-# run ~response:
-    [`Return "HTTP/1.1 200 OK\r\n";
-     `Return "content-length: 4\r\n";
-     `Return "content-type: text/plain; charset=UTF-8\r\n\r\n";
-     `Return "root";
+# Eio_mock.Backend.run @@ fun () ->
+  Eio.Switch.run @@ fun sw ->
+  let t = Client.make sw net in
+  let res1 = Client.get t "www.example.com" in
+  Eio.traceln "%s" (Body.read_content res1 |> Option.get);
+  Response.close_body res1;
+  let res2 = Client.get t "www.example.com/products" in
+  Eio.traceln "%s" (Body.read_content res2 |> Option.get);
+  let res3 = Client.get t "www.mirage.org:8080" in
+  Eio.traceln "%s" (Body.read_content res3 |> Option.get) ;;
++net: getaddrinfo ~service:80 www.example.com
++net: connect to tcp:127.0.0.1:80
++www.example.com: wrote "GET / HTTP/1.1\r\n"
++                       "Host: www.example.com\r\n"
++                       "Connection: TE\r\n"
++                       "TE: trailers\r\n"
++                       "User-Agent: cohttp-eio\r\n"
++                       "\r\n"
++www.example.com: read "HTTP/1.1 200 OK\r\n"
++www.example.com: read "content-length: 5\r\n"
++                      "\r\n"
++www.example.com: read "hello"
++hello
++www.example.com: wrote "GET /products HTTP/1.1\r\n"
++                       "Host: www.example.com\r\n"
++                       "Connection: TE\r\n"
++                       "TE: trailers\r\n"
++                       "User-Agent: cohttp-eio\r\n"
++                       "\r\n"
++www.example.com: read "HTTP/1.1 200 OK\r\n"
++www.example.com: read "content-length: 5\r\n"
++                      "\r\n"
++www.example.com: read "world"
++world
++net: getaddrinfo ~service:8080 www.mirage.org
++net: connect to tcp:127.0.0.1:80
++www.mirage.org: wrote "GET / HTTP/1.1\r\n"
++                      "Host: www.mirage.org:8080\r\n"
++                      "Connection: TE\r\n"
++                      "TE: trailers\r\n"
++                      "User-Agent: cohttp-eio\r\n"
++                      "\r\n"
++www.mirage.org: read "HTTP/1.1 200 OK\r\n"
++www.mirage.org: read "content-length: 12\r\n"
++                     "\r\n"
++www.mirage.org: read "Hello again!"
++Hello again!
++www.mirage.org: closed
++www.example.com: closed
+- : unit = ()
+```
+
+## Client.head
+
+
+```ocaml
+let test_client f = 
+  Eio_mock.Net.on_getaddrinfo net [`Return [addr1;addr2]];
+  Eio_mock.Net.on_connect net [`Return example_com_conn];
+  Eio_mock.Flow.on_read
+    example_com_conn
+    [
+     `Yield_then (`Return "HTTP/1.1 200 OK\r\n");
+     `Return "content-length: 0\r\n\r\n";
+     `Raise End_of_file
+    ];
+  Eio_mock.Backend.run @@ fun () ->
+  Eio.Switch.run @@ fun sw ->
+  let t = Client.make sw net in
+  f t
+```
+
+```ocaml
+# test_client @@ fun t -> Client.head t "www.example.com" ;;
++net: getaddrinfo ~service:80 www.example.com
++net: connect to tcp:127.0.0.1:80
++www.example.com: wrote "HEAD / HTTP/1.1\r\n"
++                       "Host: www.example.com\r\n"
++                       "Connection: TE\r\n"
++                       "TE: trailers\r\n"
++                       "User-Agent: cohttp-eio\r\n"
++                       "\r\n"
++www.example.com: read "HTTP/1.1 200 OK\r\n"
++www.example.com: read "content-length: 0\r\n"
++                      "\r\n"
++www.example.com: closed
+- : Response.client_response = <obj>
+```
+
+## Client.post
+
+```ocaml
+# test_client @@ fun t ->
+  let body = Body.content_writer ~content:"hello world" ~content_type:"text/plain" in
+  Client.post t body "www.example.com/upload" ;;
++net: getaddrinfo ~service:80 www.example.com
++net: connect to tcp:127.0.0.1:80
++www.example.com: wrote "POST /upload HTTP/1.1\r\n"
++                       "Host: www.example.com\r\n"
++                       "Content-Length: 11\r\n"
++                       "Content-Type: text/plain\r\n"
++                       "Connection: TE\r\n"
++                       "TE: trailers\r\n"
++                       "User-Agent: cohttp-eio\r\n"
++                       "\r\n"
++                       "hello world"
++www.example.com: read "HTTP/1.1 200 OK\r\n"
++www.example.com: read "content-length: 0\r\n"
++                      "\r\n"
++www.example.com: closed
+- : Response.client_response = <obj>
+```
+
+## Client.post_form_values
+
+```ocaml
+# test_client @@ fun t ->
+  let form = [("name1", ["val a"; "val b"; "val c"]); ("name2", ["val c"; "val d"; "val e"])] in
+  Client.post_form_values t form "www.example.com/upload";;
++net: getaddrinfo ~service:80 www.example.com
++net: connect to tcp:127.0.0.1:80
++www.example.com: wrote "POST /upload HTTP/1.1\r\n"
++                       "Host: www.example.com\r\n"
++                       "Content-Length: 59\r\n"
++                       "Content-Type: application/x-www-form-urlencoded\r\n"
++                       "Connection: TE\r\n"
++                       "TE: trailers\r\n"
++                       "User-Agent: cohttp-eio\r\n"
++                       "\r\n"
++                       "name1=val%20a,val%20b,val%20c&name2=val%20c,val%20d,val%20e"
++www.example.com: read "HTTP/1.1 200 OK\r\n"
++www.example.com: read "content-length: 0\r\n"
++                      "\r\n"
++www.example.com: closed
+- : Response.client_response = <obj>
+```
+
+## Client.do_call
+
+```ocaml
+# test_client @@ fun t -> 
+  let req = Request.client_request ~host:"www.example.com" ~resource:"/" Method.Delete Body.none in
+  Client.do_call t req ;;
++net: getaddrinfo ~service:80 www.example.com
++net: connect to tcp:127.0.0.1:80
++www.example.com: wrote "DELETE / HTTP/1.1\r\n"
++                       "Host: www.example.com\r\n"
++                       "Connection: TE\r\n"
++                       "TE: trailers\r\n"
++                       "User-Agent: cohttp-eio\r\n"
++                       "\r\n"
++www.example.com: read "HTTP/1.1 200 OK\r\n"
++www.example.com: read "content-length: 0\r\n"
++                      "\r\n"
++www.example.com: closed
+- : Response.client_response = <obj>
+```
+
+## Client.call
+
+```ocaml
+let () = Eio_mock.Net.on_getaddrinfo net [`Return [addr1;addr2]]
+let () = Eio_mock.Net.on_connect net [`Return example_com_conn]
+let () = Eio_mock.Flow.on_read
+    example_com_conn
+    [
+     `Yield_then (`Return "HTTP/1.1 200 OK\r\n");
+     `Return "content-length: 0\r\n\r\n";
      `Raise End_of_file
     ]
-    ~test:(fun () ->
-      (Client.get
-        ~headers:(Http.Header.of_list [ ("Accept", "application/json") ])
-        ~conn
-        ~host
-        mock_env
-        "/")
-      |> Client.read_fixed
-      |> print_string);;
-+socket: wrote "GET / HTTP/1.1\r\n"
-+              "Host: localhost\r\n"
-+              "Connection: TE\r\n"
-+              "TE: trailers\r\n"
-+              "User-Agent: cohttp-eio\r\n"
-+              "Accept: application/json\r\n"
-+              "\r\n"
-+socket: read "HTTP/1.1 200 OK\r\n"
-+socket: read "content-length: 4\r\n"
-+socket: read "content-type: text/plain; charset=UTF-8\r\n"
-+             "\r\n"
-+socket: read "root"
-root
-- : unit = ()
-```
-
-POST request:
-
-```ocaml
-# run ~response:
-    [`Return "HTTP/1.1 200 OK\r\n";
-     `Return "content-length: 5\r\n\r\n";
-     `Return "hello";
-     `Raise End_of_file
-    ]
-    ~test:(fun () ->
-      let content = "hello world!" in
-      let content_length = String.length content |> string_of_int in
-      Client.post
-        ~headers:
-          (Http.Header.of_list [("Accept", "application/json"); ("Content-Length", content_length);])
-          ~body:(Body.Fixed content) 
-          ~conn 
-          ~host
-                  mock_env
-          "/post"
-      |> Client.read_fixed
-      |> print_string);;
-+socket: wrote "POST /post HTTP/1.1\r\n"
-+              "Host: localhost\r\n"
-+              "Connection: TE\r\n"
-+              "TE: trailers\r\n"
-+              "User-Agent: cohttp-eio\r\n"
-+              "Content-Length: 12\r\n"
-+              "Accept: application/json\r\n"
-+              "\r\n"
-+              "hello world!"
-+socket: read "HTTP/1.1 200 OK\r\n"
-+socket: read "content-length: 5\r\n"
-+             "\r\n"
-+socket: read "hello"
-hello
-- : unit = ()
-```
-
-Chunk request:
-
-```ocaml
-# run ~response:
-    [`Return "HTTP/1.1 200 OK\r\n";
-     `Return "content-length:0\r\n\r\n";
-     `Raise End_of_file;
-    ]
-    ~test:(fun () ->
-        let rec body_writer chan chunks f =
-        match In_channel.input_line chan with
-        | Some data ->
-            let extensions =
-              if chunks = 0 then
-                [
-                  Body.{ name = "ext1"; value = Some "ext1_v" };
-                  { name = "ext2"; value = Some "ext2_v" };
-                  { name = "ext3"; value = None };
-                ]
-              else []
-            in
-            let chunk =
-              Body.Chunk { size = String.length data; data; extensions }
-            in
-            f chunk;
-            body_writer chan (chunks + 1) f
-        | None ->
-            let last_chunk = Body.Last_chunk [] in
-            f last_chunk
-      in
-      let trailer_writer f =
-        let trailer_headers =
-          Http.Header.of_list
-            [
-              ("Expires", "Wed, 21 Oct 2015 07:28:00 GMT");
-              ("Header1", "Header1 value text");
-              ("Header2", "Header2 value text");
-            ]
-        in
-        f trailer_headers
-      in
-      In_channel.with_open_text "chunks.txt" (fun chan ->
-          Client.post
-            ~headers:
-              (Http.Header.of_list
-                 [
-                   ("Transfer-Encoding", "chunked");
-                   ("Content-Type", "text/plain");
-                   ("Trailer", "Expires, Header1");
-                 ])
-            ~body:
-              (Body.Chunked { body_writer = body_writer chan 0; trailer_writer })
-            ~conn 
-            ~host
-            mock_env
-            "/handle_chunk"
-      )
-      |> Client.read_fixed
-      |> print_string);;
-+socket: wrote "POST /handle_chunk HTTP/1.1\r\n"
-+              "Host: localhost\r\n"
-+              "Connection: TE\r\n"
-+              "TE: trailers\r\n"
-+              "User-Agent: cohttp-eio\r\n"
-+              "Trailer: Expires, Header1\r\n"
-+              "Content-Type: text/plain\r\n"
-+              "Transfer-Encoding: chunked\r\n"
-+              "\r\n"
-+              "7;ext1=ext1_v;ext2=ext2_v;ext3\r\n"
-+              "Mozilla\r\n"
-+              "9\r\n"
-+              "Developer\r\n"
-+              "7\r\n"
-+              "Network\r\n"
-+              "0\r\n"
-+              "Header2: Header2 value text\r\n"
-+              "Header1: Header1 value text\r\n"
-+              "Expires: Wed, 21 Oct 2015 07:28:00 GMT\r\n"
-+              "\r\n"
-+socket: read "HTTP/1.1 200 OK\r\n"
-+socket: read "content-length:0\r\n"
-+             "\r\n"
-- : unit = ()
 ```
 
 ```ocaml
-# run ~response:
-    [`Return "HTTP/1.1 200 OK\r\n";
-    `Return "Trailer: Expires, Header1\r\n";
-    `Return "Content-Type: text/plain\r\n";
-    `Return "Transfer-Encoding: chunked\r\n";
-    `Return "\r\n";
-    `Return "7;ext1=ext1_v;ext2=ext2_v;ext3\r\n";
-    `Return "Mozilla\r\n";
-    `Return "9\r\n";
-    `Return "Developer\r\n";
-    `Return "7\r\n";
-    `Return "Network\r\n";
-    `Return "0\r\n";
-    `Return "\r\n";
-    `Raise End_of_file
-    ]
-    ~test:(fun () ->
-        let print_chunk chunk = traceln "chunk body: %a\n" Body.pp_chunk chunk in
-        let res = Client.get ~conn ~host mock_env "/get_chunk" in
-        match Client.read_chunked res print_chunk with
-        | None -> print_string "FAIL"
-        | Some _ -> print_string "PASS"
-    );;
-+socket: wrote "GET /get_chunk HTTP/1.1\r\n"
-+              "Host: localhost\r\n"
-+              "Connection: TE\r\n"
-+              "TE: trailers\r\n"
-+              "User-Agent: cohttp-eio\r\n"
-+              "\r\n"
-+socket: read "HTTP/1.1 200 OK\r\n"
-+socket: read "Trailer: Expires, Header1\r\n"
-+socket: read "Content-Type: text/plain\r\n"
-+socket: read "Transfer-Encoding: chunked\r\n"
-+socket: read "\r\n"
-+socket: read "7;ext1=ext1_v;ext2=ext2_v;ext3\r\n"
-+socket: read "Mozilla\r\n"
-+chunk body: size: 7
-+            data: Mozilla
-+            extensions:
-+             name: ext1
-+             value: ext1_v;
-+             name: ext2
-+             value: ext2_v;
-+             name: ext3
-+             value:
-+
-+socket: read "9\r\n"
-+socket: read "Developer\r\n"
-+chunk body: size: 9
-+            data: Developer
-+            extensions:
-+
-+socket: read "7\r\n"
-+socket: read "Network\r\n"
-+chunk body: size: 7
-+            data: Network
-+            extensions:
-+
-+socket: read "0\r\n"
-+socket: read "\r\n"
-+chunk body:
-+
-PASS
+# Eio_mock.Backend.run @@ fun () ->
+  let req = Request.get "www.example.com" in
+  Client.call ~conn:example_com_conn req ;;
++www.example.com: wrote "GET / HTTP/1.1\r\n"
++                       "Host: www.example.com\r\n"
++                       "Connection: TE\r\n"
++                       "TE: trailers\r\n"
++                       "User-Agent: cohttp-eio\r\n"
++                       "\r\n"
++www.example.com: read "HTTP/1.1 200 OK\r\n"
++www.example.com: read "content-length: 0\r\n"
++                      "\r\n"
+- : Response.client_response = <obj>
+```
+
+## Timeout
+
+```ocaml
+# Eio_main.run @@ fun env ->
+  try
+    Eio.Switch.run @@ fun sw ->
+    let timeout = Eio.Time.Timeout.seconds env#mono_clock 0.01 in
+    let t = Client.make ~timeout sw env#net in
+    Eio.traceln "Timeout: %a" Eio.Time.Timeout.pp (Client.timeout t);
+    ignore (Client.get t "www.example.com": Response.client_response)
+  with 
+    | Eio.Time.Timeout -> ()
+    | Eio.Io _ -> ();;
++Timeout: 10ms
 - : unit = ()
 ```

@@ -11,8 +11,10 @@ let () =
       let he = Unix.gethostbyname host in
       let addr = `Tcp (Eio_unix.Ipaddr.of_unix he.h_addr_list.(0), port) in
       let conn = Net.connect ~sw env#net addr in
-      let res = Client.get ~conn ~port env ~host "/" in
-      Client.read_fixed res |> Result.ok)
+      let req = Request.get "www.example.org" in
+      let res = Client.call ~conn req in
+      Option.to_result ~none:`No_body (Body.read_content res))
   |> function
   | Ok s -> print_string s
+  | Error `No_body -> ()
   | Error `Timeout -> print_string "Connection timed out"

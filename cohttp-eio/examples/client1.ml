@@ -2,5 +2,9 @@ open Cohttp_eio
 
 let () =
   Eio_main.run @@ fun env ->
-  let res = Client.get env ~host:"www.example.org" "/" in
-  print_string @@ Client.read_fixed res
+  Eio.Switch.run @@ fun sw ->
+  let client = Client.make sw env#net in
+  let res = Client.get client "www.example.org" in
+  match Body.read_content res with
+  | Some body -> print_string body
+  | None -> print_string "no body"

@@ -1,20 +1,20 @@
-module Switch = Eio.Switch
-module Net = Eio.Net
-module Stdenv = Eio.Stdenv
-module Client = Cohttp_eio.Client
-module Response = Http.Response
-module Status = Http.Status
+open Cohttp_eio
 
 let () =
   Eio_main.run @@ fun env ->
-  Switch.run @@ fun sw ->
+  Eio.Switch.run @@ fun sw ->
   let addr = `Unix "/var/run/docker.sock" in
-  let conn = Net.connect ~sw env#net addr in
-  let res = Client.get ~conn ~host:"docker" env "/version" in
-  let code = fst res |> Response.status |> Status.to_int in
+  let conn = Eio.Net.connect ~sw env#net addr in
+  let req =
+    Request.client_request ~host:"docker" ~resource:"/version" Method.Get
+      Body.none
+  in
+  let res = Client.call ~conn req in
+  let code = Response.status res |> Http.Status.to_int in
   Printf.printf "Response code: %d\n" code;
-  Printf.printf "Headers: %s\n"
-    (fst res |> Response.headers |> Http.Header.to_string);
-  let body = Client.read_fixed res in
-  Printf.printf "Body of length: %d\n" (String.length body);
-  print_endline ("Received body\n" ^ body)
+  Printf.printf "Headers: %s\n" (Response.headers res |> Http.Header.to_string);
+  match Body.read_content res with
+  | Some body ->
+      Printf.printf "Body of length: %d\n" (String.length body);
+      print_endline ("Received body\n" ^ body)
+  | None -> print_string "no body"
