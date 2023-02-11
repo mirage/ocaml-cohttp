@@ -3,6 +3,7 @@ module Body = Body
 module Chunked_body = Chunked_body
 module Method = Method
 module Request = Request
+module Response = Response
 
 (** [Server] is a HTTP 1.1 server. *)
 module Server : sig
