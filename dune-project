@@ -364,7 +364,7 @@ should also be fine under Windows too.
   (eio (>= 0.7))
   (eio_main :with-test)
   (mdx :with-test)
-  (uri :with-test)
+  uri
   fmt
   ptime
   (http
