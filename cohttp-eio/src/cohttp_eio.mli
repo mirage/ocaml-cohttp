@@ -1,4 +1,5 @@
 module Body = Body
+module Chunked_body = Chunked_body
 
 (** [Server] is a HTTP 1.1 server. *)
 module Server : sig
