@@ -7,6 +7,7 @@
 - cohttp-eio: generate Date header in responses (bikallem #955)
 - cohttp-eio: further improve Cohttp_eio.Client ergonomics (bikallem #?)
 - cohttp-eio: server api improvements (bikallem #962)
+- cohttp-eio: split Rwer module into Buf_read and Buf_write (bikallem #971)
 
 ## v6.0.0~alpha0 (2022-10-24)
 - cohttp-eio: ensure "Host" header is the first header in http client requests (bikallem #939)

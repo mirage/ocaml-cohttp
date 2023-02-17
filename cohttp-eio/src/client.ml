@@ -1,6 +1,3 @@
-module Buf_read = Eio.Buf_read
-module Buf_write = Eio.Buf_write
-
 type response = Http.Response.t * Buf_read.t
 type host = string
 type port = int
@@ -50,7 +47,7 @@ let write_request pipeline_requests request writer body =
   Buf_write.char writer ' ';
   Buf_write.string writer version;
   Buf_write.string writer "\r\n";
-  Rwer.write_headers writer headers;
+  Buf_write.write_headers writer headers;
   Buf_write.string writer "\r\n";
   Body.write_body ~write_chunked_trailers:true writer body;
   if not pipeline_requests then Buf_write.flush writer
@@ -59,10 +56,10 @@ let write_request pipeline_requests request writer body =
 
 let is_digit = function '0' .. '9' -> true | _ -> false
 
+open Buf_read.Syntax
+
 let status_code =
-  let open Rwer in
-  let open Buf_read.Syntax in
-  let+ status = take_while1 is_digit in
+  let+ status = Buf_read.take_while1 is_digit in
   Http.Status.of_int (int_of_string status)
 
 let reason_phrase =
@@ -72,11 +69,10 @@ let reason_phrase =
 
 (* https://datatracker.ietf.org/doc/html/rfc7230#section-3.1.2 *)
 let response buf_read =
-  let open Buf_read.Syntax in
-  let version = Rwer.(version <* space) buf_read in
-  let status = Rwer.(status_code <* space) buf_read in
-  let () = Rwer.(reason_phrase *> crlf *> Buf_read.return ()) buf_read in
-  let headers = Rwer.http_headers buf_read in
+  let version = Buf_read.(version <* space) buf_read in
+  let status = Buf_read.(status_code <* space) buf_read in
+  let () = Buf_read.(reason_phrase *> crlf *> return ()) buf_read in
+  let headers = Buf_read.http_headers buf_read in
   Http.Response.make ~version ~status ~headers ()
 
 (* Generic HTTP call *)

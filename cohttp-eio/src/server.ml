@@ -1,5 +1,3 @@
-module Buf_read = Eio.Buf_read
-module Buf_write = Eio.Buf_write
 module Switch = Eio.Switch
 
 type middleware = handler -> handler
@@ -121,7 +119,7 @@ let write_response ?request clock writer (response, body) =
   Buf_write.char writer ' ';
   Buf_write.string writer status;
   Buf_write.string writer "\r\n";
-  Rwer.write_headers writer headers;
+  Buf_write.write_headers writer headers;
   Buf_write.string writer "\r\n";
   let write_chunked_trailers =
     Option.map Http.Request.supports_chunked_trailers request
@@ -130,21 +128,19 @@ let write_response ?request clock writer (response, body) =
 
 (* request parsers *)
 
+open Eio.Buf_read.Syntax
+
 let meth =
-  let open Eio.Buf_read.Syntax in
-  let+ meth = Rwer.(token <* space) in
+  let+ meth = Buf_read.(token <* space) in
   Http.Method.of_string meth
 
-let resource =
-  let open Eio.Buf_read.Syntax in
-  Rwer.(take_while1 (fun c -> c != ' ') <* space)
+let resource = Buf_read.(take_while1 (fun c -> c != ' ') <* space)
 
 let[@warning "-3"] http_request t =
-  let open Eio.Buf_read.Syntax in
   let meth = meth t in
   let resource = resource t in
-  let version = Rwer.(version <* crlf) t in
-  let headers = Rwer.http_headers t in
+  let version = Buf_read.(version <* crlf) t in
+  let headers = Buf_read.http_headers t in
   let encoding = Http.Header.get_transfer_encoding headers in
   { Http.Request.meth; resource; version; headers; scheme = None; encoding }
 

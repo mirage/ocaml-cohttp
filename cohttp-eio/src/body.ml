@@ -1,6 +1,3 @@
-module Buf_read = Eio.Buf_read
-module Buf_write = Eio.Buf_write
-
 type t =
   | Fixed of string
   | Chunked of chunk_writer
@@ -88,25 +85,25 @@ let optional c x r =
     Some (x r))
   else None
 
+open Buf_read.Syntax
+
 (*-- https://datatracker.ietf.org/doc/html/rfc7230#section-4.1 --*)
 let chunk_ext_val =
-  let open Buf_read.Syntax in
   let* c = Buf_read.peek_char in
-  match c with Some '"' -> quoted_string | _ -> Rwer.token
+  match c with Some '"' -> quoted_string | _ -> Buf_read.token
 
 let rec chunk_exts r =
   let c = Buf_read.peek_char r in
   match c with
   | Some ';' ->
       Buf_read.consume r 1;
-      let name = Rwer.token r in
+      let name = Buf_read.token r in
       let value = optional '=' chunk_ext_val r in
       { name; value } :: chunk_exts r
   | _ -> []
 
 let chunk_size =
-  let open Buf_read.Syntax in
-  let* sz = Rwer.take_while1 hex_digit in
+  let* sz = Buf_read.take_while1 hex_digit in
   try Buf_read.return (Format.sprintf "0x%s" sz |> int_of_string)
   with _ -> failwith (Format.sprintf "Invalid chunk_size: %s" sz)
 
@@ -146,18 +143,18 @@ let chunk (total_read : int) (headers : Http.Header.t) =
   let* sz = chunk_size in
   match sz with
   | sz when sz > 0 ->
-      let* extensions = chunk_exts <* Rwer.crlf in
-      let* data = Buf_read.take sz <* Rwer.crlf in
+      let* extensions = chunk_exts <* Buf_read.crlf in
+      let* data = Buf_read.take sz <* Buf_read.crlf in
       Buf_read.return @@ `Chunk (sz, data, extensions)
   | 0 ->
-      let* extensions = chunk_exts <* Rwer.crlf in
+      let* extensions = chunk_exts <* Buf_read.crlf in
       (* Read trailer headers if any and append those to request headers.
          Only headers names appearing in 'Trailer' request headers and "allowed" trailer
          headers are appended to request.
          The spec at https://datatracker.ietf.org/doc/html/rfc7230#section-4.1.3
          specifies that 'Content-Length' and 'Transfer-Encoding' headers must be
          updated. *)
-      let* trailer_headers = Rwer.http_headers in
+      let* trailer_headers = Buf_read.http_headers in
       let request_trailer_headers = request_trailer_headers headers in
       let trailer_headers =
         List.filter
@@ -242,7 +239,7 @@ let write_chunked ?(write_chunked_trailers = false) writer chunk_writer =
   in
   chunk_writer.body_writer write_body;
   if write_chunked_trailers then
-    chunk_writer.trailer_writer (Rwer.write_headers writer);
+    chunk_writer.trailer_writer (Buf_write.write_headers writer);
   Buf_write.string writer "\r\n"
 
 let write_body ?write_chunked_trailers writer body =
