@@ -424,7 +424,7 @@ EOF
 ```
 then build and execute the example with
 ```
-$ dune exec ./client_example.exe
+$ dune exec ./server_example.exe
 ```
 
 As in the previous example, here we are explicitly mentioning conduit-lwt to
