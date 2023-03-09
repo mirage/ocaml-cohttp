@@ -31,7 +31,7 @@ depends: [
   "async_kernel" {>= "v0.14.0"}
   "async_unix" {>= "v0.14.0"}
   "async" {>= "v0.14.0"}
-  "base" {>= "v0.11.0"}
+  "base" {>= "v0.16~preview.128.10+111"}
   "core" {with-test}
   "core_unix" {>= "v0.14.0"}
   "conduit-async" {>= "1.2.0"}
