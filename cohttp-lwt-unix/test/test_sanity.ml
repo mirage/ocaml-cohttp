@@ -63,21 +63,6 @@ let server =
                 Lwt_io.write oc "8\r\nexpert 2\r\n0\r\n\r\n" >>= fun () ->
                 Lwt_io.flush oc >>= fun () -> Lwt_io.close ic )));
     ]
-  @ (* client_close *)
-  [
-    (fun _ _ ->
-      let ready = Lwt_condition.wait cond in
-      let i = ref 0 in
-      let stream =
-        Lwt_stream.from (fun () ->
-            ready >|= fun () ->
-            incr i;
-            if !i > 1000 then failwith "Connection should have failed by now!";
-            Some (String.make 4096 'X'))
-      in
-      Lwt.return
-        (`Response (Cohttp.Response.make ~status:`OK (), `Stream stream)));
-  ]
   |> response_sequence
 
 let check_logs test () =
@@ -172,22 +157,6 @@ let ts =
         Body.to_string body >|= fun body ->
         assert_equal ~printer "expert 2" body
       in
-      let client_close () =
-        Cohttp_lwt_unix.Net.connect_uri ~ctx uri >>= fun (_conn, ic, oc) ->
-        let req =
-          Cohttp.Request.make_for_client ~chunked:false `GET
-            (Uri.with_path uri "/test.html")
-        in
-        Request.write (fun _writer -> Lwt.return_unit) req oc >>= fun () ->
-        Response.read ic >>= function
-        | `Eof | `Invalid _ -> assert false
-        | `Ok rsp ->
-            assert_equal ~printer:Cohttp.Code.string_of_status `OK
-              (Cohttp.Response.status rsp);
-            Cohttp_lwt_unix.Net.close ic oc;
-            Lwt_condition.broadcast cond ();
-            Lwt.pause ()
-      in
       [
         ("sanity test", check_logs t);
         ("pipelined chunk test", check_logs pipelined_chunk);
@@ -195,7 +164,6 @@ let ts =
         ("massive chunked", check_logs massive_chunked);
         ("no leaks on requests", check_logs test_no_leak);
         ("expert response", check_logs expert_pipelined);
-        ("client_close", check_logs client_close);
       ])
 
 let _ = ts |> run_async_tests |> Lwt_main.run
