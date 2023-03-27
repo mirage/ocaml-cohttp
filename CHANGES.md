@@ -1,3 +1,7 @@
+## v4.1.1 (2023-)
+
+- cohttp,cohttp-async server: correctly close broken streams (reported by Stéphane Glondu, fix by samhot and anuragsoni)
+
 ## v4.1.0 (2021-11-05)
 
 - cohttp-lwt-unix: Adopt ocaml-conduit 5.0.0 (smorimoto #787)
