@@ -1,3 +1,7 @@
+## v5.1.0 (2023-)
+
+- cohttp,cohttp-async server: correctly close broken streams (reported by Stéphane Glondu, fix by samhot and anuragsoni)
+
 ## v5.0.0 (2021-12-15)
 
 - Cohttp.Header: new implementation (lyrm #747)
