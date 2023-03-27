@@ -1,3 +1,7 @@
+## v2.5.7 (2023-)
+
+cohttp,cohttp-async server: correctly close broken streams (reported by Stéphane Glondu, fix by samhot and anuragsoni)
+
 ## v2.5.6 (2021-12-15)
 
 - cohttp-async: use package core_unix instead of core, to prepare for core release 0.15 (aalekseyev #791 - backport)
