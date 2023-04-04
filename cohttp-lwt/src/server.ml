@@ -87,13 +87,30 @@ module Make (IO : S.IO) = struct
     in
     respond_string ~status:`Not_found ~body ()
 
-  let read_body ic req =
+  let read_body ?send_100_continue_if_needed ic req =
     match Http.Request.has_body req with
     | `Yes ->
         let reader = Request.make_body_reader req ic in
         let body_stream = Body.create_stream Request.read_body_chunk reader in
+        let body_stream = match send_100_continue_if_needed with
+        | None -> body_stream
+        | Some f ->
+            (* See RFC7231 5.1.1 Expect
+              We MUST send a 100-continue and we MUST NOT wait for the body
+              before doing that.
+             *)
+            let start = Lwt_stream.from @@ fun () ->
+              f () >>= fun () ->
+              Lwt.return_none
+            in
+            Lwt_stream.append start body_stream
+        in
         Body.of_stream body_stream
-    | `No | `Unknown -> `Empty
+    | `No | `Unknown ->
+        (* See RFC7231 5.1.1 Expect
+           If we know there is no message body we MAY send a 100 Continue, but
+           don't have to *)
+        `Empty
 
   let handle_request callback conn req body =
     Log.debug (fun m -> m "Handle request: %a." Request.pp_hum req);
@@ -111,6 +128,11 @@ module Make (IO : S.IO) = struct
                 `Response rsp))
       (fun () -> Body.drain_body body)
 
+  let res_100_continue = Response.make ~status:`Continue ~flush:true ()
+
+  let send_100_continue oc =
+    Some (fun () -> Response.write_header res_100_continue oc)
+
   let rec handle_client ic oc conn callback =
     Request.read ic >>= function
     | `Eof -> Lwt.return_unit
@@ -118,7 +140,21 @@ module Make (IO : S.IO) = struct
         Log.err (fun m -> m "invalid input %s while handling client" data);
         Lwt.return_unit
     | `Ok req -> (
-        let body = read_body ic req in
+        let send_100_continue_if_needed =
+          (* See RFC7231 5.1.1 Expect
+             We MAY respond with 417 on Expect values other than 100-continue,
+             but we don't have to, so we can leave that up to the application
+             and handle only 100-continue here.
+
+             We do need to check the HTTP version, because we can't respond
+             with 100-continue on HTTP/1.0 (and I assume not on 0.9 either?).
+           *)
+          if Request.version req = `HTTP_1_1
+             && Header.get (Request.headers req) "Expect" = Some "100-continue"
+          then send_100_continue oc
+          else None
+        in
+        let body = read_body ?send_100_continue_if_needed ic req in
         handle_request callback conn req body >>= function
         | `Response (res, body) ->
             let flush = Response.flush res in
