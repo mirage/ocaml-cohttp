@@ -1,4 +1,4 @@
-## v4.1.1 (2023-)
+## v4.1.1 (2023-04-04)
 
 - cohttp,cohttp-async server: correctly close broken streams (reported by Stéphane Glondu, fix by samhot and anuragsoni)
 
