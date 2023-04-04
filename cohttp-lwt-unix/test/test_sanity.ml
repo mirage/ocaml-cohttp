@@ -15,7 +15,6 @@ let chunk_body = [ "one"; ""; " "; "bar"; "" ]
 let leak_repeat = 1024
 let () = Debug.activate_debug ()
 let () = Logs.set_level (Some Warning)
-let cond = Lwt_condition.create ()
 
 let server =
   List.map const
