@@ -1,4 +1,6 @@
 ## Unreleased
+
+- cohttp,cohttp-async server: correctly close broken streams (reported by Stéphane Glondu, fix by samhot and anuragsoni)
 - cohttp-eio: remove unused code from tests to work with Eio 0.8 (talex5 #967)
 - Upgrade dune to v3.0 (bikallem #947)
 - cohttp-eio: allow client to optionally configure request pipelining (bikallem #949)

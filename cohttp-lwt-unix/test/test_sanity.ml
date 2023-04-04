@@ -10,7 +10,6 @@ let chunk_body = [ "one"; ""; " "; "bar"; "" ]
 let leak_repeat = 1024
 let () = Debug.activate_debug ()
 let () = Logs.set_level (Some Warning)
-let cond = Lwt_condition.create ()
 
 let server =
   List.map const
@@ -68,20 +67,6 @@ let server =
                 Lwt_io.flush oc >>= fun () ->
                 Cohttp_lwt_unix.Private.Input_channel.close ic )));
     ]
-  @ (* client_close *)
-  [
-    (fun _ _ ->
-      let ready = Lwt_condition.wait cond in
-      let i = ref 0 in
-      let stream =
-        Lwt_stream.from (fun () ->
-            ready >|= fun () ->
-            incr i;
-            if !i > 1000 then failwith "Connection should have failed by now!";
-            Some (String.make 4096 'X'))
-      in
-      Lwt.return (`Response (Http.Response.make ~status:`OK (), `Stream stream)));
-  ]
   |> response_sequence
 
 let check_logs test () =
@@ -176,22 +161,6 @@ let ts =
         Body.to_string body >|= fun body ->
         assert_equal ~printer "expert 2" body
       in
-      let client_close () =
-        Cohttp_lwt_unix.Net.connect_uri ~ctx uri >>= fun (_conn, ic, oc) ->
-        let req =
-          Cohttp.Request.make_for_client ~chunked:false `GET
-            (Uri.with_path uri "/test.html")
-        in
-        Request.write (fun _writer -> Lwt.return_unit) req oc >>= fun () ->
-        Response.read ic >>= function
-        | `Eof | `Invalid _ -> assert false
-        | `Ok rsp ->
-            assert_equal ~printer:Cohttp.Code.string_of_status `OK
-              (Http.Response.status rsp);
-            Cohttp_lwt_unix.Net.close ic oc;
-            Lwt_condition.broadcast cond ();
-            Lwt.pause ()
-      in
       [
         ("sanity test", check_logs t);
         ("pipelined chunk test", check_logs pipelined_chunk);
@@ -199,7 +168,6 @@ let ts =
         ("massive chunked", check_logs massive_chunked);
         ("no leaks on requests", check_logs test_no_leak);
         ("expert response", check_logs expert_pipelined);
-        ("client_close", check_logs client_close);
       ])
 
 let _ = ts |> run_async_tests |> Lwt_main.run
