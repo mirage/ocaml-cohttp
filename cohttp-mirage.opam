@@ -23,7 +23,7 @@ depends: [
   "mirage-flow" {>= "2.0.0"}
   "mirage-channel" {>= "4.0.0"}
   "conduit" {>= "2.0.2"}
-  "conduit-mirage" {>= "2.0.2"}
+  "conduit-mirage" {>= "2.3.0"}
   "mirage-kv" {>= "3.0.0"}
   "lwt" {>= "2.4.3"}
   "cohttp" {= version}
