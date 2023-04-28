@@ -1,4 +1,4 @@
-## Unreleased
+## v6.0.0~alpha1 (2023-04-28)
 
 - cohttp,cohttp-async server: correctly close broken streams (reported by Stéphane Glondu, fix by samhot and anuragsoni)
 - cohttp-eio: remove unused code from tests to work with Eio 0.8 (talex5 #967)
