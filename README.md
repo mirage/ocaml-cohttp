@@ -109,10 +109,8 @@ There are a few things to notice:
   run the event loop and return with final value of `body` which we then print.
 
 Note that `Cohttp_lwt_unix`/`Cohttp_async` are able to request an HTTPS page
-by default. For `Cohttp_lwt_unix`, we use [ocaml-tls](https://github.com/mirleft/ocaml-tls.git)
-(to use `lwt_ssl` is enough to use `Cohttp_lwt_unix_ssl` from the analogously
-named package, the rest of the code does not change). For `Cohttp_async`, we use
-`async_ssl` (but the user is able to use `ocaml-tls` with some modifications).
+by default. For `Cohttp_lwt_unix` users can use [ocaml-tls](https://github.com/mirleft/ocaml-tls.git) by installing `tls-lwt` or [ocaml-ssl](https://github.com/savonet/ocaml-ssl) by installing `lwt_ssl`. The latter is the default if both are installed but it is possible to force the selection of tls with the environment variable `CONDUIT_TLS=native`. For `Cohttp_async` the default is to use
+`async_ssl` (but users are able to use `ocaml-tls` with some modifications).
 
 Consult the following modules for reference:
 
