@@ -116,10 +116,9 @@ module Make (IO : S.IO) = struct
         let flush = Response.flush res in
         Response.write ~flush
           (fun writer -> Body.write_body (Response.write_body writer) body)
-          res oc
-        >>= fun () -> if keep_alive then handle_client oc else Lwt.return_unit)
+          res oc)
     >>= function
-    | Ok () -> Lwt.return_unit
+    | Ok () -> if keep_alive then handle_client oc else Lwt.return_unit
     | Error e ->
         Log.info (fun m -> m "IO error while writing body: %a" IO.pp_error e);
         Body.drain_body body
