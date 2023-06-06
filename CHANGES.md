@@ -1,3 +1,7 @@
+## v2.5.8 (2023-05-06)
+
+- compatibility with async v0.16
+
 ## v2.5.7 (2023-03-04)
 
 - cohttp,cohttp-async server: correctly close broken streams (reported by Stéphane Glondu, fix by samhot and anuragsoni)
