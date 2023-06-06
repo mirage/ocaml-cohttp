@@ -19,7 +19,7 @@ open Async_kernel
 
 module Writer = Async_unix.Writer
 module Reader = Async_unix.Reader
-module Format = Caml.Format
+module Format = Stdlib.Format
 
 let log_src_name = "cohttp.async.io"
 let src = Logs.Src.create log_src_name ~doc:"Cohttp Async IO module"
@@ -41,7 +41,7 @@ let default_reporter () =
       over ();
       k () in
     msgf @@ fun ?header:_ ?tags:_ fmt ->
-    Format.kfprintf k fmtr Caml.("@[" ^^ fmt ^^ "@]@.")
+    Format.kfprintf k fmtr Stdlib.("@[" ^^ fmt ^^ "@]@.")
   in
   { Logs.report }
 
@@ -56,10 +56,10 @@ let set_log = lazy (
 )
 
 let check_debug norm_fn debug_fn =
-  match Caml.Sys.getenv "COHTTP_DEBUG" with
+  match Stdlib.Sys.getenv "COHTTP_DEBUG" with
   | _ ->
     Lazy.force set_log; debug_fn
-  | exception Caml.Not_found -> norm_fn
+  | exception Stdlib.Not_found -> norm_fn
 
 type 'a t = 'a Deferred.t
 let (>>=) = Deferred.(>>=)
