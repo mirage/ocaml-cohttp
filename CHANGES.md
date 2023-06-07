@@ -1,3 +1,7 @@
+## Unreleased
+
+- cohttp-lwt server: call conn_closed before drainig the body of response on error (pirbo)
+
 ## v6.0.0~alpha1 (2023-04-28)
 
 - cohttp,cohttp-async server: correctly close broken streams (reported by Stéphane Glondu, fix by samhot and anuragsoni)

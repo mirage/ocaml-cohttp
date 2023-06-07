@@ -111,52 +111,60 @@ module Make (IO : S.IO) = struct
                 `Response rsp))
       (fun () -> Body.drain_body body)
 
-  let handle_response ~keep_alive oc res body handle_client =
+  let handle_response ~keep_alive oc res body conn_closed handle_client =
     IO.catch (fun () ->
         let flush = Response.flush res in
         Response.write ~flush
           (fun writer -> Body.write_body (Response.write_body writer) body)
-          res oc
-        >>= fun () -> if keep_alive then handle_client oc else Lwt.return_unit)
+          res oc)
     >>= function
-    | Ok () -> Lwt.return_unit
+    | Ok () ->
+        if keep_alive then handle_client oc
+        else
+          let () = conn_closed () in
+          Lwt.return_unit
     | Error e ->
         Log.info (fun m -> m "IO error while writing body: %a" IO.pp_error e);
+        conn_closed ();
         Body.drain_body body
 
-  let rec handle_client ic oc conn callback =
+  let rec handle_client ic oc conn spec =
     Request.read ic >>= function
-    | `Eof -> Lwt.return_unit
+    | `Eof ->
+        spec.conn_closed conn;
+        Lwt.return_unit
     | `Invalid data ->
         Log.err (fun m -> m "invalid input %s while handling client" data);
+        spec.conn_closed conn;
         Lwt.return_unit
     | `Ok req -> (
         let body = read_body ic req in
-        handle_request callback conn req body >>= function
+        handle_request spec.callback conn req body >>= function
         | `Response (res, body) ->
             let keep_alive =
               Http.Request.is_keep_alive req && Http.Response.is_keep_alive res
             in
-            handle_response ~keep_alive oc res body (fun oc ->
-                handle_client ic oc conn callback)
+            handle_response ~keep_alive oc res body
+              (fun () -> spec.conn_closed conn)
+              (fun oc -> handle_client ic oc conn spec)
         | `Expert (res, io_handler) ->
             Response.write_header res oc >>= fun () ->
-            io_handler ic oc >>= fun () -> handle_client ic oc conn callback)
+            io_handler ic oc >>= fun () -> handle_client ic oc conn spec)
 
   let callback spec io_id ic oc =
     let conn_id = Connection.create () in
     let conn_closed () = spec.conn_closed (io_id, conn_id) in
-    Lwt.finalize
+    Lwt.catch
       (fun () ->
-        IO.catch (fun () -> handle_client ic oc (io_id, conn_id) spec.callback)
+        IO.catch (fun () -> handle_client ic oc (io_id, conn_id) spec)
         >>= function
         | Ok () -> Lwt.return_unit
         | Error e ->
             Log.info (fun m ->
                 m "IO error while handling client: %a" IO.pp_error e);
+            conn_closed ();
             Lwt.return_unit)
-      (fun () ->
-        (* Clean up resources when the response stream terminates and call
-         * the user callback *)
-        conn_closed () |> Lwt.return)
+      (fun e ->
+        conn_closed ();
+        Lwt.fail e)
 end
