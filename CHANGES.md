@@ -1,6 +1,7 @@
 ## Unreleased
 
 - cohttp-lwt server: call conn_closed before drainig the body of response on error (pirbo)
+- cohttp-eio: Relax socket interface requirement on `Server.connection_handler`.
 
 ## v6.0.0~alpha1 (2023-04-28)
 
