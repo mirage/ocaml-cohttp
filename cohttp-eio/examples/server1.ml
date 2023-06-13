@@ -28,19 +28,26 @@ let text =
    was coming to, but it was too dark to see anything; then she looked at the \
    sides of the well, and noticed that they were filled with cupboards......"
 
-open Cohttp_eio
+let () = Logs.set_reporter (Logs_fmt.reporter ())
+and () = Logs.Src.set_level Cohttp_eio.src (Some Debug)
 
-let app : Server.request -> Server.response =
- fun ((req, _, _) : Server.request) ->
-  match Http.Request.resource req with
-  | "/" -> Server.text_response text
-  | "/html" -> Server.html_response text
-  | _ -> Server.not_found_response
+let handler ~sw:_ _peer request _body =
+  match Http.Request.resource request with
+  | "/" -> (Http.Response.make (), Cohttp_eio.Body.of_string text)
+  | "/html" ->
+      ( Http.Response.make
+          ~headers:(Http.Header.of_list [ ("content-type", "text/html") ])
+          (),
+        (* Use a plain flow to test chunked encoding *)
+        Eio.Flow.string_source text )
+  | _ -> (Http.Response.make ~status:`Not_found (), Cohttp_eio.Body.of_string "")
 
 let () =
   let port = ref 8080 in
   Arg.parse
     [ ("-p", Arg.Set_int port, " Listening port number(8080 by default)") ]
     ignore "An HTTP/1.1 server";
-
-  Eio_main.run @@ fun env -> Server.run ~port:!port env app
+  Eio_main.run @@ fun env ->
+  Eio.Switch.run @@ fun sw ->
+  let server = Cohttp_eio.Server.make env#net ~sw ~port:!port handler in
+  Cohttp_eio.Server.run server

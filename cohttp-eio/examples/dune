@@ -1,6 +1,6 @@
 (executables
  (names server1 client1 docker_client client_timeout)
- (libraries cohttp-eio eio_main eio.unix unix))
+ (libraries cohttp-eio eio_main eio.unix fmt unix logs.fmt))
 
 (alias
  (name runtest)

@@ -1,4 +1,4 @@
 (library
  (name cohttp_eio)
  (public_name cohttp-eio)
- (libraries eio http fmt ptime))
+ (libraries cohttp eio eio.mock fmt http logs ptime uri uri.services))

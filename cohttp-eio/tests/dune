@@ -1,4 +1,5 @@
-(mdx
- (package cohttp-eio)
- (deps server_chunks.txt chunks.txt)
- (libraries eio eio.core eio.mock cohttp-eio http))
+(test
+ (name test)
+ (libraries alcotest eio eio_main cohttp-eio)
+ (preprocess
+  (pps ppx_here)))
