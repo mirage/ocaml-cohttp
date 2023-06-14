@@ -107,7 +107,7 @@ module Server : sig
   val connection_handler :
     handler ->
     #Eio.Time.clock ->
-    #Eio.Net.stream_socket ->
+    #Eio.Flow.two_way ->
     Eio.Net.Sockaddr.stream ->
     unit
   (** [connection_handler request_handler] is a connection handler, suitable for
