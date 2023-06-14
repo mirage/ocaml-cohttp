@@ -33,6 +33,7 @@ jobs:
           - |
             *.opam
             !cohttp-eio.opam
+            !cohttp-curl-async.opam
             !cohttp-async.opam
 
     runs-on: ${{ matrix.os }}
