@@ -7,6 +7,8 @@ module Make (IO : S.IO) = struct
   module Request = Make.Request (IO)
   module Response = Make.Response (IO)
 
+  type body = Body.t
+
   let src = Logs.Src.create "cohttp.lwt.server" ~doc:"Cohttp Lwt server module"
 
   module Log = (val Logs.src_log src : Logs.LOG)
