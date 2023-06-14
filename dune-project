@@ -174,11 +174,11 @@ should also be fine under Windows too.
   (cohttp
    (= :version))
   (async_kernel
-   (>= v0.14.0))
+   (>= v0.16.0))
   (async_unix
-   (>= v0.14.0))
+   (>= v0.16.0))
   (async
-   (>= v0.14.0))
+   (>= v0.16.0))
   (base
    (>= "v0.16"))
   (core :with-test)
