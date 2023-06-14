@@ -28,7 +28,6 @@ jobs:
           - ocaml-variants.4.11.2+afl
           - ocaml-variants.4.12.1+options,ocaml-option-afl
           - ocaml-variants.4.13.1+options,ocaml-option-afl
-          - ocaml-variants.4.14.1+options,ocaml-option-afl
         local-packages:
           - |
             *.opam
