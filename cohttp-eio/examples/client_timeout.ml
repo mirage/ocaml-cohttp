@@ -9,7 +9,7 @@ let () =
   Eio.Time.with_timeout env#clock timeout_s (fun () ->
       let host, port = ("www.example.org", 80) in
       let he = Unix.gethostbyname host in
-      let addr = `Tcp (Eio_unix.Ipaddr.of_unix he.h_addr_list.(0), port) in
+      let addr = `Tcp (Eio_unix.Net.Ipaddr.of_unix he.h_addr_list.(0), port) in
       let conn = Net.connect ~sw env#net addr in
       let res = Client.get ~conn ~port env ~host "/" in
       Client.read_fixed res |> Result.ok)
