@@ -1,9 +1,8 @@
 ## v6.0.0~alpha2 (2023-06-20)
 
+- cohttp-lwt server: call conn_closed before drainig the body of response on error (pirbo)
+- cohttp-eio: Relax socket interface requirement on `Server.connection_handler` (mefyl #983)
 - do not omit mandatory null Content-Length headers (mefyl #985)
-- cohttp-async, cohttp-curl-async: compatibility with core/async v0.16.0 (mseri, dkalinichenko-js #976)
-- cohttp-lwt server: call conn_closed before drainig the body of response on error (pirbo #982)
-- cohttp-eio: Relax socket interface requirement on `Server.connection_handler`. (mefyl #983)
 
 ## v6.0.0~alpha1 (2023-04-28)
 - cohttp,cohttp-async server: correctly close broken streams (reported by Stéphane Glondu, fix by samhot and anuragsoni)
@@ -28,7 +27,7 @@
 - cohttp-eio: convert to Eio.Buf_read (talex5 #882)
 - cohttp lwt client: Connection cache and explicit pipelining (madroach #853)
 - http: add Http.Request.make and simplify Http.Response.make (bikallem mseri #878)
-- http: add pretty printer functions (bikallem #880) 
+- http: add pretty printer functions (bikallem #880)
 - New eio based client and server on top of the http library (bikallem #857)
 - New curl based clients (rgrinberg #813)
   + cohttp-curl-lwt for an Lwt backend
@@ -111,10 +110,10 @@
   + ```clean_dup```  enables the user to clean headers that follows the {{:https://tools.ietf.org/html/rfc7230#section-3.2.2} RFC7230§3.2.2} (no duplicate, except ```set-cookie```)
   + ```get_multi_concat``` has been added to get a result similar to the previous ```get``` function.
 
-- Cohttp.Header: performance improvement (mseri, anuragsoni #778) 
+- Cohttp.Header: performance improvement (mseri, anuragsoni #778)
   **Breaking** the headers are no-longer lowercased when parsed, the headers key comparison is case insensitive instead.
 
-- cohttp-lwt-unix: Adopt ocaml-conduit 5.0.0 (smorimoto #787) 
+- cohttp-lwt-unix: Adopt ocaml-conduit 5.0.0 (smorimoto #787)
   **Breaking** `Conduit_lwt_unix.connect`'s `ctx` param type chaged from `ctx` to  `ctx Lazy.t`
 
 - cohttp-mirage: fix deprecated fmt usage (tmcgilchrist #783)
