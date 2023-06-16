@@ -86,8 +86,11 @@ let callback { conn_closed; handler } conn input output =
   let id = (Cohttp.Connection.create () [@ocaml.warning "-3"]) in
   let rec handle () =
     match read input with
-    | `Eof | `Invalid _ ->
-        conn_closed (conn, id) (* FIXME: respond with error *)
+    | `Eof -> conn_closed (conn, id)
+    | `Invalid e ->
+        write output
+          (Http.Response.make ~status:`Bad_request ())
+          (Body.of_string e)
     | `Ok (request, body) ->
         let () =
           match handler (conn, id) request body with
