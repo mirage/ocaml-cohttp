@@ -6,7 +6,7 @@ module IO = struct
 
   type ic = Eio.Buf_read.t
   type oc = Eio.Buf_write.t
-  type conn = unit
+  type conn = Eio.Net.stream_socket
 
   let refill ic =
     try

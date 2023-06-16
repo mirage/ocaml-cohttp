@@ -1,34 +1,48 @@
 open Utils
+module IO = Io.IO
 
-type handler =
-  sw:Eio.Switch.t ->
-  Eio.Net.Sockaddr.stream ->
-  Http.Request.t ->
-  Eio.Flow.source ->
-  Http.Response.t * Eio.Flow.source
+type body = Body.t
+type conn = IO.conn * Cohttp.Connection.t [@@warning "-3"]
+
+type response_action =
+  [ `Expert of Http.Response.t * (IO.ic -> IO.oc -> unit IO.t)
+  | `Response of Http.Response.t * body ]
+
+(* type handler =
+ *   sw:Eio.Switch.t ->
+ *   Eio.Net.Sockaddr.stream ->
+ *   Http.Request.t ->
+ *   Eio.Flow.source ->
+ *   Http.Response.t * Eio.Flow.source *)
 
 type t = {
-  addr : Eio.Net.Sockaddr.t;
-  handler : handler;
-  socket : Eio.Net.listening_socket;
+  conn_closed : conn -> unit;
+  handler : conn -> Http.Request.t -> body -> response_action IO.t;
 }
 
-let make net ~sw ?(backlog = 128) ?(host = Eio.Net.Ipaddr.V4.loopback)
-    ?(port = 0) handler =
-  let socket =
-    Eio.Net.listen net ~sw ~reuse_addr:true ~reuse_port:true ~backlog
-      (`Tcp (host, port))
-  in
-  let addr =
-    (* FIXME: this can be incorrect, fix when
-       https://github.com/ocaml-multicore/eio/pull/555 is merged *)
-    `Tcp (host, port)
-  in
-  { addr; handler; socket }
+let make_response_action ?(conn_closed = fun _ -> ()) ~callback () =
+  { conn_closed; handler = callback }
 
-let listening_addr { addr; _ } = addr
+let make_expert ?conn_closed ~callback () =
+  make_response_action ?conn_closed
+    ~callback:(fun conn request body ->
+      IO.(callback conn request body >>= fun expert -> `Expert expert))
+    ()
 
-let read _peer_address input =
+let make ?conn_closed ~callback () =
+  make_response_action ?conn_closed
+    ~callback:(fun conn request body ->
+      IO.(callback conn request body >>= fun response -> `Response response))
+    ()
+
+let respond ?headers ?flush ~status ~body () =
+  let response = Cohttp.Response.make ?headers ?flush ~status () in
+  (response, body)
+
+let respond_string ?headers ?flush ~status ~body () =
+  respond ?headers ?flush ~status ~body:(Body.of_string body) ()
+
+let read input =
   match Io.Request.read input with
   | (`Eof | `Invalid _) as e -> e
   | `Ok request -> (
@@ -41,7 +55,7 @@ let read _peer_address input =
           in
           `Ok (request, body))
 
-let write output _peer_address response body =
+let write output response body =
   let response =
     let content_length =
       List.find_map
@@ -68,35 +82,37 @@ let write output _peer_address response body =
   in
   Eio.Buf_write.flush output
 
-let handle (handler : handler) peer_address input output =
-  Eio.Switch.run @@ fun sw ->
-  match read peer_address input with
-  | (`Eof | `Invalid _) as e -> e
-  | `Ok (request, body) ->
-      let response, body = handler ~sw peer_address request body in
-      let () = write output peer_address response body in
-      `Ok
+let callback { conn_closed; handler } conn input output =
+  let id = (Cohttp.Connection.create () [@ocaml.warning "-3"]) in
+  let rec handle () =
+    match read input with
+    | `Eof | `Invalid _ ->
+        conn_closed (conn, id) (* FIXME: respond with error *)
+    | `Ok (request, body) ->
+        let () =
+          match handler (conn, id) request body with
+          | `Response (response, body) -> write output response body
+          | `Expert (response, handler) ->
+              let () = Io.Response.write_header response output in
+              handler input output
+        in
+        if Cohttp.Request.is_keep_alive request then handle ()
+  in
+  handle ()
 
-let run { handler; socket; _ } =
+let run socket server =
+  Eio.Switch.run @@ fun sw ->
   let rec accept () =
     let () =
-      Eio.Switch.run @@ fun sw ->
-      let socket, peer_address = Eio.Net.accept ~sw socket in
+      Eio.Net.accept_fork ~sw socket ~on_error:raise
+      @@ fun socket peer_address ->
       let () =
         Logs.info (fun m ->
             m "%a: accept connection" Eio.Net.Sockaddr.pp peer_address)
       in
-      Eio.Fiber.fork ~sw @@ fun () ->
       let input = Eio.Buf_read.of_flow ~max_size:max_int socket in
       Eio.Buf_write.with_flow socket @@ fun output ->
-      match handle handler peer_address input output with
-      | `Eof ->
-          Logs.info (fun m ->
-              m "%a: connection closed" Eio.Net.Sockaddr.pp peer_address)
-      | `Invalid error ->
-          Logs.warn (fun m ->
-              m "%a: invalid request: %s" Eio.Net.Sockaddr.pp peer_address error)
-      | `Ok -> ()
+      callback server socket input output
     in
     accept ()
   in

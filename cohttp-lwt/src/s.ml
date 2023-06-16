@@ -274,5 +274,28 @@ module type Client = sig
 end
 
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)
-module type Server =
-  Cohttp.Server.S with type body = Body.t and type 'a IO.t = 'a Lwt.t
+module type Server = sig
+  include Cohttp.Server.S with type body = Body.t and type 'a IO.t = 'a Lwt.t
+
+  val resolve_local_file : docroot:string -> uri:Uri.t -> string
+    [@@deprecated "Please use Cohttp.Path.resolve_local_file. "]
+  (** Resolve a URI and a docroot into a concrete local filename. *)
+
+  val respond_error :
+    ?headers:Http.Header.t ->
+    ?status:Http.Status.t ->
+    body:string ->
+    unit ->
+    (Http.Response.t * body) IO.t
+
+  val respond_redirect :
+    ?headers:Http.Header.t -> uri:Uri.t -> unit -> (Http.Response.t * body) IO.t
+
+  val respond_need_auth :
+    ?headers:Http.Header.t ->
+    auth:Cohttp.Auth.challenge ->
+    unit ->
+    (Http.Response.t * body) IO.t
+
+  val respond_not_found : ?uri:Uri.t -> unit -> (Http.Response.t * body) IO.t
+end

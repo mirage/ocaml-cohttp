@@ -1,5 +1,5 @@
 (test
  (name test)
- (libraries alcotest eio eio_main cohttp-eio)
+ (libraries alcotest cohttp-eio eio eio_main logs.fmt)
  (preprocess
   (pps ppx_here)))

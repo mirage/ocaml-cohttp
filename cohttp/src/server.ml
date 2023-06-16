@@ -42,10 +42,6 @@ module type S = sig
     unit ->
     t
 
-  val resolve_local_file : docroot:string -> uri:Uri.t -> string
-    [@@deprecated "Please use Cohttp.Path.resolve_local_file. "]
-  (** Resolve a URI and a docroot into a concrete local filename. *)
-
   val respond :
     ?headers:Http.Header.t ->
     ?flush:bool ->
@@ -63,29 +59,12 @@ module type S = sig
       parameter. *)
 
   val respond_string :
-    ?flush:bool ->
     ?headers:Http.Header.t ->
+    ?flush:bool ->
     status:Http.Status.t ->
     body:string ->
     unit ->
     (Http.Response.t * body) IO.t
 
-  val respond_error :
-    ?headers:Http.Header.t ->
-    ?status:Http.Status.t ->
-    body:string ->
-    unit ->
-    (Http.Response.t * body) IO.t
-
-  val respond_redirect :
-    ?headers:Http.Header.t -> uri:Uri.t -> unit -> (Http.Response.t * body) IO.t
-
-  val respond_need_auth :
-    ?headers:Http.Header.t ->
-    auth:Auth.challenge ->
-    unit ->
-    (Http.Response.t * body) IO.t
-
-  val respond_not_found : ?uri:Uri.t -> unit -> (Http.Response.t * body) IO.t
   val callback : t -> IO.conn -> IO.ic -> IO.oc -> unit IO.t
 end

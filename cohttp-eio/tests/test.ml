@@ -1,4 +1,8 @@
-let handler ~sw:_ _peer request body =
+let () =
+  Logs.set_level ~all:true @@ Some Logs.Debug;
+  Logs.set_reporter (Logs_fmt.reporter ())
+
+let handler _conn request body =
   match Http.Request.resource request with
   | "/" -> (Http.Response.make (), Cohttp_eio.Body.of_string "root")
   | "/stream" ->
@@ -14,9 +18,14 @@ let handler ~sw:_ _peer request body =
 let () =
   Eio_main.run @@ fun env ->
   Eio.Switch.run @@ fun sw ->
-  let server = Cohttp_eio.Server.make env#net ~sw ~port:4242 handler in
   let () =
-    Eio.Fiber.fork_daemon ~sw @@ fun () -> Cohttp_eio.Server.run server
+    let socket =
+      Eio.Net.listen env#net ~sw ~backlog:128 ~reuse_addr:true ~reuse_port:true
+        (`Tcp (Eio.Net.Ipaddr.V4.loopback, 4242))
+    and server = Cohttp_eio.Server.make ~callback:handler () in
+    Eio.Fiber.fork_daemon ~sw @@ fun () ->
+    let () = Cohttp_eio.Server.run socket server in
+    `Stop_daemon
   in
   let test_case name f =
     let f () =
@@ -29,7 +38,8 @@ let () =
   in
   let root socket =
     let () =
-      Eio.Flow.write socket [ Cstruct.of_string "GET / HTTP/1.1\r\n\r\n" ]
+      Eio.Flow.write socket
+        [ Cstruct.of_string "GET / HTTP/1.1\r\nconnection: close\r\n\r\n" ]
     in
     Alcotest.(check ~here:[%here] string)
       "response" "HTTP/1.1 200 OK\r\ncontent-length: 4\r\n\r\nroot"
@@ -37,14 +47,19 @@ let () =
   and missing socket =
     let () =
       Eio.Flow.write socket
-        [ Cstruct.of_string "GET /missing HTTP/1.1\r\n\r\n" ]
+        [
+          Cstruct.of_string "GET /missing HTTP/1.1\r\nconnection: close\r\n\r\n";
+        ]
     in
     Alcotest.(check ~here:[%here] string)
       "response" "HTTP/1.1 404 Not Found\r\ncontent-length: 0\r\n\r\n"
       Eio.Buf_read.(of_flow ~max_size:max_int socket |> take_all)
   and streaming_response socket =
     let () =
-      Eio.Flow.write socket [ Cstruct.of_string "GET /stream HTTP/1.1\r\n\r\n" ]
+      Eio.Flow.write socket
+        [
+          Cstruct.of_string "GET /stream HTTP/1.1\r\nconnection: close\r\n\r\n";
+        ]
     in
     Alcotest.(check ~here:[%here] string)
       "response"
@@ -63,7 +78,11 @@ let () =
       Eio.Flow.write socket
         [
           Cstruct.of_string
-            "POST /post HTTP/1.1\r\ncontent-length:12\r\n\r\nhello world!";
+            "POST /post HTTP/1.1\r\n\
+             connection: close\r\n\
+             content-length:12\r\n\
+             \r\n\
+             hello world!";
         ]
     in
     Alcotest.(check ~here:[%here] string)

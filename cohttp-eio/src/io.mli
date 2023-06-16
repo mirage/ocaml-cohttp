@@ -1,6 +1,7 @@
 module IO :
   Cohttp.S.IO
     with type 'a t = 'a
+     and type conn = Eio.Net.stream_socket
      and type ic = Eio.Buf_read.t
      and type oc = Eio.Buf_write.t
 

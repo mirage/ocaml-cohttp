@@ -56,7 +56,7 @@ module Make (IO : S.IO) = struct
     let res = Response.make ~status ~flush ~encoding ?headers () in
     Lwt.return (res, body)
 
-  let respond_string ?(flush = true) ?headers ~status ~body () =
+  let respond_string ?headers ?(flush = true) ~status ~body () =
     let res =
       Response.make ~status ~flush
         ~encoding:(Http.Transfer.Fixed (Int64.of_int (String.length body)))
