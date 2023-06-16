@@ -1,6 +1,7 @@
 module Accept = Accept
 module Auth = Auth
 module Body = Body
+module Client = Client
 module Conf = Conf
 module Connection = Connection [@@deprecated "Connection.t values are useless."]
 module Code = Code

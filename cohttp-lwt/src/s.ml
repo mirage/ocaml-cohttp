@@ -187,28 +187,7 @@ end
 module type Client = sig
   type ctx
 
-  val set_cache : call -> unit
-  (** Provide a function used to process requests. Please see {!type:call}. The
-      provided function is only used when no [ctx] argument is passed to the
-      convenience functions below. *)
-
-  val call :
-    ?ctx:ctx ->
-    ?headers:Http.Header.t ->
-    ?body:Body.t ->
-    ?chunked:bool ->
-    Http.Method.t ->
-    Uri.t ->
-    (Http.Response.t * Body.t) Lwt.t
-  (** [call ?ctx ?headers ?body ?chunked meth uri]
-
-      @return
-        [(response, response_body)] Consume [response_body] in a timely fashion.
-        Please see {!val:call} about how and why.
-      @param chunked
-        use chunked encoding if [true]. The default is [false] for compatibility
-        reasons.
-      @param ctx
+  (** @param ctx
         If provided, no connection cache is used, but
         {!val:Connection_cache.Make_no_cache.create} is used to resolve uri and
         create a dedicated connection with [ctx].
@@ -216,47 +195,16 @@ module type Client = sig
         In most cases you should use the more specific helper calls in the
         interface rather than invoke this function directly. See {!head}, {!get}
         and {!post} for some examples. *)
+  include
+    Cohttp.Client.S
+      with type 'a io = 'a Lwt.t
+       and type body = Body.t
+       and type 'a with_context = ?ctx:ctx -> 'a
 
-  val head :
-    ?ctx:ctx -> ?headers:Http.Header.t -> Uri.t -> Http.Response.t Lwt.t
-
-  val get :
-    ?ctx:ctx ->
-    ?headers:Http.Header.t ->
-    Uri.t ->
-    (Http.Response.t * Body.t) Lwt.t
-
-  val delete :
-    ?ctx:ctx ->
-    ?body:Body.t ->
-    ?chunked:bool ->
-    ?headers:Http.Header.t ->
-    Uri.t ->
-    (Http.Response.t * Body.t) Lwt.t
-
-  val post :
-    ?ctx:ctx ->
-    ?body:Body.t ->
-    ?chunked:bool ->
-    ?headers:Http.Header.t ->
-    Uri.t ->
-    (Http.Response.t * Body.t) Lwt.t
-
-  val put :
-    ?ctx:ctx ->
-    ?body:Body.t ->
-    ?chunked:bool ->
-    ?headers:Http.Header.t ->
-    Uri.t ->
-    (Http.Response.t * Body.t) Lwt.t
-
-  val patch :
-    ?ctx:ctx ->
-    ?body:Body.t ->
-    ?chunked:bool ->
-    ?headers:Http.Header.t ->
-    Uri.t ->
-    (Http.Response.t * Body.t) Lwt.t
+  val set_cache : call -> unit
+  (** Provide a function used to process requests. Please see {!type:call}. The
+      provided function is only used when no [ctx] argument is passed to the
+      convenience functions below. *)
 
   val post_form :
     ?ctx:ctx ->

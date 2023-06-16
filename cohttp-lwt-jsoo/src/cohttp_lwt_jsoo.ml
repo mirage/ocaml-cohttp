@@ -144,7 +144,12 @@ struct
   module Request = X.Request
   module Response = X.Response
 
+  type 'a io = 'a Lwt.t
+  type body = Cohttp_lwt.Body.t
   type ctx = unit
+  type 'a with_context = ?ctx:ctx -> 'a
+
+  let map_context v f ?ctx = f (v ?ctx)
 
   let call ?ctx:_ ?headers ?body ?chunked:_ meth uri =
     X.call ?headers ?body meth uri

@@ -1,6 +1,5 @@
-include module type of Client_intf
-
 include
-  S
+  Cohttp.Client.S
     with type 'a with_context = Eio.Net.t -> sw:Eio.Switch.t -> 'a
-     and module Io = Io.IO
+     and type 'a io = 'a
+     and type body = Body.t
