@@ -112,7 +112,7 @@ let run socket server =
       in
       let input = Eio.Buf_read.of_flow ~max_size:max_int socket in
       Eio.Buf_write.with_flow socket @@ fun output ->
-      callback server socket input output
+      callback server peer_address input output
     in
     accept ()
   in
