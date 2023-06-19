@@ -1,6 +1,11 @@
 open Cohttp_eio
 
 let () = Logs.set_reporter (Logs_fmt.reporter ())
+
+and () =
+  (* The eio backend does not leverage domains yet, but might in the near future *)
+  Logs_threaded.enable ()
+
 and () = Logs.Src.set_level Cohttp_eio.src (Some Debug)
 
 let () =
