@@ -22,17 +22,7 @@ module IO = struct
     let () = Eio.Buf_read.consume ic consumed in
     res
 
-  let read_line ic =
-    let line = Eio.Buf_read.take_while (fun c -> not (Char.equal c '\r')) ic in
-    match Eio.Buf_read.any_char ic with
-    | exception End_of_file -> None
-    | _ ->
-        let () =
-          match Eio.Buf_read.peek_char ic with
-          | Some '\n' -> Eio.Buf_read.consume ic 1
-          | _ -> ()
-        in
-        Some line
+  let read_line ic = try Some (Eio.Buf_read.line ic) with End_of_file -> None
 
   let read ic len =
     match Eio.Buf_read.ensure ic 1 with
