@@ -10,6 +10,5 @@ let () =
     Client.get ~sw env#net (Uri.of_string "http://example.com")
   in
   if Http.Status.compare resp.status `OK = 0 then
-    Fmt.string Format.std_formatter
-    @@ Eio.Buf_read.(take_all @@ of_flow ~max_size:max_int body)
+    print_string @@ Eio.Buf_read.(parse_exn take_all) body ~max_size:max_int
   else Fmt.epr "Unexpected HTTP status: %a" Http.Status.pp resp.status

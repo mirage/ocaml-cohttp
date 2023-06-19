@@ -34,14 +34,12 @@ module IO = struct
         in
         Some line
 
-  let rec read ic len =
-    let contents = Eio.Buf_read.peek ic in
-    if Cstruct.length contents = 0 then
-      match refill ic with `Eof -> "" | `Ok -> read ic len
-    else
-      let consumed = Int.min len (Cstruct.length contents) in
-      let () = Eio.Buf_read.consume ic consumed in
-      Cstruct.to_string ~len:consumed contents
+  let read ic len =
+    match Eio.Buf_read.ensure ic 1 with
+    | exception End_of_file -> ""
+    | () ->
+        let len = Int.min len (Eio.Buf_read.buffered_bytes ic) in
+        Eio.Buf_read.take len ic
 
   let write oc string = Eio.Buf_write.string oc string
   let flush = Eio.Buf_write.flush
