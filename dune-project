@@ -180,7 +180,7 @@ should also be fine under Windows too.
   (async
    (>= v0.16.0))
   (base
-   (>= "v0.16"))
+   (>= v0.16.0))
   (core :with-test)
   (core_unix
    (>= v0.14.0))
