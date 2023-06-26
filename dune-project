@@ -317,7 +317,7 @@ should also be fine under Windows too.
   stringext
   (cohttp-curl
    (= :version))
-  core
+  (core (>= v0.16.0))
   (core_unix (>= v0.14.0))
   async_kernel
   async_unix

@@ -1,5 +1,5 @@
 open Async_kernel
-module Time = Core.Time
+module Time = Core.Time_float
 module Fd = Async_unix.Fd
 module Clock = Async_unix.Clock
 
@@ -59,7 +59,7 @@ module Context = struct
         (match t.timeout with
         | None -> ()
         | Some event -> Clock.Event.abort_if_possible event ());
-        let duration = Time.Span.of_ms (float_of_int timeout) in
+        let duration = Time_float.Span.of_ms (float_of_int timeout) in
         t.timeout <- Some (Clock.Event.run_after duration on_timer ()));
     let socket_function fd (what : Curl.Multi.poll) =
       let create_event fd what =

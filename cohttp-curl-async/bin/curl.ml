@@ -3,7 +3,7 @@ module Curl = Cohttp_curl_async
 module Sexp = Sexplib0.Sexp
 open Async_kernel
 module Writer = Async_unix.Writer
-module Time = Core.Time
+module Time = Core.Time_float
 
 let ( let* ) x f = Deferred.bind x ~f
 
@@ -12,7 +12,7 @@ let client uri meth' () =
   let reply =
     let context = Curl.Context.create () in
     let request =
-      Curl.Request.create ~timeout:(Time.Span.of_ms 5000.) meth ~uri
+      Curl.Request.create ~timeout:(Time_float.Span.of_ms 5000.) meth ~uri
         ~input:Curl.Source.empty ~output:Curl.Sink.string
     in
     Curl.submit context request
