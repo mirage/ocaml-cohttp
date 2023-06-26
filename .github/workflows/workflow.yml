@@ -60,9 +60,9 @@ jobs:
       - run: echo "PKG_CONFIG_PATH=$(brew --prefix openssl)/lib/pkgconfig" >>"$GITHUB_ENV"
         if: ${{ matrix.os == 'macos-latest' }}
 
-      - run: opam install --with-test --deps-only http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top cohttp-bench
-      - run: opam exec -- dune build http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top cohttp-bench
-      - run: opam exec -- dune runtest http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top cohttp-bench
+      - run: opam install --with-test --deps-only http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top
+      - run: opam exec -- dune build http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top
+      - run: opam exec -- dune runtest http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top
 
   build-test-cohttp-async:
     if: github.event.pull_request.draft == false
