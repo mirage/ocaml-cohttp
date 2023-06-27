@@ -66,6 +66,21 @@ let handle_client handle_request sock rd wr =
                     rd
                   >>= fun reader -> handler reader wr
               | `Response (res, res_body) ->
+                  (* There are scenarios if a client leaves before consuming the full response,
+                     we might have a reference to an async Pipe that doesn't get drained.
+
+                     Not draining or closing a pipe can lead to issues if its holding a resource like
+                     a file handle as those resources will never be closed, leading to a leak.
+
+                     Async writers have a promise that's fulfilled whenever they are closed,
+                     so we can use it to schedule a close operation on the stream to ensure that we
+                     don't leave a stream open if the underlying channels are closed. *)
+                  (match res_body with
+                  | `Empty | `String _ | `Strings _ -> ()
+                  | `Pipe stream ->
+                      Deferred.any_unit
+                        [ Writer.close_finished wr; Writer.consumer_left wr ]
+                      >>> fun () -> Pipe.close_read stream);
                   let keep_alive =
                     Http.Request.is_keep_alive req
                     && Http.Response.is_keep_alive res
