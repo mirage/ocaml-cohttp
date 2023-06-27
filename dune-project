@@ -174,13 +174,13 @@ should also be fine under Windows too.
   (cohttp
    (= :version))
   (async_kernel
-   (>= v0.14.0))
+   (>= v0.16.0))
   (async_unix
-   (>= v0.14.0))
+   (>= v0.16.0))
   (async
-   (>= v0.14.0))
+   (>= v0.16.0))
   (base
-   (>= v0.11.0))
+   (>= v0.16.0))
   (core :with-test)
   (core_unix
    (>= v0.14.0))
@@ -317,7 +317,7 @@ should also be fine under Windows too.
   stringext
   (cohttp-curl
    (= :version))
-  core
+  (core (>= v0.16.0))
   (core_unix (>= v0.14.0))
   async_kernel
   async_unix

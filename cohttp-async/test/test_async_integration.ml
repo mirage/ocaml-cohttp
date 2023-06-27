@@ -81,7 +81,7 @@ let ts =
         reqs |> Pipe.of_list |> Client.callv uri >>= fun responses ->
         responses |> Pipe.to_list >>= fun resps ->
         resps
-        |> Deferred.List.iter ~f:(fun (_resp, body) ->
+        |> Deferred.List.iter ~how:`Sequential ~f:(fun (_resp, body) ->
                let expected_body = body_q |> Queue.dequeue_exn in
                body |> Body.to_string >>| fun body ->
                assert_equal ~printer expected_body body)
@@ -113,7 +113,7 @@ let ts =
             ("Pipe with empty strings", Pipe.of_list [ ""; ""; "" ], true);
           ]
         in
-        Deferred.List.iter tests ~f:(fun (msg, pipe, expected) ->
+        Deferred.List.iter ~how:`Sequential tests ~f:(fun (msg, pipe, expected) ->
             is_empty (`Pipe pipe) >>| fun real ->
             assert_equal ~msg expected real)
         >>= fun () ->

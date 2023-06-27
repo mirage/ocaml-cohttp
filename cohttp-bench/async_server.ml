@@ -13,7 +13,7 @@ let start_server port () =
     handler
   >>= fun server ->
   Deferred.forever () (fun () ->
-      after Time.Span.(of_sec 0.5) >>| fun () ->
+      after Time_float.Span.(of_sec 0.5) >>| fun () ->
       Log.Global.printf "Active connections: %d" (Server.num_connections server));
   Deferred.never ()
 

@@ -120,7 +120,7 @@ let callv ?interrupt ?ssl_config uri reqs =
   Connection.connect ?interrupt ?ssl_config uri >>| fun connection ->
   let responses =
     Pipe.map' ~max_queue_length:1 reqs ~f:(fun reqs ->
-        Deferred.Queue.map reqs ~f:(fun (req, body) ->
+        Deferred.Queue.map ~how:`Sequential reqs ~f:(fun (req, body) ->
             Connection.request ~body connection req))
   in
   Pipe.closed responses

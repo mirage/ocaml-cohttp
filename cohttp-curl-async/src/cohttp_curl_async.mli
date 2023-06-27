@@ -51,7 +51,7 @@ module Request : sig
       handled. *)
 
   val create :
-    ?timeout:Core.Time.Span.t (** timeout for the request *) ->
+    ?timeout:Core.Time_float.Span.t (** timeout for the request *) ->
     ?headers:Http.Header.t (** http headers *) ->
     Http.Method.t (** http method *) ->
     uri:string (** uri *) ->

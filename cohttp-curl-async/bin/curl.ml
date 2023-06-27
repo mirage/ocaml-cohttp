@@ -3,7 +3,7 @@ module Curl = Cohttp_curl_async
 module Sexp = Sexplib0.Sexp
 open Async_kernel
 module Writer = Async_unix.Writer
-module Time = Core.Time
+module Time = Core.Time_float
 
 let ( let* ) x f = Deferred.bind x ~f
 

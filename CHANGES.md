@@ -1,10 +1,7 @@
 ## Unreleased
-
-- cohttp-lwt server: call conn_closed before drainig the body of response on error (pirbo)
-- cohttp-eio: Relax socket interface requirement on `Server.connection_handler`.
-
-## v6.0.0~alpha1 (2023-04-28)
-
+- cohttp-async, cohttp-curl-async: compatibility with core/async v0.16.0 (mseri, dkalinichenko-js #976)
+- cohttp-lwt server: call conn_closed before drainig the body of response on error (pirbo #982)
+- cohttp-eio: Relax socket interface requirement on `Server.connection_handler`. (mefyl #983)
 - cohttp,cohttp-async server: correctly close broken streams (reported by Stéphane Glondu, fix by samhot and anuragsoni)
 - cohttp-eio: remove unused code from tests to work with Eio 0.8 (talex5 #967)
 - Upgrade dune to v3.0 (bikallem #947)

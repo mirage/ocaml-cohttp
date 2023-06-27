@@ -28,18 +28,19 @@ jobs:
           - ocaml-variants.4.11.2+afl
           - ocaml-variants.4.12.1+options,ocaml-option-afl
           - ocaml-variants.4.13.1+options,ocaml-option-afl
-          - ocaml-variants.4.14.0+options,ocaml-option-afl
         local-packages:
           - |
             *.opam
             !cohttp-eio.opam
+            !cohttp-curl-async.opam
+            !cohttp-async.opam
+            !cohttp-bench.opam
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
 
       - name: Use OCaml ${{ matrix.ocaml-compiler }}
         uses: ocaml/setup-ocaml@v2
@@ -59,9 +60,52 @@ jobs:
       - run: echo "PKG_CONFIG_PATH=$(brew --prefix openssl)/lib/pkgconfig" >>"$GITHUB_ENV"
         if: ${{ matrix.os == 'macos-latest' }}
 
-      - run: opam install --with-test --deps-only http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-mirage cohttp-async cohttp-curl-async cohttp-curl-lwt cohttp-curl cohttp-top cohttp-bench
-      - run: opam exec -- dune build http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-mirage cohttp-async cohttp-curl-async cohttp-curl-lwt cohttp-curl cohttp-top cohttp-bench
-      - run: opam exec -- dune runtest http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-mirage cohttp-async cohttp-curl-async cohttp-curl-lwt cohttp-curl cohttp-top cohttp-bench
+      - run: opam install --with-test --deps-only http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top
+      - run: opam exec -- dune build http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top
+      - run: opam exec -- dune runtest http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top
+
+  build-test-cohttp-async:
+    if: github.event.pull_request.draft == false
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+        ocaml-compiler:
+          - ocaml-variants.4.14.1+options,ocaml-option-afl
+        local-packages:
+          - |
+            *.opam
+            !cohttp-eio.opam
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          dune-cache: ${{ matrix.os == 'ubuntu-latest' }}
+          opam-depext: true
+          opam-depext-flags: --with-test
+          opam-local-packages: ${{ matrix.local-packages }}
+
+      - run: |
+          sudo apt update
+          sudo apt upgrade
+          opam depext conf-libcurl
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+
+      - run: echo "PKG_CONFIG_PATH=$(brew --prefix openssl)/lib/pkgconfig" >>"$GITHUB_ENV"
+        if: ${{ matrix.os == 'macos-latest' }}
+
+      - run: opam install --with-test --deps-only http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-async cohttp-curl-async cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top cohttp-bench
+      - run: opam exec -- dune build http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-async cohttp-curl-async cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top cohttp-bench
+      - run: opam exec -- dune runtest http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-async cohttp-curl-async cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top cohttp-bench
 
   build-test-cohttp-eio:
     if: github.event.pull_request.draft == false
@@ -95,7 +139,5 @@ jobs:
             alpha: https://github.com/kit-ty-kate/opam-alpha-repository.git
 
       - run: opam install --with-test --deps-only cohttp-eio
-
       - run: opam exec -- dune build cohttp-eio
-
       - run: opam exec -- dune runtest cohttp-eio
