@@ -164,7 +164,7 @@ module Request = struct
     let base =
       let timeout_ms =
         Option.map
-          (fun timeout -> Core.Time.Span.to_ms timeout |> int_of_float)
+          (fun timeout -> Time.Span.to_ms timeout |> int_of_float)
           timeout
       in
       Cohttp_curl.Request.create ?timeout_ms ?headers method_ ~uri ~input
