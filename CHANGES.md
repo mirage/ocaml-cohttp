@@ -1,4 +1,5 @@
 ## Unreleased
+- cohttp-async, cohttp-curl-async: compatibility with core/async v0.16.0 (mseri, dkalinichenko-js #976)
 - cohttp-eio: remove unused code from tests to work with Eio 0.8 (talex5 #967)
 - Upgrade dune to v3.0 (bikallem #947)
 - cohttp-eio: allow client to optionally configure request pipelining (bikallem #949)
