@@ -1,5 +1,6 @@
 (test
  (name test)
  (libraries alcotest cohttp-eio eio eio.mock eio_main logs.fmt)
+ (package cohttp-eio)
  (preprocess
   (pps ppx_here)))
