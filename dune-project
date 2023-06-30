@@ -168,7 +168,7 @@ should also be fine under Windows too.
   "An implementation of an HTTP client and server using the Async\nconcurrency library. See the `Cohttp_async` module for information\non how to use this.  The package also installs `cohttp-curl-async`\nand a `cohttp-server-async` binaries for quick uses of a HTTP(S)\nclient and server respectively.\n")
  (depends
   (ocaml
-   (>= 4.08))
+   (>= 4.14))
   (http
    (= :version))
   (cohttp
@@ -248,11 +248,6 @@ should also be fine under Windows too.
   (ppx_sexp_conv :with-test)
   (ppx_compare :with-test)
   (ppx_here :with-test)
-  (core
-   (and
-    :with-test
-    (>= v0.13.0)))
-  (core_bench :with-test)
   (crowbar (and :with-test (>= 0.2)))
   (sexplib0 :with-test)))
 
