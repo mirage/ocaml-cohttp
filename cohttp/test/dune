@@ -26,7 +26,7 @@
  (name test_request)
  (modules test_request)
  (forbidden_libraries base)
- (libraries cohttp alcotest fmt))
+ (libraries alcotest cohttp fmt http_bytebuffer))
 
 (rule
  (alias runtest)

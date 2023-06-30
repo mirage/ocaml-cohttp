@@ -21,6 +21,11 @@ module Method : sig
     | `Other of string ]
 
   val compare : t -> t -> int
+
+  val body_allowed : t -> bool
+  (** [body_allowed meth] returns whether [meth] allows a payload body to be
+      present per RFC7231. *)
+
   val of_string : string -> t
   val to_string : t -> string
   val pp : Format.formatter -> t -> unit
