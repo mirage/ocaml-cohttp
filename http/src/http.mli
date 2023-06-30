@@ -308,7 +308,13 @@ module Header : sig
       - If [k] was already associated in [h] to a list that is equal to [vs],
         [h] is returned unchanged. *)
 
+  val iter_ord : (string -> string -> unit) -> t -> unit
+  (** [iter_ord f h] applies [f] to all the headers of [h] following the header order. *)
+  
   val iter : (string -> string -> unit) -> t -> unit
+  (** [iter f h] applies [f] to all the headers of [h] following an unspecified order. 
+      This function is faster than iter_ord. *)
+
   val map : (string -> string -> string) -> t -> t
   val fold : (string -> string -> 'a -> 'a) -> t -> 'a -> 'a
 

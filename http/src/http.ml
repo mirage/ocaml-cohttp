@@ -184,6 +184,9 @@ module Header = struct
         (k, vs'))
       h
 
+  let iter_ord (f : string -> string -> unit) (h : t) : unit =
+    List.iter (fun (k, v) -> f k v) (List.rev h)
+  
   let iter (f : string -> string -> unit) (h : t) : unit =
     List.iter (fun (k, v) -> f k v) h
 
