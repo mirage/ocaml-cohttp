@@ -21,7 +21,7 @@
    ppx_sexp_conv
    ppx_compare
    ppx_here))
- (libraries http core base_quickcheck alcotest))
+ (libraries http base_quickcheck alcotest))
 
 (test
  (name test_request)
