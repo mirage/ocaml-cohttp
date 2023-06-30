@@ -43,8 +43,8 @@ module Make (IO : S.IO) = struct
         read_chunk ic !remaining >>= fun chunk ->
         remaining := remaining_length chunk !remaining;
         (if !remaining = 0L (* End_of_chunk *) then read_line ic
-         (* Junk the CRLF at end of chunk *)
-        else return None)
+           (* Junk the CRLF at end of chunk *)
+         else return None)
         >>= fun _ -> return chunk
       in
       if !remaining = 0L then

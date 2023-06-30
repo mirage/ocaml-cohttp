@@ -348,9 +348,9 @@ module Header : sig
     host: anhost.com, anotherhost.com
       v}
 
-      Finally, following {{:https://tools.ietf.org/html/rfc7230#section-3.2.2}
-      RFC7230§3.2.2}, the header [Set-cookie] is treated as an exception and
-      ignored by [clean_dup]. *)
+      Finally, following
+      {{:https://tools.ietf.org/html/rfc7230#section-3.2.2} RFC7230§3.2.2}, the
+      header [Set-cookie] is treated as an exception and ignored by [clean_dup]. *)
 
   val get_content_range : t -> Int64.t option
   val get_connection_close : t -> bool
