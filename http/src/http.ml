@@ -702,6 +702,11 @@ module Method = struct
     | "CONNECT" -> `CONNECT
     | s -> `Other s
 
+  (* Defined for method types in RFC7231 *)
+  let body_allowed = function
+    | `GET | `HEAD | `CONNECT | `TRACE -> false
+    | `DELETE | `POST | `PUT | `PATCH | `OPTIONS | `Other _ -> true
+
   let compare (a : t) (b : t) = Stdlib.compare a b
   let pp fmt t = Format.fprintf fmt "%s" (to_string t)
 end
@@ -792,10 +797,7 @@ module Request = struct
 
   (* Defined for method types in RFC7231 *)
   let has_body req =
-    match req.meth with
-    | `GET | `HEAD | `CONNECT | `TRACE -> `No
-    | `DELETE | `POST | `PUT | `PATCH | `OPTIONS | `Other _ ->
-        Transfer.has_body req.encoding
+    if Method.body_allowed req.meth then Transfer.has_body req.encoding else `No
 
   let make ?(meth = `GET) ?(version = `HTTP_1_1) ?(headers = Header.empty)
       ?scheme resource =

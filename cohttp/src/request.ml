@@ -199,9 +199,9 @@ module Make (IO : S.IO) = struct
     in
     let headers = req.headers in
     let headers =
-      match Http.Request.has_body req with
-      | `Yes | `Unknown -> Header.add_transfer_encoding headers req.encoding
-      | `No -> headers
+      if Http.Method.body_allowed req.meth then
+        Header.add_transfer_encoding headers req.encoding
+      else headers
     in
     IO.write oc fst_line >>= fun _ -> Header_IO.write headers oc
 

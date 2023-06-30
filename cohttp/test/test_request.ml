@@ -255,6 +255,88 @@ let uri_round_trip _ =
 
 let () = Printexc.record_backtrace true
 
+module Buffer = struct
+  include Http_bytebuffer.Bytebuffer
+
+  include
+    Http_bytebuffer.Bytebuffer.Make
+      (struct
+        type 'a t = 'a
+
+        let ( >>= ) v f = f v
+        let ( >>| ) v f = f v
+        let return v = v
+      end)
+      (struct
+        type src = string
+
+        let refill s buffer ~pos ~len =
+          if String.equal s "" then `Eof
+          else
+            let len = min len (String.length s) in
+            let () = Bytes.blit_string s 0 buffer pos len in
+            `Ok len
+      end)
+end
+
+module Test_io = struct
+  type 'a t = 'a
+
+  let ( >>= ) v f = f v
+  let return v = v
+
+  type ic = Buffer.t
+  type oc = Buffer.t
+  type conn = unit
+
+  let refill _ = `Eof
+
+  let with_input_buffer b ~f =
+    let contents = Buffer.to_string b in
+    let res, read = f contents ~pos:0 ~len:(String.length contents) in
+    let () = Buffer.drop b read in
+    res
+
+  let read_line buffer = Buffer.read_line buffer ""
+  let read buffer = Buffer.read buffer ""
+  let write buffer string = Buffer.refill buffer string |> ignore
+  let flush _ = ()
+end
+
+module Request = Request.Private.Make (Test_io)
+
+let null_content_length_header () =
+  let output = Buffer.create 1024 in
+  let () =
+    let r =
+      Cohttp.Request.make_for_client ~chunked:false ~body_length:0L `PUT
+        (Uri.of_string "http://someuri.com")
+    in
+    Request.write_header r output
+  in
+  Alcotest.(check string)
+    "null content-length header are sent"
+    "PUT / HTTP/1.1\r\n\
+     host: someuri.com\r\n\
+     user-agent: ocaml-cohttp/\r\n\
+     content-length: 0\r\n\
+     \r\n"
+    (Buffer.to_string output)
+
+let useless_null_content_length_header () =
+  let output = Buffer.create 1024 in
+  let () =
+    let r =
+      Cohttp.Request.make_for_client ~chunked:false ~body_length:0L `GET
+        (Uri.of_string "http://someuri.com")
+    in
+    Request.write_header r output
+  in
+  Alcotest.(check string)
+    "null content-length header are not sent for bodyless methods"
+    "GET / HTTP/1.1\r\nhost: someuri.com\r\nuser-agent: ocaml-cohttp/\r\n\r\n"
+    (Buffer.to_string output)
+
 let () =
   Alcotest.run "test_request"
     [
@@ -275,6 +357,10 @@ let () =
           ( "from both optional argument and headers",
             `Quick,
             encoding_header_opt_argument );
+          ("null content-length", `Quick, null_content_length_header);
+          ( "useless null content-length",
+            `Quick,
+            useless_null_content_length_header );
         ] );
       ( "Parse URI",
         [
