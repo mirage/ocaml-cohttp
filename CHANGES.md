@@ -1,8 +1,9 @@
 ## v6.0.0~alpha2 (2023-06-20)
 
-- cohttp-lwt server: call conn_closed before drainig the body of response on error (pirbo)
-- cohttp-eio: Relax socket interface requirement on `Server.connection_handler` (mefyl #983)
 - do not omit mandatory null Content-Length headers (mefyl #985)
+- cohttp-async, cohttp-curl-async: compatibility with core/async v0.16.0 (mseri, dkalinichenko-js #976)
+- cohttp-lwt server: call conn_closed before drainig the body of response on error (pirbo #982)
+- cohttp-eio: Relax socket interface requirement on `Server.connection_handler`. (mefyl #983)
 
 ## v6.0.0~alpha1 (2023-04-28)
 - cohttp,cohttp-async server: correctly close broken streams (reported by Stéphane Glondu, fix by samhot and anuragsoni)
