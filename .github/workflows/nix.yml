@@ -5,6 +5,8 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
+    env:
+      NIXPKGS_ALLOW_INSECURE: 1
     steps:
     - name: Checkout code
       uses: actions/checkout@v2

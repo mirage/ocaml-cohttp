@@ -117,34 +117,34 @@ module Make (Net : S.Net) : S.Connection with module Net = Net = struct
             (* A response header to a HEAD request is indistinguishable from a
              * response header to a GET request. Therefore look at the method. *)
             (if
-             match Response.has_body res with
-             | _ when meth = `HEAD -> false
-             | `No -> false
-             | `Yes | `Unknown -> true
-            then (
-             let stream =
-               Body.create_stream Response.read_body_chunk
-                 (Response.make_body_reader res ic)
-             in
-             (* finalise could run in a thread different from the lwt main thread.
-              * You may therefore not call into Lwt from a finaliser. *)
-             let closed = ref false in
-             Gc.finalise_last
-               (fun () ->
-                 if not !closed then
-                   Log.warn (fun m ->
-                       m
-                         "Body not consumed, leaking stream! Refer to \
-                          https://github.com/mirage/ocaml-cohttp/issues/730 \
-                          for additional details"))
-               stream;
-             Lwt.wakeup_later res_r (res, Body.of_stream stream);
-             Lwt_stream.closed stream >>= fun () ->
-             closed := true;
-             Lwt.return_unit)
-            else (
-              Lwt.wakeup_later res_r (res, `Empty);
-              Lwt.return_unit))
+               match Response.has_body res with
+               | _ when meth = `HEAD -> false
+               | `No -> false
+               | `Yes | `Unknown -> true
+             then (
+               let stream =
+                 Body.create_stream Response.read_body_chunk
+                   (Response.make_body_reader res ic)
+               in
+               (* finalise could run in a thread different from the lwt main thread.
+                * You may therefore not call into Lwt from a finaliser. *)
+               let closed = ref false in
+               Gc.finalise_last
+                 (fun () ->
+                   if not !closed then
+                     Log.warn (fun m ->
+                         m
+                           "Body not consumed, leaking stream! Refer to \
+                            https://github.com/mirage/ocaml-cohttp/issues/730 \
+                            for additional details"))
+                 stream;
+               Lwt.wakeup_later res_r (res, Body.of_stream stream);
+               Lwt_stream.closed stream >>= fun () ->
+               closed := true;
+               Lwt.return_unit)
+             else (
+               Lwt.wakeup_later res_r (res, `Empty);
+               Lwt.return_unit))
             >>= fun () ->
             Queue.take connection.in_flight |> ignore;
             Lwt_condition.broadcast connection.condition ();

@@ -53,7 +53,7 @@ let http_headers r =
 
 let write_headers writer headers =
   let headers = Http.Header.clean_dup headers in
-  Http.Header.iter
+  Http.Header.iter_ord
     (fun k v ->
       Buf_write.string writer k;
       Buf_write.string writer ": ";

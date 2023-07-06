@@ -67,10 +67,10 @@ let default_reporter = reporter Lwt_unix.stderr Fmt.stderr
 let set_logger =
   lazy
     (if
-     (* If no reporter has been set by the application, set default one
-        that prints to stderr *)
-     Logs.reporter () == Logs.nop_reporter
-    then Logs.set_reporter default_reporter)
+       (* If no reporter has been set by the application, set default one
+          that prints to stderr *)
+       Logs.reporter () == Logs.nop_reporter
+     then Logs.set_reporter default_reporter)
 
 let activate_debug () =
   if not !_debug_active then (

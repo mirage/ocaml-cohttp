@@ -43,6 +43,8 @@ open Base
 open Core
 open Async
 
+module Time = Time_float
+
 (* open Cohttp *)
 module Client = Cohttp_async.Client
 module Body = Cohttp_async.Body
