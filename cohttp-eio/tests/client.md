@@ -44,8 +44,8 @@ GET method request:
       |> Client.read_fixed
       |> print_string);;
 +socket: wrote "GET / HTTP/1.1\r\n"
-+              "Host: localhost\r\n"
 +              "Accept: application/json\r\n"
++              "Host: localhost\r\n"
 +              "User-Agent: cohttp-eio\r\n"
 +              "TE: trailers\r\n"
 +              "Connection: TE\r\n"
@@ -82,9 +82,9 @@ POST request:
       |> Client.read_fixed
       |> print_string);;
 +socket: wrote "POST /post HTTP/1.1\r\n"
-+              "Host: localhost\r\n"
 +              "Accept: application/json\r\n"
 +              "Content-Length: 12\r\n"
++              "Host: localhost\r\n"
 +              "User-Agent: cohttp-eio\r\n"
 +              "TE: trailers\r\n"
 +              "Connection: TE\r\n"
@@ -158,10 +158,10 @@ Chunk request:
       |> Client.read_fixed
       |> print_string);;
 +socket: wrote "POST /handle_chunk HTTP/1.1\r\n"
-+              "Host: localhost\r\n"
 +              "Transfer-Encoding: chunked\r\n"
 +              "Content-Type: text/plain\r\n"
 +              "Trailer: Expires, Header1\r\n"
++              "Host: localhost\r\n"
 +              "User-Agent: cohttp-eio\r\n"
 +              "TE: trailers\r\n"
 +              "Connection: TE\r\n"
