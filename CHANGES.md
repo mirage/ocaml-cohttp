@@ -1,4 +1,5 @@
 ## v6.0.0~alpha2 (2023-07-1)
+- http.header, cohttp, cohttp-eio: remove "first" and "move_to_first" and the special treatment of the "host" header (mseri #988)
 - http.header: introduce "iter_ord" to guarantee iteration following the order of the entries in the headers (mseri #986)
 - http.header: fix "move_to_fist" and "first" ro follow Header's semantics (mseri #986)
 - cohttp: ensure "host" is the first header (mseri #986)
