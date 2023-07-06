@@ -309,11 +309,12 @@ module Header : sig
         [h] is returned unchanged. *)
 
   val iter_ord : (string -> string -> unit) -> t -> unit
-  (** [iter_ord f h] applies [f] to all the headers of [h] following the header order. *)
-  
+  (** [iter_ord f h] applies [f] to all the headers of [h] following the header
+      order. *)
+
   val iter : (string -> string -> unit) -> t -> unit
-  (** [iter f h] applies [f] to all the headers of [h] following an unspecified order. 
-      This function is faster than iter_ord. *)
+  (** [iter f h] applies [f] to all the headers of [h] following an unspecified
+      order. This function is faster than iter_ord. *)
 
   val map : (string -> string -> string) -> t -> t
   val fold : (string -> string -> 'a -> 'a) -> t -> 'a -> 'a
@@ -377,15 +378,6 @@ module Header : sig
     val caseless_equal : string -> string -> bool
     (** [caseless_equal a b] must be equivalent to
         [String.equal (String.lowercase_ascii a) (String.lowercase_ascii b)]. *)
-
-    val first : t -> (string * string) option
-    (** [first t] is [Some (hdr_name, hdr_value)], which represents the first
-        header in headers list [t]. It is [None] if [t] is empty. *)
-
-    val move_to_front : t -> string -> t
-    (** [move_to_front t hdr_name] is [t] with header name [hdr_name] moved to
-        the front of the headers list [t]. If the header doesn't exist in [t] or
-        the header is already at the front, then [t] is unchanged. *)
   end
 end
 
