@@ -1,4 +1,4 @@
-## Unreleased
+## v5.2.0 (2023-07-07)
 
 - cohttp-lwt server: call conn_closed before drainig the body of response on error (pirbo)
 
