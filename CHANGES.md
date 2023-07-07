@@ -1,3 +1,7 @@
+## Unreleased
+
+- cohttp-lwt server: call conn_closed before drainig the body of response on error (pirbo)
+
 ## v5.1.0 (2023-04-04)
 
 - cohttp,cohttp-async server: correctly close broken streams (reported by Stéphane Glondu, fix by samhot and anuragsoni)
@@ -35,10 +39,10 @@
   + ```clean_dup```  enables the user to clean headers that follows the {{:https://tools.ietf.org/html/rfc7230#section-3.2.2} RFC7230§3.2.2} (no duplicate, except ```set-cookie```)
   + ```get_multi_concat``` has been added to get a result similar to the previous ```get``` function.
 
-- Cohttp.Header: performance improvement (mseri, anuragsoni #778) 
+- Cohttp.Header: performance improvement (mseri, anuragsoni #778)
   **Breaking** the headers are no-longer lowercased when parsed, the headers key comparison is case insensitive instead.
 
-- cohttp-lwt-unix: Adopt ocaml-conduit 5.0.0 (smorimoto #787) 
+- cohttp-lwt-unix: Adopt ocaml-conduit 5.0.0 (smorimoto #787)
   **Breaking** `Conduit_lwt_unix.connect`'s `ctx` param type chaged from `ctx` to  `ctx Lazy.t`
 
 - cohttp-mirage: fix deprecated fmt usage (tmcgilchrist #783)
