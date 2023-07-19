@@ -1,3 +1,7 @@
+## Unreleased
+
+- cohttp-lwt: Do not leak `Retry` exceptions to `Lwt.async_exception_hook`. (mefyl #992)
+
 ## v6.0.0~alpha2 (2023-07-1)
 - http.header: introduce "iter_ord" to guarantee iteration following the order of the entries in the headers (mseri #986)
 - http.header: fix "move_to_fist" and "first" ro follow Header's semantics (mseri #986)

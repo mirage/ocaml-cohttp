@@ -25,14 +25,17 @@ end = struct
     >>= fun connection ->
     let res = Connection.call connection ?headers ?body meth uri in
     (* this can be simplified when https://github.com/mirage/ocaml-conduit/pull/319 is released. *)
-    Lwt.async (fun () ->
+    Lwt.dont_wait (fun () ->
         res >>= fun (_, body) ->
         (match body with
         | `Empty | `String _ | `Strings _ -> Lwt.return_unit
         | `Stream stream -> Lwt_stream.closed stream)
         >>= fun () ->
         Connection.close connection;
-        Lwt.return_unit);
+        Lwt.return_unit)
+      (function
+       | Retry -> ()
+       | e -> raise e);
     res
 end
 
