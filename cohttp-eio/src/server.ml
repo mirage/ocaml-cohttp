@@ -103,8 +103,10 @@ let callback { conn_closed; handler } conn input output =
   in
   handle ()
 
-let run socket server =
-  Eio.Net.run_server socket ~on_error:raise (fun socket peer_address ->
+let run ?max_connections ?additional_domains ?stop ?(on_error = raise) socket
+    server =
+  Eio.Net.run_server socket ?max_connections ?additional_domains ?stop ~on_error
+    (fun socket peer_address ->
       Eio.Switch.run @@ fun sw ->
       let () =
         Logs.info (fun m ->
