@@ -105,9 +105,10 @@ let callback { conn_closed; handler } conn input output =
 
 let run socket server =
   Eio.Net.run_server socket ~on_error:raise (fun socket peer_address ->
+      Eio.Switch.run @@ fun sw ->
       let () =
         Logs.info (fun m ->
             m "%a: accept connection" Eio.Net.Sockaddr.pp peer_address)
       and input = Eio.Buf_read.of_flow ~max_size:max_int socket in
       Eio.Buf_write.with_flow socket @@ fun output ->
-      callback server peer_address input output)
+      callback server (sw, peer_address) input output)
