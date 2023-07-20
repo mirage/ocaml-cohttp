@@ -113,7 +113,8 @@ let ts =
             ("Pipe with empty strings", Pipe.of_list [ ""; ""; "" ], true);
           ]
         in
-        Deferred.List.iter ~how:`Sequential tests ~f:(fun (msg, pipe, expected) ->
+        Deferred.List.iter ~how:`Sequential tests
+          ~f:(fun (msg, pipe, expected) ->
             is_empty (`Pipe pipe) >>| fun real ->
             assert_equal ~msg expected real)
         >>= fun () ->

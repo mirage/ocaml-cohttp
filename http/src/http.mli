@@ -308,7 +308,13 @@ module Header : sig
       - If [k] was already associated in [h] to a list that is equal to [vs],
         [h] is returned unchanged. *)
 
+  val iter_ord : (string -> string -> unit) -> t -> unit
+  (** [iter_ord f h] applies [f] to all the headers of [h] following the header order. *)
+  
   val iter : (string -> string -> unit) -> t -> unit
+  (** [iter f h] applies [f] to all the headers of [h] following an unspecified order. 
+      This function is faster than iter_ord. *)
+
   val map : (string -> string -> string) -> t -> t
   val fold : (string -> string -> 'a -> 'a) -> t -> 'a -> 'a
 
@@ -348,9 +354,9 @@ module Header : sig
     host: anhost.com, anotherhost.com
       v}
 
-      Finally, following {{:https://tools.ietf.org/html/rfc7230#section-3.2.2}
-      RFC7230§3.2.2}, the header [Set-cookie] is treated as an exception and
-      ignored by [clean_dup]. *)
+      Finally, following
+      {{:https://tools.ietf.org/html/rfc7230#section-3.2.2} RFC7230§3.2.2}, the
+      header [Set-cookie] is treated as an exception and ignored by [clean_dup]. *)
 
   val get_content_range : t -> Int64.t option
   val get_connection_close : t -> bool

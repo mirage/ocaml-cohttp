@@ -1,5 +1,7 @@
-## v6.0.0~alpha2 (2023-06-20)
-
+## v6.0.0~alpha2 (2023-07-1)
+- http.header: introduce "iter_ord" to guarantee iteration following the order of the entries in the headers (mseri #986)
+- http.header: fix "move_to_fist" and "first" ro follow Header's semantics (mseri #986)
+- cohttp: ensure "host" is the first header (mseri #986)
 - do not omit mandatory null Content-Length headers (mefyl #985)
 - cohttp-async, cohttp-curl-async: compatibility with core/async v0.16.0 (mseri, dkalinichenko-js #976)
 - cohttp-lwt server: call conn_closed before drainig the body of response on error (pirbo #982)

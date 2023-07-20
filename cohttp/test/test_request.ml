@@ -308,8 +308,12 @@ module Request = Request.Private.Make (Test_io)
 let null_content_length_header () =
   let output = Buffer.create 1024 in
   let () =
+    (* The user-agent in releases contentsontains the version, we need to strip
+       it for the test *)
+    let headers = Cohttp.Header.of_list [ ("user-agent", "ocaml-cohttp") ] in
     let r =
-      Cohttp.Request.make_for_client ~chunked:false ~body_length:0L `PUT
+      Cohttp.Request.make_for_client ~headers ~chunked:false ~body_length:0L
+        `PUT
         (Uri.of_string "http://someuri.com")
     in
     Request.write_header r output
@@ -318,7 +322,7 @@ let null_content_length_header () =
     "null content-length header are sent"
     "PUT / HTTP/1.1\r\n\
      host: someuri.com\r\n\
-     user-agent: ocaml-cohttp/\r\n\
+     user-agent: ocaml-cohttp\r\n\
      content-length: 0\r\n\
      \r\n"
     (Buffer.to_string output)
