@@ -50,7 +50,7 @@ let serve ~info ~docroot ~index uri path =
             | `No | `Unknown ->
                 (* Do a directory listing *)
                 Sys.ls_dir file_name
-                >>= Deferred.List.map ~f:(fun f ->
+                >>= Deferred.List.map ~how:`Parallel ~f:(fun f ->
                         let file_name = file_name / f in
                         try_with (fun () ->
                             Unix.stat file_name >>| fun stat ->

@@ -1,3 +1,7 @@
+## v5.3.0 (2023-07-21)
+
+- cohttp-async: support for base/async v0.16
+
 ## v5.2.0 (2023-07-07)
 
 - cohttp-lwt server: call conn_closed before drainig the body of response on error (pirbo)

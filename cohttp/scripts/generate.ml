@@ -94,7 +94,7 @@ let output t =
   Buffer.contents buf
 
 let parse_error fmt =
-  Printf.kprintf
+  Printf.ksprintf
     (fun msg ->
       Printf.eprintf "parse error: %s\n" msg;
       exit 1)

@@ -67,7 +67,7 @@ let write_body write_body (body : t) writer =
   match body with
   | `Empty -> return ()
   | `String s -> write_body writer s
-  | `Strings sl -> Deferred.List.iter sl ~f:(write_body writer)
+  | `Strings sl -> Deferred.List.iter ~how:`Sequential sl ~f:(write_body writer)
   | `Pipe p -> Pipe.iter p ~f:(write_body writer)
 
 let pipe_of_body read_chunk ic =
