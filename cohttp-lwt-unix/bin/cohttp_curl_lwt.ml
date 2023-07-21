@@ -58,7 +58,7 @@ let run_client level ofile uri meth =
 open Cmdliner
 
 let uri =
-  let loc : Uri.t Arg.converter =
+  let loc : Uri.t Arg.conv =
     let parse s =
       try `Ok (Uri.of_string s) with Failure _ -> `Error "unable to parse URI"
     in
@@ -81,25 +81,29 @@ let ofile =
   Arg.(value & opt (some string) None & info [ "o" ] ~docv:"FILE" ~doc)
 
 let cmd =
-  let doc = "retrieve a remote URI contents" in
-  let man =
-    [
-      `S "DESCRIPTION";
-      `P
-        "$(tname) fetches the remote $(i,URI) and prints it to standard \
-         output. The output file can also be specified with the $(b,-o) \
-         option, and more verbose debugging out obtained via the $(b,-v) \
-         option.";
-      `S "BUGS";
-      `P
-        "Report them via e-mail to <mirageos-devel@lists.xenproject.org>, or \
-         on the issue tracker at \
-         <https://github.com/mirage/ocaml-cohttp/issues>";
-      `S "SEE ALSO";
-      `P "$(b,curl)(1), $(b,wget)(1)";
-    ]
+  let info =
+    let version = Cohttp.Conf.version in
+    let doc = "retrieve a remote URI contents" in
+    let man =
+      [
+        `S "DESCRIPTION";
+        `P
+          "$(tname) fetches the remote $(i,URI) and prints it to standard \
+           output. The output file can also be specified with the $(b,-o) \
+           option, and more verbose debugging out obtained via the $(b,-v) \
+           option.";
+        `S "BUGS";
+        `P
+          "Report them via e-mail to <mirageos-devel@lists.xenproject.org>, or \
+           on the issue tracker at \
+           <https://github.com/mirage/ocaml-cohttp/issues>";
+        `S "SEE ALSO";
+        `P "$(b,curl)(1), $(b,wget)(1)";
+      ]
+    in
+    Cmd.info "cohttp-curl" ~version ~doc ~man
   in
-  ( Term.(pure run_client $ verb $ ofile $ uri $ meth),
-    Term.info "cohttp-curl" ~version:Cohttp.Conf.version ~doc ~man )
+  let term = Term.(const run_client $ verb $ ofile $ uri $ meth) in
+  Cmd.v info term
 
-let () = match Term.eval cmd with `Error _ -> exit 1 | _ -> exit 0
+let () = exit @@ Cmd.eval cmd
