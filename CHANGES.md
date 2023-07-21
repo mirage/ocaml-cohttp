@@ -1,3 +1,7 @@
+## v4.1.2 (2023-07-21)
+
+- cohttp-lwt-unix: backport compatibility with cmdliner >= 1.1
+
 ## v4.1.1 (2023-04-04)
 
 - cohttp,cohttp-async server: correctly close broken streams (reported by Stéphane Glondu, fix by samhot and anuragsoni)
