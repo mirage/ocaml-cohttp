@@ -1,6 +1,6 @@
 ## Unreleased
 
-- cohttp-lwt: Do not leak `Retry` exceptions to `Lwt.async_exception_hook`. (mefyl #992)
+- cohttp-lwt: Do not leak exceptions to `Lwt.async_exception_hook`. (mefyl #992, #995)
 
 ## v6.0.0~alpha2 (2023-07-1)
 - http.header: introduce "iter_ord" to guarantee iteration following the order of the entries in the headers (mseri #986)
@@ -34,7 +34,7 @@
 - cohttp-eio: convert to Eio.Buf_read (talex5 #882)
 - cohttp lwt client: Connection cache and explicit pipelining (madroach #853)
 - http: add Http.Request.make and simplify Http.Response.make (bikallem mseri #878)
-- http: add pretty printer functions (bikallem #880) 
+- http: add pretty printer functions (bikallem #880)
 - New eio based client and server on top of the http library (bikallem #857)
 - New curl based clients (rgrinberg #813)
   + cohttp-curl-lwt for an Lwt backend
@@ -117,10 +117,10 @@
   + ```clean_dup```  enables the user to clean headers that follows the {{:https://tools.ietf.org/html/rfc7230#section-3.2.2} RFC7230§3.2.2} (no duplicate, except ```set-cookie```)
   + ```get_multi_concat``` has been added to get a result similar to the previous ```get``` function.
 
-- Cohttp.Header: performance improvement (mseri, anuragsoni #778) 
+- Cohttp.Header: performance improvement (mseri, anuragsoni #778)
   **Breaking** the headers are no-longer lowercased when parsed, the headers key comparison is case insensitive instead.
 
-- cohttp-lwt-unix: Adopt ocaml-conduit 5.0.0 (smorimoto #787) 
+- cohttp-lwt-unix: Adopt ocaml-conduit 5.0.0 (smorimoto #787)
   **Breaking** `Conduit_lwt_unix.connect`'s `ctx` param type chaged from `ctx` to  `ctx Lazy.t`
 
 - cohttp-mirage: fix deprecated fmt usage (tmcgilchrist #783)

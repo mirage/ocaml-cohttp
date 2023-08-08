@@ -284,12 +284,13 @@ module Make (Net : S.Net) : S.Connection with module Net = Net = struct
         persistent;
       }
     in
+    let on_failure e = connection.state <- Failed e in
     Lwt.on_any channels
       (fun channels ->
         connection.state <- Full channels;
-        Lwt.async (fun () -> reader connection);
-        Lwt.async (fun () -> writer connection))
-      (fun e -> connection.state <- Failed e);
+        Lwt.dont_wait (fun () -> reader connection) on_failure;
+        Lwt.dont_wait (fun () -> writer connection) on_failure)
+      on_failure;
     connection
 
   let connect ?finalise ?persistent ?ctx uri =
