@@ -3,7 +3,6 @@ module String_io = Cohttp.Private.String_io
 module StringRequest = Request.Private.Make (String_io.M)
 
 let user_agent = Cohttp.Header.user_agent
-
 let uri_userinfo = Uri.of_string "http://foo:bar%2525@ocaml.org"
 
 let header_auth =
@@ -313,22 +312,18 @@ let null_content_length_header () =
     (* The user-agent in releases contentsontains the version, we need to strip
        it for the test *)
     let r =
-      Cohttp.Request.make_for_client ~chunked:false ~body_length:0L
-        `PUT
+      Cohttp.Request.make_for_client ~chunked:false ~body_length:0L `PUT
         (Uri.of_string "http://someuri.com")
     in
     Request.write_header r output
-  in 
-  let expected = "PUT / HTTP/1.1\r\n\
-     host: someuri.com\r\n\
-     user-agent: " ^ user_agent ^ "\r\n\
-     content-length: 0\r\n\
-     \r\n"
+  in
+  let expected =
+    "PUT / HTTP/1.1\r\nhost: someuri.com\r\nuser-agent: "
+    ^ user_agent
+    ^ "\r\ncontent-length: 0\r\n\r\n"
   in
   Alcotest.(check string)
-    "null content-length header are sent"
-    expected
-    (Buffer.to_string output)
+    "null content-length header are sent" expected (Buffer.to_string output)
 
 let useless_null_content_length_header () =
   let output = Buffer.create 1024 in
@@ -339,14 +334,13 @@ let useless_null_content_length_header () =
     in
     Request.write_header r output
   in
-  let expected = "GET / HTTP/1.1\r\n\
-     host: someuri.com\r\n\
-     user-agent: " ^ user_agent ^ "\r\n\
-     \r\n"
+  let expected =
+    "GET / HTTP/1.1\r\nhost: someuri.com\r\nuser-agent: "
+    ^ user_agent
+    ^ "\r\n\r\n"
   in
   Alcotest.(check string)
-    "null content-length header are not sent for bodyless methods"
-    expected
+    "null content-length header are not sent for bodyless methods" expected
     (Buffer.to_string output)
 
 let () =
