@@ -61,7 +61,6 @@ let make ?(meth = `GET) ?(version = `HTTP_1_1) ?(encoding = Transfer.Unknown)
           ^
           match Uri.port uri with Some p -> ":" ^ string_of_int p | None -> ""))
   in
-  let headers = Header.Private.move_to_front headers "host" in
   let headers =
     Header.add_unless_exists headers "user-agent" Header.user_agent
   in
@@ -204,7 +203,6 @@ module Make (IO : S.IO) = struct
         Header.add_transfer_encoding headers req.encoding
       else headers
     in
-    let headers = Header.Private.move_to_front headers "host" in
     IO.write oc fst_line >>= fun _ -> Header_IO.write headers oc
 
   let make_body_writer ?flush req oc =

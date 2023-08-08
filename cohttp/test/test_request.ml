@@ -321,8 +321,8 @@ let null_content_length_header () =
   Alcotest.(check string)
     "null content-length header are sent"
     "PUT / HTTP/1.1\r\n\
-     host: someuri.com\r\n\
      user-agent: ocaml-cohttp\r\n\
+     host: someuri.com\r\n\
      content-length: 0\r\n\
      \r\n"
     (Buffer.to_string output)
