@@ -1,3 +1,5 @@
+open Eio.Std
+
 include Client_intf
 open Utils
 
@@ -6,7 +8,7 @@ include
     (struct
       type 'a io = 'a
       type body = Body.t
-      type 'a with_context = Eio.Net.t -> sw:Eio.Switch.t -> 'a
+      type 'a with_context = [`Generic] Eio.Net.ty r -> sw:Eio.Switch.t -> 'a
 
       let map_context v f net ~sw = f (v net ~sw)
 
@@ -38,12 +40,13 @@ include
           else
             match body with
             | None -> Some 0L
-            | Some body ->
+            | Some (Eio.Resource.T (body, ops)) ->
+                let module X = (val (Eio.Resource.get ops Eio.Flow.Pi.Source)) in
                 List.find_map
                   (function
-                    | Body.String s -> Some (String.length s |> Int64.of_int)
+                    | Body.String m -> Some (String.length (m body) |> Int64.of_int)
                     | _ -> None)
-                  (Eio.Flow.read_methods body)
+                  X.read_methods
         in
         let request =
           Cohttp.Request.make_for_client ?headers
@@ -70,8 +73,12 @@ include
             | `Yes | `Unknown ->
                 let body =
                   let reader = Io.Response.make_body_reader response input in
-                  flow_of_reader reader Io.Response.read_body_chunk
+                  flow_of_reader (fun () -> Io.Response.read_body_chunk reader)
                 in
                 (response, body))
     end)
     (Io.IO)
+
+type t = [`Generic] Eio.Net.ty r
+
+let make net = (net :> t)
