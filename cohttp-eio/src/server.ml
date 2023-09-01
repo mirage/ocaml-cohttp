@@ -105,7 +105,7 @@ let callback { conn_closed; handler } conn input output =
   in
   handle ()
 
-let run ?max_connections ?additional_domains ?stop ?(on_error = raise) socket
+let run ?max_connections ?additional_domains ?stop ~on_error socket
     server =
   Eio.Net.run_server socket ?max_connections ?additional_domains ?stop ~on_error
     (fun socket peer_address ->

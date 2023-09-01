@@ -26,7 +26,7 @@ let () =
         (`Tcp (Eio.Net.Ipaddr.V4.loopback, 4242))
     and server = Cohttp_eio.Server.make ~callback:handler () in
     Eio.Fiber.fork_daemon ~sw @@ fun () ->
-    let () = Cohttp_eio.Server.run socket server in
+    let () = Cohttp_eio.Server.run socket server ~on_error:raise in
     `Stop_daemon
   in
   let test_case name f =

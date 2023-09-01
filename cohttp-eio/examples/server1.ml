@@ -53,4 +53,4 @@ let () =
     Eio.Net.listen env#net ~sw ~backlog:128 ~reuse_addr:true
       (`Tcp (Eio.Net.Ipaddr.V4.loopback, !port))
   and server = Cohttp_eio.Server.make ~callback:handler () in
-  Cohttp_eio.Server.run socket server
+  Cohttp_eio.Server.run socket server ~on_error:raise
