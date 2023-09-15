@@ -51,16 +51,18 @@ let read input =
       | _ ->
           let body =
             let reader = Io.Request.make_body_reader request input in
-            flow_of_reader reader Io.Request.read_body_chunk
+            flow_of_reader (fun () -> Io.Request.read_body_chunk reader)
           in
           `Ok (request, body))
 
 let write output response body =
   let response =
     let content_length =
+      let Eio.Resource.T (body, ops) = body in
+      let module X = (val (Eio.Resource.get ops Eio.Flow.Pi.Source)) in
       List.find_map
-        (function Body.String s -> Some (String.length s) | _ -> None)
-        (Eio.Flow.read_methods body)
+        (function Body.String get -> Some (String.length (get body)) | _ -> None)
+        X.read_methods
     in
     (* encoding field might be deprecated but it is still used
        to compute headers and encode the body*)
@@ -103,7 +105,7 @@ let callback { conn_closed; handler } conn input output =
   in
   handle ()
 
-let run ?max_connections ?additional_domains ?stop ?(on_error = raise) socket
+let run ?max_connections ?additional_domains ?stop ~on_error socket
     server =
   Eio.Net.run_server socket ?max_connections ?additional_domains ?stop ~on_error
     (fun socket peer_address ->

@@ -10,9 +10,10 @@ and () = Logs.Src.set_level Cohttp_eio.src (Some Debug)
 
 let () =
   Eio_main.run @@ fun env ->
+  let client = Client.make env#net in
   Eio.Switch.run @@ fun sw ->
   let response, body =
-    Client.get env#net ~sw
+    Client.get client ~sw
     @@ Uri.make ~scheme:"httpunix" ~host:"/var/run/docker.sock" ~path:"/version"
          ()
   in

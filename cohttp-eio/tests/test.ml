@@ -1,3 +1,5 @@
+open Eio.Std
+
 let () =
   Logs.set_level ~all:true @@ Some Logs.Debug;
   Logs.set_reporter (Logs_fmt.reporter ())
@@ -11,7 +13,7 @@ let handler _conn request body =
         Eio_mock.Flow.on_read body
           [ `Return "Hello"; `Yield_then (`Return "World") ]
       in
-      (Http.Response.make (), (body :> Eio.Flow.source))
+      (Http.Response.make (), (body :> Eio.Flow.source_ty r))
   | "/post" -> (Http.Response.make (), body)
   | _ -> (Http.Response.make ~status:`Not_found (), Cohttp_eio.Body.of_string "")
 
@@ -24,7 +26,7 @@ let () =
         (`Tcp (Eio.Net.Ipaddr.V4.loopback, 4242))
     and server = Cohttp_eio.Server.make ~callback:handler () in
     Eio.Fiber.fork_daemon ~sw @@ fun () ->
-    let () = Cohttp_eio.Server.run socket server in
+    let () = Cohttp_eio.Server.run socket server ~on_error:raise in
     `Stop_daemon
   in
   let test_case name f =
