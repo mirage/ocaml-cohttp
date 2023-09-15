@@ -357,7 +357,9 @@ should also be fine under Windows too.
  (depends
   base-domains
   (eio
-   (>= 0.10))
+   (and
+    (>= 0.10)
+    (< 0.12)))
   (eio_main :with-test)
   (mdx :with-test)
   (uri :with-test)
