@@ -10,7 +10,7 @@ and () = Logs.Src.set_level Cohttp_eio.src (Some Debug)
 
 let () =
   Eio_main.run @@ fun env ->
-  let client = Client.make env#net in
+  let client = Client.make ~https:None env#net in
   Eio.Switch.run @@ fun sw ->
   let response, body =
     Client.get client ~sw

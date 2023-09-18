@@ -2,7 +2,7 @@ open Cohttp_eio
 
 let () =
   Eio_main.run @@ fun env ->
-  let client = Client.make env#net in
+  let client = Client.make ~https:None env#net in
   (* Increment/decrement this value to see success/failure. *)
   let timeout_s = 0.01 in
   Eio.Time.with_timeout env#clock timeout_s (fun () ->

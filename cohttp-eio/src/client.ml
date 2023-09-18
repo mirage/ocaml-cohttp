@@ -2,7 +2,7 @@ open Eio.Std
 include Client_intf
 open Utils
 
-type connection = [`Generic] Eio.Net.stream_socket_ty r
+type connection = Eio.Flow.two_way_ty r
 
 type t = sw:Switch.t -> Uri.t -> connection
 
@@ -62,26 +62,38 @@ include
     end)
     (Io.IO)
 
-let make net : t =
+let make_generic fn = (fn :> t)
+
+let unix_address uri =
+  match Uri.host uri with
+  | Some path -> `Unix path
+  | None -> Fmt.failwith "no host specified (in %a)" Uri.pp uri
+
+let tcp_address ~net uri =
+  let service =
+    match Uri.port uri with
+    | Some port -> Int.to_string port
+    | _ -> Uri.scheme uri |> Option.value ~default:"http"
+  in
+  match
+    Eio.Net.getaddrinfo_stream ~service net
+      (Uri.host_with_default ~default:"localhost" uri)
+  with
+  | ip :: _ -> ip
+  | [] -> failwith "failed to resolve hostname"
+
+let make ~https net : t =
   let net = (net :> [ `Generic ] Eio.Net.ty r) in
+  let https = (https :> (Uri.t -> [ `Generic ] Eio.Net.stream_socket_ty r -> connection) option) in
   fun ~sw uri ->
-  Eio.Net.connect ~sw net @@ 
-  match Uri.scheme uri with
-  | Some "httpunix"
-    (* FIXME: while there is no standard, http+unix seems more widespread *)
-    -> (
-        match Uri.host uri with
-        | Some path -> `Unix path
-        | None -> failwith "no host specified with httpunix")
-  | _ -> (
-      let service =
-        match Uri.port uri with
-        | Some port -> Int.to_string port
-        | _ -> Uri.scheme uri |> Option.value ~default:"http"
-      in
-      match
-        Eio.Net.getaddrinfo_stream ~service net
-          (Uri.host_with_default ~default:"localhost" uri)
-      with
-      | ip :: _ -> ip
-      | [] -> failwith "failed to resolve hostname")
+    match Uri.scheme uri with
+    | Some "httpunix" ->
+      (* FIXME: while there is no standard, http+unix seems more widespread *)
+      (Eio.Net.connect ~sw net (unix_address uri) :> connection)
+    | Some "http" -> (Eio.Net.connect ~sw net (tcp_address ~net uri) :> connection)
+    | Some "https" ->
+      (match https with
+      | Some wrap -> wrap uri @@ Eio.Net.connect ~sw net (tcp_address ~net uri)
+      | None -> Fmt.failwith "HTTPS not enabled (for %a)" Uri.pp uri)
+    | x ->
+      Fmt.failwith "Unknown scheme %a" Fmt.(option ~none:(any "None") Dump.string) x
