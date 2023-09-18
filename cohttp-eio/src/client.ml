@@ -2,38 +2,21 @@ open Eio.Std
 include Client_intf
 open Utils
 
+type connection = [`Generic] Eio.Net.stream_socket_ty r
+
+type t = sw:Switch.t -> Uri.t -> connection
+
 include
   Cohttp.Client.Make
     (struct
       type 'a io = 'a
       type body = Body.t
-      type 'a with_context = [ `Generic ] Eio.Net.ty r -> sw:Eio.Switch.t -> 'a
+      type 'a with_context = t -> sw:Eio.Switch.t -> 'a
 
-      let map_context v f net ~sw = f (v net ~sw)
+      let map_context v f t ~sw = f (v t ~sw)
 
-      let call net ~sw ?headers ?body ?(chunked = false) meth uri =
-        let addr =
-          match Uri.scheme uri with
-          | Some "httpunix"
-          (* FIXME: while there is no standard, http+unix seems more widespread *)
-            -> (
-              match Uri.host uri with
-              | Some path -> `Unix path
-              | None -> failwith "no host specified with httpunix")
-          | _ -> (
-              let service =
-                match Uri.port uri with
-                | Some port -> Int.to_string port
-                | _ -> Uri.scheme uri |> Option.value ~default:"http"
-              in
-              match
-                Eio.Net.getaddrinfo_stream ~service net
-                  (Uri.host_with_default ~default:"localhost" uri)
-              with
-              | ip :: _ -> ip
-              | [] -> failwith "failed to resolve hostname")
-        in
-        let socket = Eio.Net.connect ~sw net addr in
+      let call (t:t) ~sw ?headers ?body ?(chunked = false) meth uri =
+        let socket = t ~sw uri in
         let body_length =
           if chunked then None
           else
@@ -79,6 +62,26 @@ include
     end)
     (Io.IO)
 
-type t = [ `Generic ] Eio.Net.ty r
-
-let make net = (net :> t)
+let make net : t =
+  let net = (net :> [ `Generic ] Eio.Net.ty r) in
+  fun ~sw uri ->
+  Eio.Net.connect ~sw net @@ 
+  match Uri.scheme uri with
+  | Some "httpunix"
+    (* FIXME: while there is no standard, http+unix seems more widespread *)
+    -> (
+        match Uri.host uri with
+        | Some path -> `Unix path
+        | None -> failwith "no host specified with httpunix")
+  | _ -> (
+      let service =
+        match Uri.port uri with
+        | Some port -> Int.to_string port
+        | _ -> Uri.scheme uri |> Option.value ~default:"http"
+      in
+      match
+        Eio.Net.getaddrinfo_stream ~service net
+          (Uri.host_with_default ~default:"localhost" uri)
+      with
+      | ip :: _ -> ip
+      | [] -> failwith "failed to resolve hostname")
