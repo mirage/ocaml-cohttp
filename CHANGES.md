@@ -1,3 +1,6 @@
+## Unreleased
+- cohttp-eio: Complete rewrite to follow common interfaces and behaviors. (mefyl #984)
+
 ## v6.0.0~alpha2 (2023-08-08)
 - cohttp-lwt: Do not leak exceptions to `Lwt.async_exception_hook`. (mefyl #992, #995)
 - http.header, cohttp, cohttp-eio: remove "first" and "move_to_first" and the special treatment of the "host" header (mseri #988, #986)
