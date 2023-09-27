@@ -367,8 +367,8 @@
    (= :version))
   (eio
    (and
-    (>= 0.10)
-    (< 0.12)))
+    (>= 0.12)
+    (< 0.13)))
   (eio_main :with-test)
   (mdx :with-test)
   (uri :with-test)
