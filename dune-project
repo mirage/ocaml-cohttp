@@ -366,7 +366,9 @@
   (cohttp
    (= :version))
   (eio
-   (>= 0.10))
+   (and
+    (>= 0.10)
+    (< 0.12)))
   (eio_main :with-test)
   (mdx :with-test)
   (uri :with-test)
