@@ -12,9 +12,7 @@ let () =
   Eio_main.run @@ fun env ->
   let client = Client.make env#net in
   Eio.Switch.run @@ fun sw ->
-  let resp, body =
-    Client.get ~sw client (Uri.of_string "http://example.com")
-  in
+  let resp, body = Client.get ~sw client (Uri.of_string "http://example.com") in
   if Http.Status.compare resp.status `OK = 0 then
     print_string @@ Eio.Buf_read.(parse_exn take_all) body ~max_size:max_int
   else Fmt.epr "Unexpected HTTP status: %a" Http.Status.pp resp.status

@@ -58,10 +58,11 @@ let read input =
 let write output response body =
   let response =
     let content_length =
-      let Eio.Resource.T (body, ops) = body in
-      let module X = (val (Eio.Resource.get ops Eio.Flow.Pi.Source)) in
+      let (Eio.Resource.T (body, ops)) = body in
+      let module X = (val Eio.Resource.get ops Eio.Flow.Pi.Source) in
       List.find_map
-        (function Body.String get -> Some (String.length (get body)) | _ -> None)
+        (function
+          | Body.String get -> Some (String.length (get body)) | _ -> None)
         X.read_methods
     in
     (* encoding field might be deprecated but it is still used
@@ -105,8 +106,7 @@ let callback { conn_closed; handler } conn input output =
   in
   handle ()
 
-let run ?max_connections ?additional_domains ?stop ~on_error socket
-    server =
+let run ?max_connections ?additional_domains ?stop ~on_error socket server =
   Eio.Net.run_server socket ?max_connections ?additional_domains ?stop ~on_error
     (fun socket peer_address ->
       Eio.Switch.run @@ fun sw ->

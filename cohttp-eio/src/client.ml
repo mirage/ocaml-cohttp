@@ -1,5 +1,4 @@
 open Eio.Std
-
 include Client_intf
 open Utils
 
@@ -8,7 +7,7 @@ include
     (struct
       type 'a io = 'a
       type body = Body.t
-      type 'a with_context = [`Generic] Eio.Net.ty r -> sw:Eio.Switch.t -> 'a
+      type 'a with_context = [ `Generic ] Eio.Net.ty r -> sw:Eio.Switch.t -> 'a
 
       let map_context v f net ~sw = f (v net ~sw)
 
@@ -41,10 +40,11 @@ include
             match body with
             | None -> Some 0L
             | Some (Eio.Resource.T (body, ops)) ->
-                let module X = (val (Eio.Resource.get ops Eio.Flow.Pi.Source)) in
+                let module X = (val Eio.Resource.get ops Eio.Flow.Pi.Source) in
                 List.find_map
                   (function
-                    | Body.String m -> Some (String.length (m body) |> Int64.of_int)
+                    | Body.String m ->
+                        Some (String.length (m body) |> Int64.of_int)
                     | _ -> None)
                   X.read_methods
         in
@@ -79,6 +79,6 @@ include
     end)
     (Io.IO)
 
-type t = [`Generic] Eio.Net.ty r
+type t = [ `Generic ] Eio.Net.ty r
 
 let make net = (net :> t)

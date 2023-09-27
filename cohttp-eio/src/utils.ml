@@ -28,14 +28,14 @@ module Reader_flow = struct
     | None -> (
         match t.read_body_chunk () with
         | Cohttp.Transfer.Done ->
-          let () = Logs.debug (fun m -> m "end of inbound body") in
-          raise End_of_file
+            let () = Logs.debug (fun m -> m "end of inbound body") in
+            raise End_of_file
         | Chunk data | Final_chunk data ->
-          let () =
-            Logs.debug (fun m ->
-                m "received %d bytes of body" (String.length data))
-          in
-          send data 0)
+            let () =
+              Logs.debug (fun m ->
+                  m "received %d bytes of body" (String.length data))
+            in
+            send data 0)
 
   let read_methods = []
 end
