@@ -362,6 +362,7 @@
  (description
   "A CoHTTP server and client implementation based on `eio` library. `cohttp-eio`features a multicore capable HTTP 1.1 server. The library promotes and is built with direct style of coding as opposed to a monadic.")
  (depends
+  (alcotest :with-test)
   base-domains
   (cohttp
    (= :version))
@@ -373,4 +374,5 @@
   fmt
   ptime
   (http
-   (= :version))))
+   (= :version))
+  (ppx_here :with-test)))
