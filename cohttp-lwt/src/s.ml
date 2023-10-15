@@ -187,28 +187,7 @@ end
 module type Client = sig
   type ctx
 
-  val set_cache : call -> unit
-  (** Provide a function used to process requests. Please see {!type:call}. The
-      provided function is only used when no [ctx] argument is passed to the
-      convenience functions below. *)
-
-  val call :
-    ?ctx:ctx ->
-    ?headers:Http.Header.t ->
-    ?body:Body.t ->
-    ?chunked:bool ->
-    Http.Method.t ->
-    Uri.t ->
-    (Http.Response.t * Body.t) Lwt.t
-  (** [call ?ctx ?headers ?body ?chunked meth uri]
-
-      @return
-        [(response, response_body)] Consume [response_body] in a timely fashion.
-        Please see {!val:call} about how and why.
-      @param chunked
-        use chunked encoding if [true]. The default is [false] for compatibility
-        reasons.
-      @param ctx
+  (** @param ctx
         If provided, no connection cache is used, but
         {!val:Connection_cache.Make_no_cache.create} is used to resolve uri and
         create a dedicated connection with [ctx].
@@ -216,47 +195,16 @@ module type Client = sig
         In most cases you should use the more specific helper calls in the
         interface rather than invoke this function directly. See {!head}, {!get}
         and {!post} for some examples. *)
+  include
+    Cohttp.Client.S
+      with type 'a io = 'a Lwt.t
+       and type body = Body.t
+       and type 'a with_context = ?ctx:ctx -> 'a
 
-  val head :
-    ?ctx:ctx -> ?headers:Http.Header.t -> Uri.t -> Http.Response.t Lwt.t
-
-  val get :
-    ?ctx:ctx ->
-    ?headers:Http.Header.t ->
-    Uri.t ->
-    (Http.Response.t * Body.t) Lwt.t
-
-  val delete :
-    ?ctx:ctx ->
-    ?body:Body.t ->
-    ?chunked:bool ->
-    ?headers:Http.Header.t ->
-    Uri.t ->
-    (Http.Response.t * Body.t) Lwt.t
-
-  val post :
-    ?ctx:ctx ->
-    ?body:Body.t ->
-    ?chunked:bool ->
-    ?headers:Http.Header.t ->
-    Uri.t ->
-    (Http.Response.t * Body.t) Lwt.t
-
-  val put :
-    ?ctx:ctx ->
-    ?body:Body.t ->
-    ?chunked:bool ->
-    ?headers:Http.Header.t ->
-    Uri.t ->
-    (Http.Response.t * Body.t) Lwt.t
-
-  val patch :
-    ?ctx:ctx ->
-    ?body:Body.t ->
-    ?chunked:bool ->
-    ?headers:Http.Header.t ->
-    Uri.t ->
-    (Http.Response.t * Body.t) Lwt.t
+  val set_cache : call -> unit
+  (** Provide a function used to process requests. Please see {!type:call}. The
+      provided function is only used when no [ctx] argument is passed to the
+      convenience functions below. *)
 
   val post_form :
     ?ctx:ctx ->
@@ -275,96 +223,27 @@ end
 
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)
 module type Server = sig
-  module IO : IO
-
-  type conn = IO.conn * Cohttp.Connection.t [@@warning "-3"]
-
-  type response_action =
-    [ `Expert of Http.Response.t * (IO.ic -> IO.oc -> unit Lwt.t)
-    | `Response of Http.Response.t * Body.t ]
-  (** A request handler can respond in two ways:
-
-      - Using [`Response], with a {!Response.t} and a {!Body.t}.
-      - Using [`Expert], with a {!Response.t} and an IO function that is
-        expected to write the response body. The IO function has access to the
-        underlying {!IO.ic} and {!IO.oc}, which allows writing a response body
-        more efficiently, stream a response or to switch protocols entirely
-        (e.g. websockets). Processing of pipelined requests continue after the
-        {!unit Lwt.t} is resolved. The connection can be closed by closing the
-        {!IO.ic}. *)
-
-  type t
-
-  val make_response_action :
-    ?conn_closed:(conn -> unit) ->
-    callback:(conn -> Http.Request.t -> Body.t -> response_action Lwt.t) ->
-    unit ->
-    t
-
-  val make_expert :
-    ?conn_closed:(conn -> unit) ->
-    callback:
-      (conn ->
-      Http.Request.t ->
-      Body.t ->
-      (Http.Response.t * (IO.ic -> IO.oc -> unit Lwt.t)) Lwt.t) ->
-    unit ->
-    t
-
-  val make :
-    ?conn_closed:(conn -> unit) ->
-    callback:
-      (conn -> Http.Request.t -> Body.t -> (Http.Response.t * Body.t) Lwt.t) ->
-    unit ->
-    t
+  include Cohttp.Server.S with type body = Body.t and type 'a IO.t = 'a Lwt.t
 
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
     [@@deprecated "Please use Cohttp.Path.resolve_local_file. "]
   (** Resolve a URI and a docroot into a concrete local filename. *)
-
-  val respond :
-    ?headers:Http.Header.t ->
-    ?flush:bool ->
-    status:Http.Status.t ->
-    body:Body.t ->
-    unit ->
-    (Http.Response.t * Body.t) Lwt.t
-  (** [respond ?headers ?flush ~status ~body] will respond to an HTTP request
-      with the given [status] code and response [body]. If [flush] is true, then
-      every response chunk will be flushed to the network rather than being
-      buffered. [flush] is true by default. The transfer encoding will be
-      detected from the [body] value and set to chunked encoding if it cannot be
-      determined immediately. You can override the encoding by supplying an
-      appropriate [Content-length] or [Transfer-encoding] in the [headers]
-      parameter. *)
-
-  val respond_string :
-    ?flush:bool ->
-    ?headers:Http.Header.t ->
-    status:Http.Status.t ->
-    body:string ->
-    unit ->
-    (Http.Response.t * Body.t) Lwt.t
 
   val respond_error :
     ?headers:Http.Header.t ->
     ?status:Http.Status.t ->
     body:string ->
     unit ->
-    (Http.Response.t * Body.t) Lwt.t
+    (Http.Response.t * body) IO.t
 
   val respond_redirect :
-    ?headers:Http.Header.t ->
-    uri:Uri.t ->
-    unit ->
-    (Http.Response.t * Body.t) Lwt.t
+    ?headers:Http.Header.t -> uri:Uri.t -> unit -> (Http.Response.t * body) IO.t
 
   val respond_need_auth :
     ?headers:Http.Header.t ->
     auth:Cohttp.Auth.challenge ->
     unit ->
-    (Http.Response.t * Body.t) Lwt.t
+    (Http.Response.t * body) IO.t
 
-  val respond_not_found : ?uri:Uri.t -> unit -> (Http.Response.t * Body.t) Lwt.t
-  val callback : t -> IO.conn -> IO.ic -> IO.oc -> unit Lwt.t
+  val respond_not_found : ?uri:Uri.t -> unit -> (Http.Response.t * body) IO.t
 end

@@ -120,6 +120,7 @@ jobs:
         local-packages:
           - |
             http.opam
+            cohttp.opam
             cohttp-eio.opam
 
     runs-on: ${{ matrix.os }}

@@ -10,13 +10,14 @@
  (preprocess
   (pps ppx_sexp_conv))
  (libraries
+  base64
+  logs
   (re_export http)
   re
+  sexplib0
   stringext
   uri
-  uri-sexp
-  sexplib0
-  base64))
+  uri-sexp))
 
 (ocamllex accept_lexer)
 

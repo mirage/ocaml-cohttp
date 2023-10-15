@@ -86,28 +86,30 @@
 (package
  (name cohttp-lwt-unix)
  (synopsis "CoHTTP implementation for Unix and Windows using Lwt")
- (description "\
-An implementation of an HTTP client and server using the Lwt
-concurrency library. See the `Cohttp_lwt_unix` module for information
-on how to use this.  The package also installs `cohttp-curl-lwt`
-and a `cohttp-server-lwt` binaries for quick uses of a HTTP(S)
-client and server respectively.
-
-Although the name implies that this only works under Unix, it
-should also be fine under Windows too.
-")
+ (description
+  "An implementation of an HTTP client and server using the Lwt\nconcurrency library. See the `Cohttp_lwt_unix` module for information\non how to use this.  The package also installs `cohttp-curl-lwt`\nand a `cohttp-server-lwt` binaries for quick uses of a HTTP(S)\nclient and server respectively.\n\nAlthough the name implies that this only works under Unix, it\nshould also be fine under Windows too.\n")
  (depends
-  (ocaml (>= 4.08))
-  (http (= :version))
-  (cohttp (= :version))
-  (cohttp-lwt (= :version))
-  (cmdliner (>= 1.1.0))
-  (lwt (>= 3.0.0))
-  (conduit-lwt (>= 5.0.0))
-  (conduit-lwt-unix (>= 5.0.0))
-  (fmt (>= 0.8.2))
+  (ocaml
+   (>= 4.08))
+  (http
+   (= :version))
+  (cohttp
+   (= :version))
+  (cohttp-lwt
+   (= :version))
+  (cmdliner
+   (>= 1.1.0))
+  (lwt
+   (>= 3.0.0))
+  (conduit-lwt
+   (>= 5.0.0))
+  (conduit-lwt-unix
+   (>= 5.0.0))
+  (fmt
+   (>= 0.8.2))
   base-unix
-  (ppx_sexp_conv (>= v0.13.0))
+  (ppx_sexp_conv
+   (>= v0.13.0))
   magic-mime
   logs
   (ounit :with-test)))
@@ -248,7 +250,10 @@ should also be fine under Windows too.
   (ppx_sexp_conv :with-test)
   (ppx_compare :with-test)
   (ppx_here :with-test)
-  (crowbar (and :with-test (>= 0.2)))
+  (crowbar
+   (and
+    :with-test
+    (>= 0.2)))
   (sexplib0 :with-test)))
 
 (package
@@ -312,8 +317,10 @@ should also be fine under Windows too.
   stringext
   (cohttp-curl
    (= :version))
-  (core (>= v0.16.0))
-  (core_unix (>= v0.14.0))
+  (core
+   (>= v0.16.0))
+  (core_unix
+   (>= v0.14.0))
   async_kernel
   async_unix
   (cohttp-async
@@ -355,15 +362,17 @@ should also be fine under Windows too.
  (description
   "A CoHTTP server and client implementation based on `eio` library. `cohttp-eio`features a multicore capable HTTP 1.1 server. The library promotes and is built with direct style of coding as opposed to a monadic.")
  (depends
+  (alcotest :with-test)
   base-domains
+  (cohttp
+   (= :version))
   (eio
-   (and
-    (>= 0.10)
-    (< 0.12)))
+   (>= 0.12))
   (eio_main :with-test)
   (mdx :with-test)
   (uri :with-test)
   fmt
   ptime
   (http
-   (= :version))))
+   (= :version))
+  (ppx_here :with-test)))

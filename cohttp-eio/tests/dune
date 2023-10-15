@@ -1,4 +1,6 @@
-(mdx
+(test
+ (name test)
+ (libraries alcotest cohttp-eio eio eio.mock eio_main logs.fmt)
  (package cohttp-eio)
- (deps server_chunks.txt chunks.txt)
- (libraries eio eio.core eio.mock cohttp-eio http))
+ (preprocess
+  (pps ppx_here)))

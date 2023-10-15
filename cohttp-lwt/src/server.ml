@@ -7,6 +7,8 @@ module Make (IO : S.IO) = struct
   module Request = Make.Request (IO)
   module Response = Make.Response (IO)
 
+  type body = Body.t
+
   let src = Logs.Src.create "cohttp.lwt.server" ~doc:"Cohttp Lwt server module"
 
   module Log = (val Logs.src_log src : Logs.LOG)
@@ -54,7 +56,7 @@ module Make (IO : S.IO) = struct
     let res = Response.make ~status ~flush ~encoding ?headers () in
     Lwt.return (res, body)
 
-  let respond_string ?(flush = true) ?headers ~status ~body () =
+  let respond_string ?headers ?(flush = true) ~status ~body () =
     let res =
       Response.make ~status ~flush
         ~encoding:(Http.Transfer.Fixed (Int64.of_int (String.length body)))
