@@ -1,4 +1,4 @@
-## Unreleased
+## v6.0.0~beta1 (2023-10-24)
 - cohttp-eio: Complete rewrite to follow common interfaces and behaviors. (mefyl #984)
 
 ## v6.0.0~alpha2 (2023-08-08)
