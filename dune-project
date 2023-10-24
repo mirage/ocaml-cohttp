@@ -42,6 +42,7 @@
   (uri
    (>= 2.0.0))
   uri-sexp
+  logs
   sexplib0
   (ppx_sexp_conv
    (>= v0.13.0))
