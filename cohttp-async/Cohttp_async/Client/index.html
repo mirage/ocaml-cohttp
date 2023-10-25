@@ -1,65 +1,65 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Client (cohttp-async.Cohttp_async.Client)</title><link rel="stylesheet" href="../../../odoc.support/odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc 2.2.0"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../odoc.support/highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">cohttp-async</a> &#x00BB; <a href="../index.html">Cohttp_async</a> &#x00BB; Client</nav><header class="odoc-preamble"><h1>Module <code><span>Cohttp_async.Client</span></code></h1></header><div class="odoc-content"><div class="odoc-spec"><div class="spec value anchored" id="val-request"><a href="#val-request" class="anchor"></a><code><span><span class="keyword">val</span> request : 
-  <span>?interrupt:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
-  <span>?ssl_config:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
-  <span>?uri:<span class="xref-unresolved">Uri</span>.t <span class="arrow">&#45;&gt;</span></span>
-  <span>?body:<a href="../Body/index.html#type-t">Body.t</a> <span class="arrow">&#45;&gt;</span></span>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Client (cohttp-async.Cohttp_async.Client)</title><link rel="stylesheet" href="../../../odoc.support/odoc.css"/><meta charset="utf-8"/><meta name="generator" content="odoc v2.3.0"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../../odoc.support/highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body class="odoc"><nav class="odoc-nav"><a href="../index.html">Up</a> – <a href="../../index.html">cohttp-async</a> &#x00BB; <a href="../index.html">Cohttp_async</a> &#x00BB; Client</nav><header class="odoc-preamble"><h1>Module <code><span>Cohttp_async.Client</span></code></h1></header><div class="odoc-content"><div class="odoc-spec"><div class="spec value anchored" id="val-request"><a href="#val-request" class="anchor"></a><code><span><span class="keyword">val</span> request : 
+  <span><span class="optlabel">?interrupt</span>:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?ssl_config</span>:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?uri</span>:<span class="xref-unresolved">Uri</span>.t <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?body</span>:<a href="../Body/index.html#type-t">Body.t</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../../http/Http/Request/index.html#type-t">Http.Request.t</a> <span class="arrow">&#45;&gt;</span></span>
   <span><span>(<a href="../../../http/Http/Response/index.html#type-t">Http.Response.t</a> * <a href="../Body/index.html#type-t">Body.t</a>)</span> <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span></span></code></div><div class="spec-doc"><p>Send an HTTP request with an arbitrary body The request is sent as-is.</p></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-call"><a href="#val-call" class="anchor"></a><code><span><span class="keyword">val</span> call : 
-  <span>?interrupt:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
-  <span>?ssl_config:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
-  <span>?headers:<a href="../../../http/Http/Header/index.html#type-t">Http.Header.t</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?chunked:bool <span class="arrow">&#45;&gt;</span></span>
-  <span>?body:<a href="../Body/index.html#type-t">Body.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?interrupt</span>:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?ssl_config</span>:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?headers</span>:<a href="../../../http/Http/Header/index.html#type-t">Http.Header.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?chunked</span>:bool <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?body</span>:<a href="../Body/index.html#type-t">Body.t</a> <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../../http/Http/Method/index.html#type-t">Http.Method.t</a> <span class="arrow">&#45;&gt;</span></span>
   <span><span class="xref-unresolved">Uri</span>.t <span class="arrow">&#45;&gt;</span></span>
   <span><span>(<a href="../../../http/Http/Response/index.html#type-t">Http.Response.t</a> * <a href="../Body/index.html#type-t">Body.t</a>)</span> <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span></span></code></div><div class="spec-doc"><p>Send an HTTP request with arbitrary method and a body Infers the transfer encoding. Depending on the given <code>uri</code>, we choose a way to start a communication such as:</p><ul><li>If the scheme is <code>https</code>, we try to initiate an SSL connection with the given <code>ssl_ctx</code> or a default one on the default port (<code>*:443</code>) or the specified one.</li><li>If the scheme is <code>httpunix</code>, we use a UNIX domain socket.</li><li>If the scheme ie <code>http</code>, we try an usual TCP/IP connection on the default port (<code>*:80</code>) or the specified one.</li></ul></div></div><div class="odoc-spec"><div class="spec module anchored" id="module-Connection"><a href="#module-Connection" class="anchor"></a><code><span><span class="keyword">module</span> <a href="Connection/index.html">Connection</a></span><span> : <span class="keyword">sig</span> ... <span class="keyword">end</span></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-callv"><a href="#val-callv" class="anchor"></a><code><span><span class="keyword">val</span> callv : 
-  <span>?interrupt:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
-  <span>?ssl_config:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?interrupt</span>:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?ssl_config</span>:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
   <span><span class="xref-unresolved">Uri</span>.t <span class="arrow">&#45;&gt;</span></span>
   <span><span><span>(<a href="../../../http/Http/Request/index.html#type-t">Http.Request.t</a> * <a href="../Body/index.html#type-t">Body.t</a>)</span> <span class="xref-unresolved">Async_kernel</span>.Pipe.Reader.t</span> <span class="arrow">&#45;&gt;</span></span>
   <span><span><span>(<a href="../../../http/Http/Response/index.html#type-t">Http.Response.t</a> * <a href="../Body/index.html#type-t">Body.t</a>)</span> <span class="xref-unresolved">Async_kernel</span>.Pipe.Reader.t</span> <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span></span></code></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-get"><a href="#val-get" class="anchor"></a><code><span><span class="keyword">val</span> get : 
-  <span>?interrupt:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
-  <span>?ssl_config:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
-  <span>?headers:<a href="../../../http/Http/Header/index.html#type-t">Http.Header.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?interrupt</span>:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?ssl_config</span>:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?headers</span>:<a href="../../../http/Http/Header/index.html#type-t">Http.Header.t</a> <span class="arrow">&#45;&gt;</span></span>
   <span><span class="xref-unresolved">Uri</span>.t <span class="arrow">&#45;&gt;</span></span>
   <span><span>(<a href="../../../http/Http/Response/index.html#type-t">Http.Response.t</a> * <a href="../Body/index.html#type-t">Body.t</a>)</span> <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span></span></code></div><div class="spec-doc"><p>Send an HTTP GET request</p></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-head"><a href="#val-head" class="anchor"></a><code><span><span class="keyword">val</span> head : 
-  <span>?interrupt:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
-  <span>?ssl_config:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
-  <span>?headers:<a href="../../../http/Http/Header/index.html#type-t">Http.Header.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?interrupt</span>:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?ssl_config</span>:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?headers</span>:<a href="../../../http/Http/Header/index.html#type-t">Http.Header.t</a> <span class="arrow">&#45;&gt;</span></span>
   <span><span class="xref-unresolved">Uri</span>.t <span class="arrow">&#45;&gt;</span></span>
   <span><a href="../../../http/Http/Response/index.html#type-t">Http.Response.t</a> <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span></span></code></div><div class="spec-doc"><p>Send an HTTP HEAD request</p></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-delete"><a href="#val-delete" class="anchor"></a><code><span><span class="keyword">val</span> delete : 
-  <span>?interrupt:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
-  <span>?ssl_config:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
-  <span>?headers:<a href="../../../http/Http/Header/index.html#type-t">Http.Header.t</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?chunked:bool <span class="arrow">&#45;&gt;</span></span>
-  <span>?body:<a href="../Body/index.html#type-t">Body.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?interrupt</span>:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?ssl_config</span>:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?headers</span>:<a href="../../../http/Http/Header/index.html#type-t">Http.Header.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?chunked</span>:bool <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?body</span>:<a href="../Body/index.html#type-t">Body.t</a> <span class="arrow">&#45;&gt;</span></span>
   <span><span class="xref-unresolved">Uri</span>.t <span class="arrow">&#45;&gt;</span></span>
   <span><span>(<a href="../../../http/Http/Response/index.html#type-t">Http.Response.t</a> * <a href="../Body/index.html#type-t">Body.t</a>)</span> <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span></span></code></div><div class="spec-doc"><p>Send an HTTP DELETE request</p></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-post"><a href="#val-post" class="anchor"></a><code><span><span class="keyword">val</span> post : 
-  <span>?interrupt:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
-  <span>?ssl_config:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
-  <span>?headers:<a href="../../../http/Http/Header/index.html#type-t">Http.Header.t</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?chunked:bool <span class="arrow">&#45;&gt;</span></span>
-  <span>?body:<a href="../Body/index.html#type-t">Body.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?interrupt</span>:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?ssl_config</span>:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?headers</span>:<a href="../../../http/Http/Header/index.html#type-t">Http.Header.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?chunked</span>:bool <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?body</span>:<a href="../Body/index.html#type-t">Body.t</a> <span class="arrow">&#45;&gt;</span></span>
   <span><span class="xref-unresolved">Uri</span>.t <span class="arrow">&#45;&gt;</span></span>
   <span><span>(<a href="../../../http/Http/Response/index.html#type-t">Http.Response.t</a> * <a href="../Body/index.html#type-t">Body.t</a>)</span> <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span></span></code></div><div class="spec-doc"><p>Send an HTTP POST request. <code>chunked</code> encoding is off by default as not many servers support it</p></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-put"><a href="#val-put" class="anchor"></a><code><span><span class="keyword">val</span> put : 
-  <span>?interrupt:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
-  <span>?ssl_config:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
-  <span>?headers:<a href="../../../http/Http/Header/index.html#type-t">Http.Header.t</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?chunked:bool <span class="arrow">&#45;&gt;</span></span>
-  <span>?body:<a href="../Body/index.html#type-t">Body.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?interrupt</span>:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?ssl_config</span>:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?headers</span>:<a href="../../../http/Http/Header/index.html#type-t">Http.Header.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?chunked</span>:bool <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?body</span>:<a href="../Body/index.html#type-t">Body.t</a> <span class="arrow">&#45;&gt;</span></span>
   <span><span class="xref-unresolved">Uri</span>.t <span class="arrow">&#45;&gt;</span></span>
   <span><span>(<a href="../../../http/Http/Response/index.html#type-t">Http.Response.t</a> * <a href="../Body/index.html#type-t">Body.t</a>)</span> <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span></span></code></div><div class="spec-doc"><p>Send an HTTP PUT request. <code>chunked</code> encoding is off by default as not many servers support it</p></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-patch"><a href="#val-patch" class="anchor"></a><code><span><span class="keyword">val</span> patch : 
-  <span>?interrupt:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
-  <span>?ssl_config:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
-  <span>?headers:<a href="../../../http/Http/Header/index.html#type-t">Http.Header.t</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>?chunked:bool <span class="arrow">&#45;&gt;</span></span>
-  <span>?body:<a href="../Body/index.html#type-t">Body.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?interrupt</span>:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?ssl_config</span>:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?headers</span>:<a href="../../../http/Http/Header/index.html#type-t">Http.Header.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?chunked</span>:bool <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?body</span>:<a href="../Body/index.html#type-t">Body.t</a> <span class="arrow">&#45;&gt;</span></span>
   <span><span class="xref-unresolved">Uri</span>.t <span class="arrow">&#45;&gt;</span></span>
   <span><span>(<a href="../../../http/Http/Response/index.html#type-t">Http.Response.t</a> * <a href="../Body/index.html#type-t">Body.t</a>)</span> <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span></span></code></div><div class="spec-doc"><p>Send an HTTP PATCH request. <code>chunked</code> encoding is off by default as not many servers support it</p></div></div><div class="odoc-spec"><div class="spec value anchored" id="val-post_form"><a href="#val-post_form" class="anchor"></a><code><span><span class="keyword">val</span> post_form : 
-  <span>?interrupt:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
-  <span>?ssl_config:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
-  <span>?headers:<a href="../../../http/Http/Header/index.html#type-t">Http.Header.t</a> <span class="arrow">&#45;&gt;</span></span>
-  <span>params:<span><span>(string * <span>string list</span>)</span> list</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?interrupt</span>:<span>unit <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?ssl_config</span>:<span class="xref-unresolved">Conduit_async</span>.V2.Ssl.Config.t <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="optlabel">?headers</span>:<a href="../../../http/Http/Header/index.html#type-t">Http.Header.t</a> <span class="arrow">&#45;&gt;</span></span>
+  <span><span class="label">params</span>:<span><span>(string * <span>string list</span>)</span> list</span> <span class="arrow">&#45;&gt;</span></span>
   <span><span class="xref-unresolved">Uri</span>.t <span class="arrow">&#45;&gt;</span></span>
   <span><span>(<a href="../../../http/Http/Response/index.html#type-t">Http.Response.t</a> * <a href="../Body/index.html#type-t">Body.t</a>)</span> <span class="xref-unresolved">Async_kernel</span>.Deferred.t</span></span></code></div><div class="spec-doc"><p>Send an HTTP POST request in form format</p></div></div></div></body></html>
