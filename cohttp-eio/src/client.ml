@@ -3,7 +3,6 @@ include Client_intf
 open Utils
 
 type connection = Eio.Flow.two_way_ty r
-
 type t = sw:Switch.t -> Uri.t -> connection
 
 include
@@ -15,7 +14,7 @@ include
 
       let map_context v f t ~sw = f (v t ~sw)
 
-      let call (t:t) ~sw ?headers ?body ?(chunked = false) meth uri =
+      let call (t : t) ~sw ?headers ?body ?(chunked = false) meth uri =
         let socket = t ~sw uri in
         let body_length =
           if chunked then None
@@ -84,16 +83,23 @@ let tcp_address ~net uri =
 
 let make ~https net : t =
   let net = (net :> [ `Generic ] Eio.Net.ty r) in
-  let https = (https :> (Uri.t -> [ `Generic ] Eio.Net.stream_socket_ty r -> connection) option) in
+  let https =
+    (https
+      :> (Uri.t -> [ `Generic ] Eio.Net.stream_socket_ty r -> connection) option)
+  in
   fun ~sw uri ->
     match Uri.scheme uri with
     | Some "httpunix" ->
-      (* FIXME: while there is no standard, http+unix seems more widespread *)
-      (Eio.Net.connect ~sw net (unix_address uri) :> connection)
-    | Some "http" -> (Eio.Net.connect ~sw net (tcp_address ~net uri) :> connection)
-    | Some "https" ->
-      (match https with
-      | Some wrap -> wrap uri @@ Eio.Net.connect ~sw net (tcp_address ~net uri)
-      | None -> Fmt.failwith "HTTPS not enabled (for %a)" Uri.pp uri)
+        (* FIXME: while there is no standard, http+unix seems more widespread *)
+        (Eio.Net.connect ~sw net (unix_address uri) :> connection)
+    | Some "http" ->
+        (Eio.Net.connect ~sw net (tcp_address ~net uri) :> connection)
+    | Some "https" -> (
+        match https with
+        | Some wrap ->
+            wrap uri @@ Eio.Net.connect ~sw net (tcp_address ~net uri)
+        | None -> Fmt.failwith "HTTPS not enabled (for %a)" Uri.pp uri)
     | x ->
-      Fmt.failwith "Unknown scheme %a" Fmt.(option ~none:(any "None") Dump.string) x
+        Fmt.failwith "Unknown scheme %a"
+          Fmt.(option ~none:(any "None") Dump.string)
+          x

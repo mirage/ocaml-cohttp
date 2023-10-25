@@ -1,5 +1,6 @@
 ## Unreleased
 - cohttp-eio: Complete rewrite to follow common interfaces and behaviors. (mefyl #984)
+- cohttp-eio: Add Client.make_generic and HTTPS support. (talex5 #1002)
 
 ## v6.0.0~alpha2 (2023-08-08)
 - cohttp-lwt: Do not leak exceptions to `Lwt.async_exception_hook`. (mefyl #992, #995)
