@@ -10,7 +10,7 @@ and () = Logs.Src.set_level Cohttp_eio.src (Some Debug)
 
 let () =
   Eio_main.run @@ fun env ->
-  let client = Client.make env#net in
+  let client = Client.make ~https:None env#net in
   Eio.Switch.run @@ fun sw ->
   let resp, body = Client.get ~sw client (Uri.of_string "http://example.com") in
   if Http.Status.compare resp.status `OK = 0 then

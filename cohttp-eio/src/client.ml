@@ -2,38 +2,20 @@ open Eio.Std
 include Client_intf
 open Utils
 
+type connection = Eio.Flow.two_way_ty r
+type t = sw:Switch.t -> Uri.t -> connection
+
 include
   Cohttp.Client.Make
     (struct
       type 'a io = 'a
       type body = Body.t
-      type 'a with_context = [ `Generic ] Eio.Net.ty r -> sw:Eio.Switch.t -> 'a
+      type 'a with_context = t -> sw:Eio.Switch.t -> 'a
 
-      let map_context v f net ~sw = f (v net ~sw)
+      let map_context v f t ~sw = f (v t ~sw)
 
-      let call net ~sw ?headers ?body ?(chunked = false) meth uri =
-        let addr =
-          match Uri.scheme uri with
-          | Some "httpunix"
-          (* FIXME: while there is no standard, http+unix seems more widespread *)
-            -> (
-              match Uri.host uri with
-              | Some path -> `Unix path
-              | None -> failwith "no host specified with httpunix")
-          | _ -> (
-              let service =
-                match Uri.port uri with
-                | Some port -> Int.to_string port
-                | _ -> Uri.scheme uri |> Option.value ~default:"http"
-              in
-              match
-                Eio.Net.getaddrinfo_stream ~service net
-                  (Uri.host_with_default ~default:"localhost" uri)
-              with
-              | ip :: _ -> ip
-              | [] -> failwith "failed to resolve hostname")
-        in
-        let socket = Eio.Net.connect ~sw net addr in
+      let call (t : t) ~sw ?headers ?body ?(chunked = false) meth uri =
+        let socket = t ~sw uri in
         let body_length =
           if chunked then None
           else
@@ -79,6 +61,45 @@ include
     end)
     (Io.IO)
 
-type t = [ `Generic ] Eio.Net.ty r
+let make_generic fn = (fn :> t)
 
-let make net = (net :> t)
+let unix_address uri =
+  match Uri.host uri with
+  | Some path -> `Unix path
+  | None -> Fmt.failwith "no host specified (in %a)" Uri.pp uri
+
+let tcp_address ~net uri =
+  let service =
+    match Uri.port uri with
+    | Some port -> Int.to_string port
+    | _ -> Uri.scheme uri |> Option.value ~default:"http"
+  in
+  match
+    Eio.Net.getaddrinfo_stream ~service net
+      (Uri.host_with_default ~default:"localhost" uri)
+  with
+  | ip :: _ -> ip
+  | [] -> failwith "failed to resolve hostname"
+
+let make ~https net : t =
+  let net = (net :> [ `Generic ] Eio.Net.ty r) in
+  let https =
+    (https
+      :> (Uri.t -> [ `Generic ] Eio.Net.stream_socket_ty r -> connection) option)
+  in
+  fun ~sw uri ->
+    match Uri.scheme uri with
+    | Some "httpunix" ->
+        (* FIXME: while there is no standard, http+unix seems more widespread *)
+        (Eio.Net.connect ~sw net (unix_address uri) :> connection)
+    | Some "http" ->
+        (Eio.Net.connect ~sw net (tcp_address ~net uri) :> connection)
+    | Some "https" -> (
+        match https with
+        | Some wrap ->
+            wrap uri @@ Eio.Net.connect ~sw net (tcp_address ~net uri)
+        | None -> Fmt.failwith "HTTPS not enabled (for %a)" Uri.pp uri)
+    | x ->
+        Fmt.failwith "Unknown scheme %a"
+          Fmt.(option ~none:(any "None") Dump.string)
+          x

@@ -372,6 +372,8 @@
   (eio_main :with-test)
   (mdx :with-test)
   (uri :with-test)
+  (tls-eio (and :with-test (>= 0.17.2)))
+  (mirage-crypto-rng-eio (and :with-test (>= 0.11.2)))
   fmt
   ptime
   (http

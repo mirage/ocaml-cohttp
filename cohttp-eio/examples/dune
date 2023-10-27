@@ -1,6 +1,15 @@
 (executables
- (names server1 client1 docker_client client_timeout)
- (libraries cohttp-eio eio_main eio.unix fmt unix logs.fmt logs.threaded))
+ (names server1 client1 docker_client client_timeout client_tls)
+ (libraries
+  cohttp-eio
+  eio_main
+  eio.unix
+  fmt
+  unix
+  logs.fmt
+  logs.threaded
+  tls-eio
+  mirage-crypto-rng-eio))
 
 (alias
  (name runtest)
