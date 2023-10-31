@@ -1,4 +1,4 @@
-include Cohttp.Server.S with module IO = Io.IO and type body = Body.t
+include Cohttp.Generic.Server.S with module IO = Io.IO and type body = Body.t
 
 val run :
   ?max_connections:int ->

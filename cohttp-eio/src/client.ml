@@ -6,7 +6,7 @@ type connection = Eio.Flow.two_way_ty r
 type t = sw:Switch.t -> Uri.t -> connection
 
 include
-  Cohttp.Client.Make
+  Cohttp.Generic.Client.Make
     (struct
       type 'a io = 'a
       type body = Body.t

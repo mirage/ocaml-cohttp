@@ -17,7 +17,7 @@ module Make (Connection : S.Connection) = struct
     | Some ctx -> No_cache.(call (create ~ctx ()))
 
   include
-    Cohttp.Client.Make
+    Cohttp.Generic.Client.Make
       (struct
         type 'a io = 'a Lwt.t
         type body = Body.t

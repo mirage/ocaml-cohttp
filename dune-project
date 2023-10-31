@@ -76,7 +76,7 @@
   (cohttp
    (= :version))
   (lwt
-   (>= 2.5.0))
+   (>= 5.4.0))
   sexplib0
   (ppx_sexp_conv
    (>= v0.13.0))
