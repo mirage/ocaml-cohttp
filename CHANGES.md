@@ -1,4 +1,5 @@
 ## v6.0.0~beta1 (2023-10-27)
+- cohttp-eio: move new Cohttp.{Client,Server} modules under Cohttp.Generic (mseri #1003)
 - cohttp-eio: Add Client.make_generic and HTTPS support. (talex5 #1002)
 - cohttp: move generic client and server signatures to cohttp and use them across all packges. (mefyl #984)
 - cohttp-eio: Complete rewrite to follow common interfaces and behaviors. (mefyl #984)

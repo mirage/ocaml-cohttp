@@ -3,7 +3,7 @@ open Eio.Std
 type t
 
 include
-  Cohttp.Client.S
+  Cohttp.Generic.Client.S
     with type 'a with_context = t -> sw:Switch.t -> 'a
      and type 'a io = 'a
      and type body = Body.t

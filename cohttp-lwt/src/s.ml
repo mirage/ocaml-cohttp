@@ -196,7 +196,7 @@ module type Client = sig
         interface rather than invoke this function directly. See {!head}, {!get}
         and {!post} for some examples. *)
   include
-    Cohttp.Client.S
+    Cohttp.Generic.Client.S
       with type 'a io = 'a Lwt.t
        and type body = Body.t
        and type 'a with_context = ?ctx:ctx -> 'a
@@ -223,7 +223,7 @@ end
 
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)
 module type Server = sig
-  include Cohttp.Server.S with type body = Body.t and type 'a IO.t = 'a Lwt.t
+  include Cohttp.Generic.Server.S with type body = Body.t and type 'a IO.t = 'a Lwt.t
 
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
     [@@deprecated "Please use Cohttp.Path.resolve_local_file. "]
