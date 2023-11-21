@@ -133,13 +133,29 @@ module Set_cookie_hdr = struct
       :: alist
     with Failure _ -> alist
 
+  let caseless_equal a b =
+    if a == b then true
+    else
+      let len = String.length a in
+      len = String.length b
+      &&
+      let stop = ref false in
+      let idx = ref 0 in
+      while (not !stop) && !idx < len do
+        let c1 = String.unsafe_get a !idx in
+        let c2 = String.unsafe_get b !idx in
+        if Char.lowercase_ascii c1 <> Char.lowercase_ascii c2 then stop := true;
+        incr idx
+      done;
+      not !stop
+
   (* TODO: check dupes+order *)
   let extract hdr =
     Header.fold
-      (function
-        | "set-cookie" -> extract_1_0
-        | "set-cookie2" -> extract_1_1
-        | _ -> fun _ a -> a)
+      (fun k c a ->
+        if caseless_equal k "set-cookie" then extract_1_0 c a
+        else if caseless_equal k "set-cookie2" then extract_1_1 c a
+        else a)
       hdr []
 
   let value { cookie = _, v; _ } = v
