@@ -1,3 +1,7 @@
+## v5.3.1 (2023-12-13)
+
+- cohttp: case-insensitive check of set-cookies (chomosuke, #1008)
+
 ## v5.3.0 (2023-07-21)
 
 - cohttp-async: support for base/async v0.16
