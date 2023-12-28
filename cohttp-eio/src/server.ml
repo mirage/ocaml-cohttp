@@ -109,10 +109,14 @@ let callback { conn_closed; handler } conn input output =
 let run ?max_connections ?additional_domains ?stop ~on_error socket server =
   Eio.Net.run_server socket ?max_connections ?additional_domains ?stop ~on_error
     (fun socket peer_address ->
-      Eio.Switch.run @@ fun sw ->
-      let () =
+      try
+        Eio.Switch.run @@ fun sw ->
+        let () =
+          Logs.info (fun m ->
+              m "%a: accept connection" Eio.Net.Sockaddr.pp peer_address)
+        and input = Eio.Buf_read.of_flow ~max_size:max_int socket in
+        Eio.Buf_write.with_flow socket @@ fun output ->
+        callback server (sw, peer_address) input output
+      with Eio.Io (Eio.Net.E (Connection_reset _), _) ->
         Logs.info (fun m ->
-            m "%a: accept connection" Eio.Net.Sockaddr.pp peer_address)
-      and input = Eio.Buf_read.of_flow ~max_size:max_int socket in
-      Eio.Buf_write.with_flow socket @@ fun output ->
-      callback server (sw, peer_address) input output)
+            m "%a: disconnected" Eio.Net.Sockaddr.pp peer_address))
