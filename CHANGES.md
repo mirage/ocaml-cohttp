@@ -1,3 +1,7 @@
+## v6.0.0~beta2
+
+- cohttp-eio: Don't blow up Server on client disconnections. (mefyl #1011)
+
 ## v6.0.0~beta1 (2023-10-27)
 - cohttp-eio: move new Cohttp.{Client,Server} modules under Cohttp.Generic (mseri #1003)
 - cohttp-eio: Add Client.make_generic and HTTPS support. (talex5 #1002)
