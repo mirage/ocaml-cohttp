@@ -55,7 +55,7 @@ let read input =
           in
           `Ok (request, body))
 
-let write output response body =
+let write output (response : Cohttp.Response.t) body =
   let response =
     let content_length =
       let (Eio.Resource.T (body, ops)) = body in
@@ -67,13 +67,16 @@ let write output response body =
     in
     (* encoding field might be deprecated but it is still used
        to compute headers and encode the body*)
-    match content_length with
-    | None ->
-        { response with Cohttp.Response.encoding = Chunked }
-        [@ocaml.warning "-3"]
-    | Some size ->
+    match
+      (Cohttp.Header.get_transfer_encoding response.headers, content_length)
+    with
+    | Unknown, None ->
+        { response with encoding = Chunked } [@ocaml.warning "-3"]
+    | Unknown, Some size ->
         { response with encoding = Fixed (Int64.of_int size) }
         [@ocaml.warning "-3"]
+    | from_headers, _ ->
+        { response with encoding = from_headers } [@ocaml.warning "-3"]
   in
   let () = Logs.debug (fun m -> m "send headers") in
   let () =
