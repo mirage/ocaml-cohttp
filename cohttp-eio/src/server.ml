@@ -79,7 +79,11 @@ let write output response body =
   let () =
     Io.Response.write
       (fun writer ->
-        let () = Logs.debug (fun m -> m "send body") in
+        let () =
+          Logs.debug (fun m ->
+              (m "send body (%a)" Cohttp.Transfer.pp_encoding response.encoding
+               [@ocaml.warning "-3"]))
+        in
         flow_to_writer body writer Io.Response.write_body)
       response output
   in

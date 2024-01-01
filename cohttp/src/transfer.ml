@@ -19,6 +19,11 @@ open Sexplib0.Sexp_conv
 type encoding = Http.Transfer.encoding = Chunked | Fixed of int64 | Unknown
 [@@deriving sexp]
 
+let pp_encoding fmt = function
+  | Chunked -> Format.pp_print_string fmt "chunked"
+  | Fixed size -> Format.fprintf fmt "fixed %Ld" size
+  | Unknown -> Format.pp_print_string fmt "unknown"
+
 type chunk = Chunk of string | Final_chunk of string | Done [@@deriving sexp]
 
 let string_of_encoding = function
