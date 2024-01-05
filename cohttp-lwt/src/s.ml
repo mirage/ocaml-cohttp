@@ -223,7 +223,8 @@ end
 
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)
 module type Server = sig
-  include Cohttp.Generic.Server.S with type body = Body.t and type 'a IO.t = 'a Lwt.t
+  module IO : IO
+  include Cohttp.Generic.Server.S with type body = Body.t and module IO := IO
 
   val resolve_local_file : docroot:string -> uri:Uri.t -> string
     [@@deprecated "Please use Cohttp.Path.resolve_local_file. "]
