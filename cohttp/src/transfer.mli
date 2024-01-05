@@ -25,6 +25,9 @@ type encoding = Http.Transfer.encoding =
   | Unknown  (** unknown body size, which leads to best-effort *)
 [@@deriving sexp]
 
+val pp_encoding : Format.formatter -> encoding -> unit
+(** Human-readable output. *)
+
 (** A chunk of body that also signals if there to more to arrive *)
 type chunk =
   | Chunk of string  (** chunk of data and not the end of stream *)
