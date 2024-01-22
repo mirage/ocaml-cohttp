@@ -1,6 +1,10 @@
+## Unreleased
+
+- cohttp-eio: Don't blow up `Server.callback` on client disconnections. (mefyl #1015)
+
 ## v6.0.0~beta2 (2024-01-05)
 
-- cohttp-eio: Don't blow up Server on client disconnections. (mefyl #1011)
+- cohttp-eio: Don't blow up `Server.run` on client disconnections. (mefyl #1011)
 - cohttp-eio: Match body encoding with headers. (mefyl #1012)
 - cohttp-lwt: Preserve extended `Server.S.IO` signature. (mefyl #1013)
 

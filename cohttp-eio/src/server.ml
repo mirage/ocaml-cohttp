@@ -92,22 +92,37 @@ let write output (response : Cohttp.Response.t) body =
   in
   Eio.Buf_write.flush output
 
-let callback { conn_closed; handler } conn input output =
+let callback { conn_closed; handler } ((_, peer_address) as conn) input output =
   let id = (Cohttp.Connection.create () [@ocaml.warning "-3"]) in
   let rec handle () =
     match read input with
-    | `Eof -> conn_closed (conn, id)
+    | `Eof ->
+        let () =
+          Logs.info (fun m ->
+              m "%a: disconnected" Eio.Net.Sockaddr.pp peer_address)
+        in
+        conn_closed (conn, id)
+    | exception Eio.Io (Eio.Net.E (Connection_reset _), _) ->
+        let () =
+          Logs.info (fun m ->
+              m "%a: connection reset" Eio.Net.Sockaddr.pp peer_address)
+        in
+        ()
     | `Invalid e ->
         write output
           (Http.Response.make ~status:`Bad_request ())
           (Body.of_string e)
     | `Ok (request, body) ->
         let () =
-          match handler (conn, id) request body with
-          | `Response (response, body) -> write output response body
-          | `Expert (response, handler) ->
-              let () = Io.Response.write_header response output in
-              handler input output
+          try
+            match handler (conn, id) request body with
+            | `Response (response, body) -> write output response body
+            | `Expert (response, handler) ->
+                let () = Io.Response.write_header response output in
+                handler input output
+          with Eio.Io (Eio.Net.E (Connection_reset _), _) ->
+            Logs.info (fun m ->
+                m "%a: connection reset" Eio.Net.Sockaddr.pp peer_address)
         in
         if Cohttp.Request.is_keep_alive request then handle ()
   in
@@ -116,14 +131,14 @@ let callback { conn_closed; handler } conn input output =
 let run ?max_connections ?additional_domains ?stop ~on_error socket server =
   Eio.Net.run_server socket ?max_connections ?additional_domains ?stop ~on_error
     (fun socket peer_address ->
+      Eio.Switch.run @@ fun sw ->
+      let () =
+        Logs.info (fun m ->
+            m "%a: accept connection" Eio.Net.Sockaddr.pp peer_address)
+      and input = Eio.Buf_read.of_flow ~max_size:max_int socket in
       try
-        Eio.Switch.run @@ fun sw ->
-        let () =
-          Logs.info (fun m ->
-              m "%a: accept connection" Eio.Net.Sockaddr.pp peer_address)
-        and input = Eio.Buf_read.of_flow ~max_size:max_int socket in
         Eio.Buf_write.with_flow socket @@ fun output ->
         callback server (sw, peer_address) input output
       with Eio.Io (Eio.Net.E (Connection_reset _), _) ->
         Logs.info (fun m ->
-            m "%a: disconnected" Eio.Net.Sockaddr.pp peer_address))
+            m "%a: connection reset" Eio.Net.Sockaddr.pp peer_address))
