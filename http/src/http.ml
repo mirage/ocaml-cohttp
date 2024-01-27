@@ -944,7 +944,7 @@ module Parser = struct
              "Http_parser.Source.substring: Index out of bounds., Requested \
               off: %d, len: %d"
              pos len);
-      let last = ref (t.pos + len - 1) in
+      let last = ref (t.pos + pos + len - 1) in
       let pos = ref (t.pos + pos) in
       while is_space (String.unsafe_get t.buffer !pos) do
         incr pos
