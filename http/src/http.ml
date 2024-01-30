@@ -953,7 +953,7 @@ module Parser = struct
         decr last
       done;
       let len = !last - !pos + 1 in
-      String.sub t.buffer !pos len
+      if len < 0 then "" else String.sub t.buffer !pos len
 
     let rec index_rec t ch idx len =
       if idx = len then -1
