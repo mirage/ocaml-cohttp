@@ -346,9 +346,13 @@
   (core
    (>= v0.13.0))
   core_bench
+  (eio
+   (>= 0.12))
   (http
    (= :version))
   (cohttp
+   (= :version))
+  (cohttp-eio
    (= :version))
   (cohttp-lwt-unix
    (= :version))

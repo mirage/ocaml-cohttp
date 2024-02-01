@@ -26,8 +26,10 @@ depends: [
   "dune" {>= "3.0"}
   "core" {>= "v0.13.0"}
   "core_bench"
+  "eio" {>= "0.12"}
   "http" {= version}
   "cohttp" {= version}
+  "cohttp-eio" {= version}
   "cohttp-lwt-unix" {= version}
   "cohttp-server-lwt-unix" {= version}
   "cohttp-async" {= version}
