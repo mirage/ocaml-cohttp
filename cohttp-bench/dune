@@ -13,6 +13,11 @@
  (modules async_server)
  (libraries cohttp-async core_unix.command_unix logs.fmt fmt.tty))
 
+(executable
+ (name eio_server)
+ (modules eio_server)
+ (libraries cohttp-eio eio_main))
+
 (rule
  (alias bench)
  (package cohttp-bench)
