@@ -1,3 +1,7 @@
+## Unreleased
+
+- http: Fix assertion in `Source.to_string_trim` when `pos <> 0` (mefyl #1017)
+
 ## v6.0.0~beta2 (2024-01-05)
 
 - cohttp-eio: Don't blow up Server on client disconnections. (mefyl #1011)
