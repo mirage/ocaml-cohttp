@@ -1,3 +1,7 @@
+let src = Logs.Src.create "cohttp.eio.io" ~doc:"Cohttp Eio IO module"
+
+module Logs = (val Logs.src_log src : Logs.LOG)
+
 module IO = struct
   type 'a t = 'a
 
@@ -22,16 +26,30 @@ module IO = struct
     let () = Eio.Buf_read.consume ic consumed in
     res
 
-  let read_line ic = try Some (Eio.Buf_read.line ic) with End_of_file -> None
+  let read_line ic =
+    try
+      let line = Eio.Buf_read.line ic in
+      let () = Logs.debug (fun f -> f "<<< %s" line) in
+      Some line
+    with End_of_file ->
+      let () = Logs.debug (fun f -> f "<<< EOF") in
+      None
 
   let read ic len =
     match Eio.Buf_read.ensure ic 1 with
-    | exception End_of_file -> ""
+    | exception End_of_file ->
+        let () = Logs.debug (fun f -> f "<<< EOF") in
+        ""
     | () ->
         let len = Int.min len (Eio.Buf_read.buffered_bytes ic) in
-        Eio.Buf_read.take len ic
+        let read = Eio.Buf_read.take len ic in
+        let () = Logs.debug (fun f -> f "<<< %s" read) in
+        read
 
-  let write oc string = Eio.Buf_write.string oc string
+  let write oc string =
+    let () = Logs.debug (fun f -> f ">>> %s" (String.trim string)) in
+    Eio.Buf_write.string oc string
+
   let flush = Eio.Buf_write.flush
 end
 

@@ -15,6 +15,7 @@ let req =
    Cookie: wp_ozh_wsa_visits=2; wp_ozh_wsa_visit_lasttime=xxxxxxxxxx; \
    __utma=xxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.x; \
    __utmz=xxxxxxxxx.xxxxxxxxxx.x.x.utmccn=(referral)|utmcsr=reader.livedoor.com|utmcct=/reader/|utmcmd=referral\r\n\
+   Empty:    \r\n\
    \r\n"
 
 let assert_req_success ~here ~expected_req ~expected_consumed ?pos ?len buf =
@@ -69,13 +70,14 @@ let req_expected =
               __utma=xxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.xxxxxxxxxx.x; \
               __utmz=xxxxxxxxx.xxxxxxxxxx.x.x.utmccn=(referral)|utmcsr=reader.livedoor.com|utmcct=/reader/|utmcmd=referral"
            );
+           ("Empty", "");
          ])
     `GET "/wp-content/uploads/2010/03/hello-kitty-darth-vader-pink.jpg"
 
 let parse_single_request () =
   assert_req_success
     ~here:[ [%here] ]
-    ~expected_req:req_expected ~expected_consumed:706 req
+    ~expected_req:req_expected ~expected_consumed:718 req
 
 let reject_headers_with_space_before_colon () =
   let req =
