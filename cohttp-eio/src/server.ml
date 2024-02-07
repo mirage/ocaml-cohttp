@@ -103,11 +103,16 @@ let callback { conn_closed; handler } ((_, peer_address) as conn) input output =
         in
         conn_closed (conn, id)
     | exception Eio.Io (Eio.Net.E (Connection_reset _), _) ->
-        let () =
-          Logs.info (fun m ->
-              m "%a: connection reset" Eio.Net.Sockaddr.pp peer_address)
-        in
-        ()
+        Logs.info (fun m ->
+            m "%a: connection reset" Eio.Net.Sockaddr.pp peer_address)
+    | exception
+        Eio.Io
+          ( Eio.Exn.X _
+            (* To catch the backend-specific Eio_unix.Unix_error
+               (ETIMEDOUT, _, _), at least *),
+            _ ) ->
+        Logs.info (fun m ->
+            m "%a: connection timed out" Eio.Net.Sockaddr.pp peer_address)
     | `Invalid e ->
         write output
           (Http.Response.make ~status:`Bad_request ())
