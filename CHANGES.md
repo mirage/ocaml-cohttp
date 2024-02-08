@@ -1,5 +1,6 @@
 ## Unreleased
 
+- cohttp-eio: Don't blow up `Server.callback` on connection timeout. (mefyl #1021)
 - cohttp-eio: Don't blow up `Server.callback` on client disconnections. (mefyl #1015)
 - http: Fix assertion in `Source.to_string_trim` when `pos <> 0` (mefyl #1017)
 
