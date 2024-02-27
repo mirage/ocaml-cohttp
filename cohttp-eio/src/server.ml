@@ -3,6 +3,7 @@ module IO = Io.IO
 
 type body = Body.t
 type conn = IO.conn * Cohttp.Connection.t [@@warning "-3"]
+type response = Http.Response.t * Body.t
 
 type response_action =
   [ `Expert of Http.Response.t * (IO.ic -> IO.oc -> unit IO.t)
