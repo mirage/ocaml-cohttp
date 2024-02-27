@@ -7,7 +7,6 @@ let headers = Cohttp.Header.of_list [ ("content-length", Int.to_string length) ]
 let server_callback _conn _req _body =
   Server.respond_string ~headers ~status:`OK ~body:text ()
 
-
 let () =
   let port = ref 8080 in
   Arg.parse
