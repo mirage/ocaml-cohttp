@@ -1,8 +1,18 @@
+type writer
+
 include
   Cohttp.Generic.Server.S
     with module IO = Io.IO
      and type body = Body.t
-     and type response = Http.Response.t * Body.t
+     and type response = writer -> unit
+
+val respond :
+  ?headers:Http.Header.t ->
+  ?flush:bool ->
+  status:Http.Status.t ->
+  body:_ Eio.Flow.source ->
+  unit ->
+  response IO.t
 
 val run :
   ?max_connections:int ->

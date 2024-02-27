@@ -1,5 +1,3 @@
-open Eio.Std
-
 let () =
   Logs.set_level ~all:true @@ Some Logs.Debug;
   Logs.set_reporter (Logs_fmt.reporter ())
@@ -13,7 +11,7 @@ let handler _conn request body =
         Eio_mock.Flow.on_read body
           [ `Return "Hello"; `Yield_then (`Return "World") ]
       in
-      Cohttp_eio.Server.respond ~status:`OK ~body:(body :> Eio.Flow.source_ty r) ()
+      Cohttp_eio.Server.respond ~status:`OK ~body ()
   | "/post" -> Cohttp_eio.Server.respond ~status:`OK ~body ()
   | _ -> Cohttp_eio.Server.respond_string ~status:`Not_found ~body:"" ()
 

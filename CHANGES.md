@@ -1,5 +1,6 @@
 ## Unreleased
 
+- cohttp-eio: Make server response type abstract and allow streaming in cohttp-eio (talex5 #1024)
 - cohttp-{lwt,eio}: server: add connection header to response if not present (ushitora-anqou #1025)
 - cohttp-curl: Curl no longer prepends the first HTTP request header to the output. (jonahbeckford #1030, #987)
 - cohttp-eio: client: use permissive argument type for make_generic

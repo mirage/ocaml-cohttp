@@ -3,26 +3,29 @@ module IO = Io.IO
 
 type body = Body.t
 type conn = IO.conn * Cohttp.Connection.t [@@warning "-3"]
-type response = Http.Response.t * Body.t
+type writer = Http.Request.t * IO.oc
+type response = writer -> unit
 
 type response_action =
   [ `Expert of Http.Response.t * (IO.ic -> IO.oc -> unit)
-  | `Response of Http.Response.t * body ]
-
-(* type handler =
- *   sw:Eio.Switch.t ->
- *   Eio.Net.Sockaddr.stream ->
- *   Http.Request.t ->
- *   Eio.Flow.source ->
- *   Http.Response.t * Eio.Flow.source *)
+  | `Response of response ]
 
 type t = {
   conn_closed : conn -> unit;
-  handler : conn -> Http.Request.t -> body -> response_action;
+  handler : conn -> Http.Request.t -> body -> IO.ic -> IO.oc -> unit;
 }
 
 let make_response_action ?(conn_closed = fun _ -> ()) ~callback () =
-  { conn_closed; handler = callback }
+  {
+    conn_closed;
+    handler =
+      (fun conn request body ic oc ->
+        match callback conn request body with
+        | `Expert (response, handler) ->
+            Io.Response.write_header response oc;
+            handler ic oc
+        | `Response fn -> fn (request, oc));
+  }
 
 let make_expert ?conn_closed ~callback () =
   make_response_action ?conn_closed
@@ -31,12 +34,11 @@ let make_expert ?conn_closed ~callback () =
       `Expert expert)
     ()
 
-let make ?conn_closed ~callback () =
-  make_response_action ?conn_closed
-    ~callback:(fun conn request body ->
-      let response = callback conn request body in
-      `Response response)
-    ()
+let make ?(conn_closed = fun _ -> ()) ~callback () =
+  {
+    conn_closed;
+    handler = (fun conn request body _ic oc -> callback conn request body (request, oc));
+  }
 
 let read input =
   match Io.Request.read input with
@@ -88,9 +90,17 @@ let write output (response : Cohttp.Response.t) body =
   in
   Eio.Buf_write.flush output
 
-let respond ?headers ?flush ~status ~body () =
-  let response = Cohttp.Response.make ?headers ?flush ~status () in
-  (response, body)
+let respond ?(headers = Cohttp.Header.init ()) ?flush ~status ~body () (request, oc) =
+  let keep_alive = Http.Request.is_keep_alive request in
+  let headers =
+    match Cohttp.Header.connection headers with
+    | None ->
+      Http.Header.add headers "connection"
+        (if keep_alive then "keep-alive" else "close")
+    | Some _ -> headers
+  in
+  let response = Cohttp.Response.make ~headers ?flush ~status () in
+  write oc response body
 
 let respond_string ?headers ?flush ~status ~body () =
   respond ?headers ?flush ~status ~body:(Body.of_string body) ()
@@ -117,26 +127,7 @@ let callback { conn_closed; handler } ((_, peer_address) as conn) input output =
           (Body.of_string e)
     | `Ok (request, body) ->
         let () =
-          try
-            match handler (conn, id) request body with
-            | `Response (response, body) ->
-                let keep_alive =
-                  Http.Request.is_keep_alive request
-                  && Http.Response.is_keep_alive response
-                in
-                let response =
-                  let headers =
-                    Http.Header.add_unless_exists
-                      (Http.Response.headers response)
-                      "connection"
-                      (if keep_alive then "keep-alive" else "close")
-                  in
-                  { response with Http.Response.headers }
-                in
-                write output response body
-            | `Expert (response, handler) ->
-                let () = Io.Response.write_header response output in
-                handler input output
+          try handler (conn, id) request body input output
           with Eio.Io (Eio.Net.E (Connection_reset _), _) ->
             Logs.info (fun m ->
                 m "%a: connection reset" Eio.Net.Sockaddr.pp peer_address)
