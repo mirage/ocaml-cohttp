@@ -6,16 +6,16 @@ let () =
 
 let handler _conn request body =
   match Http.Request.resource request with
-  | "/" -> (Http.Response.make (), Cohttp_eio.Body.of_string "root")
+  | "/" -> Cohttp_eio.Server.respond_string ~status:`OK ~body:"root" ()
   | "/stream" ->
       let body = Eio_mock.Flow.make "streaming body" in
       let () =
         Eio_mock.Flow.on_read body
           [ `Return "Hello"; `Yield_then (`Return "World") ]
       in
-      (Http.Response.make (), (body :> Eio.Flow.source_ty r))
-  | "/post" -> (Http.Response.make (), body)
-  | _ -> (Http.Response.make ~status:`Not_found (), Cohttp_eio.Body.of_string "")
+      Cohttp_eio.Server.respond ~status:`OK ~body:(body :> Eio.Flow.source_ty r) ()
+  | "/post" -> Cohttp_eio.Server.respond ~status:`OK ~body ()
+  | _ -> Cohttp_eio.Server.respond_string ~status:`Not_found ~body:"" ()
 
 let () =
   Eio_main.run @@ fun env ->

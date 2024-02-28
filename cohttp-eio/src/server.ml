@@ -6,7 +6,7 @@ type conn = IO.conn * Cohttp.Connection.t [@@warning "-3"]
 type response = Http.Response.t * Body.t
 
 type response_action =
-  [ `Expert of Http.Response.t * (IO.ic -> IO.oc -> unit IO.t)
+  [ `Expert of Http.Response.t * (IO.ic -> IO.oc -> unit)
   | `Response of Http.Response.t * body ]
 
 (* type handler =
@@ -18,7 +18,7 @@ type response_action =
 
 type t = {
   conn_closed : conn -> unit;
-  handler : conn -> Http.Request.t -> body -> response_action IO.t;
+  handler : conn -> Http.Request.t -> body -> response_action;
 }
 
 let make_response_action ?(conn_closed = fun _ -> ()) ~callback () =
@@ -27,21 +27,16 @@ let make_response_action ?(conn_closed = fun _ -> ()) ~callback () =
 let make_expert ?conn_closed ~callback () =
   make_response_action ?conn_closed
     ~callback:(fun conn request body ->
-      IO.(callback conn request body >>= fun expert -> `Expert expert))
+      let expert = callback conn request body in
+      `Expert expert)
     ()
 
 let make ?conn_closed ~callback () =
   make_response_action ?conn_closed
     ~callback:(fun conn request body ->
-      IO.(callback conn request body >>= fun response -> `Response response))
+      let response = callback conn request body in
+      `Response response)
     ()
-
-let respond ?headers ?flush ~status ~body () =
-  let response = Cohttp.Response.make ?headers ?flush ~status () in
-  (response, body)
-
-let respond_string ?headers ?flush ~status ~body () =
-  respond ?headers ?flush ~status ~body:(Body.of_string body) ()
 
 let read input =
   match Io.Request.read input with
@@ -92,6 +87,13 @@ let write output (response : Cohttp.Response.t) body =
       response output
   in
   Eio.Buf_write.flush output
+
+let respond ?headers ?flush ~status ~body () =
+  let response = Cohttp.Response.make ?headers ?flush ~status () in
+  (response, body)
+
+let respond_string ?headers ?flush ~status ~body () =
+  respond ?headers ?flush ~status ~body:(Body.of_string body) ()
 
 let callback { conn_closed; handler } ((_, peer_address) as conn) input output =
   let id = (Cohttp.Connection.create () [@ocaml.warning "-3"]) in
