@@ -1,5 +1,6 @@
 ## Unreleased
 
+- cohttp-{lwt,eio}: server: return connection header (ushitora-anqou #1025)
 - cohttp-eio: Improve error handling in example server (talex5 #1023)
 - cohttp-eio: Don't blow up `Server.callback` on client disconnections. (mefyl #1015)
 - http: Fix assertion in `Source.to_string_trim` when `pos <> 0` (mefyl #1017)

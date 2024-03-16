@@ -44,7 +44,8 @@ let () =
         [ Cstruct.of_string "GET / HTTP/1.1\r\nconnection: close\r\n\r\n" ]
     in
     Alcotest.(check ~here:[%here] string)
-      "response" "HTTP/1.1 200 OK\r\ncontent-length: 4\r\n\r\nroot"
+      "response"
+      "HTTP/1.1 200 OK\r\nconnection: close\r\ncontent-length: 4\r\n\r\nroot"
       Eio.Buf_read.(of_flow ~max_size:max_int socket |> take_all)
   and missing socket =
     let () =
@@ -54,7 +55,8 @@ let () =
         ]
     in
     Alcotest.(check ~here:[%here] string)
-      "response" "HTTP/1.1 404 Not Found\r\ncontent-length: 0\r\n\r\n"
+      "response"
+      "HTTP/1.1 404 Not Found\r\nconnection: close\r\ncontent-length: 0\r\n\r\n"
       Eio.Buf_read.(of_flow ~max_size:max_int socket |> take_all)
   and streaming_response socket =
     let () =
@@ -66,6 +68,7 @@ let () =
     Alcotest.(check ~here:[%here] string)
       "response"
       "HTTP/1.1 200 OK\r\n\
+       connection: close\r\n\
        transfer-encoding: chunked\r\n\
        \r\n\
        5\r\n\
@@ -90,6 +93,7 @@ let () =
     Alcotest.(check ~here:[%here] string)
       "response"
       "HTTP/1.1 200 OK\r\n\
+       connection: close\r\n\
        transfer-encoding: chunked\r\n\
        \r\n\
        c\r\n\

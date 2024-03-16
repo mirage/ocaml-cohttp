@@ -116,7 +116,21 @@ let callback { conn_closed; handler } ((_, peer_address) as conn) input output =
         let () =
           try
             match handler (conn, id) request body with
-            | `Response (response, body) -> write output response body
+            | `Response (response, body) ->
+                let keep_alive =
+                  Http.Request.is_keep_alive request
+                  && Http.Response.is_keep_alive response
+                in
+                let response =
+                  let headers =
+                    Http.Header.add_unless_exists
+                      (Http.Response.headers response)
+                      "connection"
+                      (if keep_alive then "keep-alive" else "close")
+                  in
+                  { response with Http.Response.headers }
+                in
+                write output response body
             | `Expert (response, handler) ->
                 let () = Io.Response.write_header response output in
                 handler input output
