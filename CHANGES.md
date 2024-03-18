@@ -1,6 +1,7 @@
 ## Unreleased
 
-- cohttp-eio: Make server response type abstract and allow streaming in cohttp-eio (talex5 #1024)
+- cohttp-eio: allow streaming in cohttp-eio (talex5 #1024)
+- cohttp: make server response type abstract (talex5 #1024)
 - cohttp-eio: Improve error handling in example server (talex5 #1023)
 - cohttp-eio: Don't blow up `Server.callback` on client disconnections. (mefyl #1015)
 - http: Fix assertion in `Source.to_string_trim` when `pos <> 0` (mefyl #1017)
