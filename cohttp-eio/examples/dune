@@ -1,5 +1,5 @@
 (executables
- (names server1 client1 docker_client client_timeout client_tls)
+ (names server1 server2 client1 docker_client client_timeout client_tls)
  (libraries
   cohttp-eio
   eio_main

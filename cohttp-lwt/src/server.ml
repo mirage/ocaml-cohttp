@@ -7,6 +7,7 @@ module Make (IO : S.IO) = struct
   module Request = Make.Request (IO)
   module Response = Make.Response (IO)
 
+  type response = Http.Response.t * Body.t
   type body = Body.t
 
   let src = Logs.Src.create "cohttp.lwt.server" ~doc:"Cohttp Lwt server module"
