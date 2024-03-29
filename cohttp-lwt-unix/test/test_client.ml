@@ -127,7 +127,8 @@ let test_client uri =
 (* Simple case: The server is known to support pipelining and won't close the
  * connection unexpectantly (timeout or number of requests may be limited). *)
 let test_persistent uri =
-  Connection.Net.resolve ~ctx:Connection.Net.default_ctx
+  Connection.Net.resolve
+    ~ctx:(Lazy.force Connection.Net.default_ctx)
     uri (* resolve hostname. *)
   >>= Connection.connect ~persistent:true
   >>= fun connection ->
@@ -140,7 +141,8 @@ let test_persistent uri =
  * This might result in a massive amount of parallel connections. *)
 let test_non_persistent uri =
   (* the resolved endpoint may be buffered to avoid stressing the resolver: *)
-  Connection.Net.resolve ~ctx:Connection.Net.default_ctx uri >>= fun endp ->
+  Connection.Net.resolve ~ctx:(Lazy.force Connection.Net.default_ctx) uri
+  >>= fun endp ->
   let handler ?headers ?body meth uri =
     Connection.connect ~persistent:false endp >>= fun connection ->
     Connection.call connection ?headers ?body meth uri
@@ -151,7 +153,8 @@ let test_non_persistent uri =
  * not be supported or the server may close the connection unexpectedly.
  * In such a case the pending requests will fail with Connection.Retry. *)
 let test_unknown uri =
-  Connection.Net.resolve ~ctx:Connection.Net.default_ctx uri >>= fun endp ->
+  Connection.Net.resolve ~ctx:(Lazy.force Connection.Net.default_ctx) uri
+  >>= fun endp ->
   (* buffer resolved endp *)
   Connection.connect ~persistent:false endp >>= fun c ->
   let connection = ref c in

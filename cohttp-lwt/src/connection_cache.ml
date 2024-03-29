@@ -18,7 +18,7 @@ end = struct
 
   let call = Fun.id
 
-  let create ?(ctx = Net.default_ctx) () ?headers ?body meth uri =
+  let create ?(ctx = Lazy.force Net.default_ctx) () ?headers ?body meth uri =
     Net.resolve ~ctx uri
     (* TODO: Support chunked encoding without ~persistent:true ? *)
     >>= Connection.connect ~ctx ~persistent:true
@@ -85,8 +85,8 @@ end = struct
     depth : int;
   }
 
-  let create ?(ctx = Net.default_ctx) ?(keep = 60_000_000_000L) ?(retry = 2)
-      ?(parallel = 4) ?(depth = 100) () =
+  let create ?(ctx = Lazy.force Net.default_ctx) ?(keep = 60_000_000_000L)
+      ?(retry = 2) ?(parallel = 4) ?(depth = 100) () =
     {
       cache = Hashtbl.create ~random:true 10;
       ctx;

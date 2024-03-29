@@ -34,7 +34,7 @@ module type Net = sig
       installed on the system, [cohttp]/[conduit] tries the usual ([*:80]) or
       the specified port by the user in a non-secured way. *)
 
-  val default_ctx : ctx
+  val default_ctx : ctx Lazy.t
 
   val resolve : ctx:ctx -> Uri.t -> endp IO.t
   (** [resolve ~ctx uri] resolves [uri] into an endpoint description. This is

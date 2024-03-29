@@ -65,7 +65,7 @@ let log_on_exn = function
   | exn -> Log.err (fun m -> m "Unhandled exception: %a" Fmt.exn exn)
 
 let create ?timeout ?backlog ?stop ?(on_exn = log_on_exn)
-    ?(ctx = Net.default_ctx) ?(mode = `TCP (`Port 8080)) spec =
+    ?(ctx = Lazy.force Net.default_ctx) ?(mode = `TCP (`Port 8080)) spec =
   Conduit_lwt_unix.serve ?backlog ?timeout ?stop ~on_exn ~ctx:ctx.Net.ctx ~mode
     (fun flow ic oc ->
       let ic = Input_channel.create ic in
