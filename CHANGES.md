@@ -3,6 +3,7 @@
 - cohttp-eio: Improve error handling in example server (talex5 #1023)
 - cohttp-eio: Don't blow up `Server.callback` on client disconnections. (mefyl #1015)
 - http: Fix assertion in `Source.to_string_trim` when `pos <> 0` (mefyl #1017)
+- cohttp-lwt-unix: Don't blow up when certificates are not available and no-network requests are made. (akuhlens #1027)
 
 ## v6.0.0~beta2 (2024-01-05)
 
