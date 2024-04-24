@@ -24,6 +24,6 @@ val make :
     - URIs of the form "httpunix://unix-path/http-path" connect to the given
       Unix path. *)
 
-val make_generic : (sw:Switch.t -> Uri.t -> _ Eio.Net.stream_socket) -> t
+val make_generic : (sw:Switch.t -> Uri.t -> _ Eio.Flow.two_way) -> t
 (** [make_generic connect] is an HTTP client that uses [connect] to get the
     connection to use for a given URI. *)
