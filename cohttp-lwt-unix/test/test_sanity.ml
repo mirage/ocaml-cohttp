@@ -78,7 +78,7 @@ let check_logs test () =
 
 let ts =
   Cohttp_lwt_unix_test.test_server_s server (fun uri ->
-      let ctx = Cohttp_lwt_unix.Net.default_ctx in
+      let ctx = Lazy.force Cohttp_lwt_unix.Net.default_ctx in
       let t () =
         Client.get ~ctx uri >>= fun (_, body) ->
         body |> Body.to_string >|= fun body -> assert_equal body message

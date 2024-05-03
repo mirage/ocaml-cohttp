@@ -28,10 +28,11 @@ let init ?(ctx = Lazy.force Conduit_lwt_unix.default_ctx)
   { ctx; resolver }
 
 let default_ctx =
-  {
-    resolver = Resolver_lwt_unix.system;
-    ctx = Lazy.force Conduit_lwt_unix.default_ctx;
-  }
+  lazy
+    {
+      resolver = Resolver_lwt_unix.system;
+      ctx = Lazy.force Conduit_lwt_unix.default_ctx;
+    }
 
 type endp = Conduit.endp
 

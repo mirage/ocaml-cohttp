@@ -51,7 +51,7 @@ module Make (Connection : S.Connection) = struct
     let body = Body.of_string (Uri.encoded_of_query params) in
     post ?ctx ~chunked:false ~headers ~body uri
 
-  let callv ?(ctx = Net.default_ctx) uri reqs =
+  let callv ?(ctx = Lazy.force Net.default_ctx) uri reqs =
     let mutex = Lwt_mutex.create () in
     Net.resolve ~ctx uri >>= Connection.connect ~ctx >>= fun connection ->
     Lwt.return

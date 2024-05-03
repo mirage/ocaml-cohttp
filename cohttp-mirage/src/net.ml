@@ -18,7 +18,7 @@ struct
   let sexp_of_ctx { resolver; _ } = R.sexp_of_t resolver
 
   let default_ctx =
-    { resolver = R.localhost; conduit = None; authenticator = None }
+    lazy { resolver = R.localhost; conduit = None; authenticator = None }
 
   type endp = Conduit.endp
 
