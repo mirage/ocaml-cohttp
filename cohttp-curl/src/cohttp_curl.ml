@@ -53,13 +53,13 @@ module Request = struct
     let response_header_acc = ref [] in
     let response_body = ref None in
     let h = Curl.init () in
-    let buf = Buffer.create 128 in
     Curl.setopt h (CURLOPT_URL uri);
     Curl.setopt h (CURLOPT_CUSTOMREQUEST (Http.Method.to_string method_));
     let () =
       match headers with
       | None -> ()
       | Some headers ->
+          let buf = Buffer.create 128 in
           let headers =
             Http.Header.fold
               (fun key value acc ->
@@ -120,6 +120,7 @@ module Request = struct
          (match output with
          | Discard -> fun s -> String.length s
          | String ->
+             let buf = Buffer.create 128 in
              response_body := Some buf;
              fun s ->
                Buffer.add_string buf s;
