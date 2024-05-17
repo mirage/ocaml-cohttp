@@ -264,7 +264,7 @@ module Make (Net : S.Net) : S.Connection with module Net = Net = struct
     | Connecting _ -> assert false
 
   let create ?(finalise = fun _ -> Lwt.return_unit) ?persistent
-      ?(ctx = Net.default_ctx) endp =
+      ?(ctx = Lazy.force Net.default_ctx) endp =
     let persistent =
       match persistent with
       | None -> `Unknown

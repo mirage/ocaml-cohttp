@@ -35,7 +35,7 @@ let server_noisy =
 
 let ts_noisy =
   Cohttp_lwt_unix_test.test_server_s ~port:10193 server_noisy (fun uri ->
-      let ctx = Cohttp_lwt_unix.Net.default_ctx in
+      let ctx = Lazy.force Cohttp_lwt_unix.Net.default_ctx in
       let empty_chunk () =
         Client.get ~ctx uri >>= fun (_, body) ->
         body |> Body.to_string >|= fun body ->
