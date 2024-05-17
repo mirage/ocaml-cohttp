@@ -146,6 +146,15 @@ module Make (IO : S.IO) = struct
             let keep_alive =
               Http.Request.is_keep_alive req && Http.Response.is_keep_alive res
             in
+            let res =
+              let headers =
+                Http.Header.add_unless_exists
+                  (Http.Response.headers res)
+                  "connection"
+                  (if keep_alive then "keep-alive" else "close")
+              in
+              { res with Http.Response.headers }
+            in
             handle_response ~keep_alive oc res body
               (fun () -> spec.conn_closed conn)
               (fun oc -> handle_client ic oc conn spec)

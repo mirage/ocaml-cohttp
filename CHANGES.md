@@ -1,5 +1,6 @@
 ## Unreleased
 
+- cohttp-{lwt,eio}: server: add connection header to response if not present (ushitora-anqou #1025)
 - cohttp-curl: Curl no longer prepends the first HTTP request header to the output. (jonahbeckford #1030, #987)
 - cohttp-eio: client: use permissive argument type for make_generic
 - cohttp-eio: Improve error handling in example server (talex5 #1023)
