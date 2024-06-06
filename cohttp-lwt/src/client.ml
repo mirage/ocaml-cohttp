@@ -46,8 +46,8 @@ module Make (IO : S.IO) (Net : S.Net with module IO = IO) = struct
     | `DELETE -> false
     | _ -> true
 
-  let call ?(ctx = Net.default_ctx) ?headers ?(body = `Empty) ?chunked meth uri
-      =
+  let call_with_closefn ?(ctx = Net.default_ctx) ?headers ?(body = `Empty)
+      ?chunked meth uri =
     let headers = match headers with None -> Header.init () | Some h -> h in
     Net.connect_uri ~ctx uri >>= fun (_conn, ic, oc) ->
     let closefn () = Net.close ic oc in
@@ -88,7 +88,11 @@ module Make (IO : S.IO) (Net : S.Net with module IO = IO) = struct
     |> fun t ->
     Lwt.on_cancel t closefn;
     Lwt.on_failure t (fun _exn -> closefn ());
-    t
+    Lwt.return (t, closefn)
+
+  let call ?(ctx = Net.default_ctx) ?headers ?(body = `Empty) ?chunked meth uri
+      =
+    call_with_closefn ~ctx ?headers ~body ?chunked meth uri >>= fun (t, _) -> t
 
   (* The HEAD should not have a response body *)
   let head ?ctx ?headers uri = call ?ctx ?headers `HEAD uri >|= fst
