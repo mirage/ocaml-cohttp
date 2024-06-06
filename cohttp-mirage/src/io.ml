@@ -76,4 +76,6 @@ module Make (Channel : Mirage_channel.S) = struct
       | Read_exn e -> Lwt.return_error (Read_error e)
       | Write_exn e -> Lwt.return_error (Write_error e)
       | ex -> Lwt.fail ex)
+
+  let wait_eof_or_closed _conn _ic _sleep_fn = assert false
 end

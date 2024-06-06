@@ -13,6 +13,20 @@ module type IO = sig
       which case it returns the error. *)
 
   val pp_error : Format.formatter -> error -> unit
+
+  val wait_eof_or_closed : conn -> ic -> (unit -> unit t) -> unit t
+  (** [wait_eof_or_closed conn ic sleep_fn] waits for an EOF or a Closed status
+      on the input channel [ic]. This function is designed to be used in
+      [Lwt.pick] to run concurrently with the request handling from the input
+      channel. The function checks for EOF using [MSG_PEEK] on the input channel
+      without consuming data, thereby not disturbing the request handling. If
+      the connection is closed locally, Cohttp will stop waiting for EOF and
+      will wait the promise to be cancelled. This function ensures that the
+      monitoring does not spin too quickly and uses CPU efficiently when the
+      input channel has read activity but the client is not reading it.
+
+      [sleep_fn] is a parameter function used to yield control periodically,
+      keeping Cohttp platform-independent. *)
 end
 
 (** The [Net] module type defines how to connect to a remote node and close the
@@ -155,12 +169,27 @@ module type Server = sig
 
   val make_response_action :
     ?conn_closed:(conn -> unit) ->
+    ?sleep_fn:(unit -> unit Lwt.t) ->
     callback:(conn -> Cohttp.Request.t -> Body.t -> response_action Lwt.t) ->
     unit ->
     t
+  (** [make_response_action] creates a set of callbacks used by Cohttp Server.
+
+      - [callback] is called when a new connection is accepted by the server
+        socket.
+      - [conn_closed] if provided, will be called when the connection is closed,
+        e.g. when an EOF is received.
+      - [sleep_fn] if provided, will be used for periodic checks for EOF from
+        the client. If this callback is not provided, Cohttp will not detect and
+        notify the client about EOF received from the peer while the client is
+        handling the new connection. This can lead to a resource leak if the
+        [callback] is designed to never resolve. If the connection is closed
+        locally, Cohttp will stop waiting for EOF and will wait the promise to
+        be cancelled. *)
 
   val make_expert :
     ?conn_closed:(conn -> unit) ->
+    ?sleep_fn:(unit -> unit Lwt.t) ->
     callback:
       (conn ->
       Cohttp.Request.t ->
@@ -171,6 +200,7 @@ module type Server = sig
 
   val make :
     ?conn_closed:(conn -> unit) ->
+    ?sleep_fn:(unit -> unit Lwt.t) ->
     callback:
       (conn -> Cohttp.Request.t -> Body.t -> (Cohttp.Response.t * Body.t) Lwt.t) ->
     unit ->

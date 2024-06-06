@@ -19,22 +19,23 @@ module Make (IO : S.IO) = struct
   type t = {
     callback : conn -> Cohttp.Request.t -> Body.t -> response_action Lwt.t;
     conn_closed : conn -> unit;
+    sleep_fn : (unit -> unit Lwt.t) option;
   }
 
-  let make_response_action ?(conn_closed = ignore) ~callback () =
-    { conn_closed; callback }
+  let make_response_action ?(conn_closed = ignore) ?sleep_fn ~callback () =
+    { conn_closed; callback; sleep_fn }
 
-  let make ?conn_closed ~callback () =
+  let make ?conn_closed ?sleep_fn ~callback () =
     let callback conn req body =
       callback conn req body >|= fun rsp -> `Response rsp
     in
-    make_response_action ?conn_closed ~callback ()
+    make_response_action ?conn_closed ?sleep_fn ~callback ()
 
-  let make_expert ?conn_closed ~callback () =
+  let make_expert ?conn_closed ?sleep_fn ~callback () =
     let callback conn req body =
       callback conn req body >|= fun rsp -> `Expert rsp
     in
-    make_response_action ?conn_closed ~callback ()
+    make_response_action ?conn_closed ?sleep_fn ~callback ()
 
   module Transfer_IO = Cohttp__Transfer_io.Make (IO)
 
@@ -111,7 +112,9 @@ module Make (IO : S.IO) = struct
                 `Response rsp))
       (fun () -> Body.drain_body body)
 
-  let handle_response ~keep_alive oc res body conn_closed handle_client =
+  type conn_action = Call_conn_closed | Call_conn_closed_and_drain of Body.t
+
+  let handle_response ~keep_alive oc res body handle_client =
     IO.catch (fun () ->
         let flush = Response.flush res in
         Response.write ~flush
@@ -119,32 +122,28 @@ module Make (IO : S.IO) = struct
           res oc)
     >>= function
     | Ok () ->
-        if keep_alive then handle_client oc
-        else
-          let () = conn_closed () in
-          Lwt.return_unit
+        if keep_alive then handle_client oc else Lwt.return Call_conn_closed
     | Error e ->
         Log.info (fun m -> m "IO error while writing body: %a" IO.pp_error e);
-        conn_closed ();
-        Body.drain_body body
+        Lwt.return (Call_conn_closed_and_drain body)
 
   let rec handle_client ic oc conn spec =
     Request.read ic >>= function
     | `Eof ->
-        spec.conn_closed conn;
-        Lwt.return_unit
+        Log.debug (fun m ->
+            m "Got EOF while handling client: %s"
+              (Cohttp.Connection.to_string (snd conn)));
+        Lwt.return Call_conn_closed
     | `Invalid data ->
         Log.err (fun m -> m "invalid input %s while handling client" data);
-        spec.conn_closed conn;
-        Lwt.return_unit
+        Lwt.return Call_conn_closed
     | `Ok req -> (
         let body = read_body ic req in
         handle_request spec.callback conn req body >>= function
         | `Response (res, body) ->
             let keep_alive = Request.is_keep_alive req in
-            handle_response ~keep_alive oc res body
-              (fun () -> spec.conn_closed conn)
-              (fun oc -> handle_client ic oc conn spec)
+            handle_response ~keep_alive oc res body (fun oc ->
+                handle_client ic oc conn spec)
         | `Expert (res, io_handler) ->
             Response.write_header res oc >>= fun () ->
             io_handler ic oc >>= fun () -> handle_client ic oc conn spec)
@@ -152,9 +151,28 @@ module Make (IO : S.IO) = struct
   let callback spec io_id ic oc =
     let conn_id = Cohttp.Connection.create () in
     let conn_closed () = spec.conn_closed (io_id, conn_id) in
+    let handle () = handle_client ic oc (io_id, conn_id) spec in
+    let is_conn_closed () =
+      (* Without a sleep function we cannot safely loop waiting for EOF *)
+      match spec.sleep_fn with
+      | None -> fst (Lwt.task ()) (* wait to be cancelled *)
+      | Some sleep_fn ->
+          IO.wait_eof_or_closed io_id ic sleep_fn >>= fun () ->
+          Log.debug (fun m ->
+              m "Client closed the connection, got EOF for %s"
+                (Cohttp.Connection.to_string conn_id));
+          Lwt.return Call_conn_closed
+    in
     Lwt.catch
       (fun () ->
-        IO.catch (fun () -> handle_client ic oc (io_id, conn_id) spec)
+        IO.catch (fun () ->
+            Lwt.pick [ handle (); is_conn_closed () ] >>= function
+            | Call_conn_closed ->
+                conn_closed ();
+                Lwt.return_unit
+            | Call_conn_closed_and_drain body ->
+                conn_closed ();
+                Body.drain_body body)
         >>= function
         | Ok () -> Lwt.return_unit
         | Error e ->
