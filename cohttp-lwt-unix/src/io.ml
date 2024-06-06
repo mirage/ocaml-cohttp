@@ -80,3 +80,33 @@ let catch f =
     | ex -> Lwt.fail ex)
 
 let pp_error = Fmt.exn
+
+let wait_eof_or_closed conn ic sleep_fn =
+  let open Lwt.Infix in
+  let wait_for_cancel () =
+    (* Wait till this promise is cancelled externally.
+       We cannot return from the function as it will cancel
+       another promise which is handling the request and works
+       on the same input channel *)
+    fst (Lwt.task ())
+  in
+  let bytes = Bytes.create 1 in
+  let has_recv_eof fd =
+    (* MSG_PEEK does not consume data from the stream and does not
+       impact normal read operations *)
+    Lwt_unix.recv fd bytes 0 1 Unix.[ MSG_PEEK ] >|= fun n -> n = 0
+  in
+  let rec loop fd =
+    (* Calls [sleep_fn] to allow yielding control to the request handler *)
+    sleep_fn () >>= fun () ->
+    if Lwt_io.is_closed ic then
+      (* the connection is closed locally, stop waiting for EOF *)
+      wait_for_cancel ()
+    else
+      has_recv_eof fd >>= function
+      | true -> Lwt.return_unit (* got EOF *)
+      | false -> loop fd
+  in
+  match (conn : Conduit_lwt_unix.flow) with
+  | Vchan _ -> wait_for_cancel ()
+  | TCP { fd; _ } | Domain_socket { fd; _ } -> loop fd
