@@ -80,3 +80,32 @@ let catch f =
     | ex -> Lwt.fail ex)
 
 let pp_error = Fmt.exn
+
+let wait_eof_or_closed conn ic sleep_fn =
+  let wait_for_cancel () = fst (Lwt.task ()) in
+  match (conn : Conduit_lwt_unix.flow) with
+  | Vchan _ -> wait_for_cancel ()
+  | TCP { fd; _ } | Domain_socket { fd; _ } ->
+      let peek_buffer = Bytes.create 1 in
+      let has_recv_eof fd =
+        (* MSG_PEEK does not consume data from the stream and does not
+           impact normal read operations *)
+        Lwt_unix.recv fd peek_buffer 0 1 Unix.[ MSG_PEEK ] >>= fun n ->
+        Lwt.return (n = 0)
+      in
+      let rec loop fd =
+        (* Calls [sleep_fn] to allow yielding control to the request handler *)
+        sleep_fn () >>= fun () ->
+        if Lwt_io.is_closed ic then
+          (* The connection was closed locally. Stop waiting for EOF.
+             The client has closed the connection and now possibly is doing
+             some clean up. We should not interrupt this. Let's wait
+             till the promise for the request handling is resolved and then this
+             promise will be cancelled. *)
+          wait_for_cancel ()
+        else
+          has_recv_eof fd >>= function
+          | true -> Lwt.return_unit
+          | false -> loop fd
+      in
+      loop fd

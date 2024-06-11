@@ -36,6 +36,11 @@
  (name test_body)
  (libraries cohttp_lwt_unix_test cohttp-lwt-unix))
 
+(executable
+ (modules test_leak)
+ (name test_leak)
+ (libraries cohttp-lwt-unix))
+
 (rule
  (alias runtest)
  (package cohttp-lwt-unix)
