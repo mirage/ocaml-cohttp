@@ -144,8 +144,8 @@ module type Response = sig
   val version : t -> Code.version
   val status : t -> Code.status_code
 
-  val flush :
-    (t -> bool[@deprecated "this field will be removed in the future"])
+  val flush : (t -> bool)
+  [@@deprecated "this field will be removed in the future"]
 
   val compare : t -> t -> int
 
