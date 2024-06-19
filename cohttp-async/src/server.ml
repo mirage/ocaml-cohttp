@@ -85,7 +85,6 @@ let handle_client handle_request sock rd wr =
                     Http.Request.is_keep_alive req
                     && Http.Response.is_keep_alive res
                   in
-                  let flush = Http.Response.flush res in
                   let res =
                     let headers =
                       Http.Header.add_unless_exists
@@ -95,7 +94,7 @@ let handle_client handle_request sock rd wr =
                     in
                     { res with Http.Response.headers }
                   in
-                  Io.Response.write ~flush
+                  Io.Response.write
                     (Body.Private.write_body Io.Response.write_body res_body)
                     res wr
                   >>= fun () ->
