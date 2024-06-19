@@ -10,7 +10,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'pull_request' || github.sha }}
-  cancel-in-progress: true      
+  cancel-in-progress: true
 
 jobs:
   build-test-default:
@@ -22,12 +22,16 @@ jobs:
           - ubuntu-latest
           - macos-latest
         ocaml-compiler:
-          - ocaml-variants.4.08.1+afl
-          - ocaml-variants.4.09.1+afl
-          - ocaml-variants.4.10.1+afl
-          - ocaml-variants.4.11.2+afl
+          - ocaml-variants.4.10.2+afl
           - ocaml-variants.4.12.1+options,ocaml-option-afl
           - ocaml-variants.4.13.1+options,ocaml-option-afl
+        include:
+          - os: ubuntu-latest
+            ocaml-compiler: ocaml-variants.4.08.1+afl
+          - os: ubuntu-latest
+            ocaml-compiler: ocaml-variants.4.09.1+afl
+          - os: ubuntu-latest
+            ocaml-compiler: ocaml-variants.4.11.2+afl
         local-packages:
           - |
             *.opam
@@ -40,7 +44,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use OCaml ${{ matrix.ocaml-compiler }}
         uses: ocaml/setup-ocaml@v2
@@ -73,7 +77,7 @@ jobs:
           - ubuntu-latest
           - macos-latest
         ocaml-compiler:
-          - ocaml-variants.4.14.1+options,ocaml-option-afl
+          - ocaml-variants.4.14.2+options,ocaml-option-afl
         local-packages:
           - |
             *.opam
@@ -83,7 +87,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use OCaml ${{ matrix.ocaml-compiler }}
         uses: ocaml/setup-ocaml@v2
@@ -116,7 +120,7 @@ jobs:
           - ubuntu-latest
           - macos-latest
         ocaml-compiler:
-          - 5.0.x
+          - 5.x
         local-packages:
           - |
             http.opam
@@ -127,7 +131,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use OCaml ${{ matrix.ocaml-compiler }}
         uses: ocaml/setup-ocaml@v2
