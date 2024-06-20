@@ -24,7 +24,7 @@ depends: [
   "dune" {>= "3.0"}
   "ocaml" {>= "4.08"}
   "ppx_expect" {with-test & >= "v0.17.0"}
-  "alcotest" {with-test}
+  "alcotest" {with-test & >= "1.7.0"}
   "base_quickcheck" {with-test}
   "ppx_assert" {with-test}
   "ppx_sexp_conv" {with-test}

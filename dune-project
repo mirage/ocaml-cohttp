@@ -50,7 +50,7 @@
   (base64
    (>= 3.1.0))
   (fmt :with-test)
-  (alcotest :with-test)))
+  (alcotest (and :with-test (>= 1.7.0)))))
 
 (package
  (name cohttp-top)
@@ -245,7 +245,7 @@
   (ocaml
    (>= 4.08))
   (ppx_expect (and :with-test (>= v0.17.0)))
-  (alcotest :with-test)
+  (alcotest (and :with-test (>= 1.7.0)))
   (base_quickcheck :with-test)
   (ppx_assert :with-test)
   (ppx_sexp_conv :with-test)
@@ -289,7 +289,7 @@
    (and
     :with-test
     (>= 4.2.0)))
-  (alcotest :with-test)
+  (alcotest (and :with-test (>= 1.7.0)))
   (cohttp-lwt-unix
    (and
     :with-test
@@ -334,7 +334,7 @@
     (>= 4.2.0)))
   (fmt :with-test)
   (ounit :with-test)
-  (alcotest :with-test)))
+  (alcotest (and :with-test (>= 1.7.0)))))
 
 (package
  (name cohttp-bench)
@@ -367,7 +367,7 @@
  (description
   "A CoHTTP server and client implementation based on `eio` library. `cohttp-eio`features a multicore capable HTTP 1.1 server. The library promotes and is built with direct style of coding as opposed to a monadic.")
  (depends
-  (alcotest :with-test)
+  (alcotest (and :with-test (>= 1.7.0)))
   base-domains
   (cohttp
    (= :version))

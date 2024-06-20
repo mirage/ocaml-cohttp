@@ -33,7 +33,7 @@ depends: [
   "uri" {with-test & >= "4.2.0"}
   "fmt" {with-test}
   "ounit" {with-test}
-  "alcotest" {with-test}
+  "alcotest" {with-test & >= "1.7.0"}
   "odoc" {with-doc}
 ]
 dev-repo: "git+https://github.com/mirage/ocaml-cohttp.git"

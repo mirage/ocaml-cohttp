@@ -46,7 +46,7 @@ depends: [
   "stringext"
   "base64" {>= "3.1.0"}
   "fmt" {with-test}
-  "alcotest" {with-test}
+  "alcotest" {with-test & >= "1.7.0"}
   "odoc" {with-doc}
 ]
 dev-repo: "git+https://github.com/mirage/ocaml-cohttp.git"
