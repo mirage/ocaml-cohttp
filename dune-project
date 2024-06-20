@@ -322,8 +322,9 @@
    (>= v0.16.0))
   (core_unix
    (>= v0.14.0))
-  async_kernel
-  async_unix
+  (core_kernel :with-test)
+  (async_kernel (and :with-test (>= v0.17.0)))
+  (async_unix :with-test)
   (cohttp-async
    (and
     :with-test

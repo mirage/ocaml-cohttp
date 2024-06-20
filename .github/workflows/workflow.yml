@@ -56,8 +56,7 @@ jobs:
           opam-local-packages: ${{ matrix.local-packages }}
 
       - run: |
-          sudo apt update
-          sudo apt upgrade
+          sudo apt-get update && sudo apt-get upgrade
           opam depext conf-libcurl
         if: ${{ matrix.os == 'ubuntu-latest' }}
 
@@ -81,6 +80,12 @@ jobs:
         local-packages:
           - |
             *.opam
+            !cohttp-mirage.opam
+            !cohttp-curl-lwt.opam
+            !cohttp-lwt-jsoo.opam
+            !cohttp-lwt-unix.opam
+            !cohttp-lwt.opam
+            !cohttp-server-lwt-unix.opam
             !cohttp-eio.opam
             !cohttp-bench.opam
 
@@ -100,17 +105,16 @@ jobs:
           opam-local-packages: ${{ matrix.local-packages }}
 
       - run: |
-          sudo apt update
-          sudo apt upgrade
+          sudo apt-get update && sudo apt-get upgrade
           opam depext conf-libcurl
         if: ${{ matrix.os == 'ubuntu-latest' }}
 
       - run: echo "PKG_CONFIG_PATH=$(brew --prefix openssl)/lib/pkgconfig" >>"$GITHUB_ENV"
         if: ${{ matrix.os == 'macos-latest' }}
 
-      - run: opam install --with-test --deps-only http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-async cohttp-curl-async cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top
-      - run: opam exec -- dune build http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-async cohttp-curl-async cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top
-      - run: opam exec -- dune runtest http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-async cohttp-curl-async cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top
+      - run: opam install --with-test --deps-only http cohttp cohttp-async cohttp-curl-async cohttp-curl cohttp-top
+      - run: opam exec -- dune build http cohttp cohttp-async cohttp-curl-async cohttp-curl cohttp-top
+      - run: opam exec -- dune runtest http cohttp cohttp-async cohttp-curl-async cohttp-curl cohttp-top
 
   build-test-cohttp-eio:
     if: github.event.pull_request.draft == false
