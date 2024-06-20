@@ -6,7 +6,7 @@
   base
   core
   async_kernel
-  oUnit
+  ounit2
   cohttp-async))
 
 (rule

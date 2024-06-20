@@ -113,7 +113,7 @@
    (>= v0.13.0))
   magic-mime
   logs
-  (ounit :with-test)))
+  (ounit2 :with-test)))
 
 (package
  (name cohttp-server-lwt-unix)
@@ -197,7 +197,7 @@
   sexplib0
   (ppx_sexp_conv
    (>= v0.13.0))
-  (ounit :with-test)
+  (ounit2 :with-test)
   (uri
    (>= 2.0.0))
   uri-sexp
@@ -303,7 +303,7 @@
     :with-test
     (= :version)))
   (conduit-lwt :with-test)
-  (ounit :with-test)))
+  (ounit2 :with-test)))
 
 (package
  (name cohttp-curl-async)
@@ -333,7 +333,7 @@
     :with-test
     (>= 4.2.0)))
   (fmt :with-test)
-  (ounit :with-test)
+  (ounit2 :with-test)
   (alcotest (and :with-test (>= 1.7.0)))))
 
 (package

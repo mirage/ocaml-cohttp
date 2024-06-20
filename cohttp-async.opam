@@ -41,7 +41,7 @@ depends: [
   "fmt" {>= "0.8.2"}
   "sexplib0"
   "ppx_sexp_conv" {>= "v0.13.0"}
-  "ounit" {with-test}
+  "ounit2" {with-test}
   "uri" {>= "2.0.0"}
   "uri-sexp"
   "ipaddr"

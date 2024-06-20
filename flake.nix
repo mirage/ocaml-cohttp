@@ -56,12 +56,12 @@
           };
           cohttp-curl-lwt = pkg {
             pname = "cohttp-curl-lwt";
-            checkInputs = [ cohttp-lwt-unix cohttp cohttp-lwt conduit-lwt ounit uri ];
+            checkInputs = [ cohttp-lwt-unix cohttp cohttp-lwt conduit-lwt ounit2 uri ];
             propagatedBuildInputs = [ ocurl http stringext lwt ];
           };
           cohttp-curl-async = pkg {
             pname = "cohttp-curl-async";
-            checkInputs = [ uri fmt ounit alcotest cohttp-async ];
+            checkInputs = [ uri fmt ounit2 alcotest cohttp-async ];
             propagatedBuildInputs = [
               ocurl http stringext cohttp-curl core core_unix
               async_kernel async_unix 
@@ -80,7 +80,7 @@
           };
           cohttp-async = pkg {
             pname = "cohttp-async";
-            checkInputs = [ mirage-crypto ounit ];
+            checkInputs = [ mirage-crypto ounit2 ];
             propagatedBuildInputs = [ http cohttp async_kernel async_unix async base
               core core_unix conduit-async magic-mime logs fmt sexplib0 ppx_sexp_conv
               uri uri-sexp ipaddr
@@ -88,7 +88,7 @@
           };
           cohttp-lwt-unix = pkg {
             pname = "cohttp-lwt-unix";
-            checkInputs = [ ounit ];
+            checkInputs = [ ounit2 ];
             propagatedBuildInputs = [
               http cohttp cohttp-lwt cmdliner lwt conduit-lwt
               conduit-lwt-unix fmt ppx_sexp_conv magic-mime logs

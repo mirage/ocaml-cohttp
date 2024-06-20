@@ -1,7 +1,7 @@
 (executable
  (name test_parser)
  (modules test_parser)
- (libraries cohttp-lwt-unix oUnit lwt.unix))
+ (libraries cohttp-lwt-unix ounit2 lwt.unix))
 
 (rule
  (alias runtest)
