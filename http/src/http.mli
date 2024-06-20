@@ -465,10 +465,10 @@ module Response : sig
   val status : t -> Status.t
 
   val flush :
-    (t -> bool
-    [@deprecated
-      "this field will be removed in the future. Provide flush in the \
-       [respond_*] function instead."])
+    (t -> bool)
+  [@@deprecated
+    "this field will be removed in the future. Provide flush in the \
+     [respond_*] function instead."]
 
   val compare : t -> t -> int
 
