@@ -82,6 +82,7 @@ jobs:
           - |
             *.opam
             !cohttp-eio.opam
+            !cohttp-bench.opam
 
     runs-on: ${{ matrix.os }}
 
@@ -107,9 +108,9 @@ jobs:
       - run: echo "PKG_CONFIG_PATH=$(brew --prefix openssl)/lib/pkgconfig" >>"$GITHUB_ENV"
         if: ${{ matrix.os == 'macos-latest' }}
 
-      - run: opam install --with-test --deps-only http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-async cohttp-curl-async cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top cohttp-bench
-      - run: opam exec -- dune build http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-async cohttp-curl-async cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top cohttp-bench
-      - run: opam exec -- dune runtest http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-async cohttp-curl-async cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top cohttp-bench
+      - run: opam install --with-test --deps-only http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-async cohttp-curl-async cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top
+      - run: opam exec -- dune build http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-async cohttp-curl-async cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top
+      - run: opam exec -- dune runtest http cohttp cohttp-lwt cohttp-lwt-unix cohttp-server-lwt-unix cohttp-async cohttp-curl-async cohttp-mirage cohttp-curl-lwt cohttp-curl cohttp-top
 
   build-test-cohttp-eio:
     if: github.event.pull_request.draft == false
@@ -146,3 +147,36 @@ jobs:
       - run: opam install --with-test --deps-only cohttp-eio
       - run: opam exec -- dune build cohttp-eio
       - run: opam exec -- dune runtest cohttp-eio
+
+  build-test-cohttp-bench:
+    if: github.event.pull_request.draft == false
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+        ocaml-compiler:
+          - 5.x
+        local-packages:
+          - |
+            *.opam
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          dune-cache: ${{ matrix.os == 'ubuntu-latest' }}
+          opam-local-packages: ${{ matrix.local-packages }}
+          opam-repositories: |
+            default: https://github.com/ocaml/opam-repository.git
+            alpha: https://github.com/kit-ty-kate/opam-alpha-repository.git
+
+      - run: opam install --with-test --deps-only cohttp-bench
+      - run: opam exec -- dune build cohttp-bench
+      - run: opam exec -- dune runtest cohttp-bench
