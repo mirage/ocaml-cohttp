@@ -48,7 +48,7 @@ type encoding = Accept_types.encoding =
 [@@deriving sexp]
 
 (** Basic language range tag. ["en-gb"] is represented as
-    [Language \["en"; "gb"\]].
+    [Language ["en"; "gb"]].
 
     @see <https://tools.ietf.org/html/rfc7231#section-5.3.5> the specification. *)
 type language = Accept_types.language = Language of string list | AnyLanguage
