@@ -40,7 +40,7 @@ module Context = struct
           | None -> ()
           | Some w ->
               Hashtbl.remove t.wakeners h;
-              Ivar.fill w code);
+              Ivar.fill_exn w code);
           finished s
     in
     let on_readable fd =
@@ -102,7 +102,7 @@ module Context = struct
         | Some _, true -> ()
         | None, true -> set_event (Some (create_event fd what))
         | Some ivar, false ->
-            Ivar.fill ivar ();
+            Ivar.fill_exn ivar ();
             set_event None
       in
       update current.fd
@@ -168,7 +168,8 @@ module Request = struct
           timeout
       in
       Cohttp_curl.Request.create ?timeout_ms ?headers method_ ~uri ~input
-        ~output ~on_response:(Ivar.fill response_ready)
+        ~output
+        ~on_response:(Ivar.fill_exn response_ready)
     in
     { base; response_ready = Ivar.read response_ready; body_ready }
 end
