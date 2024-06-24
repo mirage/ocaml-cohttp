@@ -5,10 +5,10 @@ module Make_no_cache (Connection : S.Connection) : sig
   include S.Connection_cache
 
   val create : ?ctx:Connection.Net.ctx -> unit -> t
-  (** [create ?ctx ()] creates a connection for handling a single
-      request. The connection accepts only a single request and will
-      automatically be closed as soon as possible.
-      @param ctx See {Connection.Net.ctx} *)
+  (** [create ?ctx ()] creates a connection for handling a single request. The
+      connection accepts only a single request and will automatically be closed
+      as soon as possible.
+      @param ctx See {!Connection.Net.ctx} *)
 end = struct
   module Net = Connection.Net
   module IO = Net.IO

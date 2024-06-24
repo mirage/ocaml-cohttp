@@ -248,7 +248,7 @@ module Header : sig
       all other occurences of [k] if it exists. Otherwise it adds [(k, v)] to
       [h].
 
-      {e Invariant:} [forall h, k, v. get_multi (replace h k v) = \[ v \]] *)
+      {e Invariant:} [forall h, k, v. get_multi (replace h k v) = [ v ]] *)
 
   val mem : t -> string -> bool
   (** [mem h k] returns [true] if the header name [k] appears in [h] and [false]
@@ -464,8 +464,7 @@ module Response : sig
   val version : t -> Version.t
   val status : t -> Status.t
 
-  val flush :
-    (t -> bool)
+  val flush : t -> bool
   [@@deprecated
     "this field will be removed in the future. Provide flush in the \
      [respond_*] function instead."]

@@ -37,7 +37,8 @@ let make_expert ?conn_closed ~callback () =
 let make ?(conn_closed = fun _ -> ()) ~callback () =
   {
     conn_closed;
-    handler = (fun conn request body _ic oc -> callback conn request body (request, oc));
+    handler =
+      (fun conn request body _ic oc -> callback conn request body (request, oc));
   }
 
 let read input =
@@ -90,13 +91,14 @@ let write output (response : Cohttp.Response.t) body =
   in
   Eio.Buf_write.flush output
 
-let respond ?(headers = Cohttp.Header.init ()) ?flush ~status ~body () (request, oc) =
+let respond ?(headers = Cohttp.Header.init ()) ?flush ~status ~body ()
+    (request, oc) =
   let keep_alive = Http.Request.is_keep_alive request in
   let headers =
     match Cohttp.Header.connection headers with
     | None ->
-      Http.Header.add headers "connection"
-        (if keep_alive then "keep-alive" else "close")
+        Http.Header.add headers "connection"
+          (if keep_alive then "keep-alive" else "close")
     | Some _ -> headers
   in
   let response = Cohttp.Response.make ~headers ?flush ~status () in
