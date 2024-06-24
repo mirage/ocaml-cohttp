@@ -244,7 +244,7 @@
  (depends
   (ocaml
    (>= 4.08))
-  (ppx_expect :with-test)
+  (ppx_expect (and :with-test (>= v0.17.0)))
   (alcotest :with-test)
   (base_quickcheck :with-test)
   (ppx_assert :with-test)
