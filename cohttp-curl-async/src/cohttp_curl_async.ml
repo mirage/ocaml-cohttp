@@ -32,7 +32,7 @@ module Context = struct
         timeout = None;
       }
     in
-    let rec finished s =
+    let rec finished () =
       match Curl.Multi.remove_finished t.mt with
       | None -> ()
       | Some (h, code) ->
@@ -41,19 +41,19 @@ module Context = struct
           | Some w ->
               Hashtbl.remove t.wakeners h;
               Ivar.fill_exn w code);
-          finished s
+          finished ()
     in
     let on_readable fd =
       let (_ : int) = Curl.Multi.action t.mt (Fd.file_descr_exn fd) EV_IN in
-      finished "on_readable"
+      finished ()
     in
     let on_writable fd =
       let (_ : int) = Curl.Multi.action t.mt (Fd.file_descr_exn fd) EV_OUT in
-      finished "on_writable"
+      finished ()
     in
     let on_timer () =
       Curl.Multi.action_timeout t.mt;
-      finished "on_timer"
+      finished ()
     in
     Curl.Multi.set_timer_function t.mt (fun timeout ->
         (match t.timeout with

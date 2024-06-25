@@ -44,7 +44,7 @@ module Context = struct
         timer_event = Lwt_engine.fake_event;
       }
     in
-    let rec finished s =
+    let rec finished () =
       match Curl.Multi.remove_finished t.mt with
       | None -> ()
       | Some (h, code) ->
@@ -53,20 +53,20 @@ module Context = struct
           | Some w ->
               Hashtbl.remove t.wakeners h;
               Lwt.wakeup w code);
-          finished s
+          finished ()
     in
     let on_readable fd _ =
       let (_ : int) = Curl.Multi.action t.mt fd EV_IN in
-      finished "on_readable"
+      finished ()
     in
     let on_writable fd _ =
       let (_ : int) = Curl.Multi.action t.mt fd EV_OUT in
-      finished "on_writable"
+      finished ()
     in
     let on_timer _ =
       Lwt_engine.stop_event t.timer_event;
       Curl.Multi.action_timeout t.mt;
-      finished "on_timer"
+      finished ()
     in
     Curl.Multi.set_timer_function t.mt (fun timeout ->
         Lwt_engine.stop_event t.timer_event;
