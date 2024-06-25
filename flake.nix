@@ -81,9 +81,10 @@
           cohttp-async = pkg {
             pname = "cohttp-async";
             checkInputs = [ mirage-crypto ounit2 ];
-            propagatedBuildInputs = [ http cohttp async_kernel async_unix async base
-              core core_unix conduit-async magic-mime logs fmt sexplib0 ppx_sexp_conv
-              uri uri-sexp ipaddr
+            propagatedBuildInputs = [
+              http cohttp async_kernel async_unix async base core core_unix
+              conduit-async magic-mime logs fmt sexplib0 ppx_sexp_conv uri
+              uri-sexp ipaddr
             ];
           };
           cohttp-lwt-unix = pkg {
@@ -101,7 +102,8 @@
           };
           cohttp-eio = pkg {
             pname = "cohttp-eio";
-            checkInputs = [ alcotest eio_main mdx ppx_here
+            checkInputs = [
+              alcotest eio_main mdx ppx_here
               tls-eio 
               mirage-crypto-rng-eio
             ];
