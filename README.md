@@ -33,7 +33,6 @@ You can find help from cohttp users and maintainers at the
 
 - [Installation](#installation)
 - [Client Tutorial](#client-tutorial)
-  * [Compile and execute with ocamlbuild](#compile-and-execute-with-ocamlbuild)
   * [Compile and execute with dune](#compile-and-execute-with-dune)
 - [Dealing with timeouts](#dealing-with-timeouts)
 - [Managing sessions](#managing-sessions)
@@ -41,7 +40,6 @@ You can find help from cohttp users and maintainers at the
 - [Creating custom resolver: a Docker Socket Client example](#creating-custom-resolver--a-docker-socket-client-example)
 - [Dealing with redirects](#dealing-with-redirects)
 - [Basic Server Tutorial](#basic-server-tutorial)
-  * [Compile and execute with ocamlbuild](#compile-and-execute-with-ocamlbuild-1)
   * [Compile and execute with dune](#compile-and-execute-with-dune-1)
 - [Installed Binaries](#installed-binaries)
 - [Debugging](#debugging)
@@ -119,25 +117,6 @@ Consult the following modules for reference:
 
 The full documentation for the latest published version of the library is
 available on the [repository github pages](https://mirage.github.io/ocaml-cohttp/).
-
-### Compile and execute with ocamlbuild
-
-Build and execute with:
-
-```
-$ ocamlbuild -use-ocamlfind -tag thread -pkg cohttp-lwt-unix client_example.native
-$ ./client_example.native
-```
-
-For manual builds, it is usually enough to remember that cohttp ships with 6
-findlib (`ocamlfind`) libraries:
-
-* `cohttp` - Base `Cohttp` module. No platform specific functionality
-* `cohttp-async` - Async backend `Cohttp_async`
-* `cohttp-lwt` - Lwt backend without unix specifics
-* `cohttp-lwt-unix` - Unix based lwt backend
-* `cohttp-lwt-jsoo` - Jsoo (XHR) client
-* `cohttp-top` - Print cohttp types in the toplevel (`#require "cohttp-top"`)
 
 ### Compile and execute with dune
 
@@ -399,14 +378,6 @@ let server =
   Server.create ~mode:(`TCP (`Port 8000)) (Server.make ~callback ())
 
 let () = ignore (Lwt_main.run server)
-```
-
-### Compile and execute with ocamlbuild
-
-Build and execute with:
-```
-$ ocamlbuild -use-ocamlfind -tag thread -pkg cohttp-lwt-unix server_example.native
-$ ./server_example.native
 ```
 
 ### Compile and execute with dune
