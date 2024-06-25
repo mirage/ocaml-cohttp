@@ -96,7 +96,7 @@
           };
           cohttp-server-lwt-unix = pkg {
             pname = "cohttp-server-lwt-unix";
-            checkInputs = [ conduit-lwt-unix cohttp-lwt cohttp-lwt-unix ];
+            checkInputs = [ lwt conduit-lwt-unix cohttp-lwt cohttp-lwt-unix ];
             propagatedBuildInputs = [ http lwt ];
           };
           cohttp-eio = pkg {
