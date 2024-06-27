@@ -8,7 +8,6 @@ include
 
 val respond :
   ?headers:Http.Header.t ->
-  ?flush:bool ->
   status:Http.Status.t ->
   body:_ Eio.Flow.source ->
   unit ->

@@ -807,13 +807,12 @@ module Response = struct
     headers : Header.t;  (** response HTTP headers *)
     version : Version.t;  (** (** HTTP version, usually 1.1 *) *)
     status : Status.t;  (** HTTP status code of the response *)
-    flush : bool;
   }
 
-  let compare { headers; flush; version; status } y =
+  let compare { headers; version; status } y =
     match Header.compare headers y.headers with
     | 0 -> (
-        match Bool.compare flush y.flush with
+        match Stdlib.compare status y.status with
         | 0 -> (
             match Stdlib.compare status y.status with
             | 0 -> Version.compare version y.version
@@ -821,14 +820,12 @@ module Response = struct
         | i -> i)
     | i -> i
 
-  let make ?(version = `HTTP_1_1) ?(status = `OK) ?(flush = false)
-      ?(headers = Header.empty) () =
-    { headers; version; flush; status }
+  let make ?(version = `HTTP_1_1) ?(status = `OK) ?(headers = Header.empty) () =
+    { headers; version; status }
 
   let headers t = t.headers
   let version t = t.version
   let status t = t.status
-  let flush t = t.flush
   let is_keep_alive { version; headers; _ } = is_keep_alive version headers
 
   let requires_content_length ?request_meth t =

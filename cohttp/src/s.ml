@@ -131,7 +131,6 @@ module type Response = sig
     headers : Header.t;  (** response HTTP headers *)
     version : Code.version;  (** (** HTTP version, usually 1.1 *) *)
     status : Code.status_code;  (** HTTP status code of the response *)
-    flush : bool; [@deprecated "this field will be removed in the future"]
   }
   [@@deriving sexp]
 
@@ -140,15 +139,11 @@ module type Response = sig
   val version : t -> Code.version
   val status : t -> Code.status_code
 
-  val flush : t -> bool
-  [@@deprecated "this field will be removed in the future"]
-
   val compare : t -> t -> int
 
   val make :
     ?version:Code.version ->
     ?status:Code.status_code ->
-    ?flush:bool ->
     ?encoding:Transfer.encoding ->
     ?headers:Header.t ->
     unit ->

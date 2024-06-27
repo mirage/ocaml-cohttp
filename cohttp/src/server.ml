@@ -45,23 +45,19 @@ module type S = sig
 
   val respond :
     ?headers:Http.Header.t ->
-    ?flush:bool ->
     status:Http.Status.t ->
     body:body ->
     unit ->
     response IO.t
-  (** [respond ?headers ?flush ~status ~body] will respond to an HTTP request
-      with the given [status] code and response [body]. If [flush] is true, then
-      every response chunk will be flushed to the network rather than being
-      buffered. [flush] is true by default. The transfer encoding will be
-      detected from the [body] value and set to chunked encoding if it cannot be
-      determined immediately. You can override the encoding by supplying an
-      appropriate [Content-length] or [Transfer-encoding] in the [headers]
-      parameter. *)
+  (** [respond ?headers ~status ~body] will respond to an HTTP request
+      with the given [status] code and response [body]. The transfer encoding
+      will be detected from the [body] value and set to chunked encoding if it
+      cannot be determined immediately. You can override the encoding by
+      supplying an appropriate [Content-length] or [Transfer-encoding] in the
+      [headers] parameter. *)
 
   val respond_string :
     ?headers:Http.Header.t ->
-    ?flush:bool ->
     status:Http.Status.t ->
     body:string ->
     unit ->
