@@ -453,22 +453,12 @@ module Response : sig
     headers : Header.t;  (** response HTTP headers *)
     version : Version.t;  (** (** HTTP version, usually 1.1 *) *)
     status : Status.t;  (** HTTP status code of the response *)
-    flush : bool;
-        [@deprecated
-          "this field will be removed in the future. Provide flush in the \
-           [respond_*] function instead."]
   }
 
   val encoding : t -> Transfer.encoding
   val headers : t -> Header.t
   val version : t -> Version.t
   val status : t -> Status.t
-
-  val flush : t -> bool
-  [@@deprecated
-    "this field will be removed in the future. Provide flush in the \
-     [respond_*] function instead."]
-
   val compare : t -> t -> int
 
   val is_keep_alive : t -> bool
@@ -495,16 +485,11 @@ module Response : sig
       See https://www.rfc-editor.org/rfc/rfc7230#section-3.3.2 *)
 
   val make :
-    ?version:Version.t ->
-    ?status:Status.t ->
-    ?flush:bool ->
-    ?headers:Header.t ->
-    unit ->
-    t
+    ?version:Version.t -> ?status:Status.t -> ?headers:Header.t -> unit -> t
   (** [make ()] is a value of {!type:t}. The default values for the request, if
-      not specified, are: [status] is [`Ok], [version] is [`HTTP_1_1], [flush]
-      is [false] and [headers] is [Header.empty]. The request encoding value is
-      determined via the [Header.get_transfer_encoding] function. *)
+      not specified, are: [status] is [`Ok], [version] is [`HTTP_1_1]. The
+      request encoding value is determined via the
+      [Header.get_transfer_encoding] function. *)
 
   val pp : Format.formatter -> t -> unit
 end

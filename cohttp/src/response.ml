@@ -21,20 +21,16 @@ type t = Http.Response.t = {
   headers : Header.t;
   version : Code.version;
   status : Code.status_code;
-  flush : bool;
 }
 [@@deriving sexp]
 
-let compare { headers; flush; version; encoding; status } y =
+let compare { headers; version; encoding; status } y =
   match Header.compare headers y.headers with
   | 0 -> (
-      match Bool.compare flush y.flush with
+      match Stdlib.compare status y.status with
       | 0 -> (
-          match Stdlib.compare status y.status with
-          | 0 -> (
-              match Code.compare_version version y.version with
-              | 0 -> Stdlib.compare encoding y.encoding
-              | i -> i)
+          match Code.compare_version version y.version with
+          | 0 -> Stdlib.compare encoding y.encoding
           | i -> i)
       | i -> i)
   | i -> i
@@ -43,16 +39,17 @@ let headers t = t.headers
 let encoding t = t.encoding
 let version t = t.version
 let status t = t.status
-let flush t = t.flush
+let flush _ = false
 
 let make ?(version = `HTTP_1_1) ?(status = `OK) ?(flush = false)
     ?(encoding = Transfer.Chunked) ?(headers = Header.init ()) () =
+  ignore flush;
   let encoding =
     match Header.get_transfer_encoding headers with
     | Transfer.Unknown -> encoding
     | encoding -> encoding
   in
-  { encoding; headers; version; flush; status }
+  { encoding; headers; version; status }
 
 let pp_hum ppf r =
   Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib0.Sexp.to_string_hum)
@@ -104,8 +101,7 @@ module Make (IO : S.IO) = struct
     | `Ok (version, status) ->
         Header_IO.parse ic >>= fun headers ->
         let encoding = Header.get_transfer_encoding headers in
-        let flush = false in
-        return (`Ok { encoding; headers; version; status; flush })
+        return (`Ok { encoding; headers; version; status })
 
   let make_body_reader { encoding; _ } ic = Transfer_IO.make_reader encoding ic
   let read_body_chunk = Transfer_IO.read
