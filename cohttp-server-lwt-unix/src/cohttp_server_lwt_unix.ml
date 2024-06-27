@@ -15,6 +15,7 @@
   }}}*)
 
 open Lwt.Syntax
+open Lwt.Infix
 
 module Body = struct
   module Substring = struct
@@ -64,16 +65,14 @@ module Body = struct
         write_string_as_chunks oc s ~pos
 
   let rec write_fixed_stream oc f =
-    let* chunk = f () in
-    match chunk with
+    f () >>= function
     | None -> Lwt.return_unit
     | Some { Substring.base; pos; len } ->
         let* () = Lwt_io.write_from_string_exactly oc base pos len in
         write_fixed_stream oc f
 
   let rec write_chunks_stream oc f =
-    let* chunk = f () in
-    match chunk with
+    f () >>= function
     | None -> Lwt_io.write oc "\r\n"
     | Some chunk ->
         let* () = write_chunk oc chunk in
@@ -182,8 +181,7 @@ module Context = struct
       (_ * int) option Lwt.t =
     if left = 0 then Lwt.return_none
     else if Input_channel.remaining t.ic = 0 then
-      let* res = Input_channel.refill t.ic in
-      match res with
+      Input_channel.refill t.ic >>= function
       | `Ok -> step_fixed t ~f ~init ~left
       | `Eof -> Lwt.return_none (* TODO invalid input *)
     else
@@ -213,8 +211,7 @@ module Context = struct
         init:'acc ->
         'acc option Lwt.t =
    fun t ~f ~init ->
-    let* line = Input_channel.read_line_opt t.ic in
-    match line with
+    Input_channel.read_line_opt t.ic >>= function
     | None -> Lwt.return_none (* TODO invalid input *)
     | Some "" -> Lwt.return_none
     | Some line -> (
@@ -233,16 +230,16 @@ module Context = struct
     match encoding with
     | Fixed i ->
         let rec loop init left =
-          let* res = step_fixed t ~f ~init ~left in
-          match res with
+          step_fixed t ~f ~init ~left >>= function
           | None -> Lwt.return init
           | Some (acc, left) -> loop acc left
         in
         loop init (Int64.to_int i)
     | Chunked ->
         let rec loop init =
-          let* res = step_chunked t ~f ~init in
-          match res with None -> Lwt.return init | Some acc -> loop acc
+          step_chunked t ~f ~init >>= function
+          | None -> Lwt.return init
+          | Some acc -> loop acc
         in
         loop init
 
@@ -322,8 +319,9 @@ let rec read_request ic =
   in
   match result with
   | `Partial -> (
-      let* res = Input_channel.refill ic in
-      match res with `Ok -> read_request ic | `Eof -> Lwt.return `Eof)
+      Input_channel.refill ic >>= function
+      | `Ok -> read_request ic
+      | `Eof -> Lwt.return `Eof)
   | `Ok req -> Lwt.return (`Ok req)
   | `Invalid msg -> Lwt.return (`Error msg)
 
@@ -334,8 +332,7 @@ let handle_connection { callback; on_exn } (ic, oc) =
     | Callback f -> f
   in
   let rec loop callback ic oc =
-    let* req = read_request ic in
-    match req with
+    read_request ic >>= function
     | `Error _ | `Eof -> Lwt.return_unit
     | `Ok req ->
         let context = Context.create req ic oc in
