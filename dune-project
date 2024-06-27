@@ -50,7 +50,7 @@
   (base64
    (>= 3.1.0))
   (fmt :with-test)
-  (alcotest :with-test)))
+  (alcotest (and :with-test (>= 1.7.0)))))
 
 (package
  (name cohttp-top)
@@ -113,7 +113,7 @@
    (>= v0.13.0))
   magic-mime
   logs
-  (ounit :with-test)))
+  (ounit2 :with-test)))
 
 (package
  (name cohttp-server-lwt-unix)
@@ -197,7 +197,7 @@
   sexplib0
   (ppx_sexp_conv
    (>= v0.13.0))
-  (ounit :with-test)
+  (ounit2 :with-test)
   (uri
    (>= 2.0.0))
   uri-sexp
@@ -245,7 +245,7 @@
   (ocaml
    (>= 4.08))
   (ppx_expect (and :with-test (>= v0.17.0)))
-  (alcotest :with-test)
+  (alcotest (and :with-test (>= 1.7.0)))
   (base_quickcheck :with-test)
   (ppx_assert :with-test)
   (ppx_sexp_conv :with-test)
@@ -289,7 +289,7 @@
    (and
     :with-test
     (>= 4.2.0)))
-  (alcotest :with-test)
+  (alcotest (and :with-test (>= 1.7.0)))
   (cohttp-lwt-unix
    (and
     :with-test
@@ -303,7 +303,7 @@
     :with-test
     (= :version)))
   (conduit-lwt :with-test)
-  (ounit :with-test)))
+  (ounit2 :with-test)))
 
 (package
  (name cohttp-curl-async)
@@ -322,8 +322,9 @@
    (>= v0.16.0))
   (core_unix
    (>= v0.14.0))
-  async_kernel
-  async_unix
+  (core_kernel :with-test)
+  (async_kernel (and :with-test (>= v0.17.0)))
+  (async_unix :with-test)
   (cohttp-async
    (and
     :with-test
@@ -333,8 +334,8 @@
     :with-test
     (>= 4.2.0)))
   (fmt :with-test)
-  (ounit :with-test)
-  (alcotest :with-test)))
+  (ounit2 :with-test)
+  (alcotest (and :with-test (>= 1.7.0)))))
 
 (package
  (name cohttp-bench)
@@ -367,7 +368,7 @@
  (description
   "A CoHTTP server and client implementation based on `eio` library. `cohttp-eio`features a multicore capable HTTP 1.1 server. The library promotes and is built with direct style of coding as opposed to a monadic.")
  (depends
-  (alcotest :with-test)
+  (alcotest (and :with-test (>= 1.7.0)))
   base-domains
   (cohttp
    (= :version))

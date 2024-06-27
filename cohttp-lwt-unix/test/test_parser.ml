@@ -349,7 +349,7 @@ let test_cases =
   List.map (fun (n, x) -> n >:: fun () -> Lwt_main.run (x ())) tests
 
 (* Returns true if the result list contains successes only.
-   Copied from oUnit source as it isnt exposed by the mli *)
+   Copied from ounit2 source as it isnt exposed by the mli *)
 let rec was_successful = function
   | [] -> true
   | RSuccess _ :: t | RSkip _ :: t -> was_successful t

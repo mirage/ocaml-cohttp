@@ -41,7 +41,7 @@ depends: [
   "ppx_sexp_conv" {>= "v0.13.0"}
   "magic-mime"
   "logs"
-  "ounit" {with-test}
+  "ounit2" {with-test}
   "odoc" {with-doc}
 ]
 dev-repo: "git+https://github.com/mirage/ocaml-cohttp.git"
