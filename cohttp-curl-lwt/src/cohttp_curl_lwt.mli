@@ -27,6 +27,13 @@ module Context : sig
   val create : unit -> t
 end
 
+module Error : sig
+  type t
+
+  val message : t -> string
+  val is_timeout : t -> bool
+end
+
 module Response : sig
   (** Response for the http requests *)
 
@@ -34,8 +41,8 @@ module Response : sig
   (** ['a t] represents a response for a request. ['a] determines how the
       response body is handled *)
 
-  val response : _ t -> Http.Response.t Lwt.t
-  val body : 'a t -> 'a Lwt.t
+  val response : _ t -> (Http.Response.t, Error.t) result Lwt.t
+  val body : 'a t -> ('a, Error.t) result Lwt.t
 
   module Expert : sig
     val curl : _ t -> Curl.t
