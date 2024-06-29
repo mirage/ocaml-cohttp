@@ -40,7 +40,8 @@ let temp_server ?port spec callback =
             Lwt.wakeup_exn server_failed_wake x;
             Lwt.fail x)
   in
-  Lwt.pick [ callback uri; server_failed ] >|= fun res ->
+  Lwt.pick [ Lwt_unix.with_timeout 5.0 (fun () -> callback uri); server_failed ]
+  >|= fun res ->
   Lwt.cancel server;
   res
 
