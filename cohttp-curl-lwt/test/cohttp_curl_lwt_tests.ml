@@ -23,6 +23,16 @@ let test =
             let resp = Cohttp_curl_lwt.submit ctx req in
             let+ body = Cohttp_curl_lwt.Response.body resp in
             Alcotest.check Alcotest.string "test 1" body "hello curl" );
+        ( "failing request",
+          fun () ->
+            let uri = "0.0.0.0:45_120" in
+            let input = Cohttp_curl_lwt.Source.empty in
+            let output = Cohttp_curl_lwt.Sink.string in
+            let ctx = Cohttp_curl_lwt.Context.create () in
+            let req = Cohttp_curl_lwt.Request.create `GET ~uri ~input ~output in
+            let resp = Cohttp_curl_lwt.submit ctx req in
+            let+ body = Cohttp_curl_lwt.Response.body resp in
+            Alcotest.check Alcotest.string "test 1" body "" );
       ])
 
 let _ = test |> Cohttp_lwt_unix_test.run_async_tests |> Lwt_main.run
