@@ -329,8 +329,7 @@ let useless_null_content_length_header () =
   let output = Buffer.create 1024 in
   let () =
     let r =
-      Cohttp.Request.make_for_client ~chunked:false ~body_length:0L `GET
-        (Uri.of_string "http://someuri.com")
+      Cohttp.Request.make_for_client `GET (Uri.of_string "http://someuri.com")
     in
     Request.write_header r output
   in

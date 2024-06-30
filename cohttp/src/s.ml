@@ -88,8 +88,6 @@ module type Request = sig
     scheme : string option;  (** URI scheme (http or https) *)
     resource : string;  (** Request path and query *)
     version : Code.version;  (** HTTP version, usually 1.1 *)
-    encoding : Transfer.encoding;
-        [@deprecated "this field will be removed in the future"]
   }
   [@@deriving sexp]
 

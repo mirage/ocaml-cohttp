@@ -22,11 +22,10 @@ type t = Http.Request.t = {
   scheme : string option;
   resource : string;
   version : Code.version;
-  encoding : Transfer.encoding;
 }
 [@@deriving sexp]
 
-let compare { headers; meth; scheme; resource; version; encoding } y =
+let compare { headers; meth; scheme; resource; version } y =
   match Header.compare headers y.headers with
   | 0 -> (
       match Code.compare_method meth y.meth with
@@ -34,10 +33,7 @@ let compare { headers; meth; scheme; resource; version; encoding } y =
           match Option.compare String.compare scheme y.scheme with
           | 0 -> (
               match String.compare resource y.resource with
-              | 0 -> (
-                  match Code.compare_version version y.version with
-                  | 0 -> Stdlib.compare encoding y.encoding
-                  | i -> i)
+              | 0 -> Code.compare_version version y.version
               | i -> i)
           | i -> i)
       | i -> i)
@@ -48,9 +44,9 @@ let meth t = t.meth
 let scheme t = t.scheme
 let resource t = t.resource
 let version t = t.version
-let encoding t = t.encoding
+let encoding t = Header.get_transfer_encoding t.headers
 
-let make ?(meth = `GET) ?(version = `HTTP_1_1) ?(encoding = Transfer.Unknown)
+let make ?(meth = `GET) ?(version = `HTTP_1_1) ?encoding
     ?(headers = Header.init ()) uri =
   let headers =
     Header.add_unless_exists headers "host"
@@ -77,12 +73,12 @@ let make ?(meth = `GET) ?(version = `HTTP_1_1) ?(encoding = Transfer.Unknown)
   in
   let scheme = Uri.scheme uri in
   let resource = Uri.path_and_query uri in
-  let encoding =
-    match Header.get_transfer_encoding headers with
-    | Transfer.Unknown -> encoding
-    | encoding -> encoding
+  let headers =
+    match encoding with
+    | None -> headers
+    | Some encoding -> Header.add_transfer_encoding headers encoding
   in
-  { headers; meth; scheme; resource; version; encoding }
+  { headers; meth; scheme; resource; version }
 
 let is_keep_alive t = Http.Request.is_keep_alive t
 
@@ -90,12 +86,14 @@ let is_keep_alive t = Http.Request.is_keep_alive t
    adding content headers if appropriate.
    @param chunked Forces chunked encoding
 *)
-let make_for_client ?headers ?(chunked = true) ?(body_length = Int64.zero) meth
-    uri =
+let make_for_client ?headers ?chunked ?body_length meth uri =
   let encoding =
-    match chunked with
-    | true -> Transfer.Chunked
-    | false -> Transfer.Fixed body_length
+    match (chunked, body_length) with
+    | Some true, None -> Transfer.Chunked
+    | (None | Some false), Some fixed -> Transfer.Fixed fixed
+    | (Some false | None), None -> Transfer.Unknown
+    | Some true, Some _ ->
+        invalid_arg "cannot set both ?chunked and ?body_length:"
   in
   make ~meth ~encoding ?headers uri
 
@@ -187,7 +185,9 @@ module Make (IO : S.IO) = struct
         else return (`Invalid "bad request URI")
     | `Invalid msg -> return (`Invalid msg)
 
-  let make_body_reader req ic = Transfer_IO.make_reader req.encoding ic
+  let make_body_reader req ic =
+    Transfer_IO.make_reader (Header.get_transfer_encoding req.headers) ic
+
   let read_body_chunk = Transfer_IO.read
 
   let write_header req oc =
@@ -197,21 +197,15 @@ module Make (IO : S.IO) = struct
         (if req.resource = "" then "/" else req.resource)
         (Http.Version.to_string req.version)
     in
-    let headers = req.headers in
-    let headers =
-      if Http.Method.body_allowed req.meth then
-        Header.add_transfer_encoding headers req.encoding
-      else headers
-    in
-    IO.write oc fst_line >>= fun _ -> Header_IO.write headers oc
+    IO.write oc fst_line >>= fun _ -> Header_IO.write req.headers oc
 
   let make_body_writer ~flush req oc =
-    Transfer_IO.make_writer ~flush req.encoding oc
+    Transfer_IO.make_writer ~flush (Header.get_transfer_encoding req.headers) oc
 
   let write_body = Transfer_IO.write
 
-  let write_footer req oc =
-    match req.encoding with
+  let write_footer headers oc =
+    match Header.get_transfer_encoding headers with
     | Transfer.Chunked ->
         (* TODO Trailer header support *)
         IO.write oc "0\r\n\r\n"
@@ -220,7 +214,7 @@ module Make (IO : S.IO) = struct
   let write ~flush write_body req oc =
     write_header req oc >>= fun () ->
     let writer = make_body_writer ~flush req oc in
-    write_body writer >>= fun () -> write_footer req oc
+    write_body writer >>= fun () -> write_footer req.headers oc
 end
 
 module Private = struct
