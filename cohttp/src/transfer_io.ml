@@ -123,7 +123,7 @@ module Make (IO : S.IO) = struct
   let write_ignore_blank writer io s =
     if String.length s = 0 then return () else writer io s
 
-  let make_writer ?(flush = false) mode =
+  let make_writer ~flush mode =
     match flush with
     | false -> (
         match mode with

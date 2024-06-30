@@ -73,12 +73,12 @@ module type Http_io = sig
   module IO : IO
 
   val read : IO.ic -> [ `Eof | `Invalid of string | `Ok of t ] IO.t
-  val make_body_writer : ?flush:bool -> t -> IO.oc -> writer
+  val make_body_writer : flush:bool -> t -> IO.oc -> writer
   val make_body_reader : t -> IO.ic -> reader
   val read_body_chunk : reader -> Transfer.chunk IO.t
   val write_header : t -> IO.oc -> unit IO.t
   val write_body : writer -> string -> unit IO.t
-  val write : ?flush:bool -> (writer -> unit IO.t) -> t -> IO.oc -> unit IO.t
+  val write : flush:bool -> (writer -> unit IO.t) -> t -> IO.oc -> unit IO.t
 end
 
 module type Request = sig

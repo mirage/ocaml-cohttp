@@ -79,7 +79,7 @@ let write output (response : Cohttp.Response.t) body =
   in
   let () = Logs.debug (fun m -> m "send headers") in
   let () =
-    Io.Response.write
+    Io.Response.write ~flush:false
       (fun writer ->
         let () =
           Logs.debug (fun m ->

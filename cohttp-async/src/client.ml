@@ -60,7 +60,7 @@ let request ?interrupt ?ssl_config ?uri ?(body = `Empty) req =
   let uri = match uri with Some t -> t | None -> Cohttp.Request.uri req in
   Net.connect_uri ?interrupt ?ssl_config uri >>= fun (ic, oc) ->
   try_with (fun () ->
-      Io.Request.write
+      Io.Request.write ~flush:false
         (fun writer ->
           Body.Private.write_body Io.Request.write_body body writer)
         req oc
@@ -103,7 +103,7 @@ module Connection = struct
   let request ?(body = Body.empty) t req =
     let res = Ivar.create () in
     Throttle.enqueue t (fun { ic; oc } ->
-        Io.Request.write
+        Io.Request.write ~flush:false
           (fun writer ->
             Body.Private.write_body Io.Request.write_body body writer)
           req oc
