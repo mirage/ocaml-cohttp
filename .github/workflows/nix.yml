@@ -16,4 +16,4 @@ jobs:
       with:
         nix_path: nixpkgs=channel:nixos-unstable
     - run: |
-        nix develop -c dune runtest
+        nix develop -c dune build @runtest @check
