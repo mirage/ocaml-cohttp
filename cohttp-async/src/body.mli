@@ -1,6 +1,5 @@
 open! Base
 open! Async_kernel
-open! Cohttp
 
 type t = [ Cohttp.Body.t | `Pipe of string Pipe.Reader.t ] [@@deriving sexp_of]
 
@@ -21,7 +20,7 @@ module Private : sig
     ('a -> string -> unit Deferred.t) -> t -> 'a -> unit Deferred.t
 
   val pipe_of_body :
-    ('a -> Transfer.chunk Deferred.t) -> 'a -> string Pipe.Reader.t
+    ('a -> Cohttp.Transfer.chunk Deferred.t) -> 'a -> string Pipe.Reader.t
 
   val disable_chunked_encoding : t -> (t * int64) Deferred.t
   val drain : t -> unit Deferred.t

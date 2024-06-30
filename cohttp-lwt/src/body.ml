@@ -14,7 +14,8 @@
  *
   }}}*)
 
-open Cohttp
+module Body = Cohttp.Body
+module Transfer = Cohttp.Transfer
 open Lwt
 
 type t = [ Body.t | `Stream of (string Lwt_stream.t[@sexp.opaque]) ]
@@ -30,10 +31,10 @@ let create_stream fn arg =
       | false -> (
           fn arg >>= function
           | Transfer.Done -> return_none
-          | Transfer.Final_chunk c ->
+          | Final_chunk c ->
               fin := true;
               return (Some c)
-          | Transfer.Chunk c -> return (Some c)))
+          | Chunk c -> return (Some c)))
 
 let is_empty (body : t) =
   match body with
