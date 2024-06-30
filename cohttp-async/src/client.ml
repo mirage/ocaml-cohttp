@@ -98,6 +98,7 @@ module Connection = struct
     Throttle.kill t;
     Throttle.cleaned t
 
+  let close_finished t = Throttle.cleaned t
   let is_closed t = Throttle.is_dead t
 
   let request ?(body = Body.empty) t req =
