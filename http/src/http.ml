@@ -322,8 +322,7 @@ module Header = struct
         | Some len -> Transfer.Fixed len
         | None -> Transfer.Unknown)
 
-  let add_transfer_encoding headers enc =
-    let open Transfer in
+  let add_transfer_encoding headers (enc : Transfer.encoding) =
     (* Only add a header if one doesnt already exist, e.g. from the app *)
     match (get_transfer_encoding headers, enc) with
     | Fixed _, _ (* App has supplied a content length, so use that *)
