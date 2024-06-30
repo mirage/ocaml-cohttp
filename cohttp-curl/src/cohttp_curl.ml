@@ -5,6 +5,17 @@ module Sink = struct
   let discard = Discard
 end
 
+module Error = struct
+  type t = Curl.curlCode
+
+  let create x = x
+
+  let is_timeout (t : t) =
+    match t with Curl.CURLE_OPERATION_TIMEOUTED -> true | _ -> false
+
+  let message t = Curl.strerror t
+end
+
 module Source = struct
   type t = Empty | String of string
 
@@ -132,6 +143,7 @@ module Request = struct
 end
 
 module Private = struct
+  module Error = Error
   module Sink = Sink
   module Source = Source
   module Request = Request

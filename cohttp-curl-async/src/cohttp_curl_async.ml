@@ -8,6 +8,7 @@ let ( let+ ) x f = Deferred.map x ~f
 module Cohttp_curl = Cohttp_curl.Private
 module Sink = Cohttp_curl.Sink
 module Source = Cohttp_curl.Source
+module Error = Cohttp_curl.Error
 
 module Context = struct
   type fd_events = {
@@ -132,8 +133,8 @@ module Header = Http.Header
 module Response = struct
   type 'a t = {
     curl : Curl.t;
-    response : Http.Response.t Deferred.t;
-    body : 'a Deferred.t;
+    response : (Http.Response.t, Error.t) result Deferred.t;
+    body : ('a, Error.t) result Deferred.t;
     context : Context.t;
   }
 
@@ -149,7 +150,7 @@ end
 module Request = struct
   type 'a t = {
     body_ready : Curl.curlCode Ivar.t;
-    response_ready : Http.Response.t Deferred.t;
+    response_ready : (Http.Response.t, Error.t) result Ivar.t;
     base : 'a Cohttp_curl.Request.t;
   }
 
@@ -168,17 +169,21 @@ module Request = struct
           timeout
       in
       Cohttp_curl.Request.create ?timeout_ms ?headers method_ ~uri ~input
-        ~output
-        ~on_response:(Ivar.fill_exn response_ready)
+        ~output ~on_response:(fun response ->
+          Ivar.fill_exn response_ready (Ok response))
     in
-    { base; response_ready = Ivar.read response_ready; body_ready }
+    { base; response_ready; body_ready }
 end
 
 let submit (type a) context (request : a Request.t) : a Response.t =
   let curl = Cohttp_curl.Request.curl request.base in
   Context.register context curl request.body_ready;
-  let body : a Deferred.t =
-    let+ (_ : Curl.curlCode) = Ivar.read request.body_ready in
-    (Cohttp_curl.Request.body request.base : a)
+  let body =
+    Ivar.read request.body_ready >>| function
+    | Curl.CURLE_OK -> Ok (Cohttp_curl.Request.body request.base : a)
+    | code ->
+        let error = Error (Error.create code) in
+        Ivar.fill_exn request.response_ready error;
+        error
   in
-  { Response.body; context; response = request.response_ready; curl }
+  { Response.body; context; response = Ivar.read request.response_ready; curl }

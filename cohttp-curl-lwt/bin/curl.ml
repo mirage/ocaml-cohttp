@@ -23,6 +23,14 @@ let client uri ofile meth' =
   let* resp, response_body =
     Lwt.both (Curl.Response.response reply) (Curl.Response.body reply)
   in
+  let resp, response_body =
+    match (resp, response_body) with
+    | Ok _, Error _ | Error _, Ok _ -> assert false
+    | Ok x, Ok y -> (x, y)
+    | Error _, Error e ->
+        Format.eprintf "error: %s@.%!" (Curl.Error.message e);
+        exit 1
+  in
   Format.eprintf "response:%a@.%!" Sexp.pp_hum (Response.sexp_of_t resp);
   let status = Response.status resp in
   Log.debug (fun d ->

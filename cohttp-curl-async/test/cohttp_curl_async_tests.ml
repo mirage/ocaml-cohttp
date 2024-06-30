@@ -1,6 +1,7 @@
 module Server = Cohttp_async.Server
 module Body = Cohttp_async.Body
 module Deferred = Async_kernel.Deferred
+open Async_kernel
 
 let ( let+ ) x f = Deferred.map x ~f
 let ( let* ) x f = Deferred.bind x ~f
@@ -26,7 +27,11 @@ let test =
               Cohttp_curl_async.Request.create `GET ~uri ~input ~output
             in
             let resp = Cohttp_curl_async.submit ctx req in
-            let+ body = Cohttp_curl_async.Response.body resp in
+            let+ body =
+              Cohttp_curl_async.Response.body resp >>| function
+              | Ok s -> s
+              | Error _ -> assert false
+            in
             Alcotest.check Alcotest.string "test 1" body "hello curl" );
       ])
 

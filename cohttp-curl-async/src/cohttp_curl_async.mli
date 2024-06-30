@@ -27,6 +27,13 @@ module Context : sig
   val create : unit -> t
 end
 
+module Error : sig
+  type t
+
+  val message : t -> string
+  val is_timeout : t -> bool
+end
+
 module Response : sig
   (** Response for the http requests *)
 
@@ -34,8 +41,10 @@ module Response : sig
   (** ['a t] represents a response for a request. ['a] determines how the
       response body is handled *)
 
-  val response : _ t -> Http.Response.t Async_kernel.Deferred.t
-  val body : 'a t -> 'a Async_kernel.Deferred.t
+  val response :
+    _ t -> (Http.Response.t, Error.t) result Async_kernel.Deferred.t
+
+  val body : 'a t -> ('a, Error.t) result Async_kernel.Deferred.t
   val cancel : _ t -> unit
 
   module Expert : sig

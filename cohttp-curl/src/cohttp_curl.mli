@@ -1,4 +1,12 @@
 module Private : sig
+  module Error : sig
+    type t
+
+    val create : Curl.curlCode -> t
+    val message : t -> string
+    val is_timeout : t -> bool
+  end
+
   module Sink : sig
     type 'a t
 
