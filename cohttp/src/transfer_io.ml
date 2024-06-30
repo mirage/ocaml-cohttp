@@ -124,18 +124,15 @@ module Make (IO : S.IO) = struct
     if String.length s = 0 then return () else writer io s
 
   let make_writer ~flush mode =
+    let write =
+      match mode with
+      | Chunked -> Chunked.write
+      | Fixed _ -> Fixed.write
+      | Unknown -> Unknown.write
+    in
     match flush with
-    | false -> (
-        match mode with
-        | Chunked -> Chunked.write
-        | Fixed _ -> Fixed.write
-        | Unknown -> Unknown.write)
-    | true ->
-        (match mode with
-        | Chunked -> write_and_flush Chunked.write
-        | Fixed _ -> write_and_flush Fixed.write
-        | Unknown -> write_and_flush Unknown.write)
-        |> write_ignore_blank
+    | false -> write
+    | true -> write_and_flush write |> write_ignore_blank
 
   let read reader = reader ()
   let write writer buf = writer buf
