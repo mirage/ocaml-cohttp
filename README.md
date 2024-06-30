@@ -21,6 +21,8 @@ libraries:
 * `Cohttp_curl` uses `libcurl`, via `ocurl`, as backend. It also comes
   with lwt (`Cohttp_curl_lwt`) and async backends (`Cohttp_curl_async`).
 * `Cohttp_eio` uses `eio` to leverage new features from multicore ocaml 5.0.
+* `Cohttp_server_lwt_unix` uses lwt to implement a more efficient web server
+  with a minimal interface.
 
 You can implement other targets using the parser very easily. Look at the `IO`
 signature in `lib/s.mli` and implement that in the desired backend.
