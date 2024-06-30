@@ -48,6 +48,8 @@ let collect_errors writer ~f =
       choice (try_with ~name:"Cohttp_async.Server.collect_errors" f) Fn.id;
     ]
 
+let reader_info = Info.of_string "Cohttp_async.Server.Expert: Create reader"
+
 let handle_client handle_request sock rd wr =
   collect_errors wr ~f:(fun () ->
       let rd = Input_channel.create rd in
@@ -61,10 +63,8 @@ let handle_client handle_request sock rd wr =
               handle_request ~body:req_body sock req >>= function
               | `Expert (res, handler) ->
                   Io.Response.write_header res wr >>= fun () ->
-                  Input_channel.to_reader
-                    (Info.of_string "Cohttp_async.Server.Expert: Create reader")
-                    rd
-                  >>= fun reader -> handler reader wr
+                  Input_channel.to_reader reader_info rd >>= fun reader ->
+                  handler reader wr
               | `Response (res, res_body) ->
                   (* There are scenarios if a client leaves before consuming the full response,
                      we might have a reference to an async Pipe that doesn't get drained.
@@ -103,7 +103,7 @@ let handle_client handle_request sock rd wr =
                   else Deferred.unit)
       in
       loop rd wr sock handle_request)
-  >>| fun res -> Result.ok_exn res
+  >>| Result.ok_exn
 
 let respond ?(flush = true) ?(headers = Http.Header.init ()) ?(body = `Empty)
     status : response Deferred.t =
