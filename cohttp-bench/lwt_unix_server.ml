@@ -1,4 +1,4 @@
-open Cohttp_lwt_unix
+module Server = Cohttp_lwt_unix.Server
 
 let length = 2053
 let text = String.make length 'a'

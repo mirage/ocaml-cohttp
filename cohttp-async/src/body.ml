@@ -71,11 +71,10 @@ let write_body write_body (body : t) writer =
   | `Pipe p -> Pipe.iter p ~f:(write_body writer)
 
 let pipe_of_body read_chunk ic =
-  let open Cohttp.Transfer in
   Pipe.create_reader ~close_on_exception:false (fun writer ->
       Deferred.repeat_until_finished () (fun () ->
           read_chunk ic >>= function
-          | Chunk buf ->
+          | Cohttp.Transfer.Chunk buf ->
               (* Even if [writer] has been closed, the loop must continue reading
                * from the input channel to ensure that it is left in a proper state
                * for the next request to be processed (in the case of keep-alive).
