@@ -20,19 +20,8 @@ let drain = function #B.t -> return () | `Pipe p -> Pipe.drain p
 
 let is_empty (body : t) =
   match body with
-  | #B.t as body -> return (B.is_empty body)
-  | `Pipe pipe -> (
-      Deferred.repeat_until_finished () @@ fun () ->
-      Pipe.values_available pipe >>= function
-      | `Eof -> return (`Finished true)
-      | `Ok -> (
-          match Pipe.peek pipe with
-          | None -> return (`Finished true)
-          | Some "" -> (
-              Pipe.read pipe >>| function
-              | `Eof -> `Finished true
-              | `Ok _ -> `Repeat ())
-          | Some _ -> return (`Finished false)))
+  | #B.t as body -> if B.is_empty body then `True else `False
+  | `Pipe _ -> `Unknown
 
 let to_pipe = function
   | `Empty -> Pipe.of_list []

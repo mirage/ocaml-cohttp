@@ -101,31 +101,6 @@ let ts =
         Body.to_string body >>| fun body ->
         assert_equal ~printer "expert 2" body
       in
-      let check_body_empty_status () =
-        let is_empty = Cohttp_async.Body.is_empty in
-        let tests =
-          [
-            ("empty pipe", Pipe.of_list [], true);
-            ("pipe with elements", Pipe.of_list [ "foo"; "bar" ], false);
-            ( "pipe with empty items at the beginning",
-              Pipe.of_list [ ""; "baz" ],
-              false );
-            ("Pipe with empty strings", Pipe.of_list [ ""; ""; "" ], true);
-          ]
-        in
-        Deferred.List.iter ~how:`Sequential tests
-          ~f:(fun (msg, pipe, expected) ->
-            is_empty (`Pipe pipe) >>| fun real ->
-            assert_equal ~msg expected real)
-        >>= fun () ->
-        let b = Pipe.of_list [ ""; ""; "foo"; "bar" ] in
-        is_empty (`Pipe b) >>= fun _ ->
-        Pipe.to_list b >>| fun real ->
-        let msg =
-          "Checking if pipe is empty consumes all leading empty strings"
-        in
-        assert_equal ~msg [ "foo"; "bar" ] real
-      in
       [
         ("empty chunk test", empty_chunk);
         ("large response", large_response);
@@ -133,7 +108,6 @@ let ts =
         ("pipelined chunk test", pipelined_chunk);
         ("large chunked response", large_chunked_response);
         ("expert response", expert_pipelined);
-        ("check body is_empty status for pipes", check_body_empty_status);
       ])
 
 let () =
