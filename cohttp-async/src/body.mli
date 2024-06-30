@@ -7,7 +7,7 @@ type t = [ Cohttp.Body.t | `Pipe of string Pipe.Reader.t ] [@@deriving sexp_of]
 include Cohttp.S.Body with type t := t
 
 val drain : t -> unit Deferred.t
-val is_empty : t -> bool Deferred.t
+val is_empty : t -> [ `True | `False | `Unknown ]
 val to_string : t -> string Deferred.t
 val to_string_list : t -> string list Deferred.t
 val to_pipe : t -> string Pipe.Reader.t
