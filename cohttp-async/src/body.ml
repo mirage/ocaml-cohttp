@@ -52,7 +52,7 @@ let transfer_encoding = function
   | #B.t as t -> B.transfer_encoding t
   | `Pipe _ -> Cohttp.Transfer.Chunked
 
-let of_string_list strings = `Pipe (Pipe.of_list strings)
+let of_string_list strings = `Strings strings
 
 let map t ~f =
   match t with
