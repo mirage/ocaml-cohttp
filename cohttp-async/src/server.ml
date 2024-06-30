@@ -94,7 +94,7 @@ let handle_client handle_request sock rd wr =
                     in
                     { res with Http.Response.headers }
                   in
-                  Io.Response.write
+                  Io.Response.write ~flush:false
                     (Body.Private.write_body Io.Response.write_body res_body)
                     res wr
                   >>= fun () ->

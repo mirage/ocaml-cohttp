@@ -38,7 +38,7 @@ include
         Eio.Buf_write.with_flow socket @@ fun output ->
         let () =
           Eio.Fiber.fork ~sw @@ fun () ->
-          Io.Request.write
+          Io.Request.write ~flush:false
             (fun writer ->
               match body with
               | None -> ()

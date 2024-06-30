@@ -123,8 +123,8 @@ module Make (IO : S.IO) = struct
     in
     Header_IO.write headers oc
 
-  let make_body_writer ?flush { encoding; _ } oc =
-    Transfer_IO.make_writer ?flush encoding oc
+  let make_body_writer ~flush { encoding; _ } oc =
+    Transfer_IO.make_writer ~flush encoding oc
 
   let write_body = Transfer_IO.write
 
@@ -135,9 +135,9 @@ module Make (IO : S.IO) = struct
         IO.write oc "0\r\n\r\n"
     | Transfer.Fixed _ | Transfer.Unknown -> return ()
 
-  let write ?flush fn req oc =
+  let write ~flush fn req oc =
     write_header req oc >>= fun () ->
-    let writer = make_body_writer ?flush req oc in
+    let writer = make_body_writer ~flush req oc in
     fn writer >>= fun () -> write_footer req oc
 end
 

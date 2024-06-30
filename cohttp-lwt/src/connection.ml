@@ -229,7 +229,7 @@ module Make (Net : S.Net) : S.Connection with module Net = Net = struct
         Lwt.catch
           (fun () ->
             (* try *)
-            Request.write
+            Request.write ~flush:false
               (fun writer -> Body.write_body (Request.write_body writer) body)
               req oc)
           (fun e ->
