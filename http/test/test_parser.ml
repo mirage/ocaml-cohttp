@@ -37,16 +37,8 @@ let assert_req_success ~here ~expected_req ~expected_consumed ?pos ?len buf =
     (Http.Header.to_list @@ Http.Request.headers req);
   [%test_result: int] ~here ~expect:expected_consumed consumed
 
-let[@warning "-3"] make_req ~headers ?(encoding = Http.Transfer.Fixed 0L) meth
-    resource =
-  {
-    Http.Request.headers;
-    meth;
-    resource;
-    scheme = None;
-    encoding;
-    version = `HTTP_1_1;
-  }
+let[@warning "-3"] make_req ~headers meth resource =
+  { Http.Request.headers; meth; resource; scheme = None; version = `HTTP_1_1 }
 
 let req_expected =
   make_req

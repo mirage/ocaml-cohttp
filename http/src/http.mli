@@ -388,8 +388,6 @@ module Request : sig
     scheme : string option;  (** URI scheme (http or https) *)
     resource : string;  (** Request path and query *)
     version : Version.t;  (** HTTP version, usually 1.1 *)
-    encoding : Transfer.encoding;
-        [@deprecated "this field will be removed in the future"]
   }
 
   val has_body : t -> [ `No | `Unknown | `Yes ]
@@ -398,7 +396,6 @@ module Request : sig
   val scheme : t -> string option
   val resource : t -> string
   val version : t -> Version.t
-  val encoding : t -> Transfer.encoding
   val compare : t -> t -> int
 
   val is_keep_alive : t -> bool
