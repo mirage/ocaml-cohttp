@@ -19,6 +19,11 @@ let client uri meth' () =
   in
   let* resp, response_body =
     Deferred.both (Curl.Response.response reply) (Curl.Response.body reply)
+    >>| function
+    | Ok r, Ok b -> (r, b)
+    | _, Error e | Error e, _ ->
+        Format.eprintf "error: %s@.%!" (Curl.Error.message e);
+        exit 1
   in
   Format.eprintf "response:%a@.%!" Sexp.pp_hum (Response.sexp_of_t resp);
   let status = Response.status resp in
