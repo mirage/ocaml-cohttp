@@ -37,6 +37,7 @@ module Connection : sig
     t Async_kernel.Deferred.t
 
   val close : t -> unit Async_kernel.Deferred.t
+  val close_finished : t -> unit Async_kernel.Deferred.t
   val is_closed : t -> bool
 
   val request :
