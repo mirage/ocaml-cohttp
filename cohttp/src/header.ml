@@ -22,7 +22,7 @@ let media_type_re =
   let re = Re.Emacs.re ~case:true "[ \t]*\\([^ \t;]+\\)" in
   Re.(compile (seq [ start; re ]))
 
-let get_first_match _re s =
+let get_first_match s =
   try
     let subs = Re.exec ~pos:0 media_type_re s in
     let start, stop = Re.Group.offset subs 1 in
@@ -32,7 +32,7 @@ let get_first_match _re s =
 (* Grab "foo/bar" from " foo/bar ; charset=UTF-8" *)
 let get_media_type headers =
   match get headers "content-type" with
-  | Some s -> get_first_match media_type_re s
+  | Some s -> get_first_match s
   | None -> None
 
 let get_acceptable_media_ranges headers =
