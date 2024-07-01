@@ -742,7 +742,6 @@ module Request = struct
     scheme : string option;  (** URI scheme (http or https) *)
     resource : string;  (** Request path and query *)
     version : Version.t;  (** HTTP version, usually 1.1 *)
-    encoding : Transfer.encoding;
   }
 
   let headers t = t.headers
@@ -750,9 +749,8 @@ module Request = struct
   let scheme t = t.scheme
   let resource t = t.resource
   let version t = t.version
-  let encoding t = t.encoding
 
-  let compare { headers; meth; scheme; resource; version; encoding } y =
+  let compare { headers; meth; scheme; resource; version } y =
     match Header.compare headers y.headers with
     | 0 -> (
         match Method.compare meth y.meth with
@@ -760,10 +758,7 @@ module Request = struct
             match Option.compare String.compare scheme y.scheme with
             | 0 -> (
                 match String.compare resource y.resource with
-                | 0 -> (
-                    match Version.compare version y.version with
-                    | 0 -> Transfer.compare_encoding encoding y.encoding
-                    | i -> i)
+                | 0 -> Version.compare version y.version
                 | i -> i)
             | i -> i)
         | i -> i)
@@ -786,12 +781,13 @@ module Request = struct
 
   (* Defined for method types in RFC7231 *)
   let has_body req =
-    if Method.body_allowed req.meth then Transfer.has_body req.encoding else `No
+    if Method.body_allowed req.meth then
+      Transfer.has_body (Header.get_transfer_encoding req.headers)
+    else `No
 
   let make ?(meth = `GET) ?(version = `HTTP_1_1) ?(headers = Header.empty)
       ?scheme resource =
-    let encoding = Header.get_transfer_encoding headers in
-    { headers; meth; scheme; resource; version; encoding }
+    { headers; meth; scheme; resource; version }
 
   let pp fmt t =
     let open Format in
@@ -1146,14 +1142,7 @@ module Parser = struct
     let path = token source in
     let version = version source in
     let headers = headers source in
-    {
-      Request.headers;
-      meth;
-      scheme = None;
-      resource = path;
-      version;
-      encoding = Header.get_transfer_encoding headers;
-    }
+    { Request.headers; meth; scheme = None; resource = path; version }
 
   type error = Partial | Msg of string
 
