@@ -102,6 +102,7 @@ module type Request = sig
     ?version:Code.version ->
     ?encoding:Transfer.encoding ->
     ?headers:Header.t ->
+    ?absolute_form:bool ->
     Uri.t ->
     t
   (** [make ()] is a value of {!type:t}. The default values for the request, if
@@ -119,6 +120,7 @@ module type Request = sig
     ?headers:Header.t ->
     ?chunked:bool ->
     ?body_length:int64 ->
+    ?absolute_form:bool ->
     Code.meth ->
     Uri.t ->
     t
