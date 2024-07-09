@@ -19,13 +19,14 @@ open Sexplib0.Sexp_conv
 type t = Http.Request.t = {
   headers : Header.t;
   meth : Code.meth;
+  absolute_form : bool;
   scheme : string option;
   resource : string;
   version : Code.version;
 }
 [@@deriving sexp]
 
-let compare { headers; meth; scheme; resource; version } y =
+let compare { headers; meth; scheme; resource; version; _ } y =
   match Header.compare headers y.headers with
   | 0 -> (
       match Code.compare_method meth y.meth with
@@ -47,7 +48,7 @@ let version t = t.version
 let encoding t = Header.get_transfer_encoding t.headers
 
 let make ?(meth = `GET) ?(version = `HTTP_1_1) ?encoding
-    ?(headers = Header.init ()) uri =
+    ?(headers = Header.init ()) ?(absolute_form = false) uri =
   let headers =
     Header.add_unless_exists headers "host"
       (match Uri.scheme uri with
@@ -78,7 +79,7 @@ let make ?(meth = `GET) ?(version = `HTTP_1_1) ?encoding
     | None -> headers
     | Some encoding -> Header.add_transfer_encoding headers encoding
   in
-  { headers; meth; scheme; resource; version }
+  { headers; meth; absolute_form; scheme; resource; version }
 
 let is_keep_alive t = Http.Request.is_keep_alive t
 
@@ -86,7 +87,7 @@ let is_keep_alive t = Http.Request.is_keep_alive t
    adding content headers if appropriate.
    @param chunked Forces chunked encoding
 *)
-let make_for_client ?headers ?chunked ?body_length meth uri =
+let make_for_client ?headers ?chunked ?body_length ?absolute_form meth uri =
   let encoding =
     match (chunked, body_length) with
     | Some true, None -> Transfer.Chunked
@@ -95,7 +96,7 @@ let make_for_client ?headers ?chunked ?body_length meth uri =
     | Some true, Some _ ->
         invalid_arg "cannot set both ?chunked and ?body_length:"
   in
-  make ~meth ~encoding ?headers uri
+  make ~meth ~encoding ?headers ?absolute_form uri
 
 let pp_hum ppf r =
   Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib0.Sexp.to_string_hum)
@@ -194,7 +195,13 @@ module Make (IO : S.IO) = struct
     let fst_line =
       Printf.sprintf "%s %s %s\r\n"
         (Http.Method.to_string req.meth)
-        (if req.resource = "" then "/" else req.resource)
+        (let resource = if req.resource = "" then "/" else req.resource in
+         if req.absolute_form then
+           Option.get req.scheme
+           ^ "://"
+           ^ Option.get (Header.get req.headers "host")
+           ^ resource
+         else resource)
         (Http.Version.to_string req.version)
     in
     IO.write oc fst_line >>= fun _ -> Header_IO.write req.headers oc

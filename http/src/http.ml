@@ -739,6 +739,7 @@ module Request = struct
   type t = {
     headers : Header.t;  (** HTTP request headers *)
     meth : Method.t;  (** HTTP request method *)
+    absolute_form : bool;
     scheme : string option;  (** URI scheme (http or https) *)
     resource : string;  (** Request path and query *)
     version : Version.t;  (** HTTP version, usually 1.1 *)
@@ -750,7 +751,7 @@ module Request = struct
   let resource t = t.resource
   let version t = t.version
 
-  let compare { headers; meth; scheme; resource; version } y =
+  let compare { headers; meth; scheme; resource; version; _ } y =
     match Header.compare headers y.headers with
     | 0 -> (
         match Method.compare meth y.meth with
@@ -786,8 +787,8 @@ module Request = struct
     else `No
 
   let make ?(meth = `GET) ?(version = `HTTP_1_1) ?(headers = Header.empty)
-      ?scheme resource =
-    { headers; meth; scheme; resource; version }
+      ?scheme ?(absolute_form = false) resource =
+    { headers; meth; scheme; resource; absolute_form; version }
 
   let pp fmt t =
     let open Format in
@@ -1133,7 +1134,14 @@ module Parser = struct
     let path = token source in
     let version = version source in
     let headers = headers source in
-    { Request.headers; meth; scheme = None; resource = path; version }
+    {
+      Request.headers;
+      meth;
+      scheme = None;
+      resource = path;
+      absolute_form = false;
+      version;
+    }
 
   type error = Partial | Msg of string
 

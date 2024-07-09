@@ -385,6 +385,9 @@ module Request : sig
   type t = {
     headers : Header.t;  (** HTTP request headers *)
     meth : Method.t;  (** HTTP request method *)
+    absolute_form : bool;
+        (** Whether the target URI should be in absolute-form. See
+            https://www.rfc-editor.org/rfc/rfc9112#name-absolute-form *)
     scheme : string option;  (** URI scheme (http or https) *)
     resource : string;  (** Request path and query *)
     version : Version.t;  (** HTTP version, usually 1.1 *)
@@ -432,13 +435,19 @@ module Request : sig
     ?version:Version.t ->
     ?headers:Header.t ->
     ?scheme:string ->
+    ?absolute_form:bool ->
     string ->
     t
   (** [make resource] is a value of {!type:t}. The default values for the
       response, if not specified, are as follows: [meth] is [`GET], [version] is
       [`HTTP_1_1], [headers] is [Header.empty] and [scheme] is [None]. The
       request encoding value is determined via the
-      [Header.get_transfer_encoding] function.*)
+      [Header.get_transfer_encoding] function.
+
+      [absolute_form] controls whether the target should be in absolute-form
+      (see https://www.rfc-editor.org/rfc/rfc9112#name-absolute-form), required
+      for clients using an HTTP proxy. The target URI is reconstructed from the
+      [Host] header. *)
 
   val pp : Format.formatter -> t -> unit
 end

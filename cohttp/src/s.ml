@@ -85,6 +85,8 @@ module type Request = sig
   type t = {
     headers : Header.t;  (** HTTP request headers *)
     meth : Code.meth;  (** HTTP request method *)
+    absolute_form : bool;
+        (** Whether the target URI should be in absolute form. *)
     scheme : string option;  (** URI scheme (http or https) *)
     resource : string;  (** Request path and query *)
     version : Code.version;  (** HTTP version, usually 1.1 *)
@@ -104,6 +106,7 @@ module type Request = sig
     ?version:Code.version ->
     ?encoding:Transfer.encoding ->
     ?headers:Header.t ->
+    ?absolute_form:bool ->
     Uri.t ->
     t
   (** [make ()] is a value of {!type:t}. The default values for the request, if
@@ -121,6 +124,7 @@ module type Request = sig
     ?headers:Header.t ->
     ?chunked:bool ->
     ?body_length:int64 ->
+    ?absolute_form:bool ->
     Code.meth ->
     Uri.t ->
     t
