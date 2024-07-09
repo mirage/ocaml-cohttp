@@ -51,7 +51,7 @@ module Status : sig
     | `Partial_content  (** partial resource return due to request header *)
     | `Multi_status  (** XML, can contain multiple separate responses *)
     | `Already_reported  (** results previously returned *)
-    | `Im_used  (** request fulfilled, reponse is instance-manipulations *) ]
+    | `Im_used  (** request fulfilled, response is instance-manipulations *) ]
   (** Success *)
 
   type redirection =
@@ -245,7 +245,7 @@ module Header : sig
 
   val replace : t -> string -> string -> t
   (** [replace h k v] replaces the last added value of [k] from [h] and removed
-      all other occurences of [k] if it exists. Otherwise it adds [(k, v)] to
+      all other occurrences of [k] if it exists. Otherwise it adds [(k, v)] to
       [h].
 
       {e Invariant:} [forall h, k, v. get_multi (replace h k v) = [ v ]] *)
@@ -285,7 +285,7 @@ module Header : sig
       except for the header name [k]. Depending on the value of [v] where [v] is
       [f (get h k)], the header pair [(k, v)] is added, removed or updated.
 
-      - If [v] is [None], the last occurence of [k] in [h] is removed;
+      - If [v] is [None], the last occurrence of [k] in [h] is removed;
 
       - If [v] is [Some w] then the last value paired with [k] in [h] is
         replaced by [w] if it exists. Otherwise, the pair [(k, w)] is added;
@@ -299,7 +299,7 @@ module Header : sig
       [vs] is [f (get_multi h k)], the values associated to the header [k] are
       added, removed or updated.
 
-      - If [vs] is an empty list, every occurences of the header [k] in [h] are
+      - If [vs] is an empty list, every occurrences of the header [k] in [h] are
         removed;
 
       - If [vs] is a non-empty list, all values previously associated to [k] are

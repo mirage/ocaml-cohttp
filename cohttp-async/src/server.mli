@@ -32,7 +32,7 @@ type response_action =
       underlying {!Async_unix.Reader.t} and {!Async_unix.Writer.t}, which allows
       writing a response body more efficiently, stream a response or to switch
       protocols entirely (e.g. websockets). Processing of pipelined requests
-      continue after the {!unit Async_kernel.Deferred.t} is resolved. The
+      continue after the [unit Async_kernel.Deferred.t] is resolved. The
       connection can be closed by closing the {!Async_unix.Reader.t}. *)
 
 val respond : response respond_t

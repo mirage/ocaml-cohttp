@@ -298,10 +298,10 @@ module S3 = struct
   }
   [@@deriving sexp]
 
-  let make_request ?body conf ~meth ~bucket ~objekt =
+  let make_request ?body conf ~meth ~bucket ~object_ =
     let host_str = region_host_string conf.region in
     let uri =
-      Printf.sprintf "https://%s/%s/%s" host_str bucket objekt |> Uri.of_string
+      Printf.sprintf "https://%s/%s/%s" host_str bucket object_ |> Uri.of_string
     in
     let time = Time.now () in
     (* If PUT add content length *)
@@ -334,16 +334,16 @@ module S3 = struct
     | _ -> failwith "not possible right now"
 end
 
-type s3path = { bucket : string; objekt : string }
+type s3path = { bucket : string; object_ : string }
 type cmd = S3toLocal of s3path * string | LocaltoS3 of string * s3path
 
 let determine_s3_parts s =
-  (* Takes: string of the form s3://<bucket>/<object> *)
+  (* Takes: string of the form s3://<bucket>/<object_> *)
   let s = String.drop_prefix s 5 in
   let parts = String.split ~on:'/' s in
   match parts with
-  | bucket :: rst -> { bucket; objekt = String.concat ~sep:"/" rst }
-  | _ -> failwith "error format must be 's3://<bucket>/<object>'"
+  | bucket :: rst -> { bucket; object_ = String.concat ~sep:"/" rst }
+  | _ -> failwith "error format must be 's3://<bucket>/<object_>'"
 
 let determine_paths src dst =
   let is_s3 s = String.is_prefix ~prefix:"s3://" s in
@@ -360,7 +360,7 @@ let main region_str aws_access_key aws_secret_key src dst () =
   let conf = { region; aws_access_key; aws_secret_key } in
   match determine_paths src dst with
   | S3toLocal (src, dst) -> (
-      make_request conf ~meth:`GET ~bucket:src.bucket ~objekt:src.objekt
+      make_request conf ~meth:`GET ~bucket:src.bucket ~object_:src.object_
       >>= fun (resp, body) ->
       match Http.Response.(resp.status) with
       | #Http.Status.success ->
@@ -368,7 +368,7 @@ let main region_str aws_access_key aws_secret_key src dst () =
           Out_channel.with_file
             ~f:(fun oc -> Out_channel.output_string oc s)
             dst;
-          Core.Printf.printf "Wrote s3://%s to %s\n" (src.bucket ^ src.objekt)
+          Core.Printf.printf "Wrote s3://%s to %s\n" (src.bucket ^ src.object_)
             dst
       | _ ->
           Core.Printf.printf "Error: %s\n"
@@ -378,12 +378,12 @@ let main region_str aws_access_key aws_secret_key src dst () =
       let body =
         In_channel.with_file src ~f:(fun ic -> In_channel.input_all ic)
       in
-      make_request ~body conf ~meth:`PUT ~bucket:dst.bucket ~objekt:dst.objekt
+      make_request ~body conf ~meth:`PUT ~bucket:dst.bucket ~object_:dst.object_
       >>= fun (resp, body) ->
       match Http.Response.status resp with
       | #Http.Status.success ->
           Core.Printf.printf "Wrote %s to s3://%s\n" src
-            (dst.bucket ^ dst.objekt);
+            (dst.bucket ^ dst.object_);
           return ()
       | _ ->
           Body.to_string body >>| fun s ->

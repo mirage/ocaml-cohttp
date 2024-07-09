@@ -15,7 +15,7 @@ module type BASE = sig
     (Http.Response.t * Eio.Flow.source_ty r, string) Result.t Io.t)
     with_context
   (** Send an HTTP request with arbitrary method and a body. If the URI has a
-      host, we use a TCP connection, otherwaise a UNIX domain socket. *)
+      host, we use a TCP connection, otherwise a UNIX domain socket. *)
 end
 
 module type S = sig

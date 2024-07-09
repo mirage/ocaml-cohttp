@@ -178,7 +178,7 @@ let test_unknown uri =
   in
   tests handler uri
 
-(* In that difficult case one might be better of using a Connection_cache which
+(* In that difficult case one might be better off using a Connection_cache which
  * will take care of those trivial retries and reconnecting: *)
 
 module Cache = Cohttp_lwt_unix.Connection_cache

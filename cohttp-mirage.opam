@@ -2,7 +2,7 @@
 opam-version: "2.0"
 synopsis: "CoHTTP implementation for the MirageOS unikernel"
 description: """
-This HTTP implementation uses the Cohttp portable implementaiton
+This HTTP implementation uses the Cohttp portable implementation
 along with the Lwt threading library in order to provide a
 `Cohttp_mirage` functor that can be used in MirageOS unikernels
 to build very small and efficient HTTP clients and servers

@@ -250,7 +250,7 @@ module Make_client_async (P : Params) = Make_api (struct
               with
               | e
               (* If we exhaust the stack, it is possible that
-                 Lwt.wakeup just aboves marks the promise as
+                 Lwt.wakeup just above marks the promise as
                  completed, but raises Stack_overflow while
                  running the promise callbacks. In this case
                  waking calling wakeup_exn on the already

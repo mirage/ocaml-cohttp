@@ -24,7 +24,7 @@ val create : unit -> t
 (** Create a fresh connection identifier. *)
 
 val to_string : t -> string
-(** Pretty-print a connection identifer. *)
+(** Pretty-print a connection identifier. *)
 
 val compare : t -> t -> int
 (** Comparison function for two identifiers. More recently constructed

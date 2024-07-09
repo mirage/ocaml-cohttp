@@ -99,7 +99,7 @@ type call =
         Logs.set_level (Some Logs.Warning)
       ]}
 
-    @raise {!exception:Connection.Retry}
+    @raise {!Connection.Retry}
       on recoverable errors like the remote endpoint closing the connection
       gracefully. Even non-idempotent requests are guaranteed to not have been
       processed by the remote endpoint and should be retried. But beware that a
@@ -132,7 +132,7 @@ module type Connection = sig
         closed as soon as possible. If [true], it is assumed the remote end does
         support pipelining and multiple requests may be sent even before
         receiving any reply. By default we wait for the first response to decide
-        whether connection keep-alive and pipelining is suppored. Chunked
+        whether connection keep-alive and pipelining is supported. Chunked
         encoding can only be used when pipelining is supported. Therefore better
         avoid using chunked encoding on the very first request.
       @param ctx See [Net.ctx]
@@ -217,7 +217,7 @@ module type Client = sig
     Uri.t ->
     (Http.Request.t * Body.t) Lwt_stream.t ->
     (Http.Response.t * Body.t) Lwt_stream.t Lwt.t
-  (** @deprecated use {!module Cohttp_lwt.Connection} instead. *)
+  (** @deprecated use {!module:Cohttp_lwt.Connection} instead. *)
 end
 
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)

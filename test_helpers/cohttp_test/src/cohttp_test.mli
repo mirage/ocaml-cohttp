@@ -21,7 +21,7 @@ module type S = sig
 
   val response_sequence : spec list -> spec
   (** A server that process requests using the provided specs in sequence and
-      crashes on further reqeusts *)
+      crashes on further requests *)
 
   val temp_server : ?port:int -> spec -> (Uri.t -> 'a io) -> 'a io
   (** Create a temporary server according to spec that lives until the callback

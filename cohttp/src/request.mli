@@ -18,8 +18,9 @@
 
 include S.Request with type t = Http.Request.t
 (** This contains the metadata for a HTTP/1.x request header, including the
-    {!headers}, {!version}, {!meth} and {!uri}. The body is handled by the
-    separate {!S} module type, as it is dependent on the IO implementation.
+    {!field-headers}, {!field-version}, {!field-meth} and {!field-uri}. The body
+    is handled by the separate {!S} module type, as it is dependent on the IO
+    implementation.
 
     The interface exposes a [fieldslib] interface which provides individual
     accessor functions for each of the records below. It also provides [sexp]

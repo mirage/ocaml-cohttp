@@ -19,7 +19,7 @@
 ## v6.0.0~beta1 (2023-10-27)
 - cohttp-eio: move new Cohttp.{Client,Server} modules under Cohttp.Generic (mseri #1003)
 - cohttp-eio: Add Client.make_generic and HTTPS support. (talex5 #1002)
-- cohttp: move generic client and server signatures to cohttp and use them across all packges. (mefyl #984)
+- cohttp: move generic client and server signatures to cohttp and use them across all packages. (mefyl #984)
 - cohttp-eio: Complete rewrite to follow common interfaces and behaviors. (mefyl #984)
 
 ## v6.0.0~alpha2 (2023-08-08)
@@ -141,7 +141,7 @@
   **Breaking** the headers are no-longer lowercased when parsed, the headers key comparison is case insensitive instead.
 
 - cohttp-lwt-unix: Adopt ocaml-conduit 5.0.0 (smorimoto #787)
-  **Breaking** `Conduit_lwt_unix.connect`'s `ctx` param type chaged from `ctx` to  `ctx Lazy.t`
+  **Breaking** `Conduit_lwt_unix.connect`'s `ctx` param type changed from `ctx` to  `ctx Lazy.t`
 
 - cohttp-mirage: fix deprecated fmt usage (tmcgilchrist #783)
 - lwt_jsoo: Use logs for the warnings and document it (mseri #776)
@@ -161,7 +161,7 @@
 - Use implicit executable dependency for generate.exe (TheLortex #735)
 - cohttp: fix chunked encoding of empty body (mefyl #715)
 - cohttp-async: fix body not being uploaded with unchunked Async.Pipe (mefyl #706)
-- cohttp-{async, lwt}: fix suprising behaviours of Body.is_empty (anuragsoni #714 #712 #713)
+- cohttp-{async, lwt}: fix surprising behaviours of Body.is_empty (anuragsoni #714 #712 #713)
 - refactoring of tests (mseri #709, dinosaure #692)
 - update documentation (dinosaure #716, mseri #720)
 - fix deadlock in logging (dinosaure #722)
@@ -273,7 +273,7 @@ Async: Expert response action no longer writes empty HTTP body (#647 by andreas)
 
 In cohttp.0.99, a number of subpackages were turned into explicit
 opam packages to simplify dependency management.
-To aid migration, some compatability shims were left in place so that
+To aid migration, some compatibility shims were left in place so that
 the old findlib names would continue to work. They have now been removed
 as of this release.  If you were still using them, then please rename
 them as follows:
@@ -380,7 +380,7 @@ and avsm.
 
 ## 0.22.0 (2017-03-09)
 
-* Lwt: ensure conn_closed is cosed once client goes away (#528)
+* Lwt: ensure conn_closed is closed once client goes away (#528)
 * Use the Logs library for logging. (#532)
 
 ## 0.21.1 (2017-02-18)
