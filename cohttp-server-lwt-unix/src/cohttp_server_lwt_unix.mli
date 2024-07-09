@@ -5,35 +5,36 @@
     functionality but offers more control and better performance. The
     differences are as follows:
 
-      - Vastly improved performance due to optimized buffer handling
-      - No dependency on conduit
-      - No builtin logging
+    - Vastly improved performance due to optimized buffer handling
+    - No dependency on conduit
+    - No builtin logging
 
-   An example server: {[
-     open Lwt.Syntax
+    An example server:
 
-     let server_callback ctx =
-       Lwt.join
-         [
-           Cohttp_server_lwt_unix.ontext.discard_body ctx;
-           Cohttp_server_lwt_unix.ontext.respond ctx
-            (Http.Response.make ())
-            (Cohttp_server_lwt_unix.Body.string "hello world");
-         ]
+    {[
+      open Lwt.Syntax
 
-     let main () =
-       let* _server =
-         let listen_address = Unix.(ADDR_INET (inet_addr_loopback, 8080)) in
-         let server = Cohttp_server_lwt_unix.create server_callback in
-         Lwt_io.establish_server_with_client_address ~backlog:10_000 listen_address
-           (fun _addr ch -> Cohttp_server_lwt_unix.handle_connection server ch)
-       in
-       let forever, _ = Lwt.wait () in
-       forever
+      let server_callback ctx =
+        Lwt.join
+          [
+            Cohttp_server_lwt_unix.ontext.discard_body ctx;
+            Cohttp_server_lwt_unix.ontext.respond ctx (Http.Response.make ())
+              (Cohttp_server_lwt_unix.Body.string "hello world");
+          ]
 
-     let () = ignore (Lwt_main.run (main ()))
-   ]}
- *)
+      let main () =
+        let* _server =
+          let listen_address = Unix.(ADDR_INET (inet_addr_loopback, 8080)) in
+          let server = Cohttp_server_lwt_unix.create server_callback in
+          Lwt_io.establish_server_with_client_address ~backlog:10_000
+            listen_address (fun _addr ch ->
+              Cohttp_server_lwt_unix.handle_connection server ch)
+        in
+        let forever, _ = Lwt.wait () in
+        forever
+
+      let () = ignore (Lwt_main.run (main ()))
+    ]} *)
 
 module Body : sig
   module Encoding : sig

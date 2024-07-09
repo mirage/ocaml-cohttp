@@ -16,7 +16,7 @@ module type S = sig
         underlying {!IO.ic} and {!IO.oc}, which allows writing a response body
         more efficiently, stream a response or to switch protocols entirely
         (e.g. websockets). Processing of pipelined requests continue after the
-        {!unit IO.t} is resolved. The connection can be closed by closing the
+        [unit IO.t] is resolved. The connection can be closed by closing the
         {!IO.ic}. *)
 
   type t

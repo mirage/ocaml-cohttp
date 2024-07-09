@@ -18,10 +18,11 @@
 
 include S.Response with type t = Http.Response.t
 (** This contains the metadata for a HTTP/1.1 response header, including the
-    {!encoding}, {!headers}, {!version}, {!status} code and whether to {!flush}
-    the connection after every body chunk (useful for server-side events and
-    other long-lived connection protocols). The body is handled by the separate
-    {!S} module type, as it is dependent on the IO implementation.
+    {!field-encoding}, {!field-headers}, {!field-version}, {!field-status} code
+    and whether to flush the connection after every body chunk (useful for
+    server-side events and other long-lived connection protocols). The body is
+    handled by the separate {!S} module type, as it is dependent on the IO
+    implementation.
 
     The interface exposes a [fieldslib] interface which provides individual
     accessor functions for each of the records below. It also provides [sexp]
