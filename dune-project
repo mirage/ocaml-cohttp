@@ -207,7 +207,7 @@
  (name cohttp-mirage)
  (synopsis "CoHTTP implementation for the MirageOS unikernel")
  (description
-  "This HTTP implementation uses the Cohttp portable implementaiton\nalong with the Lwt threading library in order to provide a\n`Cohttp_mirage` functor that can be used in MirageOS unikernels\nto build very small and efficient HTTP clients and servers\nwithout having a hard dependency on an underlying operating\nsystem.\n\nPlease see <https://mirage.io> for a self-hosted explanation\nand instructions on how to use this library.")
+  "This HTTP implementation uses the Cohttp portable implementation\nalong with the Lwt threading library in order to provide a\n`Cohttp_mirage` functor that can be used in MirageOS unikernels\nto build very small and efficient HTTP clients and servers\nwithout having a hard dependency on an underlying operating\nsystem.\n\nPlease see <https://mirage.io> for a self-hosted explanation\nand instructions on how to use this library.")
  (depends
   (ocaml
    (>= 4.08))

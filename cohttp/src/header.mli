@@ -85,7 +85,8 @@ val remove : t -> string -> t
 
 val replace : t -> string -> string -> t
 (** [replace h k v] replaces the last added value of [k] from [h] and removed
-    all other occurences of [k] if it exists. Otherwise it adds [(k, v)] to [h].
+    all other occurrences of [k] if it exists. Otherwise it adds [(k, v)] to
+    [h].
 
     {e Invariant:} [forall h, k, v. get_multi (replace h k v) = [ v ]] *)
 
@@ -124,7 +125,7 @@ val update : t -> string -> (string option -> string option) -> t
     except for the header name [k]. Depending on the value of [v] where [v] is
     [f (get h k)], the header pair [(k, v)] is added, removed or updated.
 
-    - If [v] is [None], the last occurence of [k] in [h] is removed;
+    - If [v] is [None], the last occurrence of [k] in [h] is removed;
 
     - If [v] is [Some w] then the last value paired with [k] in [h] is replaced
       by [w] if it exists. Otherwise, the pair [(k, w)] is added;
@@ -138,7 +139,7 @@ val update_all : t -> string -> (string list -> string list) -> t
     [vs] is [f (get_multi h k)], the values associated to the header [k] are
     added, removed or updated.
 
-    - If [vs] is an empty list, every occurences of the header [k] in [h] are
+    - If [vs] is an empty list, every occurrences of the header [k] in [h] are
       removed;
 
     - If [vs] is a non-empty list, all values previously associated to [k] are
@@ -152,7 +153,7 @@ val map : (string -> string -> string) -> t -> t
 val fold : (string -> string -> 'a -> 'a) -> t -> 'a -> 'a
 
 val to_lines : t -> string list
-(** [to_lines h] returns header fieds as a list of lines. Beware that each line
+(** [to_lines h] returns header fields as a list of lines. Beware that each line
     ends with "\r\n" characters. *)
 
 val to_frames : t -> string list

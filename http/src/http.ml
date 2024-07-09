@@ -25,7 +25,7 @@ module Header = struct
       else
         let len = String.length a in
         len = String.length b
-        (* Note: at this point we konw that [a] and [b] have the same length. *)
+        (* Note: at this point we know that [a] and [b] have the same length. *)
         &&
         (* [word_loop a b i len] compares strings [a] and [b] from
            offsets [i] (included) to [len] (excluded), one word at a time.
@@ -312,7 +312,7 @@ module Header = struct
   (* Parse the transfer-encoding and content-length headers to
    * determine how to decode a body *)
   let get_transfer_encoding headers =
-    (* It should actually be [get] as the interresting value is actually the last.*)
+    (* It should actually be [get] as the interesting value is actually the last.*)
     match
       get_multi_concat ~list_value_only:true headers "transfer-encoding"
     with
@@ -323,7 +323,7 @@ module Header = struct
         | None -> Transfer.Unknown)
 
   let add_transfer_encoding headers (enc : Transfer.encoding) =
-    (* Only add a header if one doesnt already exist, e.g. from the app *)
+    (* Only add a header if one doesn't already exist, e.g. from the app *)
     match (get_transfer_encoding headers, enc) with
     | Fixed _, _ (* App has supplied a content length, so use that *)
     | Chunked, _ ->

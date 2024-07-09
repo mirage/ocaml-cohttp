@@ -14,7 +14,7 @@ exception Isnt_a_file
 let respond_file ?headers ~fname () =
   Lwt.catch
     (fun () ->
-      (* Check this isnt a directory first *)
+      (* Check this isn't a directory first *)
       ( fname |> Lwt_unix.stat >>= fun s ->
         if Unix.(s.st_kind <> S_REG) then Lwt.fail Isnt_a_file
         else Lwt.return_unit )

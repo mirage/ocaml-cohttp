@@ -35,7 +35,7 @@ type success_status =
   | `Partial_content  (** partial resource return due to request header *)
   | `Multi_status  (** XML, can contain multiple separate responses *)
   | `Already_reported  (** results previously returned *)
-  | `Im_used  (** request fulfilled, reponse is instance-manipulations *) ]
+  | `Im_used  (** request fulfilled, response is instance-manipulations *) ]
 [@@deriving sexp]
 (** Success *)
 

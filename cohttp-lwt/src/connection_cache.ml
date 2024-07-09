@@ -38,7 +38,7 @@ end = struct
     res
 end
 
-(** This functor keeps a cache of connecions for reuse. Connections are reused
+(** This functor keeps a cache of connections for reuse. Connections are reused
     based on their remote {!type:Conduit.endp} (effectively IP / port). *)
 module Make (Connection : S.Connection) (Sleep : S.Sleep) : sig
   include S.Connection_cache

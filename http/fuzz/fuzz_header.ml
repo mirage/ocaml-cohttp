@@ -24,7 +24,7 @@ module H = Http.Header
     The tests below reflects the semantics we want for each function, however in
     some cases, it may actually be specific to the current implementation and
     does not necessary need to be enforced in future implementations. To make it
-    clear, tests are annoted by their categories:
+    clear, tests are annotated by their categories:
 
     - FS (Functions semantics): tests the semantics described in the
       documentation.
@@ -403,7 +403,7 @@ let update_test () =
         check_eq H.(remove (update h k (fun _ -> None)) k) H.(remove h k);
         check_eq H.(remove (update h k (fun _ -> Some w)) k) H.(remove h k));
     (*FS*)
-    add_test ~name:"[update h k (fun _ -> None)] removes last occurence of k."
+    add_test ~name:"[update h k (fun _ -> None)] removes last occurrence of k."
       [ headers_gen; header_name_gen ] (fun h k ->
         let h1 = H.update h k (fun _ -> None) in
         let r1 = H.get_multi h1 k in
@@ -416,8 +416,8 @@ let update_test () =
     (*FS*)
     add_test
       ~name:
-        "[update h k (function Some _ -> Some w)] replaces last occurence of k."
-      [ headers_gen; header_name_gen; word_gen ] (fun h k w ->
+        "[update h k (function Some _ -> Some w)] replaces last occurrence of \
+         k." [ headers_gen; header_name_gen; word_gen ] (fun h k w ->
         let h1 = H.update h k (fun _ -> Some w) in
         let r1 = H.get_multi h1 k in
         let r2 =
@@ -441,14 +441,15 @@ let update_all_test () =
         check_eq H.(remove (update_all h k (fun _ -> [])) k) H.(remove h k);
         check_eq H.(remove (update_all h k (fun _ -> [ w ])) k) H.(remove h k));
     (*FS*)
-    add_test ~name:"[update_all h k (fun _ -> [])] removes all occurences of k."
+    add_test
+      ~name:"[update_all h k (fun _ -> [])] removes all occurrences of k."
       [ headers_gen; header_name_gen ] (fun h k ->
         let h1 = H.update_all h k (fun _ -> []) in
         check_eq H.(get_multi h1 k) []);
     (*FS*)
     add_test
       ~name:
-        "[update_all h k (function _ -> [w])] removes all occurences of k and \
+        "[update_all h k (function _ -> [w])] removes all occurrences of k and \
          adds w." [ headers_gen; header_name_gen; word_gen ] (fun h k w ->
         let h1 = H.update_all h k (fun _ -> [ w ]) in
         let r1 = H.get_multi h1 k in

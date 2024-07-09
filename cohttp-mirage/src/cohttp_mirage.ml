@@ -9,7 +9,7 @@ module Net = Net.Make
 
 (** client modules *)
 
-(** simple, high-level interace *)
+(** simple, high-level interface *)
 
 module Client = Client
 

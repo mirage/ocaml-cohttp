@@ -435,7 +435,7 @@ Assuming that the server is running in cohttp's source directory:
 $ cohttp-curl-lwt 'http://0.0.0.0:8080/README.md'
 ```
 
-Other examples using the async api are avaliable in the
+Other examples using the async api are available in the
 [cohttp-async/examples](https://github.com/mirage/ocaml-cohttp/tree/master/cohttp-async/examples)
 folder in the sources.
 
