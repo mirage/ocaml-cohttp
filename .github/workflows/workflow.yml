@@ -22,8 +22,8 @@ jobs:
           - ubuntu-latest
           - macos-latest
         ocaml-compiler:
-          - ocaml-variants.4.14.2+options,ocaml-option-afl
-          - ocaml-variants.5.02.0+options,ocaml-option-afl
+          - 4.14
+          - 5.x
         local-packages:
           - |
             *.opam
@@ -68,8 +68,8 @@ jobs:
           - ubuntu-latest
           - macos-latest
         ocaml-compiler:
-          - ocaml-variants.4.14.2+options,ocaml-option-afl
-          - ocaml-variants.5.02.0+options,ocaml-option-afl
+          - 4.14
+          - 5.x
         local-packages:
           - |
             *.opam
