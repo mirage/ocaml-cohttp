@@ -64,7 +64,7 @@
             checkInputs = [ uri fmt ounit2 alcotest cohttp-async ];
             propagatedBuildInputs = [
               ocurl http stringext cohttp-curl core core_unix
-              async_kernel async_unix 
+              async_kernel async_unix
             ];
           };
           cohttp-lwt = pkg {
@@ -103,11 +103,11 @@
           cohttp-eio = pkg {
             pname = "cohttp-eio";
             checkInputs = [
-              alcotest eio_main mdx ppx_here
-              tls-eio 
+              alcotest eio mdx ppx_here
+              tls-eio
               mirage-crypto-rng-eio
             ];
-            propagatedBuildInputs = [ cohttp eio eio_main logs uri fmt ptime http ];
+            propagatedBuildInputs = [ cohttp eio logs uri fmt ptime http ];
           };
           cohttp-mirage = pkg {
             pname = "cohttp-mirage";
@@ -119,7 +119,7 @@
           cohttp-bench = pkg {
             pname = "cohttp-bench";
             buildInputs = [
-              core core_bench eio http cohttp cohttp-eio
+              core core_bench eio eio_main http cohttp cohttp-eio
               cohttp-lwt-unix cohttp-server-lwt-unix cohttp-async
             ];
           };

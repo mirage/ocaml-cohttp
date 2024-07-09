@@ -27,6 +27,7 @@ depends: [
   "core" {>= "v0.13.0"}
   "core_bench"
   "eio" {>= "0.12"}
+  "eio_main"
   "http" {= version}
   "cohttp" {= version}
   "cohttp-eio" {= version}

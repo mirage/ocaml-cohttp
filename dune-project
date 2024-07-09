@@ -349,6 +349,7 @@
   core_bench
   (eio
    (>= 0.12))
+  eio_main
   (http
    (= :version))
   (cohttp
