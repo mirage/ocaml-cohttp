@@ -114,7 +114,10 @@ let test_client uri =
   assert_equal ~printer:Fun.id "Spring" body;
 
   (* simple request function accepting custom requests. *)
-  let handler ?headers ?body meth uri = Client.call ?headers ?body meth uri in
+  let handler ?headers ?body ?absolute_form meth uri =
+    ignore absolute_form;
+    Client.call ?headers ?body meth uri
+  in
   tests handler uri
 
 (* The Client.{call, get, put, ...} functions by default use a new
@@ -143,7 +146,8 @@ let test_non_persistent uri =
   (* the resolved endpoint may be buffered to avoid stressing the resolver: *)
   Connection.Net.resolve ~ctx:(Lazy.force Connection.Net.default_ctx) uri
   >>= fun endp ->
-  let handler ?headers ?body meth uri =
+  let handler ?headers ?body ?absolute_form meth uri =
+    ignore absolute_form;
     Connection.connect ~persistent:false endp >>= fun connection ->
     Connection.call connection ?headers ?body meth uri
   in
@@ -159,7 +163,8 @@ let test_unknown uri =
   Connection.connect ~persistent:false endp >>= fun c ->
   let connection = ref c in
   (* reference to open connection *)
-  let rec handler ?headers ?body meth uri =
+  let rec handler ?headers ?body ?absolute_form meth uri =
+    ignore absolute_form;
     Lwt.catch
       (fun () -> Connection.call !connection ?headers ?body meth uri)
       (function

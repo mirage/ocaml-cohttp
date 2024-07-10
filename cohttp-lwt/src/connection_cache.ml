@@ -18,12 +18,15 @@ end = struct
 
   let call = Fun.id
 
-  let create ?(ctx = Lazy.force Net.default_ctx) () ?headers ?body meth uri =
+  let create ?(ctx = Lazy.force Net.default_ctx) () ?headers ?body
+      ?absolute_form meth uri =
     Net.resolve ~ctx uri
     (* TODO: Support chunked encoding without ~persistent:true ? *)
     >>= Connection.connect ~ctx ~persistent:true
     >>= fun connection ->
-    let res = Connection.call connection ?headers ?body meth uri in
+    let res =
+      Connection.call connection ?headers ?body ?absolute_form meth uri
+    in
     (* this can be simplified when https://github.com/mirage/ocaml-conduit/pull/319 is released. *)
     Lwt.dont_wait
       (fun () ->
@@ -152,12 +155,12 @@ end = struct
               (fun _ -> get_connection self endp)
               (fun _ -> get_connection self endp))
 
-  let call self ?headers ?body meth uri =
+  let call self ?headers ?body ?absolute_form meth uri =
     Net.resolve ~ctx:self.ctx uri >>= fun endp ->
     let rec request retry =
       get_connection self endp >>= fun conn ->
       Lwt.catch
-        (fun () -> Connection.call conn ?headers ?body meth uri)
+        (fun () -> Connection.call conn ?headers ?body ?absolute_form meth uri)
         (function
           | Retry -> (
               match body with
