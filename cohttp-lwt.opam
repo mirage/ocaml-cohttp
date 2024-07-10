@@ -26,7 +26,7 @@ doc: "https://mirage.github.io/ocaml-cohttp/"
 bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
 depends: [
   "dune" {>= "3.0"}
-  "ocaml" {>= "4.08"}
+  "ocaml" {>= "4.13"}
   "http" {= version}
   "cohttp" {= version}
   "lwt" {>= "5.4.0"}

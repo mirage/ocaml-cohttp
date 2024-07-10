@@ -35,14 +35,20 @@ let default_ctx =
     }
 
 type endp = Conduit.endp
+type client = Conduit_lwt_unix.client
 
 let resolve ~ctx uri = Resolver_lwt.resolve_uri ~uri ctx.resolver
 
-let connect_endp ~ctx:{ ctx; _ } endp =
-  Conduit_lwt_unix.endp_to_client ~ctx endp >>= fun client ->
+let tunnel hostname (channels : IO.ic * IO.oc) : client =
+  `TLS_tunnel (`Hostname hostname, (fst channels).chan, snd channels)
+
+let connect_client ~ctx:{ ctx; _ } client =
   Conduit_lwt_unix.connect ~ctx client >|= fun (flow, ic, oc) ->
   let ic = Input_channel.create ic in
   (flow, ic, oc)
+
+let connect_endp ~ctx endp =
+  Conduit_lwt_unix.endp_to_client ~ctx:ctx.ctx endp >>= connect_client ~ctx
 
 let connect_uri ~ctx uri = resolve ~ctx uri >>= connect_endp ~ctx
 

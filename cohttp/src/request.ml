@@ -49,15 +49,26 @@ let encoding t = Header.get_transfer_encoding t.headers
 
 let make ?(meth = `GET) ?(version = `HTTP_1_1) ?encoding
     ?(headers = Header.init ()) ?(absolute_form = false) uri =
-  let headers =
-    Header.add_unless_exists headers "host"
-      (match Uri.scheme uri with
-      | Some "httpunix" -> ""
-      | _ -> (
-          Uri.host_with_default ~default:"localhost" uri
-          ^
-          match Uri.port uri with Some p -> ":" ^ string_of_int p | None -> ""))
+  let port () =
+    match Uri.port uri with
+    | Some p -> ":" ^ string_of_int p
+    | None -> (
+        match Uri_services.tcp_port_of_uri uri with
+        | None when meth = `CONNECT ->
+            failwith "A port is required for the CONNECT method."
+        | None -> ""
+        | Some p -> ":" ^ string_of_int p)
   in
+  let host =
+    match Header.get headers "host" with
+    | None -> (
+        match Uri.scheme uri with
+        | Some "httpunix" -> ""
+        | _ -> Uri.host_with_default ~default:"localhost" uri ^ port ())
+    | Some host -> if String.contains host ':' then host else host ^ port ()
+  in
+
+  let headers = Header.replace headers "host" host in
   let headers =
     Header.add_unless_exists headers "user-agent" Header.user_agent
   in
@@ -195,13 +206,15 @@ module Make (IO : S.IO) = struct
     let fst_line =
       Printf.sprintf "%s %s %s\r\n"
         (Http.Method.to_string req.meth)
-        (let resource = if req.resource = "" then "/" else req.resource in
-         if req.absolute_form then
-           Option.get req.scheme
-           ^ "://"
-           ^ Option.get (Header.get req.headers "host")
-           ^ resource
-         else resource)
+        (if req.meth = `CONNECT then Option.get (Header.get req.headers "host")
+         else
+           let resource = if req.resource = "" then "/" else req.resource in
+           if req.absolute_form then
+             Option.get req.scheme
+             ^ "://"
+             ^ Option.get (Header.get req.headers "host")
+             ^ resource
+           else resource)
         (Http.Version.to_string req.version)
     in
     IO.write oc fst_line >>= fun _ -> Header_IO.write req.headers oc
