@@ -76,6 +76,7 @@ end
 type call =
   ?headers:Http.Header.t ->
   ?body:Body.t ->
+  ?absolute_form:bool ->
   Http.Method.t ->
   Uri.t ->
   (Cohttp.Response.t * Body.t) Lwt.t
