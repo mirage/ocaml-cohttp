@@ -6,15 +6,15 @@ module Make (Connection : S.Connection) = struct
   module No_cache = Connection_cache.Make_no_cache (Connection)
   module Request = Make.Request (Net.IO)
 
-  let cache = ref No_cache.(call (create ()))
-  let set_cache c = cache := c
-
   type ctx = Net.ctx
 
+  let cache = ref None
+  let set_cache c = cache := Some c
+
   let cache ?ctx =
-    match ctx with
-    | None -> !cache
-    | Some ctx -> No_cache.(call (create ~ctx ()))
+    match !cache with
+    | None -> No_cache.(call (create ?ctx ()))
+    | Some cache -> cache
 
   include
     Cohttp.Generic.Client.Make
