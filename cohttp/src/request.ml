@@ -43,15 +43,25 @@ let encoding t = Header.get_transfer_encoding t.headers
 
 let make ?(meth = `GET) ?(version = `HTTP_1_1) ?encoding
     ?(headers = Header.init ()) ?(absolute_form = false) uri =
-  let headers =
-    Header.add_unless_exists headers "host"
-      (match Uri.scheme uri with
-      | Some "httpunix" -> ""
-      | _ -> (
-          Uri.host_with_default ~default:"localhost" uri
-          ^
-          match Uri.port uri with Some p -> ":" ^ string_of_int p | None -> ""))
+  let port () =
+    match Uri.port uri with
+    | Some p -> ":" ^ string_of_int p
+    | None when meth = `CONNECT -> (
+        match Uri_services.tcp_port_of_uri uri with
+        | None -> failwith "A port is required for the CONNECT method."
+        | Some p -> ":" ^ string_of_int p)
+    | None -> ""
   in
+  let host =
+    match Header.get headers "host" with
+    | None -> (
+        match Uri.scheme uri with
+        | Some "httpunix" -> ""
+        | _ -> Uri.host_with_default ~default:"localhost" uri ^ port ())
+    | Some host -> if String.contains host ':' then host else host ^ port ()
+  in
+
+  let headers = Header.replace headers "host" host in
   let headers =
     Header.add_unless_exists headers "user-agent" Header.user_agent
   in

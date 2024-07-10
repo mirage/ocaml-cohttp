@@ -38,6 +38,14 @@ module Connection_cache =
       let sleep_ns ns = Lwt_unix.sleep (Int64.to_float ns /. 1_000_000_000.)
     end)
 
+module Connection_proxy =
+  Cohttp_lwt.Connection_cache.Make_proxy
+    (Connection)
+    (struct
+      (* : Mirage_time.S *)
+      let sleep_ns ns = Lwt_unix.sleep (Int64.to_float ns /. 1_000_000_000.)
+    end)
+
 module Client : sig
   (** The [Client] module implements the full UNIX HTTP client interface,
       including the UNIX-specific functions defined in {!C}. *)

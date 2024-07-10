@@ -4,4 +4,4 @@
  (synopsis "Lwt backend")
  (preprocess
   (pps ppx_sexp_conv))
- (libraries lwt uri http_bytebuffer cohttp logs logs.lwt))
+ (libraries lwt uri uri.services http_bytebuffer cohttp logs logs.lwt ipaddr))
