@@ -297,6 +297,34 @@ module Make (Net : S.Net) : S.Connection with module Net = Net = struct
       on_failure;
     connection
 
+  let create_tunnel ?(finalise = fun _ -> Lwt.return_unit)
+      ?(ctx = Lazy.force Net.default_ctx) proxy remote_host =
+    match proxy.state with
+    | Full (ic, oc) ->
+        let client = Net.tunnel remote_host (ic, oc) in
+        let channels =
+          Net.connect_client ~ctx client >>= fun (_, ic, oc) -> return (ic, oc)
+        in
+        let connection =
+          {
+            finalise;
+            in_flight = Queue.create ();
+            waiting = Queue.create ();
+            state = Connecting channels;
+            condition = Lwt_condition.create ();
+            persistent = `True;
+          }
+        in
+        let on_failure e = connection.state <- Failed e in
+        Lwt.on_any channels
+          (fun channels ->
+            connection.state <- Full channels;
+            Lwt.dont_wait (fun () -> reader connection) on_failure;
+            Lwt.dont_wait (fun () -> writer connection) on_failure)
+          on_failure;
+        connection
+    | _ -> failwith "Proxy connection wasn't in right state."
+
   let connect ?finalise ?persistent ?ctx uri =
     let connection = create ?finalise ?persistent ?ctx uri in
     match connection.state with
