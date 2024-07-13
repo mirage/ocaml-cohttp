@@ -70,12 +70,17 @@ let write output (response : Cohttp.Response.t) body =
       (Cohttp.Header.get_transfer_encoding response.headers, content_length)
     with
     | Unknown, None ->
-        { response with encoding = Chunked } [@ocaml.warning "-3"]
+        let headers =
+          Cohttp.Header.add_transfer_encoding response.headers Chunked
+        in
+        { response with headers }
     | Unknown, Some size ->
-        { response with encoding = Fixed (Int64.of_int size) }
-        [@ocaml.warning "-3"]
-    | from_headers, _ ->
-        { response with encoding = from_headers } [@ocaml.warning "-3"]
+        let headers =
+          Cohttp.Header.add_transfer_encoding response.headers
+            (Fixed (Int64.of_int size))
+        in
+        { response with headers }
+    | _, _ -> response
   in
   let () = Logs.debug (fun m -> m "send headers") in
   let () =
@@ -83,29 +88,34 @@ let write output (response : Cohttp.Response.t) body =
       (fun writer ->
         let () =
           Logs.debug (fun m ->
-              (m "send body (%a)" Cohttp.Transfer.pp_encoding response.encoding
-               [@ocaml.warning "-3"]))
+              m "send body (%a)" Cohttp.Transfer.pp_encoding
+                (Cohttp.Header.get_transfer_encoding response.headers))
         in
         flow_to_writer body writer Io.Response.write_body)
       response output
   in
   Eio.Buf_write.flush output
 
-let respond ?(headers = Cohttp.Header.init ()) ?flush ~status ~body ()
+let respond ?encoding ?(headers = Cohttp.Header.init ()) ?flush ~status ~body ()
     (request, oc) =
   let keep_alive = Http.Request.is_keep_alive request in
   let headers =
     match Cohttp.Header.connection headers with
+    | Some _ -> headers
     | None ->
         Http.Header.add headers "connection"
           (if keep_alive then "keep-alive" else "close")
-    | Some _ -> headers
   in
-  let response = Cohttp.Response.make ~headers ?flush ~status () in
+  let response = Cohttp.Response.make ?encoding ~headers ?flush ~status () in
   write oc response body
 
 let respond_string ?headers ?flush ~status ~body () =
-  respond ?headers ?flush ~status ~body:(Body.of_string body) ()
+  respond
+    ~encoding:(Fixed (String.length body |> Int64.of_int))
+    ?headers ?flush ~status ~body:(Body.of_string body) ()
+
+let respond ?headers ?flush ~status ~body () response =
+  respond ?encoding:None ?headers ?flush ~status ~body () response
 
 let callback { conn_closed; handler } ((_, peer_address) as conn) input output =
   let id = (Cohttp.Connection.create () [@ocaml.warning "-3"]) in

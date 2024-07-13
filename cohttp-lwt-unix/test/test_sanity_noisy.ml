@@ -45,7 +45,8 @@ let ts_noisy =
         Client.get ~ctx uri >>= fun (resp, body) ->
         assert_equal (Response.status resp) `Not_modified;
         let headers = Response.headers resp in
-        assert_equal ~printer:Transfer.string_of_encoding Transfer.Unknown
+        assert_equal ~printer:Transfer.string_of_encoding
+          Transfer.(Fixed 0L)
           (Header.get_transfer_encoding headers);
         body |> Body.is_empty >|= fun is_empty ->
         assert_bool "No body returned when not modified" is_empty

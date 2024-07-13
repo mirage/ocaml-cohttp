@@ -804,34 +804,28 @@ end
 
 module Response = struct
   type t = {
-    encoding : Transfer.encoding;
     headers : Header.t;  (** response HTTP headers *)
     version : Version.t;  (** (** HTTP version, usually 1.1 *) *)
     status : Status.t;  (** HTTP status code of the response *)
     flush : bool;
   }
 
-  let compare { headers; flush; version; encoding; status } y =
+  let compare { headers; flush; version; status } y =
     match Header.compare headers y.headers with
     | 0 -> (
         match Bool.compare flush y.flush with
         | 0 -> (
             match Stdlib.compare status y.status with
-            | 0 -> (
-                match Version.compare version y.version with
-                | 0 -> Transfer.compare_encoding encoding y.encoding
-                | i -> i)
+            | 0 -> Version.compare version y.version
             | i -> i)
         | i -> i)
     | i -> i
 
   let make ?(version = `HTTP_1_1) ?(status = `OK) ?(flush = false)
       ?(headers = Header.empty) () =
-    let encoding = Header.get_transfer_encoding headers in
-    { encoding; headers; version; flush; status }
+    { headers; version; flush; status }
 
   let headers t = t.headers
-  let encoding t = t.encoding
   let version t = t.version
   let status t = t.status
   let flush t = t.flush
