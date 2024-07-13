@@ -445,8 +445,6 @@ end
 
 module Response : sig
   type t = {
-    encoding : Transfer.encoding;
-        [@deprecated "this field will be removed in the future"]
     headers : Header.t;  (** response HTTP headers *)
     version : Version.t;  (** (** HTTP version, usually 1.1 *) *)
     status : Status.t;  (** HTTP status code of the response *)
@@ -456,7 +454,6 @@ module Response : sig
            [respond_*] function instead."]
   }
 
-  val encoding : t -> Transfer.encoding
   val headers : t -> Header.t
   val version : t -> Version.t
   val status : t -> Status.t

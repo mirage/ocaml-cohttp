@@ -128,8 +128,6 @@ end
 
 module type Response = sig
   type t = {
-    encoding : Transfer.encoding;
-        [@deprecated "this field will be removed in the future"]
     headers : Header.t;  (** response HTTP headers *)
     version : Code.version;  (** (** HTTP version, usually 1.1 *) *)
     status : Code.status_code;  (** HTTP status code of the response *)
