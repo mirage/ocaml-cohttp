@@ -46,10 +46,11 @@ module Make (Connection : S.Connection) (Sleep : S.Sleep) = struct
     retry : int;
     parallel : int;
     depth : int;
+    proxy : Uri.t option;
   }
 
   let create ?(ctx = Lazy.force Net.default_ctx) ?(keep = 60_000_000_000L)
-      ?(retry = 2) ?(parallel = 4) ?(depth = 100) () =
+      ?(retry = 2) ?(parallel = 4) ?(depth = 100) ?proxy () =
     {
       cache = Hashtbl.create ~random:true 10;
       ctx;
@@ -57,6 +58,7 @@ module Make (Connection : S.Connection) (Sleep : S.Sleep) = struct
       retry;
       parallel;
       depth;
+      proxy;
     }
 
   let rec get_connection self endp =
@@ -115,12 +117,31 @@ module Make (Connection : S.Connection) (Sleep : S.Sleep) = struct
               (fun _ -> get_connection self endp)
               (fun _ -> get_connection self endp))
 
+  let prepare self ?headers ?absolute_form meth uri =
+    match self.proxy with
+    | None ->
+        let absolute_form = Option.value ~default:false absolute_form in
+        Net.resolve ~ctx:self.ctx uri >>= fun endp ->
+        Lwt.return (endp, absolute_form, headers)
+    | Some proxy_uri ->
+        let absolute_form =
+          Option.value
+            ~default:
+              (not
+                 (meth = `CONNECT
+                 || (meth = `OPTIONS && Uri.path_and_query uri = "*")))
+            absolute_form
+        in
+        Net.resolve ~ctx:self.ctx proxy_uri >>= fun endp ->
+        Lwt.return (endp, absolute_form, headers)
+
   let call self ?headers ?body ?absolute_form meth uri =
-    Net.resolve ~ctx:self.ctx uri >>= fun endp ->
+    prepare self ?headers ?absolute_form meth uri
+    >>= fun (endp, absolute_form, headers) ->
     let rec request retry =
       get_connection self endp >>= fun conn ->
       Lwt.catch
-        (fun () -> Connection.call conn ?headers ?body ?absolute_form meth uri)
+        (fun () -> Connection.call conn ?headers ?body ~absolute_form meth uri)
         (function
           | Retry -> (
               match body with
