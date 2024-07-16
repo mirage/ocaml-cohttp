@@ -20,6 +20,7 @@ module Make (Connection : S.Connection) (Sleep : S.Sleep) : sig
     ?retry:int ->
     ?parallel:int ->
     ?depth:int ->
+    ?proxy:Uri.t ->
     unit ->
     t
   (** Create a new connection cache
@@ -39,5 +40,6 @@ module Make (Connection : S.Connection) (Sleep : S.Sleep) : sig
         connections may be created in excess to what was intended.
       @param depth
         maximum number of requests to queue and / or send on a single
-        connection. *)
+        connection.
+      @param proxy A direct (non-tunneling) proxy to use. *)
 end
