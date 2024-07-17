@@ -16,7 +16,6 @@ type response_action =
   | `Response of response ]
 
 type 'r respond_t =
-  ?flush:bool ->
   ?headers:Http.Header.t ->
   ?body:Body.t ->
   Http.Status.t ->
@@ -105,30 +104,30 @@ let handle_client handle_request sock rd wr =
       loop rd wr sock handle_request)
   >>| Result.ok_exn
 
-let respond ?(flush = true) ?(headers = Http.Header.init ()) ?(body = `Empty)
-    status : response Deferred.t =
+let respond ?(headers = Http.Header.init ()) ?(body = `Empty) status :
+    response Deferred.t =
   let encoding = Body.transfer_encoding body in
-  let resp = Cohttp.Response.make ~status ~flush ~encoding ~headers () in
+  let resp = Cohttp.Response.make ~status ~encoding ~headers () in
   return (resp, body)
 
-let respond_with_pipe ?flush ?headers ?(code = `OK) body =
-  respond ?flush ?headers ~body:(`Pipe body) code
+let respond_with_pipe ?headers ?(code = `OK) body =
+  respond ?headers ~body:(`Pipe body) code
 
-let respond_string ?flush ?headers ?(status = `OK) body =
-  respond ?flush ?headers ~body:(`String body) status
+let respond_string ?headers ?(status = `OK) body =
+  respond ?headers ~body:(`String body) status
 
 let respond_with_redirect ?headers uri =
   let headers =
     Http.Header.add_opt_unless_exists headers "location" (Uri.to_string uri)
   in
-  respond ~flush:false ~headers `Found
+  respond ~headers `Found
 
 let resolve_local_file ~docroot ~uri =
   Cohttp.Path.resolve_local_file ~docroot ~uri
 
 let error_body_default = "<html><body><h1>404 Not Found</h1></body></html>"
 
-let respond_with_file ?flush ?headers ?(error_body = error_body_default)
+let respond_with_file ?headers ?(error_body = error_body_default)
     filename =
   Monitor.try_with ~run:`Now (fun () ->
       Reader.open_file filename >>= fun rd ->
@@ -137,7 +136,7 @@ let respond_with_file ?flush ?headers ?(error_body = error_body_default)
       let headers =
         Http.Header.add_opt_unless_exists headers "content-type" mime_type
       in
-      respond ?flush ~headers ~body `OK)
+      respond ~headers ~body `OK)
   >>= function
   | Ok res -> return res
   | Error _exn -> respond_string ~status:`Not_found error_body

@@ -45,7 +45,7 @@ module Make (IO : S.IO) = struct
   let resolve_local_file ~docroot ~uri =
     Cohttp.Path.resolve_local_file ~docroot ~uri
 
-  let respond ?headers ?(flush = true) ~status ~body () =
+  let respond ?headers ~status ~body () =
     let encoding =
       match headers with
       | None -> Body.transfer_encoding body
@@ -54,12 +54,12 @@ module Make (IO : S.IO) = struct
           | Http.Transfer.Unknown -> Body.transfer_encoding body
           | t -> t)
     in
-    let res = Response.make ~status ~flush ~encoding ?headers () in
+    let res = Response.make ~status ~encoding ?headers () in
     Lwt.return (res, body)
 
-  let respond_string ?headers ?(flush = true) ~status ~body () =
+  let respond_string ?headers ~status ~body () =
     let res =
-      Response.make ~status ~flush
+      Response.make ~status
         ~encoding:(Http.Transfer.Fixed (Int64.of_int (String.length body)))
         ?headers ()
     in

@@ -14,20 +14,17 @@
  *
   }}}*)
 
-open Sexplib0.Sexp_conv
-
 type t = Http.Response.t = {
   headers : Header.t;
   version : Code.version;
   status : Code.status_code;
-  flush : bool;
 }
 [@@deriving sexp]
 
-let compare { headers; flush; version; status } y =
+let compare { headers; version; status } y =
   match Header.compare headers y.headers with
   | 0 -> (
-      match Bool.compare flush y.flush with
+      match Stdlib.compare status y.status with
       | 0 -> (
           match Stdlib.compare status y.status with
           | 0 -> Code.compare_version version y.version
@@ -39,10 +36,9 @@ let headers t = t.headers
 let encoding t = Header.get_transfer_encoding t.headers
 let version t = t.version
 let status t = t.status
-let flush t = t.flush
 
-let make ?(version = `HTTP_1_1) ?(status = `OK) ?(flush = false)
-    ?(encoding = Transfer.Unknown) ?(headers = Header.init ()) () =
+let make ?(version = `HTTP_1_1) ?(status = `OK) ?(encoding = Transfer.Unknown)
+    ?(headers = Header.init ()) () =
   let headers =
     match encoding with
     | Unknown -> (
@@ -51,7 +47,7 @@ let make ?(version = `HTTP_1_1) ?(status = `OK) ?(flush = false)
         | _ -> headers)
     | _ -> Header.add_transfer_encoding headers encoding
   in
-  { headers; version; flush; status }
+  { headers; version; status }
 
 let pp_hum ppf r =
   Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib0.Sexp.to_string_hum)
@@ -102,8 +98,7 @@ module Make (IO : S.IO) = struct
     | `Invalid _reason as r -> return r
     | `Ok (version, status) ->
         Header_IO.parse ic >>= fun headers ->
-        let flush = false in
-        return (`Ok { headers; version; status; flush })
+        return (`Ok { headers; version; status })
 
   let make_body_reader t ic = Transfer_IO.make_reader (encoding t) ic
   let read_body_chunk = Transfer_IO.read
