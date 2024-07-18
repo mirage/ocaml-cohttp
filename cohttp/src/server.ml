@@ -49,12 +49,12 @@ module type S = sig
     body:body ->
     unit ->
     response IO.t
-  (** [respond ?headers ~status ~body] will respond to an HTTP request
-      with the given [status] code and response [body]. The transfer encoding
-      will be detected from the [body] value and set to chunked encoding if it
-      cannot be determined immediately. You can override the encoding by
-      supplying an appropriate [Content-length] or [Transfer-encoding] in the
-      [headers] parameter. *)
+  (** [respond ?headers ~status ~body] will respond to an HTTP request with the
+      given [status] code and response [body]. The transfer encoding will be
+      detected from the [body] value and set to chunked encoding if it cannot be
+      determined immediately. You can override the encoding by supplying an
+      appropriate [Content-length] or [Transfer-encoding] in the [headers]
+      parameter. *)
 
   val respond_string :
     ?headers:Http.Header.t ->
