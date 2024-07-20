@@ -211,13 +211,6 @@ module type Client = sig
     params:(string * string list) list ->
     Uri.t ->
     (Http.Response.t * Body.t) Lwt.t
-
-  val callv :
-    ?ctx:ctx ->
-    Uri.t ->
-    (Http.Request.t * Body.t) Lwt_stream.t ->
-    (Http.Response.t * Body.t) Lwt_stream.t Lwt.t
-  (** @deprecated use {!module:Cohttp_lwt.Connection} instead. *)
 end
 
 (** The [Server] module implements a pipelined HTTP/1.1 server. *)
