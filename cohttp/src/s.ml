@@ -138,7 +138,6 @@ module type Response = sig
   val headers : t -> Header.t
   val version : t -> Code.version
   val status : t -> Code.status_code
-
   val compare : t -> t -> int
 
   val make :

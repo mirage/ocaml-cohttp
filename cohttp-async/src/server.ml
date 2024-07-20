@@ -16,10 +16,7 @@ type response_action =
   | `Response of response ]
 
 type 'r respond_t =
-  ?headers:Http.Header.t ->
-  ?body:Body.t ->
-  Http.Status.t ->
-  'r Deferred.t
+  ?headers:Http.Header.t -> ?body:Body.t -> Http.Status.t -> 'r Deferred.t
 
 let close t = Tcp.Server.close t.server
 let close_finished t = Tcp.Server.close_finished t.server
@@ -127,8 +124,7 @@ let resolve_local_file ~docroot ~uri =
 
 let error_body_default = "<html><body><h1>404 Not Found</h1></body></html>"
 
-let respond_with_file ?headers ?(error_body = error_body_default)
-    filename =
+let respond_with_file ?headers ?(error_body = error_body_default) filename =
   Monitor.try_with ~run:`Now (fun () ->
       Reader.open_file filename >>= fun rd ->
       let body = `Pipe (Reader.pipe rd) in
