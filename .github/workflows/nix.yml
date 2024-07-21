@@ -8,12 +8,11 @@ jobs:
     env:
       NIXPKGS_ALLOW_INSECURE: 1
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: true
-    - uses: cachix/install-nix-action@v27
-      with:
-        nix_path: nixpkgs=channel:nixos-unstable
-    - run: |
-        nix develop -c dune build @runtest @check
+      - name: Checkout tree
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: cachix/install-nix-action@v27
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+      - run: nix develop -c dune build @runtest @check

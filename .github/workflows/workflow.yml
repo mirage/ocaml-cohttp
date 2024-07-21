@@ -22,8 +22,8 @@ jobs:
           - ubuntu-latest
           - macos-latest
         ocaml-compiler:
-          - 4.14
-          - 5.x
+          - "4.14"
+          - "5"
         local-packages:
           - |
             *.opam
@@ -35,21 +35,19 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Checkout code
+      - name: Checkout tree
         uses: actions/checkout@v4
 
-      - name: Use OCaml ${{ matrix.ocaml-compiler }}
-        uses: ocaml/setup-ocaml@v2
+      - name: Set-up OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
-          dune-cache: ${{ matrix.os == 'ubuntu-latest' }}
-          opam-depext: true
-          opam-depext-flags: --with-test
+          dune-cache: true
           opam-local-packages: ${{ matrix.local-packages }}
 
       - run: |
           sudo apt-get update && sudo apt-get upgrade
-          opam depext conf-libcurl
+          opam install conf-libcurl
         if: ${{ matrix.os == 'ubuntu-latest' }}
 
       - run: echo "PKG_CONFIG_PATH=$(brew --prefix openssl)/lib/pkgconfig" >>"$GITHUB_ENV"
@@ -68,8 +66,8 @@ jobs:
           - ubuntu-latest
           - macos-latest
         ocaml-compiler:
-          - 4.14
-          - 5.x
+          - "4.14"
+          - "5"
         local-packages:
           - |
             *.opam
@@ -85,21 +83,19 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Checkout code
+      - name: Checkout tree
         uses: actions/checkout@v4
 
-      - name: Use OCaml ${{ matrix.ocaml-compiler }}
-        uses: ocaml/setup-ocaml@v2
+      - name: Set-up OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
-          dune-cache: ${{ matrix.os == 'ubuntu-latest' }}
-          opam-depext: true
-          opam-depext-flags: --with-test
+          dune-cache: true
           opam-local-packages: ${{ matrix.local-packages }}
 
       - run: |
           sudo apt-get update && sudo apt-get upgrade
-          opam depext conf-libcurl
+          opam install conf-libcurl
         if: ${{ matrix.os == 'ubuntu-latest' }}
 
       - run: echo "PKG_CONFIG_PATH=$(brew --prefix openssl)/lib/pkgconfig" >>"$GITHUB_ENV"
@@ -118,7 +114,7 @@ jobs:
           - ubuntu-latest
           - macos-latest
         ocaml-compiler:
-          - 5.x
+          - "5"
         local-packages:
           - |
             http.opam
@@ -128,14 +124,14 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Checkout code
+      - name: Checkout tree
         uses: actions/checkout@v4
 
-      - name: Use OCaml ${{ matrix.ocaml-compiler }}
-        uses: ocaml/setup-ocaml@v2
+      - name: Set-up OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
-          dune-cache: ${{ matrix.os == 'ubuntu-latest' }}
+          dune-cache: true
           opam-local-packages: ${{ matrix.local-packages }}
           opam-repositories: |
             default: https://github.com/ocaml/opam-repository.git
@@ -153,7 +149,7 @@ jobs:
         os:
           - ubuntu-latest
         ocaml-compiler:
-          - 5.x
+          - "5"
         local-packages:
           - |
             *.opam
@@ -161,14 +157,14 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Checkout code
+      - name: Checkout tree
         uses: actions/checkout@v4
 
-      - name: Use OCaml ${{ matrix.ocaml-compiler }}
-        uses: ocaml/setup-ocaml@v2
+      - name: Set-up OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
-          dune-cache: ${{ matrix.os == 'ubuntu-latest' }}
+          dune-cache: true
           opam-local-packages: ${{ matrix.local-packages }}
           opam-repositories: |
             default: https://github.com/ocaml/opam-repository.git
