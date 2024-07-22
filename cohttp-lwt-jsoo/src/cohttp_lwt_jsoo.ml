@@ -188,7 +188,7 @@ struct
   (* No implementation (can it be done?).  What should the failure exception be? *)
   exception Cohttp_lwt_xhr_callv_not_implemented
 
-  let callv ?ctx:_ _uri _reqs = Lwt.fail Cohttp_lwt_xhr_callv_not_implemented
+  let callv ?ctx:_ _uri _reqs = raise Cohttp_lwt_xhr_callv_not_implemented
 
   (* ??? *)
 end
@@ -269,7 +269,7 @@ module Make_client_async (P : Params) = Make_api (struct
         CLB.to_string body >>= fun body ->
         let bs = binary_string body in
         (*Js.Opt.case (File.CoerceTo.blob (Obj.magic blob))
-          (fun () -> Lwt.fail_with "could not coerce to blob")
+          (fun () -> failwith "could not coerce to blob")
           (fun blob -> Lwt.return (xml##(send_blob blob)))*)
         (*Lwt.return (xml##send (Js.Opt.return bs)) *)
         Lwt.return (xml##send (Js.Opt.return (Obj.magic bs))))

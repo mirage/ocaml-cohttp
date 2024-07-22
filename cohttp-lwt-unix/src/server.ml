@@ -16,8 +16,8 @@ let respond_file ?headers ~fname () =
     (fun () ->
       (* Check this isn't a directory first *)
       ( fname |> Lwt_unix.stat >>= fun s ->
-        if Unix.(s.st_kind <> S_REG) then Lwt.fail Isnt_a_file
-        else Lwt.return_unit )
+        if Unix.(s.st_kind <> S_REG) then raise Isnt_a_file else Lwt.return_unit
+      )
       >>= fun () ->
       let count = 16384 in
       Lwt_io.open_file ~buffer:(Lwt_bytes.create count) ~mode:Lwt_io.input fname
@@ -55,7 +55,7 @@ let respond_file ?headers ~fname () =
     (function
       | Unix.Unix_error (Unix.ENOENT, _, _) | Isnt_a_file ->
           respond_not_found ()
-      | exn -> Lwt.fail exn)
+      | exn -> Lwt.reraise exn)
 
 let log_on_exn = function
   | Unix.Unix_error (error, func, arg) ->

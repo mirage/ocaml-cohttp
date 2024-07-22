@@ -105,7 +105,7 @@ module Make (IO : S.IO) = struct
         Lwt.catch
           (fun () -> callback conn req body)
           (function
-            | Out_of_memory -> Lwt.fail Out_of_memory
+            | Out_of_memory -> Lwt.reraise Out_of_memory
             | exn ->
                 Log.err (fun f ->
                     f "Error handling %a: %s" Request.pp_hum req
@@ -177,5 +177,5 @@ module Make (IO : S.IO) = struct
             Lwt.return_unit)
       (fun e ->
         conn_closed ();
-        Lwt.fail e)
+        Lwt.reraise e)
 end

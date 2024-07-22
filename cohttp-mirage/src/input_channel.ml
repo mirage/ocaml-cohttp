@@ -13,7 +13,7 @@ module Make (Channel : Mirage_channel.S) = struct
         Cstruct.blit_to_bytes v 0 buf pos len;
         Lwt.return (`Ok len)
     | Ok `Eof -> Lwt.return `Eof
-    | Error e -> Lwt.fail (Read_exn e)
+    | Error e -> raise (Read_exn e)
 
   let create ?(buf_len = 0x4000) chan =
     { buf = Bytebuffer.create buf_len; chan }

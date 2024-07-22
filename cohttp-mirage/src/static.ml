@@ -24,7 +24,7 @@ module HTTP (FS : Mirage_kv.RO) (S : Cohttp_lwt.S.Server) = struct
   open Lwt.Infix
   open Astring
 
-  let failf fmt = Fmt.kstr Lwt.fail_with fmt
+  let failf fmt = Fmt.failwith fmt
 
   let read_fs t name =
     FS.get t (Key.v name) >>= function
