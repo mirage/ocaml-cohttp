@@ -20,7 +20,7 @@ let expert ?(rsp = Http.Response.make ()) f _req _body =
   return (`Expert (rsp, f))
 
 let const rsp _req _body = rsp >|= response
-let response_sequence = Cohttp_test.response_sequence Lwt.fail_with
+let response_sequence = Cohttp_test.response_sequence failwith
 let () = Debug.activate_debug ()
 let () = Logs.set_level (Some Info)
 

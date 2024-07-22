@@ -54,7 +54,7 @@ let methods (handler : Cohttp_lwt.S.call) uri =
     Body.drain_body body >>= fun () ->
     match Response.status res with
     | `Created | `No_content | `OK -> Lwt.return_unit
-    | _ -> Lwt.fail_with "put failed"
+    | _ -> failwith "put failed"
   and get k =
     handler `GET Uri.(with_path uri k) >>= fun (res, body) ->
     match Response.status res with

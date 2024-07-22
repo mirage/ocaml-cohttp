@@ -269,7 +269,7 @@ module Make_client_async (P : Params) = Make_api (struct
         CLB.to_string body >>= fun body ->
         let bs = binary_string body in
         (*Js.Opt.case (File.CoerceTo.blob (Obj.magic blob))
-          (fun () -> Lwt.fail_with "could not coerce to blob")
+          (fun () -> failwith "could not coerce to blob")
           (fun blob -> Lwt.return (xml##(send_blob blob)))*)
         (*Lwt.return (xml##send (Js.Opt.return bs)) *)
         Lwt.return (xml##send (Js.Opt.return (Obj.magic bs))))
