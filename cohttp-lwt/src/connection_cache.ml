@@ -164,7 +164,7 @@ end = struct
               | Some (`Stream _) -> Lwt.fail Retry
               | None | Some `Empty | Some (`String _) | Some (`Strings _) ->
                   if retry <= 0 then Lwt.fail Retry else request (retry - 1))
-          | e -> Lwt.fail e)
+          | e -> Lwt.reraise e)
     in
     request self.retry
 end

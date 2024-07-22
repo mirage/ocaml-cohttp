@@ -68,5 +68,5 @@ module Make (Channel : Mirage_channel.S) = struct
     Lwt.try_bind f Lwt.return_ok (function
       | Input_channel.Read_exn e -> Lwt.return_error (Read_error e)
       | Write_exn e -> Lwt.return_error (Write_error e)
-      | ex -> Lwt.fail ex)
+      | ex -> Lwt.reraise ex)
 end

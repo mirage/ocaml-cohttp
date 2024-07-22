@@ -80,6 +80,6 @@ type error = exn
 let catch f =
   Lwt.try_bind f Lwt.return_ok (function
     | IO_error e -> Lwt.return_error e
-    | ex -> Lwt.fail ex)
+    | ex -> Lwt.reraise ex)
 
 let pp_error = Fmt.exn

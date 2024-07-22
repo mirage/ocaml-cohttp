@@ -174,7 +174,7 @@ let test_unknown uri =
             | Some (`Stream _) -> Lwt.fail Connection.Retry
             | None | Some (`Empty | `String _ | `Strings _) ->
                 handler ?headers ?body meth uri)
-        | e -> Lwt.fail e)
+        | e -> Lwt.reraise e)
   in
   tests handler uri
 

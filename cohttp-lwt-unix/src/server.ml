@@ -55,7 +55,7 @@ let respond_file ?headers ~fname () =
     (function
       | Unix.Unix_error (Unix.ENOENT, _, _) | Isnt_a_file ->
           respond_not_found ()
-      | exn -> Lwt.fail exn)
+      | exn -> Lwt.reraise exn)
 
 let log_on_exn = function
   | Unix.Unix_error (error, func, arg) ->

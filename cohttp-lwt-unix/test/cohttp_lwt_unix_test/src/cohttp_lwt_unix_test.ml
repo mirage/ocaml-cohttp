@@ -36,9 +36,9 @@ let temp_server ?port spec callback =
       (fun () -> Server.create ~backlog:40 ~mode:(`TCP (`Port port)) server)
       (function
         | Lwt.Canceled -> Lwt.return_unit
-        | x ->
-            Lwt.wakeup_exn server_failed_wake x;
-            Lwt.fail x)
+        | exn ->
+            Lwt.wakeup_exn server_failed_wake exn;
+            Lwt.reraise exn)
   in
   Lwt.pick [ Lwt_unix.with_timeout 5.0 (fun () -> callback uri); server_failed ]
   >|= fun res ->
