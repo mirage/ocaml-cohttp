@@ -188,7 +188,7 @@ struct
   (* No implementation (can it be done?).  What should the failure exception be? *)
   exception Cohttp_lwt_xhr_callv_not_implemented
 
-  let callv ?ctx:_ _uri _reqs = Lwt.fail Cohttp_lwt_xhr_callv_not_implemented
+  let callv ?ctx:_ _uri _reqs = raise Cohttp_lwt_xhr_callv_not_implemented
 
   (* ??? *)
 end

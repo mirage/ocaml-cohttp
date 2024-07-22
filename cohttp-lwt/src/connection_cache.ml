@@ -161,9 +161,9 @@ end = struct
         (function
           | Retry -> (
               match body with
-              | Some (`Stream _) -> Lwt.fail Retry
+              | Some (`Stream _) -> raise Retry
               | None | Some `Empty | Some (`String _) | Some (`Strings _) ->
-                  if retry <= 0 then Lwt.fail Retry else request (retry - 1))
+                  if retry <= 0 then raise Retry else request (retry - 1))
           | e -> Lwt.reraise e)
     in
     request self.retry
