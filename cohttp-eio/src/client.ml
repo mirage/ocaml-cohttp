@@ -1,5 +1,4 @@
 open Eio.Std
-include Client_intf
 open Utils
 
 type connection = Eio.Flow.two_way_ty r
