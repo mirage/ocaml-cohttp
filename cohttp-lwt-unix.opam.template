@@ -12,3 +12,32 @@ build: [
     "@doc" {with-doc}
   ]
 ]
+pin-depends: [
+  [ "tls.dev"                    "git+https://github.com/art-w/ocaml-tls.git#dino-no-cstruct_tunnel" ]
+  [ "tls-lwt.dev"                "git+https://github.com/art-w/ocaml-tls.git#dino-no-cstruct_tunnel" ]
+  [ "conduit.dev"                "git+https://github.com/art-w/ocaml-conduit.git#tunnel" ]
+  [ "conduit-lwt.dev"            "git+https://github.com/art-w/ocaml-conduit.git#tunnel" ]
+  [ "conduit-lwt-unix.dev"       "git+https://github.com/art-w/ocaml-conduit.git#tunnel" ]
+  [ "ca-certs.dev"               "git+https://github.com/art-w/ca-certs.git#extra-ca" ]
+
+  # Cstruct patches
+  [ "mirage-crypto.dev"           "git+https://github.com/mirage/mirage-crypto.git#main" ]
+  [ "mirage-crypto-ec.dev"        "git+https://github.com/mirage/mirage-crypto.git#main" ]
+  [ "mirage-crypto-pk.dev"        "git+https://github.com/mirage/mirage-crypto.git#main" ]
+  [ "mirage-crypto-rng.dev"       "git+https://github.com/mirage/mirage-crypto.git#main" ]
+  [ "mirage-crypto-rng-lwt.dev"   "git+https://github.com/mirage/mirage-crypto.git#main" ]
+  [ "mirage-crypto-rng-async.dev" "git+https://github.com/mirage/mirage-crypto.git#main" ]
+  [ "mirage-crypto-rng-eio.dev"   "git+https://github.com/mirage/mirage-crypto.git#main" ]
+  [ "dns.dev"                     "git+https://github.com/hannesm/ocaml-dns.git#no-cstruct" ]
+  [ "dns-client.dev"              "git+https://github.com/hannesm/ocaml-dns.git#no-cstruct" ]
+  [ "dns-client-lwt.dev"          "git+https://github.com/hannesm/ocaml-dns.git#no-cstruct" ]
+  [ "pbkdf.dev"                   "git+https://github.com/abeaumont/ocaml-pbkdf.git#master" ]
+  [ "tcpip.dev"                   "git+https://github.com/mirage/mirage-tcpip.git#randomconv-string" ]
+
+  [ "tls-eio.dev"             "git+https://github.com/art-w/ocaml-tls.git#dino-no-cstruct_tunnel" ]
+  [ "conduit-async.dev"       "git+https://github.com/art-w/ocaml-conduit.git#tunnel" ]
+  [ "conduit-mirage.dev"      "git+https://github.com/art-w/ocaml-conduit.git#tunnel" ]
+  [ "dns-client-mirage.dev"   "git+https://github.com/hannesm/ocaml-dns.git#no-cstruct" ]
+  [ "ca-certs-nss.dev"        "git+https://github.com/mirage/ca-certs-nss.git#main" ]
+  [ "hkdf.dev"                "git+https://github.com/hannesm/ocaml-hkdf.git#main" ]
+]
