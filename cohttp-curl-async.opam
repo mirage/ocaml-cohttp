@@ -21,7 +21,7 @@ doc: "https://mirage.github.io/ocaml-cohttp/"
 bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
 depends: [
   "dune" {>= "3.0"}
-  "ocurl"
+  "ocurl" {>= "0.9.2"}
   "http" {= version}
   "stringext"
   "cohttp-curl" {= version}
