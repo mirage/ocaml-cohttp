@@ -190,7 +190,7 @@
   (conduit-async
    (>= 1.2.0))
   magic-mime
-  (mirage-crypto :with-test)
+  (digestif :with-test)
   logs
   (fmt
    (>= 0.8.2))

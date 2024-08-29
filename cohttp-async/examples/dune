@@ -1,7 +1,7 @@
 (executables
  (names hello_world receive_post)
  (libraries
-  mirage-crypto
+  digestif.c
   http
   cohttp-async
   base
