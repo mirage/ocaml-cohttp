@@ -28,7 +28,7 @@ depends: [
   "mdx" {with-test}
   "logs"
   "uri"
-  "tls-eio" {with-test & >= "0.17.2"}
+  "tls-eio" {with-test & >= "1.0.0"}
   "mirage-crypto-rng-eio" {with-test & >= "0.11.2"}
   "fmt"
   "ptime"

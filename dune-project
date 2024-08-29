@@ -379,7 +379,7 @@
   (mdx :with-test)
   logs
   uri
-  (tls-eio (and :with-test (>= 0.17.2)))
+  (tls-eio (and :with-test (>= 1.0.0)))
   (mirage-crypto-rng-eio (and :with-test (>= 0.11.2)))
   fmt
   ptime

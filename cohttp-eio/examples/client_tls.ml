@@ -9,7 +9,11 @@ let null_auth ?ip:_ ~host:_ _ =
   Ok None (* Warning: use a real authenticator in your code! *)
 
 let https ~authenticator =
-  let tls_config = Tls.Config.client ~authenticator () in
+  let tls_config =
+    match Tls.Config.client ~authenticator () with
+    | Error (`Msg msg) -> failwith ("tls configuration problem: " ^ msg)
+    | Ok tls_config -> tls_config
+  in
   fun uri raw ->
     let host =
       Uri.host uri
