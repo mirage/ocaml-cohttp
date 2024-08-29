@@ -22,7 +22,6 @@ jobs:
           - ubuntu-latest
           - macos-latest
         ocaml-compiler:
-          - "4.14"
           - "5"
         local-packages:
           - |
@@ -66,7 +65,6 @@ jobs:
           - ubuntu-latest
           - macos-latest
         ocaml-compiler:
-          - "4.14"
           - "5"
         local-packages:
           - |
