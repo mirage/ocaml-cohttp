@@ -11,7 +11,7 @@ let compute ~time ~f =
 let body =
   let get () = Client.get (Uri.of_string "https://www.reddit.com/") in
   compute ~time:0.1 ~f:get >>= function
-  | `Timeout -> Lwt.fail_with "Timeout expired"
+  | `Timeout -> failwith "Timeout expired"
   | `Done (resp, body) ->
       let code = resp |> Response.status |> Code.code_of_status in
       Printf.printf "Response code: %d\n" code;

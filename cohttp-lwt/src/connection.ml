@@ -172,7 +172,7 @@ module Make (Net : S.Net) : S.Connection with module Net = Net = struct
         Queue.push { uri; meth; headers; body; res_r } connection.waiting;
         Lwt_condition.broadcast connection.condition ();
         res
-    | Closing _ | Half _ | Closed | Failed _ -> Lwt.fail Retry
+    | Closing _ | Half _ | Closed | Failed _ -> raise Retry
 
   let rec writer connection =
     match connection.state with

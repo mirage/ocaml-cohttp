@@ -154,7 +154,7 @@ let compute ~time ~f =
 let body =
   let get () = Client.get (Uri.of_string "https://www.reddit.com/") in
   compute ~time:0.1 ~f:get >>= function
-  | `Timeout -> Lwt.fail_with "Timeout expired"
+  | `Timeout -> failwith "Timeout expired"
   | `Done (resp, body) -> Lwt.return (resp, body)
 ```
 
@@ -174,7 +174,7 @@ For example,
 ```ocaml
 let get_body ~uri ~timeout =
     let%bind _, body = Cohttp_async.Client.get ~interrupt:(after (sec timeout)) uri in
-    Body.to_string body    
+    Body.to_string body
 
 let body =
   let uri = Uri.of_string "https://www.reddit.com/" in
@@ -275,19 +275,18 @@ and follow_redirect ~max_redirects request_uri (response, body) =
       handle_redirect ~permanent:true ~max_redirects request_uri response
   | `Found | `Temporary_redirect ->
       handle_redirect ~permanent:false ~max_redirects request_uri response
-  | `Not_found | `Gone -> Lwt.fail_with "Not found"
+  | `Not_found | `Gone -> failwith "Not found"
   | status ->
-      Lwt.fail_with
-        (Printf.sprintf "Unhandled status: %s"
-           (Cohttp.Code.string_of_status status))
+      Printf.ksprintf failwith "Unhandled status: %s"
+          (Cohttp.Code.string_of_status status)
 
 and handle_redirect ~permanent ~max_redirects request_uri response =
-  if max_redirects <= 0 then Lwt.fail_with "Too many redirects"
+  if max_redirects <= 0 then failwith "Too many redirects"
   else
     let headers = Http.Response.headers response in
     let location = Http.Header.get headers "location" in
     match location with
-    | None -> Lwt.fail_with "Redirection without Location header"
+    | None -> failwith "Redirection without Location header"
     | Some url ->
         let open Lwt.Syntax in
         let uri = Uri.of_string url in

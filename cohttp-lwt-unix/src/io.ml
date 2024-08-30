@@ -40,12 +40,12 @@ let wrap_read f ~if_closed =
      https://github.com/ocsigen/lwt/pull/635 *)
   Lwt.catch f (function
     | Lwt_io.Channel_closed _ -> Lwt.return if_closed
-    | Unix.Unix_error _ as e -> Lwt.fail (IO_error e)
+    | Unix.Unix_error _ as e -> raise (IO_error e)
     | exn -> raise exn)
 
 let wrap_write f =
   Lwt.catch f (function
-    | Unix.Unix_error _ as e -> Lwt.fail (IO_error e)
+    | Unix.Unix_error _ as e -> raise (IO_error e)
     | exn -> raise exn)
 
 let read_line ic =
@@ -80,6 +80,6 @@ type error = exn
 let catch f =
   Lwt.try_bind f Lwt.return_ok (function
     | IO_error e -> Lwt.return_error e
-    | ex -> Lwt.fail ex)
+    | ex -> Lwt.reraise ex)
 
 let pp_error = Fmt.exn

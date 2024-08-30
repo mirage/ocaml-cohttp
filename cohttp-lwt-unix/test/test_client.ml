@@ -54,18 +54,18 @@ let methods (handler : Cohttp_lwt.S.call) uri =
     Body.drain_body body >>= fun () ->
     match Response.status res with
     | `Created | `No_content | `OK -> Lwt.return_unit
-    | _ -> Lwt.fail_with "put failed"
+    | _ -> failwith "put failed"
   and get k =
     handler `GET Uri.(with_path uri k) >>= fun (res, body) ->
     match Response.status res with
     | `OK | `No_content -> Body.to_string body
-    | _ -> Body.drain_body body >>= fun () -> Lwt.fail Not_found
+    | _ -> Body.drain_body body >>= fun () -> raise Not_found
   and delete k =
     handler `DELETE Uri.(with_path uri k) >>= fun (res, body) ->
     Body.drain_body body >>= fun () ->
     match Response.status res with
     | `OK | `No_content -> Lwt.return_unit
-    | _ -> Lwt.fail Not_found
+    | _ -> raise Not_found
   and mem k =
     handler `HEAD Uri.(with_path uri k) >>= fun (res, body) ->
     Body.drain_body body >|= fun () ->
@@ -171,10 +171,10 @@ let test_unknown uri =
             connection := c;
             match body with
             (* Still, body may have been (partially) consumed and needs re-creation. *)
-            | Some (`Stream _) -> Lwt.fail Connection.Retry
+            | Some (`Stream _) -> raise Connection.Retry
             | None | Some (`Empty | `String _ | `Strings _) ->
                 handler ?headers ?body meth uri)
-        | e -> Lwt.fail e)
+        | e -> Lwt.reraise e)
   in
   tests handler uri
 

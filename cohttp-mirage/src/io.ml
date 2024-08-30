@@ -54,8 +54,8 @@ module Make (Channel : Mirage_channel.S) = struct
     Channel.write_string oc buf 0 (String.length buf);
     Channel.flush oc >>= function
     | Ok () -> Lwt.return_unit
-    | Error `Closed -> Lwt.fail_with "Trying to write on closed channel"
-    | Error e -> Lwt.fail (Write_exn e)
+    | Error `Closed -> failwith "Trying to write on closed channel"
+    | Error e -> raise (Write_exn e)
 
   let flush _ =
     (* NOOP since we flush in the normal writer functions above *)
@@ -68,5 +68,5 @@ module Make (Channel : Mirage_channel.S) = struct
     Lwt.try_bind f Lwt.return_ok (function
       | Input_channel.Read_exn e -> Lwt.return_error (Read_error e)
       | Write_exn e -> Lwt.return_error (Write_error e)
-      | ex -> Lwt.fail ex)
+      | ex -> Lwt.reraise ex)
 end

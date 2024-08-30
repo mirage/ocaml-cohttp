@@ -79,8 +79,8 @@ let serve ~info ~docroot ~index uri path =
             Server.respond_string ~status:`Not_found
               ~body:(html_of_not_found path info)
               ()
-          else Lwt.fail e
-      | e -> Lwt.fail e)
+          else Lwt.reraise e
+      | e -> Lwt.reraise e)
 
 let handler ~info ~docroot ~index (ch, _conn) req _body =
   let uri = Cohttp.Request.uri req in
