@@ -249,8 +249,16 @@ let parse_request_uri_host_traversal _ =
   parse_request_uri_ r uri "parse_request_uri_host_traversal"
 
 let uri_round_trip _ =
-  let expected_uri = Uri.of_string "https://www.example.com/test" in
-  let actual_uri = Request.make expected_uri |> Request.uri in
+  let expected_uri =
+    let uri = Uri.of_string "https://www.example.com/test" in
+    Uri.with_userinfo uri (Some "foo")
+  in
+  let actual_uri =
+    let uri = Request.make expected_uri |> Request.uri in
+    (* These are the fields that aren't preserved: *)
+    let uri = Uri.with_scheme uri (Uri.scheme expected_uri) in
+    Uri.with_userinfo uri (Uri.userinfo expected_uri)
+  in
   Alcotest.check uri_testable "Request.make uri round-trip" actual_uri
     expected_uri
 

@@ -1,5 +1,8 @@
 ## Unreleased
 
+- http, cohttp: remove the scheme field from requests. This means that
+  [Request.uri] no longer returns the same URI as was to create the request
+  with [Request.make] (@rgrinberg 1086)
 - cohttp-eio: Remove unused `Client_intf` module (talex5 #1081)
 - cohttp-eio: Make server response type abstract and allow streaming in cohttp-eio (talex5 #1024)
 - cohttp-{lwt,eio}: server: add connection header to response if not present (ushitora-anqou #1025)

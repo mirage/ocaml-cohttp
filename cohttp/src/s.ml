@@ -85,7 +85,6 @@ module type Request = sig
   type t = {
     headers : Header.t;  (** HTTP request headers *)
     meth : Code.meth;  (** HTTP request method *)
-    scheme : string option;  (** URI scheme (http or https) *)
     resource : string;  (** Request path and query *)
     version : Code.version;  (** HTTP version, usually 1.1 *)
   }
@@ -93,7 +92,6 @@ module type Request = sig
 
   val headers : t -> Header.t
   val meth : t -> Code.meth
-  val scheme : t -> string option
   val resource : t -> string
   val version : t -> Code.version
   val encoding : t -> Transfer.encoding
