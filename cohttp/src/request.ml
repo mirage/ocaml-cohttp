@@ -19,29 +19,24 @@ open Sexplib0.Sexp_conv
 type t = Http.Request.t = {
   headers : Header.t;
   meth : Code.meth;
-  scheme : string option;
   resource : string;
   version : Code.version;
 }
 [@@deriving sexp]
 
-let compare { headers; meth; scheme; resource; version } y =
+let compare { headers; meth; resource; version } y =
   match Header.compare headers y.headers with
   | 0 -> (
       match Code.compare_method meth y.meth with
       | 0 -> (
-          match Option.compare String.compare scheme y.scheme with
-          | 0 -> (
-              match String.compare resource y.resource with
-              | 0 -> Code.compare_version version y.version
-              | i -> i)
+          match String.compare resource y.resource with
+          | 0 -> Code.compare_version version y.version
           | i -> i)
       | i -> i)
   | i -> i
 
 let headers t = t.headers
 let meth t = t.meth
-let scheme t = t.scheme
 let resource t = t.resource
 let version t = t.version
 let encoding t = Header.get_transfer_encoding t.headers
@@ -71,14 +66,13 @@ let make ?(meth = `GET) ?(version = `HTTP_1_1) ?encoding
         Header.add_authorization headers auth
     | _, _, _ -> headers
   in
-  let scheme = Uri.scheme uri in
   let resource = Uri.path_and_query uri in
   let headers =
     match encoding with
     | None -> headers
     | Some encoding -> Header.add_transfer_encoding headers encoding
   in
-  { headers; meth; scheme; resource; version }
+  { headers; meth; resource; version }
 
 let is_keep_alive t = Http.Request.is_keep_alive t
 
@@ -110,49 +104,42 @@ let is_valid_uri path meth =
   | Some _ -> true
   | None -> not (String.length path > 0 && path.[0] <> '/')
 
-let uri { scheme; resource; headers; meth; _ } =
-  let uri =
-    match resource with
-    | "*" -> (
-        match Header.get headers "host" with
-        | None -> Uri.of_string ""
-        | Some host ->
-            let host_uri = Uri.of_string ("//" ^ host) in
-            Uri.(make ?host:(host host_uri) ?port:(port host_uri) ()))
-    | authority when meth = `CONNECT -> Uri.of_string ("//" ^ authority)
-    | path -> (
-        let uri = Uri.of_string path in
-        match Uri.scheme uri with
-        | Some _ -> (
-            Uri.(
-              (* we have an absoluteURI *)
-              match path uri with "" -> with_path uri "/" | _ -> uri))
-        | None ->
-            let empty = Uri.of_string "" in
-            let empty_base = Uri.of_string "///" in
-            let pqs =
-              match Stringext.split ~max:2 path ~on:'?' with
-              | [] -> empty_base
-              | [ path ] ->
+let uri { resource; headers; meth; _ } =
+  match resource with
+  | "*" -> (
+      match Header.get headers "host" with
+      | None -> Uri.of_string ""
+      | Some host ->
+          let host_uri = Uri.of_string ("//" ^ host) in
+          Uri.(make ?host:(host host_uri) ?port:(port host_uri) ()))
+  | authority when meth = `CONNECT -> Uri.of_string ("//" ^ authority)
+  | path -> (
+      let uri = Uri.of_string path in
+      match Uri.scheme uri with
+      | Some _ -> (
+          Uri.(
+            (* we have an absoluteURI *)
+            match path uri with "" -> with_path uri "/" | _ -> uri))
+      | None -> (
+          let empty = Uri.of_string "" in
+          let empty_base = Uri.of_string "///" in
+          let pqs =
+            match Stringext.split ~max:2 path ~on:'?' with
+            | [] -> empty_base
+            | [ path ] ->
+                Uri.resolve "http" empty_base (Uri.with_path empty path)
+            | path :: qs :: _ ->
+                let path_base =
                   Uri.resolve "http" empty_base (Uri.with_path empty path)
-              | path :: qs :: _ ->
-                  let path_base =
-                    Uri.resolve "http" empty_base (Uri.with_path empty path)
-                  in
-                  Uri.with_query path_base (Uri.query_of_encoded qs)
-            in
-            let uri =
-              match Header.get headers "host" with
-              | None -> Uri.(with_scheme (with_host pqs None) None)
-              | Some host ->
-                  let host_uri = Uri.of_string ("//" ^ host) in
-                  let uri = Uri.with_host pqs (Uri.host host_uri) in
-                  Uri.with_port uri (Uri.port host_uri)
-            in
-            uri)
-  in
-  (* Only set the scheme if it's not already part of the URI *)
-  match Uri.scheme uri with Some _ -> uri | None -> Uri.with_scheme uri scheme
+                in
+                Uri.with_query path_base (Uri.query_of_encoded qs)
+          in
+          match Header.get headers "host" with
+          | None -> Uri.(with_scheme (with_host pqs None) None)
+          | Some host ->
+              let host_uri = Uri.of_string ("//" ^ host) in
+              let uri = Uri.with_host pqs (Uri.host host_uri) in
+              Uri.with_port uri (Uri.port host_uri)))
 
 type tt = t
 

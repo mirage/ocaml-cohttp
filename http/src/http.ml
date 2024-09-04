@@ -739,27 +739,22 @@ module Request = struct
   type t = {
     headers : Header.t;  (** HTTP request headers *)
     meth : Method.t;  (** HTTP request method *)
-    scheme : string option;  (** URI scheme (http or https) *)
     resource : string;  (** Request path and query *)
     version : Version.t;  (** HTTP version, usually 1.1 *)
   }
 
   let headers t = t.headers
   let meth t = t.meth
-  let scheme t = t.scheme
   let resource t = t.resource
   let version t = t.version
 
-  let compare { headers; meth; scheme; resource; version } y =
+  let compare { headers; meth; resource; version } y =
     match Header.compare headers y.headers with
     | 0 -> (
         match Method.compare meth y.meth with
         | 0 -> (
-            match Option.compare String.compare scheme y.scheme with
-            | 0 -> (
-                match String.compare resource y.resource with
-                | 0 -> Version.compare version y.version
-                | i -> i)
+            match String.compare resource y.resource with
+            | 0 -> Version.compare version y.version
             | i -> i)
         | i -> i)
     | i -> i
@@ -786,8 +781,8 @@ module Request = struct
     else `No
 
   let make ?(meth = `GET) ?(version = `HTTP_1_1) ?(headers = Header.empty)
-      ?scheme resource =
-    { headers; meth; scheme; resource; version }
+      resource =
+    { headers; meth; resource; version }
 
   let pp fmt t =
     let open Format in
@@ -1133,7 +1128,7 @@ module Parser = struct
     let path = token source in
     let version = version source in
     let headers = headers source in
-    { Request.headers; meth; scheme = None; resource = path; version }
+    { Request.headers; meth; resource = path; version }
 
   type error = Partial | Msg of string
 

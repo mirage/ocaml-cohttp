@@ -385,7 +385,6 @@ module Request : sig
   type t = {
     headers : Header.t;  (** HTTP request headers *)
     meth : Method.t;  (** HTTP request method *)
-    scheme : string option;  (** URI scheme (http or https) *)
     resource : string;  (** Request path and query *)
     version : Version.t;  (** HTTP version, usually 1.1 *)
   }
@@ -393,7 +392,6 @@ module Request : sig
   val has_body : t -> [ `No | `Unknown | `Yes ]
   val headers : t -> Header.t
   val meth : t -> Method.t
-  val scheme : t -> string option
   val resource : t -> string
   val version : t -> Version.t
   val compare : t -> t -> int
@@ -428,17 +426,11 @@ module Request : sig
       that a user-agent can handle HTTP chunked trailers headers. *)
 
   val make :
-    ?meth:Method.t ->
-    ?version:Version.t ->
-    ?headers:Header.t ->
-    ?scheme:string ->
-    string ->
-    t
+    ?meth:Method.t -> ?version:Version.t -> ?headers:Header.t -> string -> t
   (** [make resource] is a value of {!type:t}. The default values for the
       response, if not specified, are as follows: [meth] is [`GET], [version] is
-      [`HTTP_1_1], [headers] is [Header.empty] and [scheme] is [None]. The
-      request encoding value is determined via the
-      [Header.get_transfer_encoding] function.*)
+      [`HTTP_1_1], [headers] is [Header.empty]. The request encoding value is
+      determined via the [Header.get_transfer_encoding] function.*)
 
   val pp : Format.formatter -> t -> unit
 end

@@ -38,7 +38,7 @@ let assert_req_success ~here ~expected_req ~expected_consumed ?pos ?len buf =
   [%test_result: int] ~here ~expect:expected_consumed consumed
 
 let[@warning "-3"] make_req ~headers meth resource =
-  { Http.Request.headers; meth; resource; scheme = None; version = `HTTP_1_1 }
+  { Http.Request.headers; meth; resource; version = `HTTP_1_1 }
 
 let req_expected =
   make_req
