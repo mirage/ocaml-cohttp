@@ -190,7 +190,7 @@
   (conduit-async
    (>= 1.2.0))
   magic-mime
-  (mirage-crypto :with-test)
+  (digestif :with-test)
   logs
   (fmt
    (>= 0.8.2))
@@ -264,7 +264,7 @@
  (depends
   (ocaml
    (>= 4.08))
-  ocurl
+  (ocurl (>= 0.9.2))
   (http
    (= :version))
   stringext))
@@ -277,7 +277,7 @@
  (depends
   (ocaml
    (>= 4.08))
-  ocurl
+  (ocurl (>= 0.9.2))
   (http
    (= :version))
   (cohttp-curl
@@ -312,7 +312,7 @@
  (description
   "An HTTP client that relies on Curl + Async for the backend. Does not require\nconduit for SSL.")
  (depends
-  ocurl
+  (ocurl (>= 0.9.2))
   (http
    (= :version))
   stringext
@@ -379,7 +379,7 @@
   (mdx :with-test)
   logs
   uri
-  (tls-eio (and :with-test (>= 0.17.2)))
+  (tls-eio (and :with-test (>= 1.0.0)))
   (mirage-crypto-rng-eio (and :with-test (>= 0.11.2)))
   fmt
   ptime

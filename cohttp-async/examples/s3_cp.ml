@@ -171,8 +171,7 @@ module Auth = struct
 
   let digest s =
     (* string -> sha256 as a hex string *)
-    Mirage_crypto.Hash.(digest `SHA256 (Cstruct.of_string s))
-    |> Compat.cstruct_to_hex_string
+    Digestif.SHA256.(digest_string s |> to_hex)
 
   let make_amz_headers ?body time =
     (* Return x-amz-date and x-amz-sha256 headers *)
@@ -239,16 +238,12 @@ module Auth = struct
     Printf.sprintf "AWS4-HMAC-SHA256\n%s\n%s\n%s" time_str scope_str hashed_req
 
   let make_signing_key ?date ~region ~service ~secret_access_key () =
-    let mac k v =
-      Mirage_crypto.Hash.(mac `SHA256 ~key:k (Cstruct.of_string v))
-    in
+    let mac k v = Digestif.SHA256.(hmac_string ~key:k v |> to_raw_string) in
     let date' =
       match date with None -> Date.today ~zone:Time.Zone.utc | Some d -> d
     in
     let date_str = Date.to_string_iso8601_basic date' in
-    let date_key =
-      mac (Cstruct.of_string ("AWS4" ^ secret_access_key)) date_str
-    in
+    let date_key = mac ("AWS4" ^ secret_access_key) date_str in
     let date_region_key = mac date_key (string_of_region region) in
     let date_region_service_key =
       mac date_region_key (string_of_service service)
@@ -278,14 +273,12 @@ module Auth = struct
         (string_of_service service)
     in
     let signature =
-      Mirage_crypto.Hash.(
-        mac `SHA256 ~key:signing_key (Cstruct.of_string string_to_sign))
+      Digestif.SHA256.(hmac_string ~key:signing_key string_to_sign |> to_hex)
     in
     let auth_header =
       Printf.sprintf
         "AWS4-HMAC-SHA256 Credential=%s,SignedHeaders=%s,Signature=%s" creds
-        signed_headers
-        (Compat.cstruct_to_hex_string signature)
+        signed_headers signature
     in
     [ ("Authorization", auth_header) ]
 end

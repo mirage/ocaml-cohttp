@@ -221,7 +221,7 @@ let res_content_parse () =
       Rep_io.read_body_chunk reader >>= fun body ->
       assert_equal
         ~printer:(fun chunk ->
-          Transfer.sexp_of_chunk chunk |> Sexplib.Sexp.to_string_hum)
+          Transfer.sexp_of_chunk chunk |> Sexplib0.Sexp.to_string_hum)
         (Transfer.Final_chunk "home=Cosby&favorite+flavor=flies") body;
       return ()
   | _ -> assert false
