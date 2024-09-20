@@ -162,6 +162,26 @@ let parse_result_notifies_start_of_body () =
   [%test_result: string] ~expect:"foobar"
     (String.sub buf ~pos:count ~len:(String.length buf - count))
 
+let parse_proxy_get () =
+  let buf =
+    "GET http://example.com/foo.html HTTP/1.1\r\n\
+     Host: example.com\r\n\
+     Proxy-Authorization: Basic dXNlcjpwYXNz\r\n\
+     \r\n\
+     foobar"
+  in
+  let expected_req =
+    make_req
+      ~headers:
+        (Http.Header.of_list
+           [
+             ("Host", "example.com");
+             ("Proxy-Authorization", "Basic dXNlcjpwYXNz");
+           ])
+      `GET "http://example.com/foo.html"
+  in
+  assert_req_success ~here:[ [%here] ] ~expected_req ~expected_consumed:104 buf
+
 open Base_quickcheck
 
 let parse_chunk_length () =
@@ -250,6 +270,7 @@ let () =
           test_case "validate http version" `Quick validate_http_version;
           test_case "parse result notified offset of start of optional body"
             `Quick parse_result_notifies_start_of_body;
+          test_case "parse a proxy GET request" `Quick parse_proxy_get;
         ] );
       ( "chunked encoding",
         [
