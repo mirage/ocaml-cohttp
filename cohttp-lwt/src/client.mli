@@ -7,4 +7,4 @@
     will be logged and easier to track. *)
 
 module Make (Connection : S.Connection) :
-  S.Client with type ctx = Connection.Net.ctx
+  S.Client with type ctx = S.call
