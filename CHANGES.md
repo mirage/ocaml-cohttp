@@ -1,5 +1,6 @@
 ## Unreleased
 
+- cohttp-eio: Use system authenticator in example.
 - http, cohttp: remove the scheme field from requests. This means that
   [Request.uri] no longer returns the same URI as was to create the request
   with [Request.make] (@rgrinberg 1086)
