@@ -44,7 +44,6 @@ open Core
 open Async
 open Cohttp
 open Cohttp_async
-
 module Time = Time_float
 
 let ksrt (k, _) (k', _) = String.compare k k'
