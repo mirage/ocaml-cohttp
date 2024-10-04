@@ -5,4 +5,4 @@
  (preprocess
   (pps ppx_sexp_conv))
  (libraries conduit-mirage cohttp-lwt mirage-channel mirage-kv mirage-flow
-   magic-mime astring))
+   magic-mime astring cstruct))
