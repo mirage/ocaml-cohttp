@@ -70,7 +70,7 @@
   "This is a portable implementation of HTTP that uses the Lwt concurrency library\nto multiplex IO.  It implements as much of the logic in an OS-independent way\nas possible, so that more specialised modules can be tailored for different\ntargets.  For example, you can install `cohttp-lwt-unix` or `cohttp-lwt-jsoo`\nfor a Unix or JavaScript backend, or `cohttp-mirage` for the MirageOS unikernel\nversion of the library. All of these implementations share the same IO logic\nfrom this module.")
  (depends
   (ocaml
-   (>= 4.08))
+   (>= 4.13))
   (http
    (= :version))
   (cohttp

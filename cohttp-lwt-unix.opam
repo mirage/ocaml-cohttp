@@ -59,3 +59,6 @@ build: [
     "@doc" {with-doc}
   ]
 ]
+pin-depends: [
+  [ "ca-certs.dev"         "git+https://github.com/art-w/ca-certs.git#95d1250bdce4225cb92c345ba5d8f180e237eb2b" ]
+]
