@@ -9,6 +9,7 @@
   logs.fmt
   logs.threaded
   tls-eio
+  ca-certs
   mirage-crypto-rng-eio))
 
 (alias
