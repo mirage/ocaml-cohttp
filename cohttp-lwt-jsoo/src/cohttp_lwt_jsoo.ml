@@ -180,6 +180,9 @@ struct
 
   let callv ?ctx:_ _uri _reqs = Lwt.fail Cohttp_lwt_xhr_callv_not_implemented
 
+  let call_with_closefn ?ctx:_ ?headers:_ ?body:_ ?chunked:_ _meth _uri =
+    assert false
+
   (* ??? *)
 end
 

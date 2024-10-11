@@ -74,7 +74,21 @@ module type Client = sig
       (using [ocaml-tls]) or SSL (using [ocaml-ssl]), on [*:443] or on the
       specified port by the user. If neitehr [ocaml-tls] or [ocaml-ssl] are
       installed on the system, [cohttp]/[conduit] tries the usual ([*:80]) or
-      the specified port by the user in a non-secured way. *)
+      the specified port by the user in a non-secured way.
+
+      The function returns response and body. *)
+
+  val call_with_closefn :
+    ?ctx:ctx ->
+    ?headers:Cohttp.Header.t ->
+    ?body:Body.t ->
+    ?chunked:bool ->
+    Cohttp.Code.meth ->
+    Uri.t ->
+    ((Cohttp.Response.t * Body.t) Lwt.t * (unit -> unit)) Lwt.t
+  (** [call_with_closefn ?ctx ?headers ?body ?chunked meth uri] is the same as
+      [call] but returns response, body and [close_fn] which force releases the
+      connection. *)
 
   val head :
     ?ctx:ctx -> ?headers:Cohttp.Header.t -> Uri.t -> Cohttp.Response.t Lwt.t

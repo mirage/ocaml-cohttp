@@ -1,6 +1,7 @@
 (executables
  (names hello_world receive_post s3_cp)
- (libraries mirage-crypto cohttp-async base async_kernel core_unix.command_unix))
+ (libraries digestif.c cohttp-async base async_kernel core_unix.command_unix
+   cstruct))
 
 (alias
  (name runtest)
