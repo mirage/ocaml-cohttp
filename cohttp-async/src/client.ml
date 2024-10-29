@@ -112,7 +112,7 @@ module Connection = struct
           req oc
         >>= fun () ->
         read_response ic >>= fun (resp, body) ->
-        Ivar.fill res (resp, `Pipe body);
+        Ivar.fill_exn res (resp, `Pipe body);
         (* block starting any more requests until the consumer has finished reading this request *)
         Pipe.closed body)
     |> don't_wait_for;
