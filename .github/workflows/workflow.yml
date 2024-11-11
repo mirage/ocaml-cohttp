@@ -21,8 +21,7 @@ jobs:
         os:
           - ubuntu-latest
           - macos-latest
-        ocaml-compiler:
-          - "5"
+          - windows-latest
         local-packages:
           - |
             *.opam
@@ -37,10 +36,10 @@ jobs:
       - name: Checkout tree
         uses: actions/checkout@v4
 
-      - name: Set-up OCaml ${{ matrix.ocaml-compiler }}
+      - name: Set-up OCaml
         uses: ocaml/setup-ocaml@v3
         with:
-          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          ocaml-compiler: 5
           dune-cache: true
           opam-local-packages: ${{ matrix.local-packages }}
 
@@ -64,8 +63,7 @@ jobs:
         os:
           - ubuntu-latest
           - macos-latest
-        ocaml-compiler:
-          - "5"
+          - windows-latest
         local-packages:
           - |
             *.opam
@@ -84,10 +82,10 @@ jobs:
       - name: Checkout tree
         uses: actions/checkout@v4
 
-      - name: Set-up OCaml ${{ matrix.ocaml-compiler }}
+      - name: Set-up OCaml
         uses: ocaml/setup-ocaml@v3
         with:
-          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          ocaml-compiler: 5
           dune-cache: true
           opam-local-packages: ${{ matrix.local-packages }}
 
@@ -111,8 +109,7 @@ jobs:
         os:
           - ubuntu-latest
           - macos-latest
-        ocaml-compiler:
-          - "5"
+          - windows-latest
         local-packages:
           - |
             http.opam
@@ -125,10 +122,10 @@ jobs:
       - name: Checkout tree
         uses: actions/checkout@v4
 
-      - name: Set-up OCaml ${{ matrix.ocaml-compiler }}
+      - name: Set-up OCaml
         uses: ocaml/setup-ocaml@v3
         with:
-          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          ocaml-compiler: 5
           dune-cache: true
           opam-local-packages: ${{ matrix.local-packages }}
           opam-repositories: |
@@ -141,29 +138,18 @@ jobs:
 
   build-test-cohttp-bench:
     if: github.event.pull_request.draft == false
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-latest
-        ocaml-compiler:
-          - "5"
-        local-packages:
-          - |
-            *.opam
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout tree
         uses: actions/checkout@v4
 
-      - name: Set-up OCaml ${{ matrix.ocaml-compiler }}
+      - name: Set-up OCaml
         uses: ocaml/setup-ocaml@v3
         with:
-          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          ocaml-compiler: 5
           dune-cache: true
-          opam-local-packages: ${{ matrix.local-packages }}
           opam-repositories: |
             default: https://github.com/ocaml/opam-repository.git
             alpha: https://github.com/kit-ty-kate/opam-alpha-repository.git
