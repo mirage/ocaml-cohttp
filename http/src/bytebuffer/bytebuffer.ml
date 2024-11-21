@@ -17,11 +17,7 @@ module Bytes = BytesLabels
    on the bytebuffer.
 *)
 
-type t = {
-  mutable buf : Bytes.t;
-  mutable pos_read : int;
-  mutable pos_fill : int;
-}
+type t = { buf : Bytes.t; mutable pos_read : int; mutable pos_fill : int }
 
 let create size =
   let buf = Bytes.create size in

@@ -21,7 +21,7 @@ homepage: "https://github.com/mirage/ocaml-cohttp"
 doc: "https://mirage.github.io/ocaml-cohttp/"
 bug-reports: "https://github.com/mirage/ocaml-cohttp/issues"
 depends: [
-  "dune" {>= "3.0"}
+  "dune" {>= "3.8"}
   "ocaml" {>= "4.08"}
   "ppx_expect" {with-test & >= "v0.17.0"}
   "alcotest" {with-test & >= "1.7.0"}

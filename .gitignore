@@ -4,3 +4,4 @@ _build/
 .merlin
 _opam/
 node_modules
+dune.lock/

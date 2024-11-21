@@ -44,11 +44,11 @@ end
 
 (** Build an asynchronous engine with chunked/unchucked response data treated as
     raw bytes or UTF *)
-module Make_client_async (P : Params) : Cohttp_lwt.S.Client
+module Make_client_async (_ : Params) : Cohttp_lwt.S.Client
 
 (** Build a synchronous engine with chunked/unchucked response data treated as
     raw bytes or UTF *)
-module Make_client_sync (P : Params) : Cohttp_lwt.S.Client
+module Make_client_sync (_ : Params) : Cohttp_lwt.S.Client
 
 module Client : Cohttp_lwt.S.Client
 (** The [Client] module implements an HTTP client interface using asynchronous

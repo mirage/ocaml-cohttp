@@ -49,6 +49,10 @@ jobs:
           opam install conf-libcurl
         if: ${{ matrix.os == 'ubuntu-latest' }}
 
+      - run: |
+          brew update
+        if: ${{ matrix.os == 'macos-latest' }}
+
       - run: echo "PKG_CONFIG_PATH=$(brew --prefix openssl)/lib/pkgconfig" >>"$GITHUB_ENV"
         if: ${{ matrix.os == 'macos-latest' }}
 
