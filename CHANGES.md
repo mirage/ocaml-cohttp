@@ -1,5 +1,6 @@
-## Unreleased
+## v6.0.0 (2024-11-21)
 
+- bump minimum dune version to 3.8 (@avsm)
 - cohttp-eio: Use system authenticator in example.
 - http, cohttp: remove the scheme field from requests. This means that
   [Request.uri] no longer returns the same URI as was to create the request
