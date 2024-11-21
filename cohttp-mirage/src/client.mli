@@ -1,5 +1,5 @@
 module Make
-    (P : Mirage_clock.PCLOCK)
+    (_ : Mirage_clock.PCLOCK)
     (R : Resolver_mirage.S)
     (S : Conduit_mirage.S) : sig
   module Connection : Cohttp_lwt.S.Connection
