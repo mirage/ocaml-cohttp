@@ -18,7 +18,7 @@ module Bytes = BytesLabels
 *)
 
 type t = {
-  mutable buf : Bytes.t;
+  buf : Bytes.t;
   mutable pos_read : int;
   mutable pos_fill : int;
 }
