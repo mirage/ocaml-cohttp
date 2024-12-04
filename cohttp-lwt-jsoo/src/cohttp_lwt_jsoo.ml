@@ -63,11 +63,11 @@ module Body_builder (P : Params) = struct
     let chunkerizer () =
       if !pos = body_len then Lwt.return C.Transfer.Done
       else if !pos + P.chunk_size >= body_len then (
-        let str = text ## (substring_toEnd !pos) in
+        let str = text##(substring_toEnd !pos) in
         pos := body_len;
         Lwt.return (C.Transfer.Final_chunk (P.convert_body_string str)))
       else
-        let str = text ## (substring !pos (!pos + P.chunk_size)) in
+        let str = text##(substring !pos (!pos + P.chunk_size)) in
         pos := !pos + P.chunk_size;
         Lwt.return (C.Transfer.Chunk (P.convert_body_string str))
     in
@@ -205,11 +205,10 @@ module Make_client_async (P : Params) = Make_api (struct
       xml##.responseType := Js.string "arraybuffer";
     let (res : (Http.Response.t Lwt.t * CLB.t) Lwt.t), wake = Lwt.task () in
     let () =
-      xml
-      ## (_open
-            (Js.string (C.Code.string_of_method meth))
-            (Js.string (Uri.to_string uri))
-            Js._true)
+      xml##(_open
+              (Js.string (C.Code.string_of_method meth))
+              (Js.string (Uri.to_string uri))
+              Js._true)
       (* asynchronous call *)
     in
     (* set request headers *)
@@ -221,7 +220,7 @@ module Make_client_async (P : Params) = Make_api (struct
             (fun k v ->
               (* some headers lead to errors in the javascript console, should
                  we filter then out here? *)
-              xml ## (setRequestHeader (Js.string k) (Js.string v)))
+              xml##(setRequestHeader (Js.string k) (Js.string v)))
             headers
     in
 
@@ -264,7 +263,7 @@ module Make_client_async (P : Params) = Make_api (struct
 
     (* perform call *)
     (match body with
-    | None -> Lwt.return xml ## (send Js.null)
+    | None -> Lwt.return xml##(send Js.null)
     | Some body ->
         CLB.to_string body >>= fun body ->
         let bs = binary_string body in
@@ -292,11 +291,10 @@ module Make_client_sync (P : Params) = Make_api (struct
     if Lazy.force xhr_response_supported then
       xml##.responseType := Js.string "arraybuffer";
     let () =
-      xml
-      ## (_open
-            (Js.string (C.Code.string_of_method meth))
-            (Js.string (Uri.to_string uri))
-            Js._false)
+      xml##(_open
+              (Js.string (C.Code.string_of_method meth))
+              (Js.string (Uri.to_string uri))
+              Js._false)
       (* synchronous call *)
     in
     (* set request headers *)
@@ -308,16 +306,16 @@ module Make_client_sync (P : Params) = Make_api (struct
             (fun k v ->
               (* some headers lead to errors in the javascript console, should
                  we filter then out here? *)
-              xml ## (setRequestHeader (Js.string k) (Js.string v)))
+              xml##(setRequestHeader (Js.string k) (Js.string v)))
             headers
     in
     (* perform call *)
     (match body with
-    | None -> Lwt.return xml ## (send Js.null)
+    | None -> Lwt.return xml##(send Js.null)
     | Some body ->
         CLB.to_string body >|= fun body ->
         let bs = binary_string body in
-        xml ## (send (Js.Opt.return (Obj.magic bs))))
+        xml##(send (Js.Opt.return (Obj.magic bs))))
     >>= fun _body ->
     let body = Bb.construct_body xml in
     (* (re-)construct the response *)

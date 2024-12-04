@@ -16,16 +16,14 @@
 
 module A = Cohttp.Accept
 
-let suite_of :
-    type a.
+let suite_of : type a.
     (string option -> a) -> a Alcotest.testable -> (string * a) list -> _ list =
  fun pf t ->
   List.map (fun (s, expected) ->
       let test () = Alcotest.check t s (pf (Some s)) expected in
       (s, `Quick, test))
 
-let suite_of_fail :
-    type a.
+let suite_of_fail : type a.
     (string option -> a) -> a Alcotest.testable -> (string * exn) list -> _ list
     =
  fun pf _ ->
@@ -41,8 +39,8 @@ let suite_to_string_of : type a. (a -> string) -> (a * string) list -> _ list =
       let test () = Alcotest.(check string expected_str expected_str (pf v)) in
       (expected_str, `Quick, test))
 
-let suite_to_string_of_fail :
-    type a. (a -> string) -> (a * string * exn) list -> _ list =
+let suite_to_string_of_fail : type a.
+    (a -> string) -> (a * string * exn) list -> _ list =
  fun pf ->
   List.map (fun (v, descr, e) ->
       let test () = Alcotest.(check_raises descr e (fun () -> ignore (pf v))) in
