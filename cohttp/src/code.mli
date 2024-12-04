@@ -171,7 +171,8 @@ val reason_phrase_of_code : int -> string
 (** Give a description of the given int code. *)
 
 val is_informational : int -> bool
-(** Is the given int code belong to the class of "informational" return code ? *)
+(** Is the given int code belong to the class of "informational" return code ?
+*)
 
 val is_success : int -> bool
 (** Is the given int code belong to the class of "success" return code ? *)

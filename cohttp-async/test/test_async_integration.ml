@@ -28,27 +28,27 @@ let server =
   ]
   (* pipelined_chunk *)
   @ (response_bodies |> List.map ~f:(Fn.compose const ok))
-  @ (* large response chunked *)
-  [
-    (fun _ _ ->
-      let body =
-        let r, w = Pipe.create () in
-        let chunk = chunk chunk_size in
-        for _ = 0 to chunks - 1 do
-          Pipe.write_without_pushback w chunk
-        done;
-        Pipe.close w;
-        r
-      in
-      Server.respond_with_pipe ~code:`OK body >>| response);
-    (* pipelined_expert *)
-    expert (fun _ic oc ->
-        Async_unix.Writer.write oc "8\r\nexpert 1\r\n0\r\n\r\n";
-        Async_unix.Writer.flushed oc);
-    expert (fun ic oc ->
-        Async_unix.Writer.write oc "8\r\nexpert 2\r\n0\r\n\r\n";
-        Async_unix.Writer.flushed oc >>= fun () -> Async_unix.Reader.close ic);
-  ]
+  (* large response chunked *)
+  @ [
+      (fun _ _ ->
+        let body =
+          let r, w = Pipe.create () in
+          let chunk = chunk chunk_size in
+          for _ = 0 to chunks - 1 do
+            Pipe.write_without_pushback w chunk
+          done;
+          Pipe.close w;
+          r
+        in
+        Server.respond_with_pipe ~code:`OK body >>| response);
+      (* pipelined_expert *)
+      expert (fun _ic oc ->
+          Async_unix.Writer.write oc "8\r\nexpert 1\r\n0\r\n\r\n";
+          Async_unix.Writer.flushed oc);
+      expert (fun ic oc ->
+          Async_unix.Writer.write oc "8\r\nexpert 2\r\n0\r\n\r\n";
+          Async_unix.Writer.flushed oc >>= fun () -> Async_unix.Reader.close ic);
+    ]
   |> response_sequence
 
 let ts =

@@ -40,7 +40,8 @@ val to_list : t -> (string * string) list
 (** [to_list h] converts HTTP headers [h] to a list. Order and case is
     preserved.
 
-    {e Invariant (with case insensitive comparison):} [to_list (of_list l) = l] *)
+    {e Invariant (with case insensitive comparison):} [to_list (of_list l) = l]
+*)
 
 val init_with : string -> string -> t
 (** [init_with k v] construct a fresh HTTP headers with a single header with
@@ -118,7 +119,8 @@ val get_multi_concat : ?list_value_only:bool -> t -> string -> string option
     the last value paired with [k] in [h].
 
     {e Invariant:}
-    [forall h, k not a list-value header. get_multi_concat ~list-value-only:true h k = get h k] *)
+    [forall h, k not a list-value header. get_multi_concat ~list-value-only:true
+     h k = get h k] *)
 
 val update : t -> string -> (string option -> string option) -> t
 (** [update h k f] returns an header list containing the same headers as [h],
@@ -190,7 +192,8 @@ val clean_dup : t -> t
 
     Finally, following
     {{:https://tools.ietf.org/html/rfc7230#section-3.2.2} RFC7230§3.2.2}, the
-    header [Set-cookie] is treated as an exception and ignored by [clean_dup]. *)
+    header [Set-cookie] is treated as an exception and ignored by [clean_dup].
+*)
 
 val get_content_range : t -> Int64.t option
 val get_media_type : t -> string option
@@ -213,7 +216,8 @@ val add_links : t -> Link.t list -> t
 val get_links : t -> Link.t list
 
 val user_agent : string
-(** The User-Agent header used by this library, including the version of cohttp. *)
+(** The User-Agent header used by this library, including the version of cohttp.
+*)
 
 val prepend_user_agent : t -> string -> t
 (** Prepend [user_agent] to the product token already declared in the
