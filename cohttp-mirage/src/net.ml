@@ -21,7 +21,10 @@ struct
     lazy { resolver = R.localhost; conduit = None; authenticator = None }
 
   type endp = Conduit.endp
+  type client
 
+  let tunnel = failwith "Unimplemented"
+  let connect_client = failwith "Unimplemented"
   let resolve ~ctx uri = R.resolve_uri ~uri ctx.resolver
 
   let connect_endp ~ctx endp =
