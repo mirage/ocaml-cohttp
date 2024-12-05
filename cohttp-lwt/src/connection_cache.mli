@@ -43,6 +43,7 @@ module Make (Connection : S.Connection) (Sleep : S.Sleep) : sig
         connection.
       @param proxy A direct (non-tunneling) proxy to use. *)
 end
+[@@warning "-unused-functor-parameter"]
 
 (** This functor keeps a cache of connections for reuse. Connections are reused
     based on their remote {!type:Conduit.endp} (effectively IP / port). It also
@@ -92,3 +93,4 @@ module Make_proxy (Connection : S.Connection) (Sleep : S.Sleep) : sig
       @see <https://everything.curl.dev/usingcurl/proxies/env.html#no-proxy>
       @param proxy_headers Headers to pass to the proxy. *)
 end
+[@@warning "-unused-functor-parameter"]
