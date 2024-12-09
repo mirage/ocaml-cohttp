@@ -59,6 +59,7 @@
             pname = "cohttp-curl-lwt";
             checkInputs = [ alcotest cohttp-lwt-unix cohttp cohttp-lwt conduit-lwt ounit2 uri ];
             propagatedBuildInputs = [ ocurl cohttp-curl http stringext lwt ];
+            __darwinAllowLocalNetworking = true;
           };
           cohttp-curl-async = pkg {
             pname = "cohttp-curl-async";
