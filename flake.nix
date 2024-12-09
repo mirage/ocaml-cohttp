@@ -37,13 +37,14 @@
           default = http;
           http = pkg {
             pname = "http";
+            propagatedBuildInputs = [ ppx_expect ];
             checkInputs = [ alcotest base_quickcheck ppx_expect crowbar ];
           };
           cohttp = pkg {
             pname = "cohttp";
             checkInputs = [ fmt alcotest ];
             propagatedBuildInputs = [
-              stringext http re uri uri-sexp logs sexplib0 ppx_sexp_conv
+              base64 stringext http re uri uri-sexp logs sexplib0 ppx_sexp_conv
             ];
           };
           cohttp-top = pkg {
@@ -56,8 +57,8 @@
           };
           cohttp-curl-lwt = pkg {
             pname = "cohttp-curl-lwt";
-            checkInputs = [ cohttp-lwt-unix cohttp cohttp-lwt conduit-lwt ounit2 uri ];
-            propagatedBuildInputs = [ ocurl http stringext lwt ];
+            checkInputs = [ alcotest cohttp-lwt-unix cohttp cohttp-lwt conduit-lwt ounit2 uri ];
+            propagatedBuildInputs = [ ocurl cohttp-curl http stringext lwt ];
           };
           cohttp-curl-async = pkg {
             pname = "cohttp-curl-async";
