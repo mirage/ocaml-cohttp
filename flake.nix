@@ -96,6 +96,7 @@
               http cohttp cohttp-lwt cmdliner lwt conduit-lwt
               conduit-lwt-unix fmt ppx_sexp_conv magic-mime logs
             ];
+            __darwinAllowLocalNetworking = true;
           };
           cohttp-server-lwt-unix = pkg {
             pname = "cohttp-server-lwt-unix";
