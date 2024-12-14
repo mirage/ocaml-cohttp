@@ -37,13 +37,14 @@
           default = http;
           http = pkg {
             pname = "http";
+            propagatedBuildInputs = [ ppx_expect ];
             checkInputs = [ alcotest base_quickcheck ppx_expect crowbar ];
           };
           cohttp = pkg {
             pname = "cohttp";
             checkInputs = [ fmt alcotest ];
             propagatedBuildInputs = [
-              stringext http re uri uri-sexp logs sexplib0 ppx_sexp_conv
+              base64 stringext http re uri uri-sexp logs sexplib0 ppx_sexp_conv
             ];
           };
           cohttp-top = pkg {
@@ -56,8 +57,9 @@
           };
           cohttp-curl-lwt = pkg {
             pname = "cohttp-curl-lwt";
-            checkInputs = [ cohttp-lwt-unix cohttp cohttp-lwt conduit-lwt ounit2 uri ];
-            propagatedBuildInputs = [ ocurl http stringext lwt ];
+            checkInputs = [ alcotest cohttp-lwt-unix cohttp cohttp-lwt conduit-lwt ounit2 uri ];
+            propagatedBuildInputs = [ ocurl cohttp-curl http stringext lwt ];
+            __darwinAllowLocalNetworking = true;
           };
           cohttp-curl-async = pkg {
             pname = "cohttp-curl-async";
@@ -94,6 +96,7 @@
               http cohttp cohttp-lwt cmdliner lwt conduit-lwt
               conduit-lwt-unix fmt ppx_sexp_conv magic-mime logs
             ];
+            __darwinAllowLocalNetworking = true;
           };
           cohttp-server-lwt-unix = pkg {
             pname = "cohttp-server-lwt-unix";
