@@ -5,8 +5,6 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    env:
-      NIXPKGS_ALLOW_INSECURE: 1
     steps:
       - name: Checkout tree
         uses: actions/checkout@v4
@@ -14,5 +12,7 @@ jobs:
           submodules: true
       - uses: cachix/install-nix-action@v30
         with:
-          nix_path: nixpkgs=channel:nixos-unstable
-      - run: nix develop -c dune build @runtest @check
+          extra_nix_config: |
+            extra-substituters = https://anmonteiro.nix-cache.workers.dev
+            extra-trusted-public-keys = ocaml.nix-cache.com-1:/xI2h2+56rwFfKyyFVbkJSeGqSIYMC/Je+7XXqGKDIY=
+      - run: nix develop -L .# -c dune build @runtest @check
