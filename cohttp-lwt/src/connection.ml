@@ -33,6 +33,7 @@ module Make (Net : S.Net) : S.Connection with module Net = Net = struct
   (* enable warning when https://github.com/mirage/ocaml-conduit/pull/319 is released *)
 
   type req_resr = {
+    absolute_form : bool;
     uri : Uri.t;
     meth : Cohttp.Code.meth;
     headers : Header.t;
@@ -164,12 +165,15 @@ module Make (Net : S.Net) : S.Connection with module Net = Net = struct
             queue_fail connection connection.in_flight e;
             Lwt.return_unit)
 
-  let call connection ?headers ?(body = `Empty) meth uri =
+  let call connection ?headers ?(body = `Empty) ?(absolute_form = false) meth
+      uri =
     let headers = match headers with Some h -> h | None -> Header.init () in
     match connection.state with
     | Connecting _ | Full _ ->
         let res, res_r = Lwt.wait () in
-        Queue.push { uri; meth; headers; body; res_r } connection.waiting;
+        Queue.push
+          { absolute_form; uri; meth; headers; body; res_r }
+          connection.waiting;
         Lwt_condition.broadcast connection.condition ();
         res
     | Closing _ | Half _ | Closed | Failed _ -> raise Retry
@@ -193,7 +197,7 @@ module Make (Net : S.Net) : S.Connection with module Net = Net = struct
       *)
         Lwt.return_unit
     | Full (ic, oc) | Closing (ic, oc) ->
-        let ({ uri; meth; headers; body; res_r } as work) =
+        let ({ absolute_form; uri; meth; headers; body; res_r } as work) =
           Queue.take connection.waiting
         in
 
@@ -222,7 +226,7 @@ module Make (Net : S.Net) : S.Connection with module Net = Net = struct
           else headers
         in
 
-        let req = Request.make ~encoding ~meth ~headers uri in
+        let req = Request.make ~encoding ~meth ~headers ~absolute_form uri in
 
         Queue.push work connection.in_flight;
 
@@ -292,6 +296,34 @@ module Make (Net : S.Net) : S.Connection with module Net = Net = struct
         Lwt.dont_wait (fun () -> writer connection) on_failure)
       on_failure;
     connection
+
+  let create_tunnel ?(finalise = fun _ -> Lwt.return_unit)
+      ?(ctx = Lazy.force Net.default_ctx) proxy remote_host =
+    match proxy.state with
+    | Full (ic, oc) ->
+        let client = Net.tunnel remote_host (ic, oc) in
+        let channels =
+          Net.connect_client ~ctx client >>= fun (_, ic, oc) -> return (ic, oc)
+        in
+        let connection =
+          {
+            finalise;
+            in_flight = Queue.create ();
+            waiting = Queue.create ();
+            state = Connecting channels;
+            condition = Lwt_condition.create ();
+            persistent = `True;
+          }
+        in
+        let on_failure e = connection.state <- Failed e in
+        Lwt.on_any channels
+          (fun channels ->
+            connection.state <- Full channels;
+            Lwt.dont_wait (fun () -> reader connection) on_failure;
+            Lwt.dont_wait (fun () -> writer connection) on_failure)
+          on_failure;
+        connection
+    | _ -> failwith "Proxy connection wasn't in right state."
 
   let connect ?finalise ?persistent ?ctx uri =
     let connection = create ?finalise ?persistent ?ctx uri in
