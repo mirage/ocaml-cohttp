@@ -278,7 +278,8 @@ module Header : sig
       returned value is the last value paired with [k] in [h].
 
       {e Invariant:}
-      [forall h, k not a list-value header. get_multi_concat ~list-value-only:true h k = get h k] *)
+      [forall h, k not a list-value header. get_multi_concat
+       ~list-value-only:true h k = get h k] *)
 
   val update : t -> string -> (string option -> string option) -> t
   (** [update h k f] returns an header list containing the same headers as [h],
@@ -357,7 +358,8 @@ module Header : sig
 
       Finally, following
       {{:https://tools.ietf.org/html/rfc7230#section-3.2.2} RFC7230§3.2.2}, the
-      header [Set-cookie] is treated as an exception and ignored by [clean_dup]. *)
+      header [Set-cookie] is treated as an exception and ignored by [clean_dup].
+  *)
 
   val get_content_range : t -> Int64.t option
   val get_connection_close : t -> bool
