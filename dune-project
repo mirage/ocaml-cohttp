@@ -78,6 +78,8 @@
   (lwt
    (>= 5.4.0))
   sexplib0
+  (ipaddr
+   (>= 5.6.0))
   (ppx_sexp_conv
    (>= v0.13.0))
   logs
