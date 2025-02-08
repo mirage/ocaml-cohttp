@@ -173,7 +173,7 @@
   "An implementation of an HTTP client and server using the Async\nconcurrency library. See the `Cohttp_async` module for information\non how to use this.  The package also installs `cohttp-curl-async`\nand a `cohttp-server-async` binaries for quick uses of a HTTP(S)\nclient and server respectively.\n")
  (depends
   (ocaml
-   (>= 4.14))
+   (and (>= 4.14) (< 5.3.0)))
   (http
    (= :version))
   (cohttp
@@ -382,6 +382,7 @@
   logs
   uri
   (tls-eio (and :with-test (>= 1.0.0)))
+  (mirage-crypto-rng (and :with-test (< 1.2.0)))
   (mirage-crypto-rng-eio (and :with-test (>= 0.11.2)))
   (ca-certs (and :with-test  (>= "1.0.0")))
   fmt
