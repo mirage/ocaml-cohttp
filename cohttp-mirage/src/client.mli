@@ -1,7 +1,4 @@
-module Make
-    (_ : Mirage_clock.PCLOCK)
-    (R : Resolver_mirage.S)
-    (S : Conduit_mirage.S) : sig
+module Make (R : Resolver_mirage.S) (S : Conduit_mirage.S) : sig
   module Connection : Cohttp_lwt.S.Connection
   include Cohttp_lwt.S.Client with type ctx = Connection.Net.ctx
 

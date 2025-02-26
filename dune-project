@@ -218,9 +218,9 @@
   (mirage-channel
    (>= 4.0.0))
   (conduit
-   (>= 2.0.2))
+   (>= 8.0.0))
   (conduit-mirage
-   (>= 2.3.0))
+   (>= 8.0.0))
   (mirage-kv
    (>= 3.0.0))
   (lwt

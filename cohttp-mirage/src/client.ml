@@ -17,12 +17,8 @@
  * %%NAME%% %%VERSION%%
  *)
 
-module Make
-    (P : Mirage_clock.PCLOCK)
-    (R : Resolver_mirage.S)
-    (S : Conduit_mirage.S) =
-struct
-  module Net = Net.Make (P) (R) (S)
+module Make (R : Resolver_mirage.S) (S : Conduit_mirage.S) = struct
+  module Net = Net.Make (R) (S)
   module Connection = Cohttp_lwt.Connection.Make (Net)
   include Cohttp_lwt.Client.Make (Connection)
 
