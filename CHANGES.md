@@ -1,3 +1,8 @@
+# v6.1.0 (2025-03-03)
+
+- cohttp-lwt-unix: Add http/https proxy support for client requests (@art-w @MisterDA, #1080)
+- cohttp-mirage: Support conduit 8.0.0 (@hannesm, #1104)
+
 ## v6.0.0 (2024-11-21)
 
 - bump minimum dune version to 3.8 (@avsm)
@@ -17,8 +22,6 @@
   `~chunked:true` and `~body_length`.
 - cohttp-lwt-unix: Don't blow up when certificates are not available and no-network requests are made. (akuhlens #1027)
   + Makes `cohttp-lwt.S.default_ctx` lazy.
-- cohttp-lwt-unix: Add http/https proxy support for client requests (MisterDA #1080)
-- cohttp-mirage: Support conduit 8.0.0 (#@hannesm, #1104)
 
 ## v6.0.0~beta2 (2024-01-05)
 
