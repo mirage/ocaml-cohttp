@@ -1,7 +1,4 @@
-module Make
-    (_ : Mirage_clock.PCLOCK)
-    (R : Resolver_mirage.S)
-    (S : Conduit_mirage.S) : sig
+module Make (R : Resolver_mirage.S) (S : Conduit_mirage.S) : sig
   type ctx = {
     resolver : R.t;
     conduit : S.t option;

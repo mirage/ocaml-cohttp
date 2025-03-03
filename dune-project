@@ -218,9 +218,9 @@
   (mirage-channel
    (>= 4.0.0))
   (conduit
-   (>= 2.0.2))
+   (>= 8.0.0))
   (conduit-mirage
-   (>= 2.3.0))
+   (>= 8.0.0))
   (mirage-kv
    (>= 3.0.0))
   (lwt
@@ -382,8 +382,7 @@
   logs
   uri
   (tls-eio (and :with-test (>= 1.0.0)))
-  (mirage-crypto-rng (and :with-test (< 1.2.0)))
-  (mirage-crypto-rng-eio (and :with-test (>= 0.11.2)))
+  (mirage-crypto-rng (and :with-test (>= 1.2.0)))
   (ca-certs (and :with-test  (>= "1.0.0")))
   fmt
   ptime

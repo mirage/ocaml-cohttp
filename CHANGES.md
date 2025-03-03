@@ -16,8 +16,9 @@
 - cohttp: `Cohttp.Request.make_for_client` no longer allows setting both
   `~chunked:true` and `~body_length`.
 - cohttp-lwt-unix: Don't blow up when certificates are not available and no-network requests are made. (akuhlens #1027)
-  + Makes `cohttp-lwt.S.default_ctx` lazy. 
+  + Makes `cohttp-lwt.S.default_ctx` lazy.
 - cohttp-lwt-unix: Add http/https proxy support for client requests (MisterDA #1080)
+- cohttp-mirage: Support conduit 8.0.0 (#@hannesm, #1104)
 
 ## v6.0.0~beta2 (2024-01-05)
 

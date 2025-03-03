@@ -1,11 +1,6 @@
-module Make
-    (P : Mirage_clock.PCLOCK)
-    (R : Resolver_mirage.S)
-    (S : Conduit_mirage.S) =
-struct
+module Make (R : Resolver_mirage.S) (S : Conduit_mirage.S) = struct
   module Channel = Mirage_channel.Make (S.Flow)
   module Input_channel = Input_channel.Make (Channel)
-  module Endpoint = Conduit_mirage.Endpoint (P)
   module IO = Io.Make (Channel)
   open IO
 
@@ -28,7 +23,8 @@ struct
   let resolve ~ctx uri = R.resolve_uri ~uri ctx.resolver
 
   let connect_endp ~ctx endp =
-    Endpoint.client ?tls_authenticator:ctx.authenticator endp >>= fun client ->
+    Conduit_mirage.Endpoint.client ?tls_authenticator:ctx.authenticator endp
+    >>= fun client ->
     match ctx.conduit with
     | None -> failwith "conduit not initialised"
     | Some c ->
