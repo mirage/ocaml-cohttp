@@ -1,4 +1,4 @@
-# v6.1.0 (2025-03-03)
+## v6.1.0 (2025-03-03)
 
 - cohttp-lwt-unix: Add http/https proxy support for client requests (@art-w @MisterDA, #1080)
 - cohttp-mirage: Support conduit 8.0.0 (@hannesm, #1104)
