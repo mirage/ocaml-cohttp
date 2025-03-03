@@ -1,8 +1,13 @@
 (executables
- (names client_lwt client_lwt_timeout docker_lwt server_lwt)
- (libraries cohttp-lwt-unix))
+ (names client_lwt client_lwt_timeout docker_lwt server_lwt client_lwt_proxy)
+ (libraries cohttp-lwt-unix fmt.tty))
 
 (alias
  (name runtest)
  (package cohttp-lwt-unix)
- (deps client_lwt.exe client_lwt_timeout.exe docker_lwt.exe server_lwt.exe))
+ (deps
+  client_lwt.exe
+  client_lwt_timeout.exe
+  docker_lwt.exe
+  server_lwt.exe
+  client_lwt_proxy.exe))

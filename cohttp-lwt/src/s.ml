@@ -20,6 +20,7 @@ end
 module type Net = sig
   module IO : IO
 
+  type client
   type endp
 
   type ctx [@@deriving sexp_of]
@@ -39,6 +40,8 @@ module type Net = sig
   val resolve : ctx:ctx -> Uri.t -> endp IO.t
   (** [resolve ~ctx uri] resolves [uri] into an endpoint description. This is
       [Resolver_lwt.resolve_uri ~uri ctx.resolver]. *)
+
+  val tunnel : string -> IO.ic * IO.oc -> client
 
   val connect_uri : ctx:ctx -> Uri.t -> (IO.conn * IO.ic * IO.oc) IO.t
   (** [connect_uri ~ctx uri] starts a {i flow} on the given [uri]. The choice of
@@ -62,6 +65,7 @@ module type Net = sig
   (** [connect_endp ~ctx endp] starts a {i flow} to the given [endp]. [endp]
       describes address and protocol of the endpoint to connect to. *)
 
+  val connect_client : ctx:ctx -> client -> (IO.conn * IO.ic * IO.oc) IO.t
   val close_in : IO.ic -> unit
   val close_out : IO.oc -> unit
   val close : IO.ic -> IO.oc -> unit
@@ -76,6 +80,7 @@ end
 type call =
   ?headers:Http.Header.t ->
   ?body:Body.t ->
+  ?absolute_form:bool ->
   Http.Method.t ->
   Uri.t ->
   (Cohttp.Response.t * Body.t) Lwt.t
@@ -137,6 +142,9 @@ module type Connection = sig
         avoid using chunked encoding on the very first request.
       @param ctx See [Net.ctx]
       @param endp The remote address, port and protocol to connect to. *)
+
+  val create_tunnel :
+    ?finalise:(t -> unit Net.IO.t) -> ?ctx:Net.ctx -> t -> string -> t
 
   val connect :
     ?finalise:(t -> unit Net.IO.t) ->

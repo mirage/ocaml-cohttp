@@ -42,16 +42,26 @@ let version t = t.version
 let encoding t = Header.get_transfer_encoding t.headers
 
 let make ?(meth = `GET) ?(version = `HTTP_1_1) ?encoding
-    ?(headers = Header.init ()) uri =
-  let headers =
-    Header.add_unless_exists headers "host"
-      (match Uri.scheme uri with
-      | Some "httpunix" -> ""
-      | _ -> (
-          Uri.host_with_default ~default:"localhost" uri
-          ^
-          match Uri.port uri with Some p -> ":" ^ string_of_int p | None -> ""))
+    ?(headers = Header.init ()) ?(absolute_form = false) uri =
+  let port () =
+    match Uri.port uri with
+    | Some p -> ":" ^ string_of_int p
+    | None when meth = `CONNECT -> (
+        match Uri_services.tcp_port_of_uri uri with
+        | None -> failwith "A port is required for the CONNECT method."
+        | Some p -> ":" ^ string_of_int p)
+    | None -> ""
   in
+  let host =
+    match Header.get headers "host" with
+    | None -> (
+        match Uri.scheme uri with
+        | Some "httpunix" -> ""
+        | _ -> Uri.host_with_default ~default:"localhost" uri ^ port ())
+    | Some host -> if String.contains host ':' then host else host ^ port ()
+  in
+
+  let headers = Header.replace headers "host" host in
   let headers =
     Header.add_unless_exists headers "user-agent" Header.user_agent
   in
@@ -66,7 +76,9 @@ let make ?(meth = `GET) ?(version = `HTTP_1_1) ?encoding
         Header.add_authorization headers auth
     | _, _, _ -> headers
   in
-  let resource = Uri.path_and_query uri in
+  let resource =
+    if absolute_form then Uri.to_string uri else Uri.path_and_query uri
+  in
   let headers =
     match encoding with
     | None -> headers
@@ -80,7 +92,7 @@ let is_keep_alive t = Http.Request.is_keep_alive t
    adding content headers if appropriate.
    @param chunked Forces chunked encoding
 *)
-let make_for_client ?headers ?chunked ?body_length meth uri =
+let make_for_client ?headers ?chunked ?body_length ?absolute_form meth uri =
   let encoding =
     match (chunked, body_length) with
     | Some true, None -> Transfer.Chunked
@@ -89,7 +101,7 @@ let make_for_client ?headers ?chunked ?body_length meth uri =
     | Some true, Some _ ->
         invalid_arg "cannot set both ?chunked and ?body_length:"
   in
-  make ~meth ~encoding ?headers uri
+  make ~meth ~encoding ?headers ?absolute_form uri
 
 let pp_hum ppf r =
   Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib0.Sexp.to_string_hum)
@@ -181,7 +193,9 @@ module Make (IO : S.IO) = struct
     let fst_line =
       Printf.sprintf "%s %s %s\r\n"
         (Http.Method.to_string req.meth)
-        (if req.resource = "" then "/" else req.resource)
+        (if req.meth = `CONNECT then Option.get (Header.get req.headers "host")
+         else if req.resource = "" then "/"
+         else req.resource)
         (Http.Version.to_string req.version)
     in
     IO.write oc fst_line >>= fun _ -> Header_IO.write req.headers oc

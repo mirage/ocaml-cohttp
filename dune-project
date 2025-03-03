@@ -78,6 +78,8 @@
   (lwt
    (>= 5.4.0))
   sexplib0
+  (ipaddr
+   (>= 5.6.0))
   (ppx_sexp_conv
    (>= v0.13.0))
   logs
@@ -103,9 +105,9 @@
   (lwt
    (>= 3.0.0))
   (conduit-lwt
-   (>= 5.0.0))
+   (>= 7.1.0))
   (conduit-lwt-unix
-   (>= 5.0.0))
+   (>= 7.1.0))
   (fmt
    (>= 0.8.2))
   base-unix
@@ -171,7 +173,7 @@
   "An implementation of an HTTP client and server using the Async\nconcurrency library. See the `Cohttp_async` module for information\non how to use this.  The package also installs `cohttp-curl-async`\nand a `cohttp-server-async` binaries for quick uses of a HTTP(S)\nclient and server respectively.\n")
  (depends
   (ocaml
-   (>= 4.14))
+   (and (>= 4.14) (< 5.3.0)))
   (http
    (= :version))
   (cohttp
@@ -380,6 +382,7 @@
   logs
   uri
   (tls-eio (and :with-test (>= 1.0.0)))
+  (mirage-crypto-rng (and :with-test (< 1.2.0)))
   (mirage-crypto-rng-eio (and :with-test (>= 0.11.2)))
   (ca-certs (and :with-test  (>= "1.0.0")))
   fmt

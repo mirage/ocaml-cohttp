@@ -17,7 +17,8 @@
   sexplib0
   stringext
   uri
-  uri-sexp))
+  uri-sexp
+  uri.services))
 
 (ocamllex accept_lexer)
 
