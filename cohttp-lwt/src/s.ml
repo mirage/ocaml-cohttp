@@ -94,15 +94,14 @@ type call =
       module can be used to consume [response_body]. Use {!Body.drain_body} if
       you don't consume the body by other means.
 
-      Leaks are detected by the GC and logged as debug messages, these can be
-      enabled activating the debug logging. For example, this can be done as
-      follows in
-      [cohttp-lwt-unix]
+    Leaks are detected by the GC and logged as debug messages, these can be
+    enabled activating the debug logging. For example, this can be done as
+    follows in [cohttp-lwt-unix]
 
-      {[
-        Cohttp_lwt_unix.Debug.activate_debug ();
-        Logs.set_level (Some Logs.Warning)
-      ]}
+    {[
+      Cohttp_lwt_unix.Debug.activate_debug ();
+      Logs.set_level (Some Logs.Warning)
+    ]}
 
     @raise {!Connection.Retry}
       on recoverable errors like the remote endpoint closing the connection
@@ -199,9 +198,9 @@ module type Client = sig
         {!val:Connection_cache.Make_no_cache.create} is used to resolve uri and
         create a dedicated connection with [ctx].
 
-        In most cases you should use the more specific helper calls in the
-        interface rather than invoke this function directly. See {!head}, {!get}
-        and {!post} for some examples. *)
+      In most cases you should use the more specific helper calls in the
+      interface rather than invoke this function directly. See {!head}, {!get}
+      and {!post} for some examples. *)
   include
     Cohttp.Generic.Client.S
       with type 'a io = 'a Lwt.t

@@ -205,11 +205,11 @@ module Context = struct
     Int64.of_string_opt ("0x" ^ hex)
 
   let step_chunked :
-        'a.
-        t ->
-        f:(Body.Substring.t -> 'acc -> 'acc Lwt.t) ->
-        init:'acc ->
-        'acc option Lwt.t =
+      'a.
+      t ->
+      f:(Body.Substring.t -> 'acc -> 'acc Lwt.t) ->
+      init:'acc ->
+      'acc option Lwt.t =
    fun t ~f ~init ->
     Input_channel.read_line_opt t.ic >>= function
     | None -> Lwt.return_none (* TODO invalid input *)

@@ -116,9 +116,9 @@ let start_server docroot port index cert_file key_file verbose () =
   Server.create
     ~on_handler_error:
       (`Call
-        (fun addr exn ->
-          Logs.err (fun f -> f "Error from %s" (Socket.Address.to_string addr));
-          Logs.err (fun f -> f "%s" @@ Exn.to_string exn)))
+         (fun addr exn ->
+           Logs.err (fun f -> f "Error from %s" (Socket.Address.to_string addr));
+           Logs.err (fun f -> f "%s" @@ Exn.to_string exn)))
     ~mode
     (Tcp.Where_to_listen.of_port port)
     (handler ~info ~docroot ~index)
