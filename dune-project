@@ -382,8 +382,7 @@
   logs
   uri
   (tls-eio (and :with-test (>= 1.0.0)))
-  (mirage-crypto-rng (and :with-test (< 1.2.0)))
-  (mirage-crypto-rng-eio (and :with-test (>= 0.11.2)))
+  (mirage-crypto-rng (and :with-test (>= 1.2.0)))
   (ca-certs (and :with-test  (>= "1.0.0")))
   fmt
   ptime
