@@ -35,14 +35,13 @@ let server_noisy =
 
 let ts_noisy =
   Cohttp_lwt_unix_test.test_server_s ~port:10193 server_noisy (fun uri ->
-      let ctx = Lazy.force Cohttp_lwt_unix.Net.default_ctx in
       let empty_chunk () =
-        Client.get ~ctx uri >>= fun (_, body) ->
+        Client.get uri >>= fun (_, body) ->
         body |> Body.to_string >|= fun body ->
         assert_equal body (String.concat "" chunk_body)
       in
       let not_modified_has_no_body () =
-        Client.get ~ctx uri >>= fun (resp, body) ->
+        Client.get uri >>= fun (resp, body) ->
         assert_equal (Response.status resp) `Not_modified;
         let headers = Response.headers resp in
         assert_equal ~printer:Transfer.string_of_encoding
@@ -60,7 +59,7 @@ let ts_noisy =
             >>= fun oc ->
             Lwt_io.write_line oc "never read" >>= fun () ->
             Lwt_io.close oc >>= fun () ->
-            ( Client.post ~ctx uri ~body:(Body.of_string fname)
+            ( Client.post uri ~body:(Body.of_string fname)
             >>= fun (resp, body) ->
               assert_equal ~printer:Code.string_of_status (Response.status resp)
                 `Internal_server_error;
