@@ -13,3 +13,4 @@ build: [
   ]
 ]
 available: arch != "s390x"
+x-maintenance-intent: [ "(latest)" ]
