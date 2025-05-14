@@ -18,8 +18,8 @@ module Make (R : Resolver_mirage.S) (S : Conduit_mirage.S) = struct
   type endp = Conduit.endp
   type client
 
-  let tunnel = failwith "Unimplemented"
-  let connect_client = failwith "Unimplemented"
+  let tunnel _ _ = failwith "Unimplemented"
+  let connect_client ~ctx:_ _ = failwith "Unimplemented"
   let resolve ~ctx uri = R.resolve_uri ~uri ctx.resolver
 
   let connect_endp ~ctx endp =
