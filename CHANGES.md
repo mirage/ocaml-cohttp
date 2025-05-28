@@ -1,3 +1,9 @@
+## v6.1.1 (2025-05-28)
+
+- cohttp-mirage: make client usable again -- this fixes a regression introduced
+  by #1080 (@Firobe, review by @edwintorok, #1110)
+- rename main function on README example (@Unn4m3DD, #1097)
+
 ## v6.1.0 (2025-03-03)
 
 - cohttp-lwt-unix: Add http/https proxy support for client requests (@art-w @MisterDA, #1080)
