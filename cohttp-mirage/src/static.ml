@@ -18,7 +18,7 @@
  *)
 
 module Key = Mirage_kv.Key
-module Connection = Cohttp.Connection [@@warning "-3"]
+module Connection = Cohttp.Connection
 
 module HTTP (FS : Mirage_kv.RO) (S : Cohttp_lwt.S.Server) = struct
   open Lwt.Infix
