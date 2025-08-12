@@ -193,6 +193,8 @@ end
 module type Client = sig
   type ctx
 
+  module IO : IO with type 'a t = 'a Lwt.t
+
   (** @param ctx
         If provided, no connection cache is used, but
         {!val:Connection_cache.Make_no_cache.create} is used to resolve uri and

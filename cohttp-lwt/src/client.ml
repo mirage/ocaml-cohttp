@@ -3,6 +3,7 @@ module Header = Cohttp.Header
 
 module Make (Connection : S.Connection) = struct
   module Net = Connection.Net
+  module IO = Net.IO
   module No_cache = Connection_cache.Make_no_cache (Connection)
   module Request = Make.Request (Net.IO)
 
