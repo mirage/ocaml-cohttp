@@ -1,3 +1,7 @@
+let src = Logs.Src.create "cohttp.client" ~doc:"Cohttp Client module"
+
+module Log = (val Logs.src_log src)
+
 (** The [Client] module is a collection of convenience functions for
     constructing and processing requests. *)
 module type BASE = sig
@@ -75,7 +79,7 @@ module Make (Base : BASE) (IO : S.IO with type 'a t = 'a Base.io) = struct
   let call =
     map_context call (fun call ?headers ?body ?chunked meth uri ->
         let () =
-          Logs.info (fun m -> m "%a %a" Http.Method.pp meth Uri.pp uri)
+          Log.info (fun m -> m "%a %a" Http.Method.pp meth Uri.pp uri)
         in
         call ?headers ?body ?chunked meth uri)
 
