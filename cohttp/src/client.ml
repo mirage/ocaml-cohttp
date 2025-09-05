@@ -78,9 +78,7 @@ module Make (Base : BASE) (IO : S.IO with type 'a t = 'a Base.io) = struct
 
   let call =
     map_context call (fun call ?headers ?body ?chunked meth uri ->
-        let () =
-          Log.info (fun m -> m "%a %a" Http.Method.pp meth Uri.pp uri)
-        in
+        let () = Log.info (fun m -> m "%a %a" Http.Method.pp meth Uri.pp uri) in
         call ?headers ?body ?chunked meth uri)
 
   let delete =
