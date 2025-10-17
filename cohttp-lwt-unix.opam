@@ -32,7 +32,7 @@ depends: [
   "http" {= version}
   "cohttp" {= version}
   "cohttp-lwt" {= version}
-  "cmdliner" {>= "1.1.0"}
+  "cmdliner" {>= "2.0.0"}
   "lwt" {>= "3.0.0"}
   "conduit-lwt" {>= "7.1.0"}
   "conduit-lwt-unix" {>= "7.1.0"}
