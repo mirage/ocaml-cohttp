@@ -101,7 +101,7 @@
   (cohttp-lwt
    (= :version))
   (cmdliner
-   (>= 1.1.0))
+   (>= 2.0.0))
   (lwt
    (>= 3.0.0))
   (conduit-lwt
@@ -287,6 +287,10 @@
   stringext
   (lwt
    (>= 5.3.0))
+  (cmdliner
+   (and
+     :with-dev-setup
+     (>= 2.0.0)))
   (uri
    (and
     :with-test

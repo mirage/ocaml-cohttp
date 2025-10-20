@@ -58,11 +58,14 @@ let run_client level ofile uri meth =
 open Cmdliner
 
 let uri =
-  let loc : Uri.t Arg.conv =
-    let parse s =
-      try `Ok (Uri.of_string s) with Failure _ -> `Error "unable to parse URI"
+  let loc =
+    let parser s =
+      match Uri.of_string s with
+      | uri -> Ok uri
+      | exception Failure _ -> Error "unable to parse URI"
     in
-    (parse, fun ppf p -> Format.fprintf ppf "%s" (Uri.to_string p))
+    let pp ppf u = Format.fprintf ppf "%s" (Uri.to_string u) in
+    Cmdliner.Arg.Conv.make ~parser ~pp ~docv:"URI" ()
   in
   Arg.(
     required
