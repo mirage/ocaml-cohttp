@@ -288,7 +288,9 @@
   (lwt
    (>= 5.3.0))
   (cmdliner
-   (>= 2.0.0))
+   (and
+     :with-dev-setup
+     (>= 2.0.0)))
   (uri
    (and
     :with-test
