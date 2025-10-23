@@ -1,6 +1,6 @@
 open Lwt.Infix
 module Header = Cohttp.Header
-module Connection = Cohttp.Connection [@@warning "-3"]
+module Connection = Cohttp.Connection
 
 module Make (IO : S.IO) = struct
   module IO = IO
