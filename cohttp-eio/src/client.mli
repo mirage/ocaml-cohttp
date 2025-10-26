@@ -27,3 +27,6 @@ val make :
 val make_generic : (sw:Switch.t -> Uri.t -> _ Eio.Flow.two_way) -> t
 (** [make_generic connect] is an HTTP client that uses [connect] to get the
     connection to use for a given URI. *)
+
+val set_cache : S.cache_call -> unit
+(** Set a function used to process requests. Please see {!type:S.cache_call}. *)
