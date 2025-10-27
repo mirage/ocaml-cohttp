@@ -19,7 +19,6 @@ module Cache : sig
     ?parallel:int ->
     ?depth:int ->
     ?proxy:Uri.t ->
-    net:_ Eio.Net.t ->
     unit ->
     t
   (** Create a new connection cache

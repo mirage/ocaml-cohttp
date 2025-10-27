@@ -122,17 +122,28 @@ module No_cache = struct
 end
 
 module Cache = struct
-  module Tbl = struct
+  module Tbl (* TODO: Seal with interface *) = struct
     type t = {
       (* We only cache for [stream] sockets, because we only care for what we can connect to via [Eio.Net.connect] *)
       hashtbl : (Eio.Net.Sockaddr.stream, Connection.t) Hashtbl.t;
       mutex : Eio.Mutex.t;
     }
 
-    let get k t =
-      Eio.Mutex.use_ro t.mutex (fun () -> Hashtbl.find_opt k t.hashtbl)
+    let get k (t : t) =
+      Eio.Mutex.use_ro t.mutex (fun () -> Hashtbl.find_opt t.hashtbl k)
 
-    (* let create limit = *)
+    let add k v (t : t) =
+      Eio.Mutex.use_rw
+        (* TODO Should we protect or not? *)
+        ~protect:true t.mutex (fun () ->
+          (* TODO Should we `add`, expecting to add multiple connections to the same endpoint? *)
+          Hashtbl.replace t.hashtbl k v)
+      
+
+    let create () =
+      { hashtbl = Hashtbl.create 10 (* What is the right number here? *)
+      ; mutex = Eio.Mutex.create ()
+      }
   end
 
   type t = { cache : Tbl.t }
@@ -141,12 +152,21 @@ module Cache = struct
   (*   match lookup_in_map endpoint with *)
   (*   | Some c -> c *)
   (*   | None _ -> add_to_mapp endpoint *)
-  let _f (t : t) =
-    let _ = Tbl.get in
-    t.cache
 
-  let create = raise (Failure "TODO")
-  let call = raise (Failure "TODO")
+  let create ?keep:_TODO ?retry:_TODO ?parallel:_TODO ?depth:_TODO ?proxy:_TODO () =
+    { cache = Tbl.create () }
+
+  let call {cache} : S.cache_call =
+   fun t ~sw ?headers ?body ?(chunked = false) ?absolute_form meth uri ->
+   let addr, socket = t ~sw uri in
+   match Tbl.get addr cache with
+   | Some conn -> Connection.call ~headers ~body ~chunked ~absolute_form meth uri conn
+   | None -> 
+      let conn = Connection.create ~sw socket in
+      Tbl.add addr conn cache;
+      Connection.call ~headers ~body ~chunked ~absolute_form meth uri conn
+
+
 end
 
 module Proxy = struct
