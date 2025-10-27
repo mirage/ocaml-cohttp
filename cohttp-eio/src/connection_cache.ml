@@ -1,12 +1,7 @@
 (* TODO open Eio.Std *)
 open Utils
 
-module No_cache = struct
-  type t = unit
-
-  let call () : S.cache_call =
-   fun t ~sw ?headers ?body ?(chunked = false) ?absolute_form meth uri ->
-    let _addr, socket = t ~sw uri in
+let call_on_socket ~sw ~headers ~body ~chunked ~absolute_form meth uri socket =
     let body_length =
       if chunked then None
       else
@@ -48,6 +43,14 @@ module No_cache = struct
               flow_of_reader (fun () -> Io.Response.read_body_chunk reader)
             in
             (response, body))
+
+module No_cache = struct
+  type t = unit
+
+  let call () : S.cache_call =
+   fun t ~sw ?headers ?body ?(chunked = false) ?absolute_form meth uri ->
+    let _addr, socket = t ~sw uri in
+    call_on_socket ~sw ~headers ~body ~chunked ~absolute_form meth uri socket
 
   let create () = ()
 end
