@@ -51,15 +51,18 @@ let make ~https net : S.t =
     match Uri.scheme uri with
     | Some "httpunix" ->
         (* FIXME: while there is no standard, http+unix seems more widespread *)
-        (Eio.Net.connect ~sw net (unix_address uri) :> S.connection)
+       let addr = unix_address uri in
+       addr, (Eio.Net.connect ~sw net addr :> S.connection)
     | Some "http" ->
-        (Eio.Net.connect ~sw net (tcp_address ~net uri) :> S.connection)
+       let addr = tcp_address ~net uri in
+       addr, (Eio.Net.connect ~sw net addr :> S.connection)
     | Some "https" -> (
-        match https with
-        | Some wrap ->
-            wrap uri @@ Eio.Net.connect ~sw net (tcp_address ~net uri)
-        | None -> Fmt.failwith "HTTPS not enabled (for %a)" Uri.pp uri)
+      match https with
+      | Some wrap ->
+         let addr = tcp_address ~net uri in
+         addr, (wrap uri @@ Eio.Net.connect ~sw net addr)
+      | None -> Fmt.failwith "HTTPS not enabled (for %a)" Uri.pp uri)
     | x ->
-        Fmt.failwith "Unknown scheme %a"
-          Fmt.(option ~none:(any "None") Dump.string)
-          x
+       Fmt.failwith "Unknown scheme %a"
+         Fmt.(option ~none:(any "None") Dump.string)
+         x

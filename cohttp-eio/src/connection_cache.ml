@@ -6,7 +6,7 @@ module No_cache = struct
 
   let call () : S.cache_call =
    fun t ~sw ?headers ?body ?(chunked = false) ?absolute_form meth uri ->
-    let socket = t ~sw uri in
+    let _addr, socket = t ~sw uri in
     let body_length =
       if chunked then None
       else
@@ -54,12 +54,6 @@ end
 
 module Cache = struct
   module M = struct
-    (* We need to cache based on the Sockaddrs that are used here *)
-    (* https://github.com/tarides/ocaml-cohttp/blob/5465d00bfcee55fa077e0cd1f19964457bb88db6/cohttp-eio/src/client.ml#L53-L61 *)
-    (* which means we need to expose those to the cache. *)
-
-    (* cohttp-lwt-unix's caches based on [Conduit.endp].
-       The equivalent in Eio is Eio.Net.Sockaddr.stream. *)
     type 'v t = {
       (* We only cache for [stream] sockets, because we only care for what we can connect to via [Eio.Net.connect] *)
       hashtbl : (Eio.Net.Sockaddr.stream, 'v) Hashtbl.t;

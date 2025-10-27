@@ -1,8 +1,8 @@
 type connection = Eio.Flow.two_way_ty Eio.Std.r
-type t = sw:Eio.Switch.t -> Uri.t -> connection
+type t = sw:Eio.Switch.t -> Uri.t -> (Eio.Net.Sockaddr.stream * connection)
 
 type cache_call =
-  (sw:Eio.Switch.t -> Uri.t -> connection) ->
+  t ->
   sw:Eio.Switch.t ->
   ?headers:Http.Header.t ->
   ?body:Body.t ->
