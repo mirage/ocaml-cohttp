@@ -35,25 +35,26 @@ struct
     match no_proxy with
     | None -> Patterns []
     | Some no_proxy ->
-    if no_proxy = "*" then Wildcard
-    else
-      let patterns =
-        no_proxy
-        |> String.split_on_char ','
-        |> List.filter_map (fun pattern ->
-               if pattern = "" then None else Some (String.trim pattern))
-        |> List.map (fun pattern ->
-               match Ipaddr.of_string pattern with
-               | Ok addr -> Ipaddr_prefix (Ipaddr.Prefix.of_addr addr)
-               | Error _ -> (
-                   match Ipaddr.Prefix.of_string pattern with
-                   | Ok prefix -> Ipaddr_prefix prefix
-                   | Error _ -> Name (trim_dots ~first_leading:true pattern)))
-      in
-      Patterns patterns
+        if no_proxy = "*" then Wildcard
+        else
+          let patterns =
+            no_proxy
+            |> String.split_on_char ','
+            |> List.filter_map (fun pattern ->
+                   if pattern = "" then None else Some (String.trim pattern))
+            |> List.map (fun pattern ->
+                   match Ipaddr.of_string pattern with
+                   | Ok addr -> Ipaddr_prefix (Ipaddr.Prefix.of_addr addr)
+                   | Error _ -> (
+                       match Ipaddr.Prefix.of_string pattern with
+                       | Ok prefix -> Ipaddr_prefix prefix
+                       | Error _ -> Name (trim_dots ~first_leading:true pattern)
+                       ))
+          in
+          Patterns patterns
 
   let check_no_proxy uri pattern =
-    let host = (Uri.host_with_default ~default:"" uri) in
+    let host = Uri.host_with_default ~default:"" uri in
     match pattern with
     | Wildcard -> true
     | _ when String.length host = 0 -> true
@@ -83,4 +84,48 @@ struct
                            patternlen
                     else false)
               patterns)
+
+  type ('direct, 'tunnel) t = Direct of 'direct | Tunnel of 'tunnel
+
+  type ('direct, 'tunnel) servers = {
+    by_scheme : (string * ('direct, 'tunnel) t) list;
+    no_proxy_patterns : no_proxy_patterns;
+    default_tunnel : ('direct, 'tunnel) t option;
+    default_direct : ('direct, 'tunnel) t option;
+  }
+
+  (* Uri schemes that should be used with tunnelled proxies  *)
+  let is_tunnel_scheme = function "https" -> true | _ -> false
+
+  let make_servers ~no_proxy_patterns ~(default_proxy : Uri.t option)
+      ~(scheme_proxies : (string * Uri.t) list) ~(direct : Uri.t -> 'direct)
+      ~(tunnel : Uri.t -> 'tunnel) : ('direct, 'tunnel) servers =
+    let by_scheme =
+      List.map
+        (fun (scheme, uri) ->
+          let proxy =
+            if is_tunnel_scheme scheme then Tunnel (tunnel uri)
+            else Direct (direct uri)
+          in
+          (scheme, proxy))
+        scheme_proxies
+    in
+    let no_proxy_patterns = no_proxy_from_env_value no_proxy_patterns in
+    let default_tunnel, default_direct =
+      match default_proxy with
+      | None -> (None, None)
+      | Some uri -> (Some (Direct (direct uri)), Some (Tunnel (tunnel uri)))
+    in
+    { by_scheme; no_proxy_patterns; default_tunnel; default_direct }
+
+  let get (servers : ('direct, 'tunnel) servers) (uri : Uri.t) :
+      ('direct, 'tunnel) t option =
+    if check_no_proxy uri servers.no_proxy_patterns then None
+    else
+      let scheme = Option.value ~default:"" (Uri.scheme uri) in
+      match List.assoc scheme servers.by_scheme with
+      | proxy -> Some proxy
+      | exception Not_found ->
+          if is_tunnel_scheme scheme then servers.default_tunnel
+          else servers.default_direct
 end

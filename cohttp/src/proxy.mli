@@ -14,18 +14,40 @@ module Make : functor
      end
    end)
   -> sig
-  type no_proxy_patterns
-  (** Patterns matching URIs that should be excluded from proxying *)
+  type ('direct, 'tunnel) servers
+  (** A set of configured proxy servers *)
 
-  val no_proxy_from_env_value : string option -> no_proxy_patterns
-  (** [no_proxy_from_env_value no_proxy_config] are the [no_proxy_patterns]
-      parsed from the [no_proxy_config]. The [no_proxy_config] follows the
-      same conventions used by
-      {{:https://everything.curl.dev/usingcurl/proxies/env.html#no-proxy} curl}. *)
+  type ('direct, 'tunnel) t =
+    | Direct of 'direct
+    | Tunnel of 'tunnel  (** A proxied connection *)
 
-  val check_no_proxy : Uri.t -> no_proxy_patterns -> bool
-  (** [check_no_proxy uri patterns] is true when [uri] matches one of the
-      [patterns].*)
+  val make_servers :
+    no_proxy_patterns:string option ->
+    default_proxy:Uri.t option ->
+    scheme_proxies:(string * Uri.t) list ->
+    direct:(Uri.t -> 'direct) ->
+    tunnel:(Uri.t -> 'tunnel) ->
+    ('direct, 'tunnel) servers
+  (** Create a new configuration of proxy servers
 
+      @param no_proxy_patterns
+        Disable proxies for specific hosts, specified as curl's [NO_PROXY].
+      @see <https://everything.curl.dev/usingcurl/proxies/env.html#no-proxy>
+
+      @param default_proxy
+        The default proxy to use. Proxy for specific schemes have precedence
+        over this.
+
+      @param scheme_proxies
+        A mapping of (remote) scheme's to the desired proxy URI to user for
+        calls with that scheme.
+
+      @param direct
+        A function to create ['direct] connections for the given proxy uri.
+
+      @param tunnel
+        A function to create ['tunnel] connections for the given proxy uri. *)
+
+  val get : ('direct, 'tunnel) servers -> Uri.t -> ('direct, 'tunnel) t option
 end
 [@@warning "-unused-functor-parameter"]

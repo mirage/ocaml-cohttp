@@ -320,22 +320,15 @@ end = struct
     request tunnel.remote ?headers ?body ?absolute_form meth uri self.retry
 end
 
-let tunnel_schemes = [ "https" ]
-
 module Proxy = Cohttp.Proxy.Make (Ipaddr)
 
 module Make_proxy (Connection : S.Connection) (Sleep : S.Sleep) = struct
   module Connection_cache = Make (Connection) (Sleep)
   module Connection_tunnel = Make_tunnel (Connection) (Sleep)
 
-  type proxy = Direct of Connection_cache.t | Tunnel of Connection_tunnel.t
-
   type t = {
-    proxies : (string * proxy) list;
-    direct : proxy option;
-    tunnel : proxy option;
+    proxies : (Connection_cache.t, Connection_tunnel.t) Proxy.servers;
     no_proxy : Connection_cache.t;
-    no_proxy_patterns : Proxy.no_proxy_patterns;
   }
 
   let create ?ctx ?keep ?retry ?parallel ?depth ?(scheme_proxy = []) ?all_proxy
@@ -348,38 +341,15 @@ module Make_proxy (Connection : S.Connection) (Sleep : S.Sleep) = struct
       Connection_tunnel.create ?ctx ?keep ?retry ?parallel ?depth ?proxy_headers
         proxy_uri ()
     in
-    let no_proxy_patterns = Proxy.no_proxy_from_env_value no_proxy in
-    let no_proxy = create_default () in
     let proxies =
-      List.map
-        (fun (scheme, uri) ->
-          let proxy =
-            if List.mem scheme tunnel_schemes then Tunnel (create_tunnel uri)
-            else Direct (create_direct uri)
-          in
-          (scheme, proxy))
-        scheme_proxy
+      Proxy.make_servers ~no_proxy_patterns:no_proxy ~default_proxy:all_proxy
+        ~scheme_proxies:scheme_proxy ~direct:create_direct ~tunnel:create_tunnel
     in
-    let direct, tunnel =
-      match all_proxy with
-      | Some uri ->
-          (Some (Direct (create_direct uri)), Some (Tunnel (create_tunnel uri)))
-      | None -> (None, None)
-    in
-    { no_proxy; direct; tunnel; proxies; no_proxy_patterns }
+    let no_proxy = create_default () in
+    { no_proxy; proxies }
 
   let call self ?headers ?body ?absolute_form meth uri =
-    let proxy =
-      if Proxy.check_no_proxy uri self.no_proxy_patterns
-      then None
-        (* Connection_cache.call self.no_proxy ?headers ?body ?absolute_form meth uri *)
-      else
-        let scheme = Option.value ~default:"" (Uri.scheme uri) in
-        match List.assoc scheme self.proxies with
-        | proxy -> Some proxy
-        | exception Not_found ->
-            if List.mem scheme tunnel_schemes then self.tunnel else self.direct
-    in
+    let proxy = Proxy.get self.proxies uri in
     match proxy with
     | None ->
         Connection_cache.call self.no_proxy ?headers ?body ?absolute_form meth
