@@ -320,73 +320,9 @@ end = struct
     request tunnel.remote ?headers ?body ?absolute_form meth uri self.retry
 end
 
-type no_proxy_pattern = Name of string | Ipaddr_prefix of Ipaddr.Prefix.t
-type no_proxy = Wildcard | Patterns of no_proxy_pattern list
-
-let trim_dots ~first_leading s =
-  let len = String.length s in
-  let i = ref 0 in
-  if first_leading && !i < len && String.unsafe_get s !i = '.' then incr i;
-  let j = ref (len - 1) in
-  while !j >= !i && String.unsafe_get s !j = '.' do
-    decr j
-  done;
-  if !j >= !i then String.sub s !i (!j - !i + 1) else ""
-
-let strncasecompare a b n =
-  let a = String.(sub a 0 (min (length a) n) |> lowercase_ascii)
-  and b = String.(sub b 0 (min (length b) n) |> lowercase_ascii) in
-  String.compare a b = 0
-
-let no_proxy_from_env no_proxy =
-  if no_proxy = "*" then Wildcard
-  else
-    let patterns =
-      no_proxy
-      |> String.split_on_char ','
-      |> List.filter_map (fun pattern ->
-             if pattern = "" then None else Some (String.trim pattern))
-      |> List.map (fun pattern ->
-             match Ipaddr.of_string pattern with
-             | Ok addr -> Ipaddr_prefix (Ipaddr.Prefix.of_addr addr)
-             | Error _ -> (
-                 match Ipaddr.Prefix.of_string pattern with
-                 | Ok prefix -> Ipaddr_prefix prefix
-                 | Error _ -> Name (trim_dots ~first_leading:true pattern)))
-    in
-    Patterns patterns
-
-let check_no_proxy_patterns host = function
-  | Wildcard -> true
-  | _ when String.length host = 0 -> true
-  | Patterns patterns -> (
-      match Ipaddr.of_string host with
-      | Ok hostip ->
-          List.exists
-            (function
-              | Name _ -> false
-              | Ipaddr_prefix network -> Ipaddr.Prefix.mem hostip network)
-            patterns
-      | Error _ ->
-          let name = trim_dots ~first_leading:false host in
-          List.exists
-            (function
-              | Ipaddr_prefix _ -> false
-              | Name pattern ->
-                  let patternlen = String.length pattern
-                  and namelen = String.length name in
-                  if patternlen = namelen then
-                    strncasecompare pattern name namelen
-                  else if patternlen < namelen then
-                    name.[namelen - patternlen - 1] = '.'
-                    && strncasecompare pattern
-                         (String.sub name (namelen - patternlen)
-                            (patternlen - namelen - patternlen))
-                         patternlen
-                  else false)
-            patterns)
-
 let tunnel_schemes = [ "https" ]
+
+module Proxy = Cohttp.Proxy.Make (Ipaddr)
 
 module Make_proxy (Connection : S.Connection) (Sleep : S.Sleep) = struct
   module Connection_cache = Make (Connection) (Sleep)
@@ -399,7 +335,7 @@ module Make_proxy (Connection : S.Connection) (Sleep : S.Sleep) = struct
     direct : proxy option;
     tunnel : proxy option;
     no_proxy : Connection_cache.t;
-    no_proxy_patterns : no_proxy;
+    no_proxy_patterns : Proxy.no_proxy;
   }
 
   let create ?ctx ?keep ?retry ?parallel ?depth ?(scheme_proxy = []) ?all_proxy
@@ -412,10 +348,10 @@ module Make_proxy (Connection : S.Connection) (Sleep : S.Sleep) = struct
       Connection_tunnel.create ?ctx ?keep ?retry ?parallel ?depth ?proxy_headers
         proxy_uri ()
     in
-    let no_proxy_patterns =
+    let no_proxy_patterns : Proxy.no_proxy =
       match no_proxy with
-      | None -> Patterns []
-      | Some no_proxy -> no_proxy_from_env no_proxy
+      | None -> Proxy.Patterns []
+      | Some no_proxy -> Proxy.no_proxy_from_env no_proxy
     in
     let no_proxy = create_default () in
     let proxies =
@@ -439,7 +375,7 @@ module Make_proxy (Connection : S.Connection) (Sleep : S.Sleep) = struct
   let call self ?headers ?body ?absolute_form meth uri =
     let proxy =
       if
-        check_no_proxy_patterns
+        Proxy.check_no_proxy_patterns
           (Uri.host_with_default ~default:"" uri)
           self.no_proxy_patterns
       then None
