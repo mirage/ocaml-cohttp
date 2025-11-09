@@ -32,7 +32,7 @@ module Make : functor
 
       @param no_proxy_patterns
         Disable proxies for specific hosts, specified as curl's [NO_PROXY].
-      @see <https://everything.curl.dev/usingcurl/proxies/env.html#no-proxy>
+      @see <https://github.com/curl/curl/blob/master/docs/MANUAL.md#environment-variables>
 
       @param default_proxy
         The default proxy to use. Proxy for specific schemes have precedence

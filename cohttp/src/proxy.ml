@@ -16,6 +16,11 @@ struct
   type pattern = Name of string | Ipaddr_prefix of Ipaddr.Prefix.t
   type no_proxy_patterns = Wildcard | Patterns of pattern list
 
+  (* Used to ignore trailing dots in hostnames, as per
+     https://github.com/curl/curl/blob/49ef2f8d1ef78e702c73f5d72242301cc2a0157e/lib/noproxy.c#L170-L172
+
+     When [first_leading = true], it also trims the first leading dot, as per
+     https://github.com/curl/curl/blob/49ef2f8d1ef78e702c73f5d72242301cc2a0157e/lib/noproxy.c#L198-L201 *)
   let trim_dots ~first_leading s =
     let len = String.length s in
     let i = ref 0 in
@@ -75,13 +80,20 @@ struct
                     let patternlen = String.length pattern
                     and namelen = String.length name in
                     if patternlen = namelen then
+                      (* An exact (case-insensitive) match *)
                       strncasecompare pattern name namelen
                     else if patternlen < namelen then
-                      name.[namelen - patternlen - 1] = '.'
-                      && strncasecompare pattern
-                           (String.sub name (namelen - patternlen)
-                              (patternlen - namelen - patternlen))
-                           patternlen
+                      (* pattern is a (case-insensitive) suffix of the host,
+                         starting after any subdomain prefix.
+
+                         E.g., [example.com] is a suffix of [www.example.com] and
+                         [home.example.com], but not of [nonexample.com]. *)
+                      let match_start = namelen - patternlen in
+                      let host_suffix =
+                        String.sub name match_start patternlen
+                      in
+                      name.[match_start - 1] = '.'
+                      && strncasecompare pattern host_suffix patternlen
                     else false)
               patterns)
 
