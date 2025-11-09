@@ -13,8 +13,8 @@ module Make (Ipaddr : sig
   end
 end) =
 struct
-  type no_proxy_pattern = Name of string | Ipaddr_prefix of Ipaddr.Prefix.t
-  type no_proxy = Wildcard | Patterns of no_proxy_pattern list
+  type pattern = Name of string | Ipaddr_prefix of Ipaddr.Prefix.t
+  type no_proxy_patterns = Wildcard | Patterns of pattern list
 
   let trim_dots ~first_leading s =
     let len = String.length s in
@@ -31,7 +31,10 @@ struct
     and b = String.(sub b 0 (min (length b) n) |> lowercase_ascii) in
     String.compare a b = 0
 
-  let no_proxy_from_env no_proxy =
+  let no_proxy_from_env_value no_proxy =
+    match no_proxy with
+    | None -> Patterns []
+    | Some no_proxy ->
     if no_proxy = "*" then Wildcard
     else
       let patterns =
@@ -49,7 +52,9 @@ struct
       in
       Patterns patterns
 
-  let check_no_proxy_patterns host = function
+  let check_no_proxy uri pattern =
+    let host = (Uri.host_with_default ~default:"" uri) in
+    match pattern with
     | Wildcard -> true
     | _ when String.length host = 0 -> true
     | Patterns patterns -> (

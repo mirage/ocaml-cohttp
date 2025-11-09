@@ -335,7 +335,7 @@ module Make_proxy (Connection : S.Connection) (Sleep : S.Sleep) = struct
     direct : proxy option;
     tunnel : proxy option;
     no_proxy : Connection_cache.t;
-    no_proxy_patterns : Proxy.no_proxy;
+    no_proxy_patterns : Proxy.no_proxy_patterns;
   }
 
   let create ?ctx ?keep ?retry ?parallel ?depth ?(scheme_proxy = []) ?all_proxy
@@ -348,11 +348,7 @@ module Make_proxy (Connection : S.Connection) (Sleep : S.Sleep) = struct
       Connection_tunnel.create ?ctx ?keep ?retry ?parallel ?depth ?proxy_headers
         proxy_uri ()
     in
-    let no_proxy_patterns : Proxy.no_proxy =
-      match no_proxy with
-      | None -> Proxy.Patterns []
-      | Some no_proxy -> Proxy.no_proxy_from_env no_proxy
-    in
+    let no_proxy_patterns = Proxy.no_proxy_from_env_value no_proxy in
     let no_proxy = create_default () in
     let proxies =
       List.map
@@ -374,10 +370,7 @@ module Make_proxy (Connection : S.Connection) (Sleep : S.Sleep) = struct
 
   let call self ?headers ?body ?absolute_form meth uri =
     let proxy =
-      if
-        Proxy.check_no_proxy_patterns
-          (Uri.host_with_default ~default:"" uri)
-          self.no_proxy_patterns
+      if Proxy.check_no_proxy uri self.no_proxy_patterns
       then None
         (* Connection_cache.call self.no_proxy ?headers ?body ?absolute_form meth uri *)
       else
