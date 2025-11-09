@@ -1,4 +1,4 @@
-module Proxy = Cohttp.Proxy.Make (Ipaddr)
+module Proxy = Cohttp.Proxy.Forward.Make (Ipaddr)
 
 let http_proxy = "http://proxy.com"
 let https_proxy = "http://https-proxy.com"
