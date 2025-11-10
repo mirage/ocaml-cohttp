@@ -36,7 +36,7 @@ let select_https_proxy () =
 
 let select_default_proxy () =
   let proxies = proxies ~no_proxy_patterns:None in
-  let expected = Some (Proxy.Tunnel fallback_proxy) in
+  let expected = Some (Proxy.Direct fallback_proxy) in
   let actual = Proxy.get proxies @@ Uri.of_string "ftp://example.com" in
   Alcotest.(check' @@ option proxy)
     ~msg:"should select fallback proxy for unconfigured scheme" ~actual

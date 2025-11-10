@@ -127,7 +127,7 @@ module Forward = struct
       let default_tunnel, default_direct =
         match default_proxy with
         | None -> (None, None)
-        | Some uri -> (Some (Direct (direct uri)), Some (Tunnel (tunnel uri)))
+        | Some uri -> (Some (Tunnel (tunnel uri)), Some (Direct (direct uri)))
       in
       { by_scheme; no_proxy_patterns; default_tunnel; default_direct }
 
