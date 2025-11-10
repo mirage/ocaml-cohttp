@@ -17,12 +17,12 @@ let https ~authenticator =
     | Error (`Msg msg) -> failwith ("tls configuration problem: " ^ msg)
     | Ok tls_config -> tls_config
   in
-  fun uri raw ->
+  fun uri (Client.Conn raw) ->
     let host =
       Uri.host uri
       |> Option.map (fun x -> Domain_name.(host_exn (of_string_exn x)))
     in
-    Tls_eio.client_of_flow ?host tls_config raw
+    Client.Conn (Tls_eio.client_of_flow ?host tls_config raw)
 
 let () =
   Eio_main.run @@ fun env ->
