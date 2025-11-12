@@ -1,12 +1,8 @@
 open Eio.Std
 open Utils
-module Proxy = Cohttp.Proxy.Forward.Make (Ipaddr)
+module Proxy = Cohttp.Proxy.Forward
 
-type connection =
-  | Conn :
-      ([> Eio.Flow.two_way_ty | Eio.Resource.close_ty ] as 'a) r
-      -> connection
-
+type connection = [ Eio.Flow.two_way_ty | Eio.Resource.close_ty ] r
 type t = sw:Switch.t -> Uri.t -> connection
 type proxies = (Uri.t, Uri.t) Proxy.servers
 
@@ -30,9 +26,7 @@ let get_proxy uri =
       | Some (Proxy.Direct _) as proxy -> proxy
       | Some (Proxy.Tunnel p) -> Some (Proxy.Tunnel (headers, p)))
 
-let call_on_socket ~sw ?headers ?body ?(chunked = false) meth uri
-    (socket : connection) =
-  traceln "sending %a to %a" Http.Method.pp meth Uri.pp uri;
+let call_on_socket ~sw ?headers ?body ?(chunked = false) meth uri socket =
   let body_length =
     if chunked then None
     else
@@ -51,7 +45,6 @@ let call_on_socket ~sw ?headers ?body ?(chunked = false) meth uri
       ~chunked:(Option.is_none body_length)
       ?body_length meth uri
   in
-  let (Conn socket) = socket in
   Eio.Buf_write.with_flow socket @@ fun output ->
   let () =
     Eio.Fiber.fork ~sw @@ fun () ->
@@ -116,18 +109,18 @@ let scheme_conn_of_uri ~sw net uri =
   match Uri.scheme uri with
   | Some "httpunix" ->
       (* FIXME: while there is no standard, http+unix seems more widespread *)
-      `Plain (Conn (Eio.Net.connect ~sw net (unix_address uri)))
+      `Plain (Eio.Net.connect ~sw net (unix_address uri) :> connection)
   | Some "http" ->
-      `Plain (Conn (Eio.Net.connect ~sw net (tcp_address ~net uri)))
+      `Plain (Eio.Net.connect ~sw net (tcp_address ~net uri) :> connection)
   | Some "https" ->
-      `Https (Conn (Eio.Net.connect ~sw net (tcp_address ~net uri)))
+      `Https (Eio.Net.connect ~sw net (tcp_address ~net uri) :> connection)
   | x ->
       Fmt.failwith "Unknown scheme %a"
         Fmt.(option ~none:(any "None") Dump.string)
         x
 
 (* Create a tunnel to the proxy at [proxy_uri] *)
-let make_tunnel ~sw ~headers proxy_uri (socket : connection) =
+let make_tunnel ~sw ~headers proxy_uri socket =
   let resp, _ = call_on_socket ~sw ?headers `CONNECT proxy_uri socket in
   match Http.Response.status resp with
   | #Http.Status.success -> Ok ()
@@ -137,38 +130,29 @@ let make_tunnel ~sw ~headers proxy_uri (socket : connection) =
 let apply_https https uri conn =
   match https with
   | None -> Fmt.failwith "HTTPS not enabled (for %a)" Uri.pp uri
-  | Some wrap -> wrap uri conn
+  | Some wrap -> (wrap uri conn :> connection)
 
 let make ~https net : t =
-  let net = (net :> [ `Generic ] Eio.Net.ty r) in
-  (* TODO: To get the tls-over-tls typing correctly, I have had to wrap the
-     flows (over sockets) in an existential type. But this breaks the API. 
-     I'm hoping to find a better way to do this! *)
-  (* let https = *)
-  (*   (https *)
-  (*     :> (Uri.t -> [ `Generic ] Eio.Net.stream_socket_ty r -> connection) option) *)
-  (* in *)
-  fun ~sw uri ->
-    let scheme_conn =
-      match get_proxy uri with
-      | None -> scheme_conn_of_uri ~sw net uri
-      | Some (Proxy.Direct proxy_uri) -> scheme_conn_of_uri ~sw net proxy_uri
-      | Some (Proxy.Tunnel (proxy_headers, proxy_uri)) -> (
-          traceln "Connecting with tunnel to %a" Uri.pp proxy_uri;
-          let conn =
-            match scheme_conn_of_uri ~sw net proxy_uri with
-            | `Plain socket -> socket
-            | `Https socket -> apply_https https uri socket
-          in
-          match make_tunnel ~sw ~headers:proxy_headers uri conn with
-          | Ok () ->
-              (* we know its an https connection, because we have selected a tunnelling proxy *)
-              `Https conn
-          | Error status ->
-              Fmt.failwith
-                "Proxy could not form tunnel to %a for host %a; status %a"
-                Uri.pp proxy_uri Uri.pp uri Http.Status.pp status)
-    in
-    match scheme_conn with
-    | `Plain conn -> conn
-    | `Https conn -> apply_https https uri conn
+ fun ~sw uri ->
+  let scheme_conn =
+    match get_proxy uri with
+    | None -> scheme_conn_of_uri ~sw net uri
+    | Some (Proxy.Direct proxy_uri) -> scheme_conn_of_uri ~sw net proxy_uri
+    | Some (Proxy.Tunnel (proxy_headers, proxy_uri)) -> (
+        let conn =
+          match scheme_conn_of_uri ~sw net proxy_uri with
+          | `Plain socket -> socket
+          | `Https socket -> apply_https https uri socket
+        in
+        match make_tunnel ~sw ~headers:proxy_headers uri conn with
+        | Ok () ->
+            (* we know its an https connection, because we have selected a tunnelling proxy *)
+            `Https conn
+        | Error status ->
+            Fmt.failwith
+              "Proxy could not form tunnel to %a for host %a; status %a" Uri.pp
+              proxy_uri Uri.pp uri Http.Status.pp status)
+  in
+  match scheme_conn with
+  | `Plain conn -> conn
+  | `Https conn -> apply_https https uri conn

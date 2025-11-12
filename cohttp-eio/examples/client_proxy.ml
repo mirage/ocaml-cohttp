@@ -17,13 +17,12 @@ let https ~authenticator =
     | Error (`Msg msg) -> failwith ("tls configuration problem: " ^ msg)
     | Ok tls_config -> tls_config
   in
-  fun uri raw ->
-    let (Client.Conn socket) = raw in
+  fun uri socket ->
     let host =
       Uri.host uri
       |> Option.map (fun x -> Domain_name.(host_exn (of_string_exn x)))
     in
-    Client.Conn (Tls_eio.client_of_flow ?host tls_config socket)
+    Tls_eio.client_of_flow ?host tls_config socket
 
 let of_proxy ~scheme maybe_proxy =
   match maybe_proxy with None -> [] | Some proxy -> [ (scheme, proxy) ]
