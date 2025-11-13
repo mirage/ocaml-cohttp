@@ -320,7 +320,7 @@ end = struct
     request tunnel.remote ?headers ?body ?absolute_form meth uri self.retry
 end
 
-module Proxy = Cohttp.Proxy.Forward.Make (Ipaddr)
+module Proxy = Cohttp.Proxy.Forward
 
 module Make_proxy (Connection : S.Connection) (Sleep : S.Sleep) = struct
   module Connection_cache = Make (Connection) (Sleep)
