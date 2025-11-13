@@ -46,42 +46,43 @@ module Forward = struct
 
   let check_no_proxy uri pattern =
     let host = Uri.host_with_default ~default:"" uri in
-    match pattern with
-    | Wildcard -> true
-    | _ when String.length host = 0 -> true
-    | Patterns patterns -> (
-        match Ipaddr.of_string host with
-        | Ok hostip ->
-            List.exists
-              (function
-                | Name _ -> false
-                | Ipaddr_prefix network -> Ipaddr.Prefix.mem hostip network)
-              patterns
-        | Error _ ->
-            let name = trim_dots ~first_leading:false host in
-            List.exists
-              (function
-                | Ipaddr_prefix _ -> false
-                | Name pattern ->
-                    let patternlen = String.length pattern
-                    and namelen = String.length name in
-                    if patternlen = namelen then
-                      (* An exact (case-insensitive) match *)
-                      strncasecompare pattern name namelen
-                    else if patternlen < namelen then
-                      (* pattern is a (case-insensitive) suffix of the host,
+    if String.length host = 0 then true
+    else
+      match pattern with
+      | Wildcard -> true
+      | Patterns patterns -> (
+          match Ipaddr.of_string host with
+          | Ok hostip ->
+              List.exists
+                (function
+                  | Name _ -> false
+                  | Ipaddr_prefix network -> Ipaddr.Prefix.mem hostip network)
+                patterns
+          | Error _ ->
+              let name = trim_dots ~first_leading:false host in
+              List.exists
+                (function
+                  | Ipaddr_prefix _ -> false
+                  | Name pattern ->
+                      let patternlen = String.length pattern
+                      and namelen = String.length name in
+                      if patternlen = namelen then
+                        (* An exact (case-insensitive) match *)
+                        strncasecompare pattern name namelen
+                      else if patternlen < namelen then
+                        (* pattern is a (case-insensitive) suffix of the host,
                      starting after any subdomain prefix.
 
                      E.g., [example.com] is a suffix of [www.example.com] and
                      [home.example.com], but not of [nonexample.com]. *)
-                      let match_start = namelen - patternlen in
-                      let host_suffix =
-                        String.sub name match_start patternlen
-                      in
-                      name.[match_start - 1] = '.'
-                      && strncasecompare pattern host_suffix patternlen
-                    else false)
-              patterns)
+                        let match_start = namelen - patternlen in
+                        let host_suffix =
+                          String.sub name match_start patternlen
+                        in
+                        name.[match_start - 1] = '.'
+                        && strncasecompare pattern host_suffix patternlen
+                      else false)
+                patterns)
 
   type ('direct, 'tunnel) t = Direct of 'direct | Tunnel of 'tunnel
 
