@@ -7,6 +7,7 @@ module Code = Code
 module Cookie = Cookie
 module Header = Header
 module Link = Link
+module Proxy = Proxy
 module Request = Request
 module Response = Response
 module S = S

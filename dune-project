@@ -50,6 +50,7 @@
   (base64
    (>= 3.1.0))
   (fmt :with-test)
+  (ipaddr (>= 5.6.0))
   (alcotest (and :with-test (>= 1.7.0)))))
 
 (package

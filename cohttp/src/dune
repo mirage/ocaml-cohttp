@@ -11,6 +11,7 @@
   (pps ppx_sexp_conv))
  (libraries
   base64
+  ipaddr
   logs
   (re_export http)
   re

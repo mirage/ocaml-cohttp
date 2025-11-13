@@ -57,3 +57,15 @@
  (package cohttp)
  (action
   (run ./test_path.exe)))
+
+(executable
+ (name test_proxy)
+ (modules test_proxy)
+ (forbidden_libraries base)
+ (libraries cohttp alcotest fmt ipaddr))
+
+(rule
+ (alias runtest)
+ (package cohttp)
+ (action
+  (run ./test_proxy.exe)))
