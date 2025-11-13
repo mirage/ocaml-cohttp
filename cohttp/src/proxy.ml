@@ -20,7 +20,7 @@ module Forward = struct
   let strncasecompare a b n =
     let a = String.(sub a 0 (min (length a) n) |> lowercase_ascii)
     and b = String.(sub b 0 (min (length b) n) |> lowercase_ascii) in
-    String.compare a b = 0
+    String.equal a b
 
   let no_proxy_from_env_value no_proxy =
     match no_proxy with
