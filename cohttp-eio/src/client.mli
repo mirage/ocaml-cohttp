@@ -38,8 +38,8 @@ val set_proxies :
   ?proxy_headers:Http.Header.t ->
   unit ->
   unit
-(** [set_proxies ~default_proxy ()] configures the proxy to use for any
-    subsequent clients created via {!val:make}.
+(** [set_proxies ~default_proxy ()] configures the proxies used by clients
+    created via {!val:make}.
 
     See {!val:Cohttp.Proxy.Forward.make_servers} for the meaning of the
     parameters. *)

@@ -24,14 +24,21 @@ let https ~authenticator =
     in
     Tls_eio.client_of_flow ?host tls_config socket
 
-let of_proxy ~scheme maybe_proxy =
-  match maybe_proxy with None -> [] | Some proxy -> [ (scheme, proxy) ]
+let get_request_exn ~sw client url =
+  let resp, body = Client.get ~sw client url in
+  match resp.status with
+  | `OK ->
+      Eio.traceln "%s"
+      @@ Eio.Buf_read.(parse_exn take_all) body ~max_size:max_int
+  | otherwise -> Fmt.epr "Unexpected HTTP status: %a\n" Http.Status.pp otherwise
 
 let run_client url cacert all_proxy no_proxy http_proxy https_proxy proxy_auth =
   let scheme_proxy =
-    []
-    @ of_proxy ~scheme:"http" http_proxy
-    @ of_proxy ~scheme:"https" https_proxy
+    List.filter_map Fun.id
+      [
+        Option.map (fun p -> ("http", p)) http_proxy;
+        Option.map (fun p -> ("https", p)) https_proxy;
+      ]
   in
   let proxy_headers =
     Option.map
@@ -40,6 +47,7 @@ let run_client url cacert all_proxy no_proxy http_proxy https_proxy proxy_auth =
           (Cohttp.Auth.string_of_credential credential))
       proxy_auth
   in
+
   Mirage_crypto_rng_unix.use_default ();
 
   Eio_main.run @@ fun env ->
@@ -49,6 +57,7 @@ let run_client url cacert all_proxy no_proxy http_proxy https_proxy proxy_auth =
     match cacert with
     | None -> authenticator
     | Some pem ->
+        (* Load a custom cacert from a file *)
         let fs = Eio.Stdenv.fs env in
         X509_eio.authenticator (`Ca_file Eio.Path.(fs / pem))
   in
@@ -57,20 +66,39 @@ let run_client url cacert all_proxy no_proxy http_proxy https_proxy proxy_auth =
     ?no_proxy_patterns:no_proxy ~scheme_proxies:scheme_proxy ();
 
   let client = Client.make ~https:(Some (https ~authenticator)) net in
-  Eio.Switch.run @@ fun sw ->
-  let resp, body = Client.get ~sw client url in
-  let () =
-    match resp.status with
-    | `OK ->
-        print_string @@ Eio.Buf_read.(parse_exn take_all) body ~max_size:max_int
-    | otherwise ->
-        Fmt.epr "Unexpected HTTP status: %a\n" Http.Status.pp otherwise
-  in
-  let resp, body = Client.get ~sw client url in
-  match resp.status with
-  | `OK ->
-      print_string @@ Eio.Buf_read.(parse_exn take_all) body ~max_size:max_int
-  | otherwise -> Fmt.epr "Unexpected HTTP status: %a\n" Http.Status.pp otherwise
+
+  Eio.traceln ">>> Make calls in sequence";
+  Eio.Switch.run (fun sw ->
+      get_request_exn ~sw client url;
+      get_request_exn ~sw client url;
+      get_request_exn ~sw client url);
+
+  Eio.traceln ">>> Make calls concurrently";
+  Eio.Switch.run (fun sw ->
+      for _ = 0 to 5 do
+        Eio.Fiber.fork ~sw (fun () -> get_request_exn ~sw client url)
+      done);
+
+  Eio.traceln ">>> Make calls in parallel";
+  let dm = Eio.Stdenv.domain_mgr env in
+  Eio.Fiber.all
+    [
+      (fun () ->
+        Eio.Domain_manager.run dm (fun () ->
+            Eio.Switch.run (fun sw -> get_request_exn ~sw client url)));
+      (fun () ->
+        Eio.Domain_manager.run dm (fun () ->
+            Eio.Switch.run (fun sw -> get_request_exn ~sw client url)));
+      (fun () ->
+        Eio.Domain_manager.run dm (fun () ->
+            Eio.Switch.run (fun sw -> get_request_exn ~sw client url)));
+      (fun () ->
+        Eio.Domain_manager.run dm (fun () ->
+            Eio.Switch.run (fun sw -> get_request_exn ~sw client url)));
+      (fun () ->
+        Eio.Domain_manager.run dm (fun () ->
+            Eio.Switch.run (fun sw -> get_request_exn ~sw client url)));
+    ]
 
 (* CLI Interface *)
 
