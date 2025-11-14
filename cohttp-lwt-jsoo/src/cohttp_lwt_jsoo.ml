@@ -48,7 +48,16 @@ let string_of_uint8array u8a offset len =
   String.init len (fun i -> Char.chr (Typed_array.unsafe_get u8a (offset + i)))
 
 module String_io = Cohttp.Private.String_io
-module IO = Cohttp_lwt.Private.String_io
+
+module IO = struct
+  include Cohttp_lwt.Private.String_io
+
+  type error = |
+
+  let catch f = Lwt.map (fun v -> Result.Ok v) @@ f ()
+  let pp_error _ (e : error) = match e with _ -> .
+end
+
 module Header_io = Cohttp.Private.Header_io.Make (IO)
 
 module Body_builder (P : Params) = struct
@@ -141,6 +150,7 @@ module Make_api (X : sig
     (Response.t * Cohttp_lwt.Body.t) Lwt.t
 end) =
 struct
+  module IO = IO
   module Request = X.Request
   module Response = X.Response
 
