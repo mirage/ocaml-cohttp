@@ -68,18 +68,52 @@ let tcp_address ~net uri =
   | ip :: _ -> ip
   | [] -> failwith "failed to resolve hostname"
 
-(* Create a socket for the uri, and signal whether it requires https *)
-let scheme_conn_of_uri ~sw net uri =
+type sockaddr =
+  | Plain of Eio.Net.Sockaddr.stream
+  | Https of Eio.Net.Sockaddr.stream
+
+let to_sockaddr = function Plain addr | Https addr -> addr
+
+let address_of_uri net uri : sockaddr =
   match Uri.scheme uri with
   | Some "httpunix" ->
       (* FIXME: while there is no standard, http+unix seems more widespread *)
-      `Plain (Eio.Net.connect ~sw net (unix_address uri) :> t)
-  | Some "http" -> `Plain (Eio.Net.connect ~sw net (tcp_address ~net uri) :> t)
-  | Some "https" -> `Https (Eio.Net.connect ~sw net (tcp_address ~net uri) :> t)
+      Plain (unix_address uri)
+  | Some "http" -> Plain (tcp_address ~net uri)
+  | Some "https" -> Https (tcp_address ~net uri)
   | x ->
       Fmt.failwith "Unknown scheme %a"
         Fmt.(option ~none:(any "None") Dump.string)
         x
+
+type address_info =
+  | Direct of sockaddr * Uri.t
+  | Tunnelled of {
+      proxy_headers : Http.Header.t option;
+      proxy_uri : Uri.t;
+      proxy_address : sockaddr;
+      remote_uri : Uri.t;
+      remote_address : sockaddr;
+    }
+
+let address_info net proxy uri : address_info =
+  match proxy with
+  | None -> Direct (address_of_uri net uri, uri)
+  | Some (Proxy.Direct proxy_uri) ->
+      Direct (address_of_uri net proxy_uri, proxy_uri)
+  | Some (Proxy.Tunnel (proxy_headers, proxy_uri)) ->
+      Tunnelled
+        {
+          proxy_headers;
+          proxy_uri;
+          proxy_address = address_of_uri net proxy_uri;
+          remote_uri = uri;
+          remote_address = address_of_uri net uri;
+        }
+
+let to_address = function
+  | Direct (addr, _) -> to_sockaddr addr
+  | Tunnelled t -> to_sockaddr t.remote_address
 
 (* Create a tunnel to the proxy at [proxy_uri] *)
 let make_tunnel ~sw ~headers proxy_uri socket =
@@ -94,26 +128,27 @@ let apply_https https uri conn =
   | None -> Fmt.failwith "HTTPS not enabled (for %a)" Uri.pp uri
   | Some wrap -> (wrap uri conn :> t)
 
-let make ~sw ~https net proxy uri : t =
-  let scheme_conn =
-    match proxy with
-    | None -> scheme_conn_of_uri ~sw net uri
-    | Some (Proxy.Direct proxy_uri) -> scheme_conn_of_uri ~sw net proxy_uri
-    | Some (Proxy.Tunnel (proxy_headers, proxy_uri)) -> (
-        let conn =
-          match scheme_conn_of_uri ~sw net proxy_uri with
-          | `Plain socket -> socket
-          | `Https socket -> apply_https https uri socket
-        in
-        match make_tunnel ~sw ~headers:proxy_headers uri conn with
-        | Ok () ->
-            (* we know its an https connection, because we have selected a tunnelling proxy *)
-            `Https conn
-        | Error status ->
-            Fmt.failwith
-              "Proxy could not form tunnel to %a for host %a; status %a" Uri.pp
-              proxy_uri Uri.pp uri Http.Status.pp status)
-  in
-  match scheme_conn with
-  | `Plain conn -> conn
-  | `Https conn -> apply_https https uri conn
+let make ~sw ~https net address_info : t =
+  match address_info with
+  | Direct (Plain conn, _) -> (Eio.Net.connect ~sw net conn :> t)
+  | Direct (Https conn, uri) ->
+      apply_https https uri (Eio.Net.connect ~sw net conn :> t)
+  | Tunnelled
+      { proxy_headers; proxy_uri; proxy_address; remote_uri; remote_address }
+    -> (
+      let conn =
+        match proxy_address with
+        | Plain addr -> (Eio.Net.connect ~sw net addr :> t)
+        | Https addr ->
+            apply_https https proxy_uri (Eio.Net.connect ~sw net addr :> t)
+      in
+      match make_tunnel ~sw ~headers:proxy_headers remote_uri conn with
+      | Ok () -> (
+          match remote_address with
+          | Plain _ ->
+              failwith "impossible: we do not tunnel for plain connections"
+          | Https _ -> apply_https https remote_uri conn)
+      | Error status ->
+          Fmt.failwith
+            "Proxy could not form tunnel to proxy %a for host %a; status %a"
+            Uri.pp proxy_uri Uri.pp remote_uri Http.Status.pp status)

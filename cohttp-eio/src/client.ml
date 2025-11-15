@@ -1,6 +1,6 @@
 open Eio.Std
-module Connection = Client_connection
 module Proxy = Cohttp.Proxy.Forward
+module Connection = Client_connection
 
 type t = sw:Switch.t -> Uri.t -> Connection.t
 
@@ -42,4 +42,7 @@ include
 let make_generic fn = (fn :> t)
 
 let make ~https net : t =
- fun ~sw uri -> Connection.make ~sw ~https net (get_proxy uri) uri
+ fun ~sw uri ->
+  let proxy = get_proxy uri in
+  let addr_info = Connection.address_info net proxy uri in
+  Connection.make ~sw ~https net addr_info

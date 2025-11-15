@@ -22,6 +22,19 @@ val call :
   call
 (** Execute a call on a connection *)
 
+type address_info
+(** TODO doc*)
+
+val address_info :
+  [> [> `Generic ] Eio.Net.ty ] Eio.Std.r ->
+  proxy option ->
+  Uri.t ->
+  address_info
+(** TODO doc*)
+
+val to_address : address_info -> Eio.Net.Sockaddr.stream
+(** TODO doc*)
+
 val make :
   sw:Eio.Switch.t ->
   https:
@@ -30,7 +43,6 @@ val make :
     [> Eio.Resource.close_ty ] Eio.Flow.two_way)
     option ->
   _ Eio.Net.t ->
-  proxy option ->
-  Uri.t ->
+  address_info ->
   t
 (** Create a new connection *)
