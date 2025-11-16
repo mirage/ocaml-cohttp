@@ -30,7 +30,7 @@
             duneVersion = "3";
             doCheck = true;
           } // attrs);
-        ocamlformat = pkgs.ocamlformat_0_26_2;
+        ocamlformat = pkgs.ocamlformat_0_27_0;
       in
       with pkgs.ocamlPackages; rec {
         packages = rec {
@@ -108,7 +108,7 @@
             checkInputs = [
               alcotest eio mdx ppx_here
               tls-eio
-              mirage-crypto-rng-eio
+              mirage-crypto-rng
             ];
             propagatedBuildInputs = [ cohttp eio logs uri fmt ptime http ];
           };
