@@ -1,8 +1,13 @@
 open Eio.Std
 module Proxy = Cohttp.Proxy.Forward
 module Connection = Client_connection
+module Cache = Client_connection_cache
 
-type t = sw:Switch.t -> Uri.t -> Connection.t
+type t =
+  sw:Switch.t ->
+  Uri.t ->
+  Connection.call ->
+  Http.Response.t * Eio.Flow.source_ty Eio.Resource.t
 
 let proxies : (Http.Header.t option * Connection.proxies) option Atomic.t =
   Atomic.make None
@@ -34,15 +39,18 @@ include
       let map_context v f t ~sw = f (v t ~sw)
 
       let call (t : t) ~sw ?headers ?body ?(chunked = false) meth uri =
-        let conn = t ~sw uri in
-        Connection.call ~sw ?headers ?body ~chunked meth uri conn
+        t ~sw uri @@ Connection.call ~sw ?headers ?body ~chunked meth uri
     end)
     (Io.IO)
 
-let make_generic fn = (fn :> t)
+let make_generic fn : t = fun ~sw uri call -> call (fn ~sw uri)
 
 let make ~https net : t =
- fun ~sw uri ->
+ fun ~sw uri call ->
   let proxy = get_proxy uri in
   let addr_info = Connection.address_info net proxy uri in
-  Connection.make ~sw ~https net addr_info
+  match Cache.get () with
+  | None -> call (Connection.make ~sw ~https net addr_info)
+  | Some cache -> Cache.use cache ~https ~net addr_info call
+
+let run_with_cache = Cache.with_cache

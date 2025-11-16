@@ -67,15 +67,14 @@ let use ({ parallel; sw; lru; mutex; keep; time } : t) ~https ~net addr_info f =
   let conns =
     Eio.Mutex.use_rw ~protect mutex @@ fun () ->
     let addr = Connection.to_address addr_info in
-    traceln "Looking up connection for %a" Eio.Net.Sockaddr.pp addr;
     match Hashtbl.find_opt lru addr with
     | Some conns -> conns
     | None ->
         let conns =
           Eio.Pool.create
             ~validate:(fun c ->
-              let now = Eio.Time.Mono.now time in
-              Mtime.Span.is_longer ~than:keep @@ Mtime.span c.created now)
+              let life_span = Mtime.span c.created (Eio.Time.Mono.now time) in
+              Mtime.Span.is_shorter life_span ~than:keep)
             ~dispose:(fun c -> Eio.Net.close c.conn)
             parallel
             (fun () ->

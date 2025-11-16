@@ -42,3 +42,10 @@ val set_proxies :
 
     See {!val:Cohttp.Proxy.Forward.make_servers} for the meaning of the
     parameters. *)
+
+val run_with_cache :
+  ?keep:int64 ->
+  ?parallel:int ->
+  time:[> Eio.Time.Mono.ty ] r ->
+  (Switch.t -> 'a) ->
+  'a
