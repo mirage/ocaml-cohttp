@@ -384,6 +384,7 @@
    (>= 0.12))
   (eio_main :with-test)
   (mdx :with-test)
+  (ipaddr (>= 5.6.0))
   logs
   uri
   (tls-eio (and :with-test (>= 1.0.0)))

@@ -1,8 +1,33 @@
 open Eio.Std
-open Utils
+module Proxy = Cohttp.Proxy.Forward
+module Connection = Client_connection
+module Cache = Client_connection_cache
 
-type connection = Eio.Flow.two_way_ty r
-type t = sw:Switch.t -> Uri.t -> connection
+type t =
+  sw:Switch.t ->
+  Uri.t ->
+  Connection.call ->
+  Http.Response.t * Eio.Flow.source_ty Eio.Resource.t
+
+let proxies : (Http.Header.t option * Connection.proxies) option Atomic.t =
+  Atomic.make None
+
+let set_proxies ?no_proxy_patterns ?default_proxy ?(scheme_proxies = [])
+    ?proxy_headers () =
+  let servers =
+    Proxy.make_servers ~no_proxy_patterns ~default_proxy ~scheme_proxies
+      ~direct:Fun.id ~tunnel:Fun.id
+  in
+  Atomic.set proxies (Some (proxy_headers, servers))
+
+let get_proxy uri : Connection.proxy option =
+  match Atomic.get proxies with
+  | None -> None
+  | Some (headers, proxies) -> (
+      match Proxy.get proxies uri with
+      | None -> None
+      | Some (Proxy.Direct _) as proxy -> proxy
+      | Some (Proxy.Tunnel p) -> Some (Proxy.Tunnel (headers, p)))
 
 include
   Cohttp.Generic.Client.Make
@@ -14,91 +39,18 @@ include
       let map_context v f t ~sw = f (v t ~sw)
 
       let call (t : t) ~sw ?headers ?body ?(chunked = false) meth uri =
-        let socket = t ~sw uri in
-        let body_length =
-          if chunked then None
-          else
-            match body with
-            | None -> Some 0L
-            | Some (Eio.Resource.T (body, ops)) ->
-                let module X = (val Eio.Resource.get ops Eio.Flow.Pi.Source) in
-                List.find_map
-                  (function
-                    | Body.String m ->
-                        Some (String.length (m body) |> Int64.of_int)
-                    | _ -> None)
-                  X.read_methods
-        in
-        let request =
-          Cohttp.Request.make_for_client ?headers
-            ~chunked:(Option.is_none body_length)
-            ?body_length meth uri
-        in
-        Eio.Buf_write.with_flow socket @@ fun output ->
-        let () =
-          Eio.Fiber.fork ~sw @@ fun () ->
-          Io.Request.write ~flush:false
-            (fun writer ->
-              match body with
-              | None -> ()
-              | Some body -> flow_to_writer body writer Io.Request.write_body)
-            request output
-        in
-        let input = Eio.Buf_read.of_flow ~max_size:max_int socket in
-        match Io.Response.read input with
-        | `Eof -> failwith "connection closed by peer"
-        | `Invalid reason -> failwith reason
-        | `Ok response -> (
-            match Cohttp.Response.has_body response with
-            | `No -> (response, Eio.Flow.string_source "")
-            | `Yes | `Unknown ->
-                let body =
-                  let reader = Io.Response.make_body_reader response input in
-                  flow_of_reader (fun () -> Io.Response.read_body_chunk reader)
-                in
-                (response, body))
+        t ~sw uri @@ Connection.call ~sw ?headers ?body ~chunked meth uri
     end)
     (Io.IO)
 
-let make_generic fn = (fn :> t)
-
-let unix_address uri =
-  match Uri.host uri with
-  | Some path -> `Unix path
-  | None -> Fmt.failwith "no host specified (in %a)" Uri.pp uri
-
-let tcp_address ~net uri =
-  let service =
-    match Uri.port uri with
-    | Some port -> Int.to_string port
-    | _ -> Uri.scheme uri |> Option.value ~default:"http"
-  in
-  match
-    Eio.Net.getaddrinfo_stream ~service net
-      (Uri.host_with_default ~default:"localhost" uri)
-  with
-  | ip :: _ -> ip
-  | [] -> failwith "failed to resolve hostname"
+let make_generic fn : t = fun ~sw uri call -> call (fn ~sw uri)
 
 let make ~https net : t =
-  let net = (net :> [ `Generic ] Eio.Net.ty r) in
-  let https =
-    (https
-      :> (Uri.t -> [ `Generic ] Eio.Net.stream_socket_ty r -> connection) option)
-  in
-  fun ~sw uri ->
-    match Uri.scheme uri with
-    | Some "httpunix" ->
-        (* FIXME: while there is no standard, http+unix seems more widespread *)
-        (Eio.Net.connect ~sw net (unix_address uri) :> connection)
-    | Some "http" ->
-        (Eio.Net.connect ~sw net (tcp_address ~net uri) :> connection)
-    | Some "https" -> (
-        match https with
-        | Some wrap ->
-            wrap uri @@ Eio.Net.connect ~sw net (tcp_address ~net uri)
-        | None -> Fmt.failwith "HTTPS not enabled (for %a)" Uri.pp uri)
-    | x ->
-        Fmt.failwith "Unknown scheme %a"
-          Fmt.(option ~none:(any "None") Dump.string)
-          x
+ fun ~sw uri call ->
+  let proxy = get_proxy uri in
+  let addr_info = Connection.address_info net proxy uri in
+  match Cache.get () with
+  | None -> call (Connection.make ~sw ~https net addr_info)
+  | Some cache -> Cache.use cache ~https ~net addr_info call
+
+let run_with_cache = Cache.with_cache

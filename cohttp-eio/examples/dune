@@ -1,7 +1,15 @@
 (executables
- (names server1 server2 client1 docker_client client_timeout client_tls)
+ (names
+  server1
+  server2
+  client1
+  docker_client
+  client_timeout
+  client_tls
+  client_proxy)
  (libraries
   cohttp-eio
+  cmdliner
   eio_main
   eio.unix
   fmt

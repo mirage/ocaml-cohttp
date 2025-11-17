@@ -32,15 +32,15 @@ module Forward : sig
         calls with that scheme.
 
       @param direct
-        A function to create ['direct] connections for the given proxy uri.
+        A function to create ['direct] connections for the given proxy URI.
 
       @param tunnel
-        A function to create ['tunnel] connections for the given proxy uri. *)
+        A function to create ['tunnel] connections for the given proxy URI. *)
 
   val get : ('direct, 'tunnel) servers -> Uri.t -> ('direct, 'tunnel) t option
   (** [get proxies uri] finds the proxy configured for the [uri], if there is
       one given [proxies].
 
       @param servers The configured proxy servers
-      @param uri The uri to find a proxy server for *)
+      @param uri The URI to find a proxy server for *)
 end
