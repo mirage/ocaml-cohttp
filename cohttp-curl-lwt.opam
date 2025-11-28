@@ -27,7 +27,7 @@ depends: [
   "cohttp-curl" {= version}
   "stringext"
   "lwt" {>= "5.3.0"}
-  "cmdliner" {with-dev-setup & >= "2.0.0"}
+  "cmdliner" {with-test & with-dev-setup & >= "2.0.0"}
   "uri" {with-test & >= "4.2.0"}
   "alcotest" {with-test & >= "1.7.0"}
   "cohttp-lwt-unix" {with-test & = version}

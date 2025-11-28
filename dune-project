@@ -290,6 +290,7 @@
    (>= 5.3.0))
   (cmdliner
    (and
+     :with-test
      :with-dev-setup
      (>= 2.0.0)))
   (uri
