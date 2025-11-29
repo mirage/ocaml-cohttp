@@ -7,32 +7,35 @@
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = (import nixpkgs {
-          inherit system;
-          overlays = [
-            (final: prev: {
-              ocamlPackages = prev.ocamlPackages.overrideScope' (oself: osuper: {
-                ctypes-foreign = osuper.ctypes-foreign.overrideAttrs (_: { doCheck = false; });
-                ctypes = osuper.ctypes.overrideAttrs (_: { doCheck = false; });
-                mdx = osuper.mdx.override {
-                  # workaround for:
-                  # https://github.com/NixOS/nixpkgs/pull/241476/commits/1ed74f3536d29e5635d7f47a1d7b82a89f5a8077
-                  logs = oself.logs;
-                };
-              });
-            })
-          ];
+        pkgs = import nixpkgs { inherit system; };
+        ocamlPackages = pkgs.ocaml-ng.ocamlPackages_5_4.overrideScope (oself: osuper: {
+          ctypes-foreign = osuper.ctypes-foreign.overrideAttrs (_: { doCheck = false; });
+          ctypes = osuper.ctypes.overrideAttrs (_: { doCheck = false; });
+          mdx = (osuper.mdx.override {
+            # workaround for:
+            # https://github.com/NixOS/nixpkgs/pull/241476/commits/1ed74f3536d29e5635d7f47a1d7b82a89f5a8077
+            logs = oself.logs;
+          }).overrideAttrs (_: { doCheck = false; });
+          cmdliner = osuper.cmdliner.overrideAttrs (old: rec {
+            version = "2.1.0";
+            src = pkgs.fetchFromGitHub {
+              owner = "dbuenzli";
+              repo = "cmdliner";
+              rev = "v${version}";
+              sha256 = "sha256-ebe5I77zEKoehJ55ZszV0dQP4ZDfVpGXqDsEb2qEE24=";
+            };
+          });
         });
-        inherit (pkgs.ocamlPackages) buildDunePackage;
+        inherit (ocamlPackages) buildDunePackage;
         pkg = attrs: buildDunePackage ({
             version = "n/a";
             src = ./. ;
             duneVersion = "3";
             doCheck = true;
           } // attrs);
-        ocamlformat = pkgs.ocamlformat_0_26_2;
+        ocamlformat = pkgs.ocamlformat_0_27_0;
       in
-      with pkgs.ocamlPackages; rec {
+      with ocamlPackages; rec {
         packages = rec {
           default = http;
           http = pkg {
@@ -108,7 +111,7 @@
             checkInputs = [
               alcotest eio mdx ppx_here
               tls-eio
-              mirage-crypto-rng-eio
+              mirage-crypto-rng
             ];
             propagatedBuildInputs = [ cohttp eio logs uri fmt ptime http ];
           };
@@ -129,14 +132,14 @@
         };
         devShells.default = pkgs.mkShell {
           inputsFrom = pkgs.lib.attrValues packages;
-          buildInputs = [ ocamlformat ] ++ (with pkgs.ocamlPackages; [
+          buildInputs = [ ocamlformat ] ++ (with ocamlPackages; [
             ocaml-lsp
           ]);
         };
         devShells.eio = pkgs.mkShell {
           inputsFrom = [ cohttp-eio ];
-          buildInputs = [ ocamlformat ] ++ (with pkgs; [
-            ocamlPackages.ocaml-lsp gmp libev nmap curl
+          buildInputs = [ ocamlformat ocamlPackages.ocaml-lsp ] ++ (with pkgs; [
+            gmp libev nmap curl
           ]);
         };
       });
