@@ -1,3 +1,8 @@
+## v6.2.0 (2025-12-02)
+
+- cohttp-eio: Add support for forward proxies to the client (@shonfeder,  #1126)
+- cohttp-lwt: Expose the IO module, allowing IO errors to be handled (@mefyl, #1118)
+
 ## v6.1.1 (2025-05-28)
 
 - cohttp-mirage: make client usable again -- this fixes a regression introduced
