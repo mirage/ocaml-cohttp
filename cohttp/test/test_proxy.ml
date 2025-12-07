@@ -24,21 +24,21 @@ let select_http_proxy () =
   let proxies = proxies ~no_proxy_patterns:None in
   let expected = Some (Proxy.Direct http_proxy) in
   let actual = Proxy.get proxies @@ Uri.of_string "http://example.com" in
-  Alcotest.(check' @@ option proxy)
+  Alcotest.check' (Alcotest.option proxy)
     ~msg:"should select configured http proxy as Direct" ~actual ~expected
 
 let select_https_proxy () =
   let proxies = proxies ~no_proxy_patterns:None in
   let expected = Some (Proxy.Tunnel https_proxy) in
   let actual = Proxy.get proxies @@ Uri.of_string "https://example.com" in
-  Alcotest.(check' @@ option proxy)
+  Alcotest.check' (Alcotest.option proxy)
     ~msg:"should select configured https proxy as Tunnel" ~actual ~expected
 
 let select_default_proxy () =
   let proxies = proxies ~no_proxy_patterns:None in
   let expected = Some (Proxy.Direct fallback_proxy) in
   let actual = Proxy.get proxies @@ Uri.of_string "ftp://example.com" in
-  Alcotest.(check' @@ option proxy)
+  Alcotest.check' (Alcotest.option proxy)
     ~msg:"should select fallback proxy for unconfigured scheme" ~actual
     ~expected
 
@@ -46,14 +46,14 @@ let no_proxy_wildcard () =
   let proxies = proxies ~no_proxy_patterns:(Some "*") in
   let expected = None in
   let actual = Proxy.get proxies @@ Uri.of_string "http://example.com" in
-  Alcotest.(check' @@ option proxy)
+  Alcotest.check' (Alcotest.option proxy)
     ~msg:"should ensure no proxy is selected" ~actual ~expected
 
 let no_proxy_literal_pattern () =
   let proxies = proxies ~no_proxy_patterns:(Some "example.com") in
   let expected = None in
   let actual = Proxy.get proxies @@ Uri.of_string "http://example.com" in
-  Alcotest.(check' @@ option proxy)
+  Alcotest.check' (Alcotest.option proxy)
     ~msg:"should ensure example.com is not proxied" ~actual ~expected
 
 let no_proxy_list_of_patterns () =
@@ -61,11 +61,11 @@ let no_proxy_list_of_patterns () =
 
   let msg = "should ensure example.com is not proxied" in
   let actual = Proxy.get proxies @@ Uri.of_string "http://example.com" in
-  Alcotest.(check' @@ option proxy) ~msg ~actual ~expected:None;
+  Alcotest.check' (Alcotest.option proxy) ~msg ~actual ~expected:None;
 
   let msg = "should ensure foo.com is not proxied" in
   let actual = Proxy.get proxies @@ Uri.of_string "http://foo.com" in
-  Alcotest.(check' @@ option proxy) ~msg ~actual ~expected:None
+  Alcotest.check' (Alcotest.option proxy) ~msg ~actual ~expected:None
 
 let no_proxy_subdomain_patterns () =
   (* As per https://everything.curl.dev/usingcurl/proxies/env.html#no-proxy
@@ -77,20 +77,20 @@ let no_proxy_subdomain_patterns () =
 
   let msg = "should ensure www.example.com is not proxied" in
   let actual = Proxy.get proxies @@ Uri.of_string "http://www.example.com" in
-  Alcotest.(check' @@ option proxy) ~msg ~actual ~expected:None;
+  Alcotest.check' (Alcotest.option proxy) ~msg ~actual ~expected:None;
 
   let msg = "should ensure home.example.com is not proxied" in
   let actual = Proxy.get proxies @@ Uri.of_string "http://home.example.com" in
-  Alcotest.(check' @@ option proxy) ~msg ~actual ~expected:None;
+  Alcotest.check' (Alcotest.option proxy) ~msg ~actual ~expected:None;
 
   let msg = "should ensure example.com is proxied" in
   let actual = Proxy.get proxies @@ Uri.of_string "http://example.com" in
-  Alcotest.(check' @@ option proxy) ~msg ~actual ~expected:None;
+  Alcotest.check' (Alcotest.option proxy) ~msg ~actual ~expected:None;
 
   let msg = "nonexample.com should be proxied" in
   let actual = Proxy.get proxies @@ Uri.of_string "http://nonexample.com" in
-  Alcotest.(check' @@ option proxy)
-    ~msg ~actual ~expected:(Some (Direct http_proxy))
+  Alcotest.check' (Alcotest.option proxy) ~msg ~actual
+    ~expected:(Some (Direct http_proxy))
 
 let () =
   Alcotest.run "test_proxy"

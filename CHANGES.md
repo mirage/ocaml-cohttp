@@ -1,3 +1,8 @@
+## v6.2.1 (2025-12-06)
+
+- cohttp: Fix syntax in forward proxy tests to recover compatibility with OCaml
+  4.08 to 4.12, fixing a regression introduced in v6.2.0. (@shonfeder, #1135)
+
 ## v6.2.0 (2025-12-02)
 
 - cohttp-eio: Add support for forward proxies to the client (@shonfeder,  #1126)

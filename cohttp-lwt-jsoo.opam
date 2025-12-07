@@ -29,7 +29,7 @@ depends: [
   "cohttp" {= version}
   "cohttp-lwt" {= version}
   "logs"
-  "lwt" {>= "3.0.0"}
+  "lwt" {>= "5.7.0"}
   "lwt_ppx" {with-test}
   "conf-npm" {with-test}
   "js_of_ocaml" {>= "3.3.0"}
