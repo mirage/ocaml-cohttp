@@ -77,7 +77,7 @@
   (cohttp
    (= :version))
   (lwt
-   (>= 5.4.0))
+   (>= 5.7.0))
   sexplib0
   (ipaddr
    (>= 5.6.0))
@@ -157,7 +157,7 @@
    (= :version))
   logs
   (lwt
-   (>= 3.0.0))
+   (>= 5.7.0))
   (lwt_ppx :with-test)
   (conf-npm :with-test)
   (js_of_ocaml
