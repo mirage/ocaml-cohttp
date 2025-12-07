@@ -180,7 +180,7 @@
   (cohttp
    (= :version))
   (async_kernel
-   (>= v0.16.0))
+   (>= v0.17.0))
   (async_unix
    (>= v0.16.0))
   (async
