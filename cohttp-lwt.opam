@@ -29,7 +29,7 @@ depends: [
   "ocaml" {>= "4.08"}
   "http" {= version}
   "cohttp" {= version}
-  "lwt" {>= "5.4.0"}
+  "lwt" {>= "5.7.0"}
   "sexplib0"
   "ipaddr" {>= "5.6.0"}
   "ppx_sexp_conv" {>= "v0.13.0"}
