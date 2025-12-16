@@ -1,4 +1,4 @@
-## v6.2.1 (2025-12-06)
+## v6.2.1 (2025-12-16)
 
 - cohttp: Fix syntax in forward proxy tests to recover compatibility with OCaml
   4.08 to 4.12, fixing a regression introduced in v6.2.0. (@shonfeder, #1135)
