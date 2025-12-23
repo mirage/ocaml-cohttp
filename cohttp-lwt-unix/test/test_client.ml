@@ -199,6 +199,7 @@ let test_cache uri =
 
 let test_client_cached uri =
   let cache = Cache.create () in
+  let module Client = Cohttp_lwt.Client.Make (Cohttp_lwt_unix.Connection) in
   Client.set_cache (Cache.call cache);
   test_client uri
 
