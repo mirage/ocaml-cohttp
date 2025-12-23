@@ -204,7 +204,7 @@ let test_client_cached uri =
 
 let tests uri =
   [
-    ("high-level interface", fun () -> test_persistent uri);
+    ("high-level interface", fun () -> test_client uri);
     ("persistent connection", fun () -> test_persistent uri);
     ("non-persistent connection", fun () -> test_non_persistent uri);
     ("unknown persistence connection", fun () -> test_unknown uri);
