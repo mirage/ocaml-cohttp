@@ -28,7 +28,12 @@ module Make_no_cache (Connection : S.Connection) = struct
         >>= fun () ->
         Connection.close connection;
         Lwt.return_unit)
-      (function Retry -> () | e -> raise e);
+      (function
+        | _ ->
+        (* Since [res] is already returned below, we need not reraise anything
+            here. It would trigger Lwt's async exception handler even though the
+            caller already saw and probably handled the exception. *)
+        ());
     res
 end
 
