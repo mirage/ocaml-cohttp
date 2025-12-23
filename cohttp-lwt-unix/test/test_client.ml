@@ -203,6 +203,24 @@ let test_client_cached uri =
   Client.set_cache (Cache.call cache);
   test_client uri
 
+(* Check an IO exception can be properly handled. *)
+let test_exception uri =
+  let open struct
+    exception Dummy_io_error
+  end in
+  let call () =
+    Client.put
+      ~body:
+        (Cohttp_lwt.Body.of_stream
+        @@ Lwt_stream.from
+        @@ fun () -> raise Dummy_io_error)
+      (Uri.with_path uri "season")
+    >>= fun _ -> failwith "should have raised"
+  in
+  Lwt.catch call (function
+    | Dummy_io_error -> Lwt.return_unit
+    | exn -> raise exn)
+
 let tests uri =
   [
     ("high-level interface", fun () -> test_client uri);
@@ -211,6 +229,7 @@ let tests uri =
     ("unknown persistence connection", fun () -> test_unknown uri);
     ("cache", fun () -> test_cache uri);
     ("high-level cached interface", fun () -> test_client_cached uri);
+    ("exception", fun () -> test_exception uri);
   ]
 
 let _ =
