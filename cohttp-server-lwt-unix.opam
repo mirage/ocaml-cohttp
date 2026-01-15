@@ -28,7 +28,6 @@ depends: [
   "conduit-lwt-unix" {with-test}
   "cohttp-lwt-unix" {with-test & = version}
   "cohttp-lwt" {with-test & = version}
-  "lwt"
   "odoc" {with-doc}
 ]
 dev-repo: "git+https://github.com/mirage/ocaml-cohttp.git"

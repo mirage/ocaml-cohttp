@@ -138,8 +138,7 @@
   (cohttp-lwt
    (and
     :with-test
-    (= :version)))
-  lwt))
+    (= :version)))))
 
 (package
  (name cohttp-lwt-jsoo)
