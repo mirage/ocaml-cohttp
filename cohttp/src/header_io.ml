@@ -16,6 +16,8 @@
  *
   }}}*)
 
+exception Invalid_headers
+
 let split_header str =
   match Stringext.split ~max:2 ~on:':' str with
   | [ x; y ] -> [ x; String.trim y ]
@@ -29,11 +31,12 @@ module Make (IO : S.IO) = struct
     (* consume also trailing "^\r\n$" line *)
     let rec parse_headers' headers =
       read_line ic >>= function
-      | Some "" | None -> return headers
+      | Some "" -> return headers
       | Some line -> (
           match split_header line with
           | [ hd; tl ] -> parse_headers' (Header.add headers hd tl)
-          | _ -> return headers)
+          | _ -> raise Invalid_headers)
+      | None -> raise Invalid_headers
     in
     parse_headers' (Header.init ())
 
