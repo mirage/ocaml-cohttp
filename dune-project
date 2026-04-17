@@ -91,7 +91,7 @@
  (name cohttp-lwt-unix)
  (synopsis "CoHTTP implementation for Unix and Windows using Lwt")
  (description
-  "An implementation of an HTTP client and server using the Lwt\nconcurrency library. See the `Cohttp_lwt_unix` module for information\non how to use this.  The package also installs `cohttp-curl-lwt`\nand a `cohttp-server-lwt` binaries for quick uses of a HTTP(S)\nclient and server respectively.\n\nAlthough the name implies that this only works under Unix, it\nshould also be fine under Windows too.\n")
+  "An implementation of an HTTP client and server using the Lwt\nconcurrency library. See the `Cohttp_lwt_unix` module for information\non how to use this.\n\nAlthough the name implies that this only works under Unix, it\nshould also be fine under Windows too.\n\nThe accompanying `cohttp-curl-lwt`, `cohttp-proxy-lwt`, and\n`cohttp-server-lwt` command-line utilities ship in the separate\n`cohttp-lwt-unix-bin` package so that library consumers do not\ntransitively depend on `cmdliner`.")
  (depends
   (ocaml
    (>= 4.08))
@@ -101,8 +101,6 @@
    (= :version))
   (cohttp-lwt
    (= :version))
-  (cmdliner
-   (>= 2.0.0))
   (lwt
    (>= 3.0.0))
   (conduit-lwt
@@ -117,6 +115,27 @@
   magic-mime
   logs
   (ounit2 :with-test)))
+
+(package
+ (name cohttp-lwt-unix-bin)
+ (synopsis "Command-line utilities shipped with cohttp-lwt-unix")
+ (description
+  "This package contains the `cohttp-curl-lwt`, `cohttp-proxy-lwt`, and\n`cohttp-server-lwt` command-line utilities. They were previously built\nas part of `cohttp-lwt-unix`, but were split out so that library\nconsumers do not transitively depend on `cmdliner`.")
+ (depends
+  (ocaml
+   (>= 4.08))
+  (cohttp
+   (= :version))
+  (cohttp-lwt
+   (= :version))
+  (cohttp-lwt-unix
+   (= :version))
+  (cmdliner
+   (>= 2.0.0))
+  (conduit-lwt
+   (>= 7.1.0))
+  fmt
+  logs))
 
 (package
  (name cohttp-server-lwt-unix)
