@@ -4,13 +4,15 @@ synopsis: "CoHTTP implementation for Unix and Windows using Lwt"
 description: """
 An implementation of an HTTP client and server using the Lwt
 concurrency library. See the `Cohttp_lwt_unix` module for information
-on how to use this.  The package also installs `cohttp-curl-lwt`
-and a `cohttp-server-lwt` binaries for quick uses of a HTTP(S)
-client and server respectively.
+on how to use this.
 
 Although the name implies that this only works under Unix, it
 should also be fine under Windows too.
-"""
+
+The accompanying `cohttp-curl-lwt`, `cohttp-proxy-lwt`, and
+`cohttp-server-lwt` command-line utilities ship in the separate
+`cohttp-lwt-unix-bin` package so that library consumers do not
+transitively depend on `cmdliner`."""
 maintainer: ["Anil Madhavapeddy <anil@recoil.org>"]
 authors: [
   "Anil Madhavapeddy"
@@ -32,7 +34,6 @@ depends: [
   "http" {= version}
   "cohttp" {= version}
   "cohttp-lwt" {= version}
-  "cmdliner" {>= "2.0.0"}
   "lwt" {>= "3.0.0"}
   "conduit-lwt" {>= "7.1.0"}
   "conduit-lwt-unix" {>= "7.1.0"}
