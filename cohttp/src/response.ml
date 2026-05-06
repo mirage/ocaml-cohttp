@@ -39,13 +39,22 @@ let status t = t.status
 
 let make ?(version = `HTTP_1_1) ?(status = `OK) ?(encoding = Transfer.Unknown)
     ?(headers = Header.init ()) () =
+  (* RFC 7230 §3.3.1: Transfer-Encoding MUST NOT be sent in a 1xx, 204, or 304
+     response. Skip encoding headers for responses that cannot have a body. *)
+  let body_allowed =
+    match status with
+    | #Code.informational_status | `No_content | `Not_modified -> false
+    | #Code.status_code -> true
+  in
   let headers =
-    match encoding with
-    | Unknown -> (
-        match Header.get_transfer_encoding headers with
-        | Unknown -> Header.add_transfer_encoding headers Chunked
-        | _ -> headers)
-    | _ -> Header.add_transfer_encoding headers encoding
+    if not body_allowed then headers
+    else
+      match encoding with
+      | Unknown -> (
+          match Header.get_transfer_encoding headers with
+          | Unknown -> Header.add_transfer_encoding headers Chunked
+          | _ -> headers)
+      | _ -> Header.add_transfer_encoding headers encoding
   in
   { headers; version; status }
 
