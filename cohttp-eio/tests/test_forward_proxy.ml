@@ -109,7 +109,8 @@ let () =
          https://www.rfc-editor.org/rfc/rfc2606 *)
     let uri = Uri.of_string "http://foo.invalid" in
     match Cohttp_eio.Client.get ~sw client uri with
-    | exception Failure _ ->
+    | exception Failure _
+    | exception Eio.Io (Eio.Net.E _, _) ->
         (* This should fail, since we are not using the proxy *)
         ()
     | unexepcted_resp, _ ->
