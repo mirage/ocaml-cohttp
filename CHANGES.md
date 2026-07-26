@@ -1,3 +1,9 @@
+## v6.2.2 (2026-07-26)
+
+- cohttp: remove duplicate occurance of lwt in dune-project (@Alizter, #1138)
+- cohttp-lwt: factor cohttp-lwt-unix binaries into their own project (@dijkstracula, #1139)
+- cohttp-eio: update for new Eio 1.4 getaddrinfo exception (@talex5, #1142)
+
 ## v6.2.1 (2025-12-16)
 
 - cohttp: Fix syntax in forward proxy tests to recover compatibility with OCaml
