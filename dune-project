@@ -192,7 +192,7 @@
   "An implementation of an HTTP client and server using the Async\nconcurrency library. See the `Cohttp_async` module for information\non how to use this.  The package also installs `cohttp-curl-async`\nand a `cohttp-server-async` binaries for quick uses of a HTTP(S)\nclient and server respectively.\n")
  (depends
   (ocaml
-   (and (>= 4.14) (< 5.3.0)))
+   (>= 4.14))
   (http
    (= :version))
   (cohttp
