@@ -46,7 +46,8 @@ module HTTP (FS : Mirage_kv.RO) (S : Cohttp_lwt.S.Server) = struct
       | path when String.is_suffix ~affix:"/" path ->
           Logs.info (fun f -> f "request for '%s'" path);
           fn fs (Uri.with_path uri "index.html")
-      | path ->
+      | _ ->
+          let path = Cohttp.Path.normalise uri in
           Logs.info (fun f -> f "request for '%s'" path);
           Lwt.catch
             (fun () ->

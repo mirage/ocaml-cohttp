@@ -1,3 +1,24 @@
+## dev
+
+- cohttp: `Cohttp.Path.resolve_local_file` no longer escapes the docroot when
+  given percent-encoded or double-encoded traversal sequences such as
+  `..%2f..%2f`. (@avsm and Sapphire Livingstone)
+- cohttp: Add `Cohttp.Path.normalise` to turn a request URI into a safe
+  relative path. Servers that make access-control decisions on path segments
+  should apply it to `Request.uri` before inspecting them. `Request.uri`
+  does not itself normalise absolute-form or percent-encoded targets. (@avsm)
+  ```ocaml
+  let callback _conn req _body =
+    let path = Cohttp.Path.normalise (Cohttp.Request.uri req) in
+    match String.split_on_char '/' path with
+    | "admin" :: _ when not (authorised req) -> Server.respond_not_found ()
+    | _ -> Server.respond_file ~fname:path ()
+  ```
+  We cannot apply this by default since existing code may depend on the current
+  semantics, which can be safe if not combined with local file resolution.
+- cohttp-mirage: The static file server now normalises the request path before
+  looking it up in the mirage-kv store (@avsm).
+
 ## v6.2.2 (2026-07-26)
 
 - cohttp: remove duplicate occurance of lwt in dune-project (@Alizter, #1138)
