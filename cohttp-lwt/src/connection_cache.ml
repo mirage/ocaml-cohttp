@@ -23,7 +23,7 @@ module Make_no_cache (Connection : S.Connection) = struct
       (fun () ->
         res >>= fun (_, body) ->
         (match body with
-          | `Empty | `String _ | `Strings _ -> Lwt.return_unit
+          | `Empty | `String _ | `Strings _ | `Bigstring _ -> Lwt.return_unit
           | `Stream stream -> Lwt_stream.closed stream)
         >>= fun () ->
         Connection.close connection;
@@ -147,7 +147,11 @@ module Make (Connection : S.Connection) (Sleep : S.Sleep) = struct
           | Retry -> (
               match body with
               | Some (`Stream _) -> raise Retry
-              | None | Some `Empty | Some (`String _) | Some (`Strings _) ->
+              | None
+              | Some `Empty
+              | Some (`String _)
+              | Some (`Strings _)
+              | Some (`Bigstring _) ->
                   if retry <= 0 then raise Retry else request (retry - 1))
           | e -> Lwt.reraise e)
     in
@@ -217,7 +221,11 @@ end = struct
         | Retry -> (
             match body with
             | Some (`Stream _) -> Lwt.fail Retry
-            | None | Some `Empty | Some (`String _) | Some (`Strings _) ->
+            | None
+            | Some `Empty
+            | Some (`String _)
+            | Some (`Strings _)
+            | Some (`Bigstring _) ->
                 if retry <= 0 then Lwt.fail Retry
                 else
                   request conn ?headers ?body ?absolute_form meth uri (retry - 1)

@@ -1,3 +1,13 @@
+## Unreleased
+
+- cohttp: add `write_bigstring_body`, so a response or request body that already
+  lives outside the OCaml heap reaches the socket without being copied onto it.
+  `Cohttp_lwt.Body` gains a `` `Bigstring `` case and `to_bigstring` for the
+  other direction. `of_bigstring` takes `` `Copy `` or `` `Passthrough `` to say
+  whether the connection may write out of the caller's buffer, which the
+  cohttp-eio, cohttp-async and cohttp-mirage backends do without copying
+  (@toots, #1146)
+
 ## v6.3.0 (2026-08-20)
 
 - cohttp: `Cohttp.Path.resolve_local_file` no longer escapes the docroot when

@@ -81,3 +81,15 @@
  (package cohttp)
  (action
   (run ./test_response.exe)))
+
+(executable
+ (name test_bigstring)
+ (modules test_bigstring)
+ (forbidden_libraries base)
+ (libraries cohttp alcotest))
+
+(rule
+ (alias runtest)
+ (package cohttp)
+ (action
+  (run ./test_bigstring.exe)))

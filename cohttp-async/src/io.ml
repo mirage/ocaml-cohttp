@@ -97,6 +97,12 @@ module IO = struct
         Writer.write oc buf;
         return ())
 
+  let write_bigstring oc buf off len =
+    (match buf with
+    | `Copy buf -> Writer.write_bigstring oc ~pos:off ~len buf
+    | `Passthrough buf -> Writer.schedule_bigstring oc ~pos:off ~len buf);
+    return ()
+
   let refill ic = Input_channel.refill ic
   let with_input_buffer ic = Input_channel.with_input_buffer ic
   let flush = Writer.flushed

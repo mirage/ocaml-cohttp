@@ -20,7 +20,11 @@ module Make (IO : S.IO) = struct
   open IO
 
   type reader = unit -> Transfer.chunk IO.t
-  type writer = string -> unit IO.t
+
+  type writer = {
+    write : string -> unit IO.t;
+    write_bigstring : Bigstring.write -> int -> int -> unit IO.t;
+  }
 
   module Chunked = struct
     let remaining_length chunk remaining =
@@ -73,14 +77,18 @@ module Make (IO : S.IO) = struct
         | "" -> return Done (* 0 bytes read means EOF *)
         | buf -> return (Chunk buf)
 
-    let write oc buf =
-      let len = String.length buf in
+    let framed oc len emit =
       (* do NOT send empty chunks, as it signals the end of the
          chunked body *)
       if len <> 0 then
         write oc (Printf.sprintf "%x\r\n" len) >>= fun () ->
-        write oc buf >>= fun () -> write oc "\r\n"
+        emit () >>= fun () -> write oc "\r\n"
       else return ()
+
+    let write oc buf = framed oc (String.length buf) (fun () -> write oc buf)
+
+    let write_bigstring oc buf off len =
+      framed oc len (fun () -> write_bigstring oc buf off len)
   end
 
   module Fixed = struct
@@ -101,6 +109,7 @@ module Make (IO : S.IO) = struct
 
     (* TODO enforce that the correct length is written? *)
     let write = write
+    let write_bigstring = write_bigstring
   end
 
   module Unknown = struct
@@ -111,9 +120,13 @@ module Make (IO : S.IO) = struct
       if buf = "" then return Done else return (Chunk buf)
 
     let write = write
+    let write_bigstring = write_bigstring
   end
 
   let write_and_flush fn oc buf = fn oc buf >>= fun () -> IO.flush oc
+
+  let write_bigstring_and_flush fn oc buf off len =
+    fn oc buf off len >>= fun () -> IO.flush oc
 
   let make_reader = function
     | Chunked -> Chunked.read ~remaining:(ref 0L)
@@ -123,17 +136,27 @@ module Make (IO : S.IO) = struct
   let write_ignore_blank writer io s =
     if String.length s = 0 then return () else writer io s
 
-  let make_writer ~flush mode =
-    let write =
+  let write_bigstring_ignore_blank writer io buf off len =
+    if len = 0 then return () else writer io buf off len
+
+  let make_writer ~flush mode oc =
+    let write, write_bigstring =
       match mode with
-      | Chunked -> Chunked.write
-      | Fixed _ -> Fixed.write
-      | Unknown -> Unknown.write
+      | Chunked -> (Chunked.write, Chunked.write_bigstring)
+      | Fixed _ -> (Fixed.write, Fixed.write_bigstring)
+      | Unknown -> (Unknown.write, Unknown.write_bigstring)
     in
-    match flush with
-    | false -> write
-    | true -> write_and_flush write |> write_ignore_blank
+    let write, write_bigstring =
+      match flush with
+      | false -> (write, write_bigstring)
+      | true ->
+          ( write_and_flush write |> write_ignore_blank,
+            write_bigstring_and_flush write_bigstring
+            |> write_bigstring_ignore_blank )
+    in
+    { write = write oc; write_bigstring = write_bigstring oc }
 
   let read reader = reader ()
-  let write writer buf = writer buf
+  let write writer buf = writer.write buf
+  let write_bigstring writer buf off len = writer.write_bigstring buf off len
 end

@@ -24,4 +24,8 @@ module Make (IO : S.IO) : sig
   val make_writer : flush:bool -> encoding -> IO.oc -> writer
   val read : reader -> chunk IO.t
   val write : writer -> string -> unit IO.t
+
+  val write_bigstring : writer -> Bigstring.write -> int -> int -> unit IO.t
+  (** The [`Copy] and [`Passthrough] tags mean what they do in
+      {!S.IO.write_bigstring}. *)
 end

@@ -1,5 +1,6 @@
 module Accept = Accept
 module Auth = Auth
+module Bigstring = Bigstring
 module Body = Body
 module Conf = Conf
 module Connection = Connection

@@ -83,5 +83,10 @@ module M = struct
     Buffer.add_string x s;
     return ()
 
+  (* A [Buffer] has no bigarray sink, so [`Passthrough] copies like [`Copy]. *)
+  let write_bigstring x buf off len =
+    Buffer.add_string x (Bigstring.sub_string (Bigstring.buffer buf) ~off ~len);
+    return ()
+
   let flush _x = return ()
 end

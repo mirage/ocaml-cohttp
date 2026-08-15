@@ -60,6 +60,17 @@ module type IO = sig
   (** [write oc s] will block until the complete [s] string is written to the
       output channel [oc]. *)
 
+  val write_bigstring : oc -> Bigstring.write -> int -> int -> unit t
+  (** [write_bigstring oc buf off len] writes [len] bytes of [buf] from [off] to
+      the output channel [oc].
+
+      [`Copy] takes the bytes before returning. [`Passthrough] permits writing
+      them straight out of the caller's buffer, so an implementation that does
+      so leaves them borrowed until the next {!flush} of [oc] completes -- not
+      merely until this returns. An implementation with no way to write from
+      foreign memory may copy a [`Passthrough] buffer; the tag grants a licence
+      rather than demanding zero copies. *)
+
   val flush : oc -> unit t
   (** [flush oc] will return when all previously buffered content from calling
       {!write} have been written to the output channel [oc]. *)
@@ -78,6 +89,12 @@ module type Http_io = sig
   val read_body_chunk : reader -> Transfer.chunk IO.t
   val write_header : t -> IO.oc -> unit IO.t
   val write_body : writer -> string -> unit IO.t
+
+  val write_bigstring_body :
+    writer -> Bigstring.write -> int -> int -> unit IO.t
+  (** {!write_body} for a body that is already off the heap. The [`Copy] and
+      [`Passthrough] tags mean what they do in {!IO.write_bigstring}. *)
+
   val write : flush:bool -> (writer -> unit IO.t) -> t -> IO.oc -> unit IO.t
 end
 

@@ -31,4 +31,10 @@ let with_input_buffer ic ~f = Sio.M.with_input_buffer ic ~f
 let read_line ic = return (Sio.M.read_line ic)
 let read ic n = return (Sio.M.read ic n)
 let write oc str = return (Sio.M.write oc str)
+
+(* A [Buffer] has no bigarray sink, so [`Passthrough] copies like [`Copy]. *)
+let write_bigstring oc buf off len =
+  let buf = Cohttp.Bigstring.buffer buf in
+  return (Sio.M.write oc (Cohttp.Bigstring.sub_string buf ~off ~len))
+
 let flush oc = return (Sio.M.flush oc)
