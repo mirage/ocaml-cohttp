@@ -22,7 +22,6 @@ module Connection = Cohttp.Connection [@@warning "-3"]
 
 module HTTP (FS : Mirage_kv.RO) (S : Cohttp_lwt.S.Server) = struct
   open Lwt.Infix
-  open Astring
 
   let failf fmt = Fmt.failwith fmt
 
@@ -39,15 +38,11 @@ module HTTP (FS : Mirage_kv.RO) (S : Cohttp_lwt.S.Server) = struct
 
   let dispatcher request_fn =
     let rec fn fs uri =
-      match Uri.path uri with
-      | ("" | "/") as path ->
-          Logs.info (fun f -> f "request for '%s'" path);
+      match Cohttp.Path.normalise uri with
+      | "" ->
+          Logs.info (fun f -> f "request for '%s'" (Uri.path uri));
           fn fs (Uri.with_path uri "index.html")
-      | path when String.is_suffix ~affix:"/" path ->
-          Logs.info (fun f -> f "request for '%s'" path);
-          fn fs (Uri.with_path uri "index.html")
-      | _ ->
-          let path = Cohttp.Path.normalise uri in
+      | path ->
           Logs.info (fun f -> f "request for '%s'" path);
           Lwt.catch
             (fun () ->
@@ -63,7 +58,11 @@ module HTTP (FS : Mirage_kv.RO) (S : Cohttp_lwt.S.Server) = struct
             (fun _exn ->
               let with_index = Fmt.str "%s/index.html" path in
               exists fs with_index >>= function
-              | true -> fn fs (Uri.with_path uri with_index)
+              | true ->
+                  (* [with_path] expects an encoded path, and [path] has
+                     already been decoded by [normalise]. *)
+                  let encoded = Uri.pct_encode ~component:`Path with_index in
+                  fn fs (Uri.with_path uri encoded)
               | false -> S.respond_not_found ())
     in
     fn

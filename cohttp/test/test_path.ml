@@ -135,6 +135,11 @@ let test_normalise () =
       ( "absolute-form deep grandparent blocked",
         "https://example.com/a/../../../../etc/shadow",
         "etc/shadow" );
+      ("root path empty", "/", "");
+      ("empty path", "", "");
+      ("trailing slash dropped", "/foo/bar/", "foo/bar");
+      ("encoded trailing slash dropped", "/foo/bar%2f", "foo/bar");
+      ("empty segments collapsed", "/foo//bar", "foo/bar");
       ("encoded control preserved", "/sol%001.html", "sol\x001.html");
       ("plain slash separator", "/private/secret.txt", "private/secret.txt");
       ( "backslash preserved, distinct from slash",

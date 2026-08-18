@@ -250,7 +250,6 @@
    (>= 6.0.0))
   (fmt
    (>= 0.8.7))
-  astring
   magic-mime
   (ppx_sexp_conv
    (>= v0.13.0))

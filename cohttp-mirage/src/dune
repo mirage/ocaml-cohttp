@@ -10,5 +10,4 @@
   mirage-channel
   mirage-kv
   mirage-flow
-  magic-mime
-  astring))
+  magic-mime))
