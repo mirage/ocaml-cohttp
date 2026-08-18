@@ -18,9 +18,10 @@
   semantics, which can be safe if not combined with local file resolution.
 - cohttp-mirage: The static file server now normalises the request path before
   looking it up in the mirage-kv store. Normalisation is now applied to every
-  request, including directory requests. As a result a request for `/foo/`
-  serves `foo/index.html` rather than the top-level `index.html`,
-  which matches what a request for `/foo` already did (#1145 @avsm, review by @mdales).
+  request, including directory requests. 
+  The `request_fn` callback is now passed the request URI unchanged;
+  previously a request that fell back to an index page passed a URI rewritten to that
+  (#1145 @avsm, review by @mdales and @edwintorok).
 
 ## v6.2.2 (2026-07-26)
 

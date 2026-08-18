@@ -40,6 +40,7 @@ depends: [
   "fmt" {>= "0.8.7"}
   "magic-mime"
   "ppx_sexp_conv" {>= "v0.13.0"}
+  "alcotest" {with-test & >= "1.7.0"}
   "cohttp" {= version}
   "odoc" {with-doc}
 ]

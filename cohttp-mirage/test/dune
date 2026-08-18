@@ -1,0 +1,10 @@
+(executable
+ (name test_static)
+ (modules test_static)
+ (libraries cohttp-mirage cohttp-lwt cohttp http lwt mirage-kv uri alcotest))
+
+(rule
+ (alias runtest)
+ (package cohttp-mirage)
+ (action
+  (run ./test_static.exe)))
