@@ -39,15 +39,8 @@ let status t = t.status
 
 let make ?(version = `HTTP_1_1) ?(status = `OK) ?(encoding = Transfer.Unknown)
     ?(headers = Header.init ()) () =
-  (* RFC 7230 §3.3.1: Transfer-Encoding MUST NOT be sent in a 1xx, 204, or 304
-     response. Skip encoding headers for responses that cannot have a body. *)
-  let body_allowed =
-    match status with
-    | #Code.informational_status | `No_content | `Not_modified -> false
-    | #Code.status_code -> true
-  in
   let headers =
-    if not body_allowed then headers
+    if not (Http.Status.body_allowed status) then headers
     else
       match encoding with
       | Unknown -> (
@@ -61,11 +54,7 @@ let make ?(version = `HTTP_1_1) ?(status = `OK) ?(encoding = Transfer.Unknown)
 let pp_hum ppf r =
   Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib0.Sexp.to_string_hum)
 
-let allowed_body response =
-  (* rfc7230#section-5.7.1 *)
-  match status response with
-  | #Code.informational_status | `No_content | `Not_modified -> false
-  | #Code.status_code -> true
+let allowed_body response = Http.Status.body_allowed (status response)
 
 let has_body response =
   if allowed_body response then Transfer.has_body (encoding response) else `No

@@ -569,6 +569,10 @@ module Status = struct
     | `Network_connect_timeout_error -> 599
     | `Code code -> code
 
+  (* Defined for status codes in RFC7230 *)
+  let body_allowed t =
+    match to_int t with 204 | 304 -> false | code -> code < 100 || code >= 200
+
   let reason_phrase_of_code : int -> string = function
     | 100 -> "Continue"
     | 101 -> "Switching Protocols"

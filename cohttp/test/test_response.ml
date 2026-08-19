@@ -29,6 +29,7 @@ let bodyless_statuses =
     `Checkpoint;
     `No_content;
     `Not_modified;
+    `Code 199;
   ]
 
 let iter_bodyless f =

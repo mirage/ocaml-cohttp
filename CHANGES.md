@@ -34,6 +34,9 @@
 - cohttp: do not add `Transfer-Encoding`/`Content-Length` framing headers to
   responses that cannot have a body (1xx, 204 and 304). This fixes WebSocket
   handshakes. (@mefyl @avsm, #1141)
+- http: add `Status.body_allowed`, the response-status counterpart to the
+  existing `Method.body_allowed`, for users constructing responses by hand
+  (#1141)
 
 ## v6.2.2 (2026-07-26)
 
