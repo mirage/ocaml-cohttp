@@ -117,9 +117,10 @@
           };
           cohttp-mirage = pkg {
             pname = "cohttp-mirage";
+            checkInputs = [ alcotest ];
             propagatedBuildInputs = [
               mirage-flow mirage-channel conduit conduit-mirage
-              mirage-kv lwt cohttp-lwt cstruct fmt astring magic-mime ppx_sexp_conv
+              mirage-kv lwt cohttp-lwt cstruct fmt magic-mime ppx_sexp_conv
             ];
           };
           cohttp-bench = pkg {
