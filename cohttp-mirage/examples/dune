@@ -1,0 +1,11 @@
+(executable
+ (name static_server)
+ (modules static_server)
+ (libraries
+  cohttp-mirage
+  cohttp-lwt-unix
+  mirage-kv
+  optint
+  lwt.unix
+  logs.fmt
+  fmt.tty))
