@@ -1,8 +1,9 @@
-## dev
+## v6.3.0 (2026-08-19)
 
 - cohttp: `Cohttp.Path.resolve_local_file` no longer escapes the docroot when
   given percent-encoded or double-encoded traversal sequences such as
-  `..%2f..%2f`. (#1145 @avsm and Sapphire Livingstone, review by @mdales)
+  `..%2f..%2f`.
+  (#1145 @avsm and Sapphire Livingstone, review by @mdales @edwintorok @patricoferris)
 - cohttp: Add `Cohttp.Path.normalise` to turn a request URI into a safe
   relative path. Servers that make access-control decisions on path segments
   should apply it to `Request.uri` before inspecting them. `Request.uri`
@@ -19,9 +20,9 @@
 - cohttp-mirage: The static file server now normalises the request path before
   looking it up in the mirage-kv store. Normalisation is now applied to every
   request, including directory requests. 
-  The `request_fn` callback is now passed the request URI unchanged;
-  previously a request that fell back to an index page passed a URI rewritten to that
-  (#1145 @avsm, review by @mdales and @edwintorok).
+  The `request_fn` callback is now passed the request URI unchanged. Previously,
+  a request that fell back to an index page passed a URI rewritten to that
+  (#1145 @avsm, review by @mdales @edwintorok).
 
 ## v6.2.2 (2026-07-26)
 
