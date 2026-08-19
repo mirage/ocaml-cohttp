@@ -50,7 +50,7 @@ module HTTP (FS : Mirage_kv.RO) (S : Cohttp_lwt.S.Server) = struct
         match Cohttp.Path.normalise uri with
         | "" -> "index.html" | path -> path
       in
-      Logs.info (fun f -> f "request for '%s'" path);
+      Logs.info (fun f -> f "request for %S" path);
       Lwt.try_bind
         (fun () -> read_fs fs path)
         (respond uri path)
