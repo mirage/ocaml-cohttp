@@ -2,7 +2,7 @@ open Utils
 module IO = Io.IO
 
 type body = Body.t
-type conn = IO.conn * Cohttp.Connection.t [@@warning "-3"]
+type conn = IO.conn * Cohttp.Connection.t
 type writer = Http.Request.t * IO.oc
 type response = writer -> unit
 

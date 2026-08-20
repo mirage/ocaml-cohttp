@@ -2,7 +2,7 @@ module type S = sig
   module IO : S.IO
 
   type body
-  type conn = IO.conn * Connection.t [@@warning "-3"]
+  type conn = IO.conn * Connection.t
   type response
 
   type response_action =
