@@ -241,7 +241,7 @@
   (conduit-mirage
    (>= 8.0.0))
   (mirage-kv
-   (>= 3.0.0))
+   (>= 6.0.1))
   (lwt
    (>= 2.4.3))
   (cohttp-lwt
