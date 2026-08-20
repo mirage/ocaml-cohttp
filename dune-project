@@ -288,7 +288,7 @@
  (depends
   (ocaml
    (>= 4.08))
-  (ocurl (>= 0.9.2))
+  (curl (>= 0.10.0))
   (http
    (= :version))
   stringext))
@@ -301,7 +301,7 @@
  (depends
   (ocaml
    (>= 4.08))
-  (ocurl (>= 0.9.2))
+  (curl (>= 0.10.0))
   (http
    (= :version))
   (cohttp-curl
@@ -340,7 +340,7 @@
  (description
   "An HTTP client that relies on Curl + Async for the backend. Does not require\nconduit for SSL.")
  (depends
-  (ocurl (>= 0.9.2))
+  (curl (>= 0.10.0))
   (http
    (= :version))
   stringext
