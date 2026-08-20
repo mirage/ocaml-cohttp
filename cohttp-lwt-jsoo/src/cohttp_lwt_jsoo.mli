@@ -22,8 +22,8 @@
     custom reporter or use:
 
     {[
-      let reporter = Logs_browser.console_reporter () in
-      Logs.set_reporter reporter
+    let reporter = Logs_browser.console_reporter () in
+    Logs.set_reporter reporter
     ]} *)
 
 (** Configuration parameters for the XmlHttpRequest engines *)

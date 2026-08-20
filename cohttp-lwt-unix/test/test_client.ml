@@ -21,27 +21,29 @@ let test_server tests =
     let uri = Request.uri req in
     let path = Uri.path uri in
     (match Request.meth req with
-    | `PUT ->
-        let status = if Hashtbl.mem store path then `Created else `No_content in
-        Hashtbl.replace store path body;
-        Server.respond_string ~status ~body:"" ()
-    | `DELETE ->
-        if Hashtbl.mem store path then (
-          Hashtbl.remove store path;
-          Server.respond_string ~status:`No_content ~body:"" ())
-        else Server.respond_not_found ~uri ()
-    | `HEAD ->
-        if Hashtbl.mem store path then
-          Server.respond_string ~body:"" ~status:`OK ()
-        else Server.respond_string ~body:"" ~status:`Not_found ()
-    | `GET -> (
-        match Hashtbl.find_opt store path with
-        | Some body -> Server.respond_string ~status:`OK ~body ()
-        | None -> Server.respond_not_found ~uri ())
-    | meth ->
-        Server.respond_string ~status:`Method_not_allowed
-          ~body:("Unsupported method " ^ Code.string_of_method meth)
-          ())
+      | `PUT ->
+          let status =
+            if Hashtbl.mem store path then `Created else `No_content
+          in
+          Hashtbl.replace store path body;
+          Server.respond_string ~status ~body:"" ()
+      | `DELETE ->
+          if Hashtbl.mem store path then (
+            Hashtbl.remove store path;
+            Server.respond_string ~status:`No_content ~body:"" ())
+          else Server.respond_not_found ~uri ()
+      | `HEAD ->
+          if Hashtbl.mem store path then
+            Server.respond_string ~body:"" ~status:`OK ()
+          else Server.respond_string ~body:"" ~status:`Not_found ()
+      | `GET -> (
+          match Hashtbl.find_opt store path with
+          | Some body -> Server.respond_string ~status:`OK ~body ()
+          | None -> Server.respond_not_found ~uri ())
+      | meth ->
+          Server.respond_string ~status:`Method_not_allowed
+            ~body:("Unsupported method " ^ Code.string_of_method meth)
+            ())
     >|= Cohttp_lwt_unix_test.response
   in
   Cohttp_lwt_unix_test.test_server_s ~name:"mutable resources" spec tests

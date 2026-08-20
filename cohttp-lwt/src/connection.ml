@@ -203,18 +203,18 @@ module Make (Net : S.Net) : S.Connection with module Net = Net = struct
 
         (* select encoding based on (1st) header or (2nd) body *)
         (match Header.get_transfer_encoding headers with
-        | Unknown -> (
-            match Body.transfer_encoding body with
-            | Fixed _ as e -> Lwt.return (e, body)
-            | Chunked as e when connection.persistent = `True ->
-                Lwt.return (e, body)
-            | Chunked (* connection.persistent <> `True *) ->
-                (* We don't know yet whether chunked encoding is supported.
-                 * Therefore use fixed length encoding. *)
-                Body.length body >>= fun (length, body) ->
-                Lwt.return (Cohttp.Transfer.Fixed length, body)
-            | Unknown -> assert false)
-        | e -> Lwt.return (e, body))
+          | Unknown -> (
+              match Body.transfer_encoding body with
+              | Fixed _ as e -> Lwt.return (e, body)
+              | Chunked as e when connection.persistent = `True ->
+                  Lwt.return (e, body)
+              | Chunked (* connection.persistent <> `True *) ->
+                  (* We don't know yet whether chunked encoding is supported.
+                   * Therefore use fixed length encoding. *)
+                  Body.length body >>= fun (length, body) ->
+                  Lwt.return (Cohttp.Transfer.Fixed length, body)
+              | Unknown -> assert false)
+          | e -> Lwt.return (e, body))
         >>= fun (encoding, body) ->
         let headers =
           if

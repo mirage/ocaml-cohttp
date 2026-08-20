@@ -290,10 +290,10 @@ module Context = struct
       let* () =
         Http.Header.to_list headers
         |> Lwt_list.iter_s (fun (k, v) ->
-               let* () = Lwt_io.write t.oc k in
-               let* () = Lwt_io.write t.oc ": " in
-               let* () = Lwt_io.write t.oc v in
-               Lwt_io.write t.oc "\r\n")
+            let* () = Lwt_io.write t.oc k in
+            let* () = Lwt_io.write t.oc ": " in
+            let* () = Lwt_io.write t.oc v in
+            Lwt_io.write t.oc "\r\n")
       in
       let* () = Lwt_io.write t.oc "\r\n" in
       Body.write body t.oc

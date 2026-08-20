@@ -113,7 +113,7 @@ let test_resolve_local_file () =
       ( "encoded control does not collapse onto plain name",
         "/foo/bar/baz",
         "/sol%001.html",
-        "/foo/bar/baz/sol\x001.html" )
+        "/foo/bar/baz/sol\x001.html" );
     ]
   in
   List.iter
@@ -130,8 +130,9 @@ let test_normalise () =
       ("relative dot", "/foo/./bar", "foo/bar");
       ("relative grandparent blocked", "/../../etc/passwd", "etc/passwd");
       ("encoded slash traversal blocked", "/..%2f..%2fetc/passwd", "etc/passwd");
-      ("absolute-form grandparent blocked", "http://host/../../etc/passwd",
-       "etc/passwd");
+      ( "absolute-form grandparent blocked",
+        "http://host/../../etc/passwd",
+        "etc/passwd" );
       ( "absolute-form deep grandparent blocked",
         "https://example.com/a/../../../../etc/shadow",
         "etc/shadow" );

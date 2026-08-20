@@ -209,8 +209,7 @@ module Auth = struct
     let canonical_headers =
       sorted_headers
       |> List.fold ~init:"" ~f:(fun acc (k, v) ->
-             acc
-             ^ Printf.sprintf "%s:%s\n" (String.lowercase k) (String.strip v))
+          acc ^ Printf.sprintf "%s:%s\n" (String.lowercase k) (String.strip v))
     in
     let signed_headers =
       sorted_headers |> List.map ~f:(fun (k, _) -> k) |> String.concat ~sep:";"

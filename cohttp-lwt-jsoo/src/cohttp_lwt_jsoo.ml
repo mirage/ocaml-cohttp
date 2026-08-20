@@ -273,15 +273,15 @@ module Make_client_async (P : Params) = Make_api (struct
 
     (* perform call *)
     (match body with
-    | None -> Lwt.return xml##(send Js.null)
-    | Some body ->
-        CLB.to_string body >>= fun body ->
-        let bs = binary_string body in
-        (*Js.Opt.case (File.CoerceTo.blob (Obj.magic blob))
+      | None -> Lwt.return xml##(send Js.null)
+      | Some body ->
+          CLB.to_string body >>= fun body ->
+          let bs = binary_string body in
+          (*Js.Opt.case (File.CoerceTo.blob (Obj.magic blob))
           (fun () -> failwith "could not coerce to blob")
           (fun blob -> Lwt.return (xml##(send_blob blob)))*)
-        (*Lwt.return (xml##send (Js.Opt.return bs)) *)
-        Lwt.return (xml##send (Js.Opt.return (Obj.magic bs))))
+          (*Lwt.return (xml##send (Js.Opt.return bs)) *)
+          Lwt.return (xml##send (Js.Opt.return (Obj.magic bs))))
     >>= fun () ->
     Lwt.on_cancel res (fun () -> xml##abort);
     (* unwrap the response *)
@@ -321,11 +321,11 @@ module Make_client_sync (P : Params) = Make_api (struct
     in
     (* perform call *)
     (match body with
-    | None -> Lwt.return xml##(send Js.null)
-    | Some body ->
-        CLB.to_string body >|= fun body ->
-        let bs = binary_string body in
-        xml##(send (Js.Opt.return (Obj.magic bs))))
+      | None -> Lwt.return xml##(send Js.null)
+      | Some body ->
+          CLB.to_string body >|= fun body ->
+          let bs = binary_string body in
+          xml##(send (Js.Opt.return (Obj.magic bs))))
     >>= fun _body ->
     let body = Bb.construct_body xml in
     (* (re-)construct the response *)

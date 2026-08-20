@@ -99,8 +99,8 @@ type call =
     follows in [cohttp-lwt-unix]
 
     {[
-      Cohttp_lwt_unix.Debug.activate_debug ();
-      Logs.set_level (Some Logs.Warning)
+    Cohttp_lwt_unix.Debug.activate_debug ();
+    Logs.set_level (Some Logs.Warning)
     ]}
 
     @raise {!Connection.Retry}

@@ -40,11 +40,10 @@ module Context = struct
   let unregister t curl =
     Curl.get_activesocket curl
     |> Option.iter (fun fd ->
-           match Hashtbl.find_opt t.by_fd fd with
-           | None -> ()
-           | Some curls ->
-               Hashtbl.replace t.by_fd fd
-                 (List.filter (fun c -> c = curl) curls));
+        match Hashtbl.find_opt t.by_fd fd with
+        | None -> ()
+        | Some curls ->
+            Hashtbl.replace t.by_fd fd (List.filter (fun c -> c = curl) curls));
     Curl.Multi.remove t.mt curl;
     Hashtbl.remove t.wakeners curl
 

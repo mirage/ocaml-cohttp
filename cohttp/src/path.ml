@@ -8,8 +8,5 @@ let remove_dot_segments path =
   in
   path |> String.split_on_char '/' |> go [] |> String.concat "/"
 
-let normalise uri =
-  uri |> Uri.path |> Uri.pct_decode |> remove_dot_segments
-
-let resolve_local_file ~docroot ~uri =
-  Filename.concat docroot (normalise uri)
+let normalise uri = uri |> Uri.path |> Uri.pct_decode |> remove_dot_segments
+let resolve_local_file ~docroot ~uri = Filename.concat docroot (normalise uri)

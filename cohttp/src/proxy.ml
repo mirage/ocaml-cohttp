@@ -32,15 +32,14 @@ module Forward = struct
             no_proxy
             |> String.split_on_char ','
             |> List.filter_map (fun pattern ->
-                   if pattern = "" then None else Some (String.trim pattern))
+                if pattern = "" then None else Some (String.trim pattern))
             |> List.map (fun pattern ->
-                   match Ipaddr.of_string pattern with
-                   | Ok addr -> Ipaddr_prefix (Ipaddr.Prefix.of_addr addr)
-                   | Error _ -> (
-                       match Ipaddr.Prefix.of_string pattern with
-                       | Ok prefix -> Ipaddr_prefix prefix
-                       | Error _ -> Name (trim_dots ~first_leading:true pattern)
-                       ))
+                match Ipaddr.of_string pattern with
+                | Ok addr -> Ipaddr_prefix (Ipaddr.Prefix.of_addr addr)
+                | Error _ -> (
+                    match Ipaddr.Prefix.of_string pattern with
+                    | Ok prefix -> Ipaddr_prefix prefix
+                    | Error _ -> Name (trim_dots ~first_leading:true pattern)))
           in
           Patterns patterns
 

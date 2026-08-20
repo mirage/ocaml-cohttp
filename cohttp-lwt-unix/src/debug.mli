@@ -22,9 +22,9 @@ val default_reporter : Logs.reporter
     stderr, using coloured output if possible.
 
     {[
-      Fmt_tty.setup_std_outputs ();
-      Logs.set_level ~all:true (Some level);
-      Logs.set_reporter Debug.default_reporter
+    Fmt_tty.setup_std_outputs ();
+    Logs.set_level ~all:true (Some level);
+    Logs.set_reporter Debug.default_reporter
     ]} *)
 
 val activate_debug : unit -> unit
@@ -41,12 +41,12 @@ val debug_active : unit -> bool
     over the various modules logs names as follows.
 
     {[
-      (* Set log level v for all loggers, this does also affect cohttp internal loggers *)
-      Logs.set_level ~all:true level;
-      (* Disable all cohttp-lwt and cohttp-lwt-unix logs *)
-      List.iter (fun src ->
-          match Logs.Src.name src with
-          | "cohttp.lwt.io" | "cohttp.lwt.server" -> Logs.Src.set_level src None
-          | _ -> ())
-      @@ Logs.Src.list ()
+    (* Set log level v for all loggers, this does also affect cohttp internal loggers *)
+    Logs.set_level ~all:true level;
+    (* Disable all cohttp-lwt and cohttp-lwt-unix logs *)
+    List.iter (fun src ->
+        match Logs.Src.name src with
+        | "cohttp.lwt.io" | "cohttp.lwt.server" -> Logs.Src.set_level src None
+        | _ -> ())
+    @@ Logs.Src.list ()
     ]} *)

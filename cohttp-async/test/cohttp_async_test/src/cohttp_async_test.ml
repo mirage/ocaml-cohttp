@@ -50,19 +50,17 @@ let test_server_s ?port ?(name = "Cohttp Server Test") spec f =
       let results =
         tests
         |> Deferred.List.map ~how:`Sequential ~f:(fun (name, test) ->
-               Logs.debug (fun m -> m "Running %s" name);
-               let res =
-                 try_with test >>| function
-                 | Ok () -> `Ok
-                 | Error exn -> `Exn exn
-               in
-               res >>| fun res -> (name, res))
+            Logs.debug (fun m -> m "Running %s" name);
+            let res =
+              try_with test >>| function Ok () -> `Ok | Error exn -> `Exn exn
+            in
+            res >>| fun res -> (name, res))
       in
       results >>| fun results ->
       let ounit_tests =
         results
         |> List.map ~f:(fun (name, res) ->
-               name >:: fun () -> match res with `Ok -> () | `Exn x -> raise x)
+            name >:: fun () -> match res with `Ok -> () | `Exn x -> raise x)
       in
       name >::: ounit_tests)
 

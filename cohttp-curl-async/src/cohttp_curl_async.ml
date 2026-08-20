@@ -74,9 +74,9 @@ module Context = struct
             (fun () -> f ())
             ()
           |> Deferred.map ~f:(function
-               | `Bad_fd | `Closed -> assert false
-               | `Unsupported -> assert false
-               | `Interrupted -> ())
+            | `Bad_fd | `Closed -> assert false
+            | `Unsupported -> assert false
+            | `Interrupted -> ())
           |> Deferred.ignore_m
         in
         don't_wait_for event;

@@ -82,9 +82,9 @@ let ts =
         responses |> Pipe.to_list >>= fun resps ->
         resps
         |> Deferred.List.iter ~how:`Sequential ~f:(fun (_resp, body) ->
-               let expected_body = body_q |> Queue.dequeue_exn in
-               body |> Body.to_string >>| fun body ->
-               assert_equal ~printer expected_body body)
+            let expected_body = body_q |> Queue.dequeue_exn in
+            body |> Body.to_string >>| fun body ->
+            assert_equal ~printer expected_body body)
       in
       let large_chunked_response () =
         Client.get ~headers uri >>= fun (resp, body) ->
