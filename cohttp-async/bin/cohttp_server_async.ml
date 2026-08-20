@@ -51,13 +51,13 @@ let serve ~info ~docroot ~index uri path =
                 (* Do a directory listing *)
                 Sys.ls_dir file_name
                 >>= Deferred.List.map ~how:`Parallel ~f:(fun f ->
-                        let file_name = file_name / f in
-                        try_with (fun () ->
-                            Unix.stat file_name >>| fun stat ->
-                            (Some stat.Unix.Stats.kind, stat.Unix.Stats.size, f))
-                        >>| function
-                        | Ok v -> v
-                        | Error _ -> (None, 0L, f))
+                    let file_name = file_name / f in
+                    try_with (fun () ->
+                        Unix.stat file_name >>| fun stat ->
+                        (Some stat.Unix.Stats.kind, stat.Unix.Stats.size, f))
+                    >>| function
+                    | Ok v -> v
+                    | Error _ -> (None, 0L, f))
                 >>= fun listing ->
                 html_of_listing uri path
                   (sort ((Some `Directory, 0L, "..") :: listing))

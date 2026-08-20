@@ -18,17 +18,17 @@ let promise_of_lwt lwt =
 
 let () =
   Js.export_all
-    (object%js
-       method request uri =
-         let f () =
-           let uri = Uri.of_string (Js.to_string uri) in
-           let* response, body = Client.get uri in
-           let+ body = Cohttp_lwt.Body.to_string body in
-           let status =
-             Http.Response.status response |> Cohttp.Code.code_of_status
-           in
-           Js.array
-             [| Js.Unsafe.inject status; Js.Unsafe.inject @@ Js.string body |]
-         in
-         promise_of_lwt f
-    end)
+    object%js
+      method request uri =
+        let f () =
+          let uri = Uri.of_string (Js.to_string uri) in
+          let* response, body = Client.get uri in
+          let+ body = Cohttp_lwt.Body.to_string body in
+          let status =
+            Http.Response.status response |> Cohttp.Code.code_of_status
+          in
+          Js.array
+            [| Js.Unsafe.inject status; Js.Unsafe.inject @@ Js.string body |]
+        in
+        promise_of_lwt f
+    end

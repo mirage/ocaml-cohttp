@@ -23,8 +23,8 @@ module Make_no_cache (Connection : S.Connection) = struct
       (fun () ->
         res >>= fun (_, body) ->
         (match body with
-        | `Empty | `String _ | `Strings _ -> Lwt.return_unit
-        | `Stream stream -> Lwt_stream.closed stream)
+          | `Empty | `String _ | `Strings _ -> Lwt.return_unit
+          | `Stream stream -> Lwt_stream.closed stream)
         >>= fun () ->
         Connection.close connection;
         Lwt.return_unit)
@@ -301,11 +301,11 @@ end = struct
 
   let call self ?headers ?body ?absolute_form meth uri =
     (match self.proxy_endp with
-    | None ->
-        Net.resolve ~ctx:self.ctx self.proxy_uri >>= fun proxy_endp ->
-        self.proxy_endp <- Some proxy_endp;
-        Lwt.return proxy_endp
-    | Some proxy_endp -> Lwt.return proxy_endp)
+      | None ->
+          Net.resolve ~ctx:self.ctx self.proxy_uri >>= fun proxy_endp ->
+          self.proxy_endp <- Some proxy_endp;
+          Lwt.return proxy_endp
+      | Some proxy_endp -> Lwt.return proxy_endp)
     >>= fun proxy_endp ->
     let remote_port =
       match Uri_services.tcp_port_of_uri uri with

@@ -1,12 +1,14 @@
-## v6.3.0 (2026-08-19)
+## v6.3.0 (2026-08-20)
 
 - cohttp: `Cohttp.Path.resolve_local_file` no longer escapes the docroot when
   given percent-encoded traversal sequences such as `..%2f..%2f`. The URI path
   is percent-decoded exactly once before `.` and `..` segments are removed.
   (#1145 @avsm and Sapphire Livingstone, review by @mdales @edwintorok @patricoferris)
+
 - cohttp: `Cohttp.Path.resolve_local_file` collapses empty path segments and
   drops a trailing slash. A request for `/dir//sub/` now resolves to
   `docroot/dir/sub` instead of `docroot/dir//sub/`. (#1145 @avsm)
+
 - cohttp: Add `Cohttp.Path.normalise`, which converts a request URI into a
   relative path that cannot ascend above its root. Servers that make access
   control decisions on path segments must apply it to `Request.uri` before
@@ -24,16 +26,20 @@
   Normalisation is not applied by default, as existing code may depend on the
   present semantics, which are safe when not combined with local file
   resolution.
+
 - cohttp-mirage: The static file server normalises the request path of every
   request, including directory requests, before looking it up in the mirage-kv
   store. Keys are now percent-decoded, so `/my%20file.txt` retrieves the key
   `my file.txt` rather than `my%20file.txt` (#1145 @avsm, review by @mdales @edwintorok)
+
 - cohttp-mirage: The `request_fn` callback receives the request URI unchanged.
   A request that falls back to an index page previously received a URI
   rewritten to that page. (#1145 @avsm)
+
 - cohttp: do not add `Transfer-Encoding`/`Content-Length` framing headers to
   responses that cannot have a body (1xx, 204 and 304). This fixes WebSocket
   handshakes. (@mefyl @avsm, #1141)
+
 - http: add `Status.body_allowed`, the response-status counterpart to the
   existing `Method.body_allowed`, for users constructing responses by hand
   (#1141)

@@ -103,8 +103,8 @@ let main ~proxy ~uri ~credential () =
             getenv_opt "http_proxy";
           ]
           |> List.filter_map (function
-               | Some (k, v) -> Some (String.(sub k 0 (rindex k '_')), v)
-               | n -> n) )
+            | Some (k, v) -> Some (String.(sub k 0 (rindex k '_')), v)
+            | n -> n) )
     | v -> (v, None, [])
   in
 

@@ -204,10 +204,10 @@ module Header = struct
     let b = Buffer.create 128 in
     to_list h
     |> List.iter (fun (k, v) ->
-           Buffer.add_string b k;
-           Buffer.add_string b ": ";
-           Buffer.add_string b v;
-           Buffer.add_string b "\r\n");
+        Buffer.add_string b k;
+        Buffer.add_string b ": ";
+        Buffer.add_string b v;
+        Buffer.add_string b "\r\n");
     Buffer.add_string b "\r\n";
     Buffer.contents b
 

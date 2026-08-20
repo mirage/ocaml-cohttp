@@ -20,19 +20,21 @@ module Net = struct
 
   let connect_uri ?interrupt ?ssl_config uri =
     (match Uri.scheme uri with
-    | Some "httpunix" ->
-        let host = Uri.host_with_default ~default:"localhost" uri in
-        return @@ `Unix_domain_socket host
-    | _ -> (
-        lookup uri |> Deferred.Or_error.ok_exn >>= fun (host, addr, port) ->
-        return
-        @@
-        match (Uri.scheme uri, ssl_config) with
-        | Some "https", Some config -> `OpenSSL (addr, port, config)
-        | Some "https", None ->
-            let config = Conduit_async.V2.Ssl.Config.create ~hostname:host () in
-            `OpenSSL (addr, port, config)
-        | _ -> `TCP (addr, port)))
+      | Some "httpunix" ->
+          let host = Uri.host_with_default ~default:"localhost" uri in
+          return @@ `Unix_domain_socket host
+      | _ -> (
+          lookup uri |> Deferred.Or_error.ok_exn >>= fun (host, addr, port) ->
+          return
+          @@
+          match (Uri.scheme uri, ssl_config) with
+          | Some "https", Some config -> `OpenSSL (addr, port, config)
+          | Some "https", None ->
+              let config =
+                Conduit_async.V2.Ssl.Config.create ~hostname:host ()
+              in
+              `OpenSSL (addr, port, config)
+          | _ -> `TCP (addr, port)))
     >>= fun mode ->
     Conduit_async.V2.connect ?interrupt mode >>| fun (r, w) ->
     (Input_channel.create r, w)
@@ -134,22 +136,23 @@ let call ?interrupt ?ssl_config ?headers ?(chunked = false) ?(body = `Empty)
   (* Create a request, then make the request. Figure out an appropriate
      transfer encoding *)
   (match chunked with
-  | false ->
-      Body.Private.disable_chunked_encoding body >>| fun (body, body_length) ->
-      ( Cohttp.Request.make_for_client ?headers ~chunked ~body_length meth uri,
-        body )
-  | true ->
-      Deferred.return
-        (match Body.is_empty body with
-        | `True ->
-            (* Don't used chunked encoding with an empty body *)
-            ( Cohttp.Request.make_for_client ?headers ~chunked:false
-                ~body_length:0L meth uri,
-              body )
-        | `Unknown | `False ->
-            (* Use chunked encoding if there is a body *)
-            ( Cohttp.Request.make_for_client ?headers ~chunked:true meth uri,
-              body )))
+    | false ->
+        Body.Private.disable_chunked_encoding body
+        >>| fun (body, body_length) ->
+        ( Cohttp.Request.make_for_client ?headers ~chunked ~body_length meth uri,
+          body )
+    | true ->
+        Deferred.return
+          (match Body.is_empty body with
+          | `True ->
+              (* Don't used chunked encoding with an empty body *)
+              ( Cohttp.Request.make_for_client ?headers ~chunked:false
+                  ~body_length:0L meth uri,
+                body )
+          | `Unknown | `False ->
+              (* Use chunked encoding if there is a body *)
+              ( Cohttp.Request.make_for_client ?headers ~chunked:true meth uri,
+                body )))
   >>= fun (req, body) -> request ?interrupt ?ssl_config ~body ~uri req
 
 let get ?interrupt ?ssl_config ?headers uri =

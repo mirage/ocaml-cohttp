@@ -32,8 +32,8 @@ let make_net_req uri meth' body () =
   body
   |> Body.to_pipe
   |> Pipe.iter ~f:(fun b ->
-         Stdlib.print_string b;
-         return ())
+      Stdlib.print_string b;
+      return ())
 
 let _ =
   (* enable logging to stdout *)

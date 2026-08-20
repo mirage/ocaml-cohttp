@@ -55,16 +55,15 @@ let serve ~info ~docroot ~index uri path =
             | false ->
                 ls_dir file_name
                 >>= Lwt_list.map_s (fun f ->
-                        let file_name = file_name / f in
-                        Lwt.try_bind
-                          (fun () -> Lwt_unix.LargeFile.stat file_name)
-                          (fun stat ->
-                            Lwt.return
-                              ( Some
-                                  (kind_of_unix_kind stat.Unix.LargeFile.st_kind),
-                                stat.Unix.LargeFile.st_size,
-                                f ))
-                          (fun _exn -> Lwt.return (None, 0L, f)))
+                    let file_name = file_name / f in
+                    Lwt.try_bind
+                      (fun () -> Lwt_unix.LargeFile.stat file_name)
+                      (fun stat ->
+                        Lwt.return
+                          ( Some (kind_of_unix_kind stat.Unix.LargeFile.st_kind),
+                            stat.Unix.LargeFile.st_size,
+                            f ))
+                      (fun _exn -> Lwt.return (None, 0L, f)))
                 >>= fun listing ->
                 let body = html_of_listing uri path (sort listing) info in
                 Server.respond_string ~status:`OK ~body ())

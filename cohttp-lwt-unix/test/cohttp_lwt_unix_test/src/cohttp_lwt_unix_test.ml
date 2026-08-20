@@ -52,19 +52,19 @@ let test_server_s ?port ?(name = "Cohttp Server Test") spec f =
       let results =
         tests
         |> Lwt_list.map_s (fun (name, test) ->
-               Logs.info (fun f -> f "Running %s" name);
-               let res =
-                 Lwt.try_bind test
-                   (fun () -> return `Ok)
-                   (fun exn -> return (`Exn exn))
-               in
-               res >|= fun res -> (name, res))
+            Logs.info (fun f -> f "Running %s" name);
+            let res =
+              Lwt.try_bind test
+                (fun () -> return `Ok)
+                (fun exn -> return (`Exn exn))
+            in
+            res >|= fun res -> (name, res))
       in
       results >|= fun results ->
       let ounit_tests =
         results
         |> List.map (fun (name, res) ->
-               name >:: fun () -> match res with `Ok -> () | `Exn x -> raise x)
+            name >:: fun () -> match res with `Ok -> () | `Exn x -> raise x)
       in
       name >::: ounit_tests)
 

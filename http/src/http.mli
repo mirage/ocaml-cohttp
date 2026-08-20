@@ -350,19 +350,19 @@ module Header : sig
       example below) are not affected by [clean_dup]. For example,
 
       {v
-    transfer-encoding: gzip
-    host: afirsthost.com
-    connection: keep-alive
-    host: anhost.com, anotherhost.com
-    transfer-encoding: chunked
+      transfer-encoding: gzip
+      host: afirsthost.com
+      connection: keep-alive
+      host: anhost.com, anotherhost.com
+      transfer-encoding: chunked
       v}
 
       becomes
 
       {v
-    transfer-encoding: gzip, chunked
-    connection: keep-alive
-    host: anhost.com, anotherhost.com
+      transfer-encoding: gzip, chunked
+      connection: keep-alive
+      host: anhost.com, anotherhost.com
       v}
 
       Finally, following
