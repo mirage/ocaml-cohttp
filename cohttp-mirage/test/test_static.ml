@@ -9,6 +9,7 @@ let run p =
 (* An in-memory [Mirage_kv.RO] over a list of (key, contents) pairs. *)
 module Mock_fs : sig
   include Mirage_kv.RO
+
   val create : (string * string) list -> t
 end = struct
   type t = (string * string) list
@@ -28,8 +29,7 @@ end = struct
     let path = path key in
     match List.assoc_opt path t with
     | Some contents -> Lwt.return (Ok contents)
-    | None when is_dictionary t path ->
-        Lwt.return (Error (`Value_expected key))
+    | None when is_dictionary t path -> Lwt.return (Error (`Value_expected key))
     | None -> Lwt.return (Error (`Not_found key))
 
   let exists t key =
@@ -48,6 +48,7 @@ end
 
 module Mock_server : sig
   include Cohttp_lwt.S.Server
+
   val serve : t -> string -> (Http.Response.t * Cohttp_lwt.Body.t) Lwt.t
 end = struct
   module IO = struct
@@ -82,12 +83,13 @@ end = struct
   type t = { handler : conn -> Http.Request.t -> body -> response Lwt.t }
 
   let make ?conn_closed:_ ~callback () = { handler = callback }
-
   let unsupported _ = Alcotest.fail "unexpected server operation"
   let make_response_action ?conn_closed:_ ~callback:_ () = unsupported ()
   let make_expert ?conn_closed:_ ~callback:_ () = unsupported ()
   let callback _ _ _ _ = unsupported ()
-  let resolve_local_file ~docroot ~uri = Cohttp.Path.resolve_local_file ~docroot ~uri
+
+  let resolve_local_file ~docroot ~uri =
+    Cohttp.Path.resolve_local_file ~docroot ~uri
 
   let respond ?(headers = Http.Header.init ()) ~status ~body () =
     Lwt.return (Http.Response.make ~status ~headers (), body)
@@ -111,7 +113,7 @@ end = struct
 
   let serve t target =
     let request = Http.Request.make ~meth:`GET target in
-    t.handler ((), Cohttp.Connection.create () [@warning "-3"]) request `Empty
+    t.handler ((), (Cohttp.Connection.create () [@warning "-3"])) request `Empty
 end
 
 module Static = Cohttp_mirage.Static.HTTP (Mock_fs) (Mock_server)
@@ -134,23 +136,20 @@ let request ?request_fn target =
 let check_served name ~target ~expected =
   let response, body = request target in
   Alcotest.(check int)
-    (name ^ ": status")
-    200
+    (name ^ ": status") 200
     (Http.Status.to_int (Http.Response.status response));
   Alcotest.(check string) (name ^ ": body") expected body
 
 let check_not_found name ~target =
   let response, _ = request target in
   Alcotest.(check int)
-    (name ^ ": status")
-    404
+    (name ^ ": status") 404
     (Http.Status.to_int (Http.Response.status response))
 
 let test_index_pages () =
   check_served "root" ~target:"/" ~expected:"root index";
   check_served "directory" ~target:"/foo" ~expected:"foo index";
-  check_served "directory trailing slash" ~target:"/foo/"
-    ~expected:"foo index";
+  check_served "directory trailing slash" ~target:"/foo/" ~expected:"foo index";
   check_served "nested directory" ~target:"/foo/bar" ~expected:"foo/bar index";
   check_served "nested directory trailing slash" ~target:"/foo/bar/"
     ~expected:"foo/bar index";
@@ -181,15 +180,14 @@ let test_traversal_clamped () =
     ~expected:"css body";
   check_served "fully encoded" ~target:"/%2e%2e%2f%2e%2e%2fstyle.css"
     ~expected:"css body";
-  check_served "encoded slash into directory index"
-    ~target:"/foo%2fbar%2f" ~expected:"foo/bar index"
+  check_served "encoded slash into directory index" ~target:"/foo%2fbar%2f"
+    ~expected:"foo/bar index"
 
 (* Percent-decoding should happens exactly once. *)
 let test_single_decode () =
   check_served "encoded space" ~target:"/my%20file.txt" ~expected:"spaced";
   check_not_found "double encoded slash" ~target:"/..%252f..%252fstyle.css";
-  check_not_found "double encoded, fully"
-    ~target:"/%252e%252e%252fstyle.css"
+  check_not_found "double encoded, fully" ~target:"/%252e%252e%252fstyle.css"
 
 let test_request_fn () =
   let request_fn uri headers =

@@ -2,6 +2,7 @@ open Lwt.Infix
 
 module Dir : sig
   include Mirage_kv.RO
+
   val connect : string -> t
 end = struct
   type t = { root : string }
@@ -16,7 +17,8 @@ end = struct
     let segment s =
       match s with
       | "" | "." | ".." -> None
-      | s when String.exists (function '/' | '\000' -> true | _ -> false) s -> None
+      | s when String.exists (function '/' | '\000' -> true | _ -> false) s ->
+          None
       | s -> Some s
     in
     let rec go acc = function
@@ -41,7 +43,8 @@ end = struct
 
   let get t key =
     stat t key >>= function
-    | Some (path, { Unix.st_kind = Unix.S_REG; _ }) -> Lwt_io.with_file ~mode:Lwt_io.Input path Lwt_io.read >|= Result.ok
+    | Some (path, { Unix.st_kind = Unix.S_REG; _ }) ->
+        Lwt_io.with_file ~mode:Lwt_io.Input path Lwt_io.read >|= Result.ok
     | Some _ -> Lwt.return (Error (`Value_expected key))
     | None -> Lwt.return (Error (`Not_found key))
 
@@ -60,22 +63,28 @@ end = struct
     match path t key with
     | None -> Lwt.return (Error (`Not_found key))
     | Some dir ->
-        Lwt.catch (fun () ->
-          Lwt_unix.files_of_directory dir |> Lwt_stream.to_list
-          >>= Lwt_list.filter_map_s (fun name ->
+        Lwt.catch
+          (fun () ->
+            Lwt_unix.files_of_directory dir
+            |> Lwt_stream.to_list
+            >>= Lwt_list.filter_map_s (fun name ->
                 if name = "." || name = ".." then Lwt.return_none
-                else Lwt_unix.stat (Filename.concat dir name) >|= fun { Unix.st_kind; _ } ->
-                match st_kind with
-                | Unix.S_REG -> Some (Mirage_kv.Key.add key name, `Value)
-                | Unix.S_DIR -> Some (Mirage_kv.Key.add key name, `Dictionary)
-                | _ -> None)
-          >|= Result.ok)
-        (function
-          | Unix.Unix_error ((Unix.ENOENT | Unix.ENOTDIR), _, _) ->
-              Lwt.return (Error (`Not_found key))
-          | e -> Lwt.reraise e)
+                else
+                  Lwt_unix.stat (Filename.concat dir name)
+                  >|= fun { Unix.st_kind; _ } ->
+                  match st_kind with
+                  | Unix.S_REG -> Some (Mirage_kv.Key.add key name, `Value)
+                  | Unix.S_DIR -> Some (Mirage_kv.Key.add key name, `Dictionary)
+                  | _ -> None)
+            >|= Result.ok)
+          (function
+            | Unix.Unix_error ((Unix.ENOENT | Unix.ENOTDIR), _, _) ->
+                Lwt.return (Error (`Not_found key))
+            | e -> Lwt.reraise e)
 
-  let get_partial _ key ~offset:_ ~length:_ = Lwt.return (Error (`Not_found key))
+  let get_partial _ key ~offset:_ ~length:_ =
+    Lwt.return (Error (`Not_found key))
+
   let last_modified _ key = Lwt.return (Error (`Not_found key))
   let digest _ key = Lwt.return (Error (`Not_found key))
 end
@@ -96,7 +105,12 @@ let html_escape s =
 let html_of_listing dir entries =
   let segments = Mirage_kv.Key.segments dir in
   let link segments text =
-    let href = segments |> List.map (Uri.pct_encode ~component:`Path) |> String.concat "/" |> html_escape in
+    let href =
+      segments
+      |> List.map (Uri.pct_encode ~component:`Path)
+      |> String.concat "/"
+      |> html_escape
+    in
     Printf.sprintf {|<li><a href="/%s">%s</a></li>|} href (html_escape text)
   in
   let parent =
@@ -124,7 +138,8 @@ let html_of_listing dir entries =
        "<h1>" ^ title ^ "</h1>";
        "<ul>";
      ]
-    @ parent @ entries
+    @ parent
+    @ entries
     @ [ "</ul>"; "</body>"; "</html>"; "" ])
 
 module Generated_index (KV : Mirage_kv.RO) : Mirage_kv.RO with type t = KV.t =
