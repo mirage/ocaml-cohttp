@@ -56,6 +56,32 @@ let content_length_tests =
   ( "content_length",
     [ ("OK", `Quick, ok_status); ("`No_content", `Quick, no_content_status) ] )
 
+let body_allowed_tests =
+  let case (status, expected) =
+    ( Status.to_string status,
+      `Quick,
+      fun () ->
+        Status.body_allowed status
+        |> aeb ("body_allowed " ^ Status.to_string status) expected )
+  in
+  ( "body_allowed",
+    List.map case
+      [
+        (`Continue, false);
+        (`Switching_protocols, false);
+        (`Processing, false);
+        (`Checkpoint, false);
+        (`No_content, false);
+        (`Not_modified, false);
+        (`Code 199, false);
+        (`OK, true);
+        (`Created, true);
+        (`Found, true);
+        (`Bad_request, true);
+        (`Internal_server_error, true);
+        (`Code 250, true);
+      ] )
+
 let () =
   Alcotest.run "test_response"
-    [ requires_content_length_tests; content_length_tests ]
+    [ requires_content_length_tests; content_length_tests; body_allowed_tests ]

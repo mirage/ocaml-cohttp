@@ -40,23 +40,21 @@ let status t = t.status
 let make ?(version = `HTTP_1_1) ?(status = `OK) ?(encoding = Transfer.Unknown)
     ?(headers = Header.init ()) () =
   let headers =
-    match encoding with
-    | Unknown -> (
-        match Header.get_transfer_encoding headers with
-        | Unknown -> Header.add_transfer_encoding headers Chunked
-        | _ -> headers)
-    | _ -> Header.add_transfer_encoding headers encoding
+    if not (Http.Status.body_allowed status) then headers
+    else
+      match encoding with
+      | Unknown -> (
+          match Header.get_transfer_encoding headers with
+          | Unknown -> Header.add_transfer_encoding headers Chunked
+          | _ -> headers)
+      | _ -> Header.add_transfer_encoding headers encoding
   in
   { headers; version; status }
 
 let pp_hum ppf r =
   Format.fprintf ppf "%s" (r |> sexp_of_t |> Sexplib0.Sexp.to_string_hum)
 
-let allowed_body response =
-  (* rfc7230#section-5.7.1 *)
-  match status response with
-  | #Code.informational_status | `No_content | `Not_modified -> false
-  | #Code.status_code -> true
+let allowed_body response = Http.Status.body_allowed (status response)
 
 let has_body response =
   if allowed_body response then Transfer.has_body (encoding response) else `No

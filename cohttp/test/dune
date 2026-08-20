@@ -69,3 +69,15 @@
  (package cohttp)
  (action
   (run ./test_proxy.exe)))
+
+(executable
+ (name test_response)
+ (modules test_response)
+ (forbidden_libraries base)
+ (libraries cohttp alcotest))
+
+(rule
+ (alias runtest)
+ (package cohttp)
+ (action
+  (run ./test_response.exe)))

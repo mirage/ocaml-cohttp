@@ -153,6 +153,15 @@ module Status : sig
   val to_string : t -> string
   val to_int : t -> int
   val of_int : int -> t
+
+  val body_allowed : t -> bool
+  (** [body_allowed status] returns whether a response with [status] allows a
+      payload body to be present per RFC7230. A [1xx], [204] or [304] response
+      is always terminated by the first empty line after the header fields, and
+      so carries neither a body nor any framing header.
+
+      https://www.rfc-editor.org/rfc/rfc7230#section-3.3 *)
+
   val reason_phrase_of_code : int -> string
   val pp : Format.formatter -> t -> unit
 end
