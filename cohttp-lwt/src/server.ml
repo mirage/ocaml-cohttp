@@ -117,7 +117,11 @@ module Make (IO : S.IO) = struct
   let handle_response ~keep_alive oc res body conn_closed handle_client =
     IO.catch (fun () ->
         Response.write ~flush:false
-          (fun writer -> Body.write_body (Response.write_body writer) body)
+          (fun writer ->
+            Body.write_body
+              ~write_bigstring:(Response.write_bigstring_body writer)
+              (Response.write_body writer)
+              body)
           res oc)
     >>= function
     | Ok () ->

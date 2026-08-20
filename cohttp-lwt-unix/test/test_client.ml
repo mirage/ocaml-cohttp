@@ -179,7 +179,7 @@ let test_unknown uri =
             match body with
             (* Still, body may have been (partially) consumed and needs re-creation. *)
             | Some (`Stream _) -> raise Connection.Retry
-            | None | Some (`Empty | `String _ | `Strings _) ->
+            | None | Some (`Empty | `String _ | `Strings _ | `Bigstring _) ->
                 handler ?headers ?body meth uri)
         | e -> Lwt.reraise e)
   in

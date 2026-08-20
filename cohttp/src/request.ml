@@ -206,6 +206,7 @@ module Make (IO : S.IO) = struct
     Transfer_IO.make_writer ~flush (Header.get_transfer_encoding req.headers) oc
 
   let write_body = Transfer_IO.write
+  let write_bigstring_body = Transfer_IO.write_bigstring
 
   let write_footer headers oc =
     match Header.get_transfer_encoding headers with

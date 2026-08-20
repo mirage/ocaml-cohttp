@@ -57,6 +57,16 @@ module Make (Channel : Mirage_channel.S) = struct
     | Error `Closed -> failwith "Trying to write on closed channel"
     | Error e -> raise (Write_exn e)
 
+  (* [write_buffer] takes the buffer without copying, and the flush below ends
+     the borrow before returning, which serves [`Copy] zero-copy as well. *)
+  let write_bigstring oc buf off len =
+    let buf = Cohttp.Bigstring.buffer buf in
+    Channel.write_buffer oc (Cstruct.of_bigarray ~off ~len buf);
+    Channel.flush oc >>= function
+    | Ok () -> Lwt.return_unit
+    | Error `Closed -> failwith "Trying to write on closed channel"
+    | Error e -> raise (Write_exn e)
+
   let flush _ =
     (* NOOP since we flush in the normal writer functions above *)
     Lwt.return_unit

@@ -50,6 +50,12 @@ module IO = struct
     let () = Logs.debug (fun f -> f ">>> %s" (String.trim string)) in
     Eio.Buf_write.string oc string
 
+  let write_bigstring oc buf off len =
+    match buf with
+    | `Copy buf -> Eio.Buf_write.cstruct oc (Cstruct.of_bigarray ~off ~len buf)
+    | `Passthrough buf ->
+        Eio.Buf_write.schedule_cstruct oc (Cstruct.of_bigarray ~off ~len buf)
+
   let flush = Eio.Buf_write.flush
 end
 

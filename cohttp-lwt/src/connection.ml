@@ -234,7 +234,11 @@ module Make (Net : S.Net) : S.Connection with module Net = Net = struct
           (fun () ->
             (* try *)
             Request.write ~flush:false
-              (fun writer -> Body.write_body (Request.write_body writer) body)
+              (fun writer ->
+                Body.write_body
+                  ~write_bigstring:(Request.write_bigstring_body writer)
+                  (Request.write_body writer)
+                  body)
               req oc)
           (fun e ->
             (* with *)

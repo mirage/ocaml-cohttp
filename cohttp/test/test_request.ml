@@ -309,6 +309,11 @@ module Test_io = struct
   let read_line buffer = Buffer.read_line buffer ""
   let read buffer = Buffer.read buffer ""
   let write buffer string = Buffer.refill buffer string |> ignore
+
+  let write_bigstring buffer buf off len =
+    let buf = Cohttp.Bigstring.buffer buf in
+    Buffer.refill buffer (Cohttp.Bigstring.sub_string buf ~off ~len) |> ignore
+
   let flush _ = ()
 end
 

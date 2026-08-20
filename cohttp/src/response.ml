@@ -118,6 +118,7 @@ module Make (IO : S.IO) = struct
     Transfer_IO.make_writer ~flush (encoding t) oc
 
   let write_body = Transfer_IO.write
+  let write_bigstring_body = Transfer_IO.write_bigstring
 
   let write_footer t oc =
     match encoding t with

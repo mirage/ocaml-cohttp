@@ -73,6 +73,14 @@ let write oc buf =
   Log.debug (fun f -> f ">>> %s" (String.trim buf));
   Lwt_io.write oc buf
 
+(* [Lwt_io] cannot write out of a foreign buffer, and the channel may be a TLS
+   wrapper rather than a file descriptor to bypass it with. *)
+let write_bigstring oc buf off len =
+  let buf = Cohttp.Bigstring.buffer buf in
+  wrap_write @@ fun () ->
+  Log.debug (fun f -> f ">>>[%d] <bigstring>" len);
+  Lwt_io.write_from_exactly_bigstring oc buf off len
+
 let flush oc = wrap_write @@ fun () -> Lwt_io.flush oc
 
 type error = exn
