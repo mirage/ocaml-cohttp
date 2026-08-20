@@ -22,7 +22,6 @@ module Connection = Cohttp.Connection [@@warning "-3"]
 
 module HTTP (FS : Mirage_kv.RO) (S : Cohttp_lwt.S.Server) = struct
   open Lwt.Infix
-  open Astring
 
   let failf fmt = Fmt.failwith fmt
 
@@ -38,34 +37,28 @@ module HTTP (FS : Mirage_kv.RO) (S : Cohttp_lwt.S.Server) = struct
     | Error e -> Fmt.failwith "exists %a" FS.pp_error e
 
   let dispatcher request_fn =
-    let rec fn fs uri =
-      match Uri.path uri with
-      | ("" | "/") as path ->
-          Logs.info (fun f -> f "request for '%s'" path);
-          fn fs (Uri.with_path uri "index.html")
-      | path when String.is_suffix ~affix:"/" path ->
-          Logs.info (fun f -> f "request for '%s'" path);
-          fn fs (Uri.with_path uri "index.html")
-      | path ->
-          Logs.info (fun f -> f "request for '%s'" path);
-          Lwt.catch
-            (fun () ->
-              read_fs fs path >>= fun body ->
-              let mime_type = Magic_mime.lookup path in
-              let headers = Cohttp.Header.init_with "content-type" mime_type in
-              let headers =
-                match request_fn with
-                | None -> headers
-                | Some fn -> fn uri headers
-              in
-              S.respond_string ~status:`OK ~body ~headers ())
-            (fun _exn ->
-              let with_index = Fmt.str "%s/index.html" path in
-              exists fs with_index >>= function
-              | true -> fn fs (Uri.with_path uri with_index)
-              | false -> S.respond_not_found ())
+    let respond uri path body =
+      let mime_type = Magic_mime.lookup path in
+      let headers = Cohttp.Header.init_with "content-type" mime_type in
+      let headers =
+        match request_fn with None -> headers | Some fn -> fn uri headers
+      in
+      S.respond_string ~status:`OK ~body ~headers ()
     in
-    fn
+    fun fs uri ->
+      let path =
+        match Cohttp.Path.normalise uri with
+        | "" -> "index.html" | path -> path
+      in
+      Logs.info (fun f -> f "request for %S" path);
+      Lwt.try_bind
+        (fun () -> read_fs fs path)
+        (respond uri path)
+        (fun _exn ->
+          let with_index = path ^ "/index.html" in
+          exists fs with_index >>= function
+          | true -> read_fs fs with_index >>= respond uri with_index
+          | false -> S.respond_not_found ())
 
   let start ~http_port ?request_fn fs http =
     let callback (_, cid) request _body =
