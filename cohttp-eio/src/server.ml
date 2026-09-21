@@ -46,13 +46,16 @@ let read input =
   | (`Eof | `Invalid _) as e -> e
   | `Ok request -> (
       match Http.Request.has_body request with
-      | `No -> `Ok (request, Eio.Flow.string_source "")
+      | `No -> `Ok (request, Eio.Flow.string_source "", fun () -> ())
       | _ ->
-          let body =
-            let reader = Io.Request.make_body_reader request input in
-            flow_of_reader (fun () -> Io.Request.read_body_chunk reader)
+          let reader = Io.Request.make_body_reader request input in
+          let read_body_chunk () = Io.Request.read_body_chunk reader in
+          let rec drain_body () =
+            match read_body_chunk () with
+            | Cohttp.Transfer.Done -> ()
+            | Chunk _ | Final_chunk _ -> drain_body ()
           in
-          `Ok (request, body))
+          `Ok (request, flow_of_reader read_body_chunk, drain_body))
 
 let write output (response : Cohttp.Response.t) body =
   let response =
@@ -137,14 +140,16 @@ let callback { conn_closed; handler } ((_, peer_address) as conn) input output =
         write output
           (Http.Response.make ~status:`Bad_request ())
           (Body.of_string e)
-    | `Ok (request, body) ->
+    | `Ok (request, body, drain_body) ->
         let () =
           try handler (conn, id) request body input output
           with Eio.Io (Eio.Net.E (Connection_reset _), _) ->
             Logs.info (fun m ->
                 m "%a: connection reset" Eio.Net.Sockaddr.pp peer_address)
         in
-        if Cohttp.Request.is_keep_alive request then handle ()
+        if Cohttp.Request.is_keep_alive request then (
+          drain_body ();
+          handle ())
   in
   handle ()
 

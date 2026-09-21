@@ -18,6 +18,7 @@ let handler _conn request body =
       in
       Cohttp_eio.Server.respond ~status:`OK ~body ()
   | "/post" -> Cohttp_eio.Server.respond ~status:`OK ~body ()
+  | "/ignore" -> Cohttp_eio.Server.respond_string ~status:`OK ~body:"ignored" ()
   | "/big" ->
       Cohttp_eio.Server.respond ~status:`OK
         ~body:(Eio.Flow.string_source big_body)
@@ -108,6 +109,38 @@ let () =
        0\r\n\
        \r\n"
       Eio.Buf_read.(of_flow ~max_size:max_int socket |> take_all)
+  and unread_request_body socket =
+    let unread_body =
+      "GET /missing HTTP/1.1\r\nconnection: keep-alive\r\n\r\n"
+    in
+    let () =
+      Eio.Flow.write socket
+        [
+          Cstruct.of_string
+            (Printf.sprintf
+               "POST /ignore HTTP/1.1\r\n\
+                connection: keep-alive\r\n\
+                content-length: %d\r\n\
+                \r\n\
+                %sGET / HTTP/1.1\r\n\
+                connection: close\r\n\
+                \r\n"
+               (String.length unread_body)
+               unread_body);
+        ]
+    in
+    Alcotest.(check ~here:[%here] string)
+      "response"
+      "HTTP/1.1 200 OK\r\n\
+       connection: keep-alive\r\n\
+       content-length: 7\r\n\
+       \r\n\
+       ignoredHTTP/1.1 200 OK\r\n\
+       connection: close\r\n\
+       content-length: 4\r\n\
+       \r\n\
+       root"
+      Eio.Buf_read.(of_flow ~max_size:max_int socket |> take_all)
   (* The body flow hands one chunk over in as many [single_read] calls as
      the reader's buffer needs. The second and later deliveries must continue
      from where the previous one stopped, not from the start of the chunk.
@@ -140,6 +173,7 @@ let () =
           test_case "missing" missing;
           test_case "streaming response" streaming_response;
           test_case "request body" request_body;
+          test_case "unread request body" unread_request_body;
           test_case "partial body reads" partial_body_reads;
         ] );
     ]
