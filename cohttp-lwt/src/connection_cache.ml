@@ -74,9 +74,9 @@ module Make (Connection : S.Connection) (Sleep : S.Sleep) = struct
       Lwt.return_unit
     in
     let create () =
-      let connection =
-        Connection.create ~persistent:true ~finalise ~ctx:self.ctx endp
-      and timeout = ref Lwt.return_unit in
+      Connection.connect ~persistent:true ~finalise ~ctx:self.ctx endp
+      >>= fun connection ->
+      let timeout = ref Lwt.return_unit in
       let rec busy () =
         Lwt.cancel !timeout;
         if Connection.length connection = 0 then (
@@ -88,11 +88,11 @@ module Make (Connection : S.Connection) (Sleep : S.Sleep) = struct
         Lwt.on_termination (Connection.notify connection) busy
       in
       busy ();
-      connection
+      Lwt.return connection
     in
     match Hashtbl.find_all self.cache endp with
     | [] ->
-        let connection = create () in
+        create () >>= fun connection ->
         Hashtbl.add self.cache endp connection;
         Lwt.return connection
     | conns -> (
@@ -107,7 +107,7 @@ module Make (Connection : S.Connection) (Sleep : S.Sleep) = struct
         | shallowest, _ when Connection.length shallowest = 0 ->
             Lwt.return shallowest
         | _, length when length < self.parallel ->
-            let connection = create () in
+            create () >>= fun connection ->
             Hashtbl.add self.cache endp connection;
             Lwt.return connection
         | shallowest, _ when Connection.length shallowest < self.depth ->
