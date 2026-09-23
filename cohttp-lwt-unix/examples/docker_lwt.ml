@@ -6,7 +6,8 @@ let ctx =
     Hashtbl.add h "docker" (`Unix_domain_socket "/var/run/docker.sock");
     Resolver_lwt_unix.static h
   in
-  Cohttp_lwt_unix.Client.custom_ctx ~resolver ()
+  let net_ctx = Cohttp_lwt_unix.Client.custom_ctx ~resolver () in
+  Cohttp_lwt_unix.No_cache.(call (create ~ctx:net_ctx ()))
 
 let t =
   Cohttp_lwt_unix.Client.get ~ctx (Uri.of_string "http://docker/version")
