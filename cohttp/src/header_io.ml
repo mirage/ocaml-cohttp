@@ -25,17 +25,39 @@ module Make (IO : S.IO) = struct
   open IO
   module Transfer_IO = Transfer_io.Make (IO)
 
+  let add_multiline_header multiline_header headers =
+    match List.rev multiline_header |> String.concat "" |> split_header with
+    | [ hd; tl ] -> Some (Header.add headers hd tl)
+    | _ -> None
+
   let parse ic =
+    let malformed_header_stop_parsing = return in
     (* consume also trailing "^\r\n$" line *)
-    let rec parse_headers' headers =
+    let rec parse_headers' headers folding_lines =
       read_line ic >>= function
-      | Some "" | None -> return headers
+      | Some "" | None -> return (headers, folding_lines)
       | Some line -> (
-          match split_header line with
-          | [ hd; tl ] -> parse_headers' (Header.add headers hd tl)
-          | _ -> return headers)
+          match folding_lines, Char.equal line.[0] ' ' || Char.equal line.[0] '\t' with
+          | [], true -> malformed_header_stop_parsing (headers, [])
+          | [], false -> parse_headers' headers [line]  (* we just started parsing *)
+          | _, true ->
+            let line_collapse_linear_whitespace = " " ^ (String.trim line) in
+            parse_headers' headers (line_collapse_linear_whitespace :: folding_lines)
+          | _, false ->
+            (* Lines after the first are already prefixed with some number of spaces / tabs. *)
+            match add_multiline_header folding_lines headers with
+            | Some headers ->
+              parse_headers' headers [line];
+            | None -> malformed_header_stop_parsing (headers, []))
     in
-    parse_headers' (Header.init ())
+    parse_headers' (Header.init ()) [] >>= fun (headers_except_last, last_header) ->
+    let headers_list =
+      match last_header with
+       | [] -> headers_except_last
+       | _ -> add_multiline_header last_header headers_except_last
+                |> Option.value ~default:headers_except_last
+    in
+    return headers_list
 
   let write headers oc = IO.write oc (Header.to_string headers)
 end
