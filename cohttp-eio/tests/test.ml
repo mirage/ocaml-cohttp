@@ -108,6 +108,38 @@ let () =
        0\r\n\
        \r\n"
       Eio.Buf_read.(of_flow ~max_size:max_int socket |> take_all)
+  and get_body_framing socket =
+    let embedded = "GET /missing HTTP/1.1\r\n\r\n" in
+    let request =
+      Printf.sprintf
+        "GET /post HTTP/1.1\r\n\
+         content-length: %d\r\n\
+         \r\n\
+         %sGET / HTTP/1.1\r\n\
+         connection: close\r\n\
+         \r\n"
+        (String.length embedded) embedded
+    in
+    Eio.Flow.write socket [ Cstruct.of_string request ];
+    let first_response =
+      Printf.sprintf
+        "HTTP/1.1 200 OK\r\n\
+         connection: keep-alive\r\n\
+         transfer-encoding: chunked\r\n\
+         \r\n\
+         %x\r\n\
+         %s\r\n\
+         0\r\n\
+         \r\n"
+        (String.length embedded) embedded
+    in
+    let second_response =
+      "HTTP/1.1 200 OK\r\nconnection: close\r\ncontent-length: 4\r\n\r\nroot"
+    in
+    Alcotest.(check ~here:[%here] string)
+      "two responses"
+      (first_response ^ second_response)
+      Eio.Buf_read.(of_flow ~max_size:max_int socket |> take_all)
   (* The body flow hands one chunk over in as many [single_read] calls as
      the reader's buffer needs. The second and later deliveries must continue
      from where the previous one stopped, not from the start of the chunk.
@@ -140,6 +172,7 @@ let () =
           test_case "missing" missing;
           test_case "streaming response" streaming_response;
           test_case "request body" request_body;
+          test_case "GET body framing" get_body_framing;
           test_case "partial body reads" partial_body_reads;
         ] );
     ]

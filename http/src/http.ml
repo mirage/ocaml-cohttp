@@ -778,11 +778,13 @@ module Request = struct
     let headers = Header.add headers "Connection" "TE" in
     { t with headers }
 
-  (* Defined for method types in RFC7231 *)
+  (* Request message framing is independent of method semantics. Without
+     Content-Length or Transfer-Encoding, a request has a zero-length body. *)
   let has_body req =
-    if Method.body_allowed req.meth then
-      Transfer.has_body (Header.get_transfer_encoding req.headers)
-    else `No
+    match Header.get_transfer_encoding req.headers with
+    | Transfer.Chunked -> `Yes
+    | Transfer.Fixed len when len > 0L -> `Yes
+    | Transfer.Fixed _ | Transfer.Unknown -> `No
 
   let make ?(meth = `GET) ?(version = `HTTP_1_1) ?(headers = Header.empty)
       resource =
