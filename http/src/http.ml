@@ -783,8 +783,8 @@ module Request = struct
   let has_body req =
     match Header.get_transfer_encoding req.headers with
     | Transfer.Chunked -> `Yes
-    | Transfer.Fixed len when len > 0L -> `Yes
-    | Transfer.Fixed _ | Transfer.Unknown -> `No
+    | Transfer.Fixed 0L | Transfer.Unknown -> `No
+    | Transfer.Fixed _ -> `Yes
 
   let make ?(meth = `GET) ?(version = `HTTP_1_1) ?(headers = Header.empty)
       resource =
