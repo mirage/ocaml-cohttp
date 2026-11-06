@@ -8,6 +8,12 @@
   chunk (for example an `Eio.Buf_read` over a streaming response).
   (#1149 @jeong-sik)
 
+- cohttp: body readers keep returning `Done` after the body has ended
+  instead of reading into the next message. (#1151 @thevilledev)
+
+- cohttp-eio: discard unread request bodies before reading the next request,
+  and treat requests without a length as having no body. (#1151 @thevilledev)
+
 ## v6.3.0 (2026-08-20)
 
 - cohttp: `Cohttp.Path.resolve_local_file` no longer escapes the docroot when
