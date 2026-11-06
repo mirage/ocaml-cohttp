@@ -115,10 +115,20 @@ module Make (IO : S.IO) = struct
 
   let write_and_flush fn oc buf = fn oc buf >>= fun () -> IO.flush oc
 
-  let make_reader = function
-    | Chunked -> Chunked.read ~remaining:(ref 0L)
-    | Fixed len -> Fixed.read ~remaining:(ref len)
-    | Unknown -> Unknown.read
+  let make_reader encoding ic =
+    let read =
+      match encoding with
+      | Chunked -> Chunked.read ~remaining:(ref 0L) ic
+      | Fixed len -> Fixed.read ~remaining:(ref len) ic
+      | Unknown -> Unknown.read ic
+    in
+    let finished = ref false in
+    fun () ->
+      if !finished then return Done
+      else
+        read () >>= fun chunk ->
+        if chunk = Done then finished := true;
+        return chunk
 
   let write_ignore_blank writer io s =
     if String.length s = 0 then return () else writer io s

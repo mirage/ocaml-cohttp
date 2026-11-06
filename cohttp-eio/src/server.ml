@@ -46,7 +46,7 @@ let read input =
   | (`Eof | `Invalid _) as e -> e
   | `Ok request -> (
       match Http.Request.has_body request with
-      | `No -> `Ok (request, Eio.Flow.string_source "")
+      | `No | `Unknown -> `Ok (request, Eio.Flow.string_source "")
       | _ ->
           let body =
             let reader = Io.Request.make_body_reader request input in
@@ -144,7 +144,9 @@ let callback { conn_closed; handler } ((_, peer_address) as conn) input output =
             Logs.info (fun m ->
                 m "%a: connection reset" Eio.Net.Sockaddr.pp peer_address)
         in
-        if Cohttp.Request.is_keep_alive request then handle ()
+        if Cohttp.Request.is_keep_alive request then (
+          Eio.Flow.copy body Eio.Flow.null;
+          handle ())
   in
   handle ()
 

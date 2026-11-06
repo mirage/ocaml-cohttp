@@ -262,6 +262,36 @@ let uri_round_trip _ =
   Alcotest.check uri_testable "Request.make uri round-trip" actual_uri
     expected_uri
 
+let read_body_after_end _ =
+  let ic =
+    String_io.open_in
+      "POST / HTTP/1.1\r\n\
+       transfer-encoding: chunked\r\n\
+       \r\n\
+       5\r\n\
+       hello\r\n\
+       0\r\n\
+       \r\n\
+       GET /next HTTP/1.1\r\n\
+       \r\n"
+  in
+  let reader =
+    match StringRequest.read ic with
+    | `Ok req -> StringRequest.make_body_reader req ic
+    | _ -> Alcotest.fail "request"
+  in
+  let rec drain () =
+    match StringRequest.read_body_chunk reader with
+    | Transfer.Done -> ()
+    | _ -> drain ()
+  in
+  drain ();
+  drain ();
+  let uri = Parse_result.map (StringRequest.read ic) ~f:Request.uri in
+  Alcotest.check t_parse_result_uri "next request"
+    (`Ok (Uri.of_string "/next"))
+    uri
+
 let () = Printexc.record_backtrace true
 
 module Buffer = struct
@@ -414,4 +444,5 @@ let () =
             parse_request_uri_host_traversal );
           ("uri round-trip", `Quick, uri_round_trip);
         ] );
+      ("Body", [ ("read after end", `Quick, read_body_after_end) ]);
     ]
