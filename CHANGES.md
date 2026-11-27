@@ -1,5 +1,11 @@
 ## dev
 
+- cohttp-lwt: a call of `Client` (`call`, `get`, `post`...) that fails, for
+  instance because the server answers with a malformed response or the request
+  body cannot be read, now only rejects its promise. It was also raised again
+  outside of any promise, which stopped the program. The connection is now
+  closed in that case too. (#1153 @balat)
+
 - cohttp-eio: a body chunk (request or response) handed to the reader in
   several `single_read` calls now continues from the position already
   delivered. The second and later partial deliveries used to copy from

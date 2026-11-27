@@ -204,8 +204,26 @@ let test_client_cached uri =
   Client.set_cache (Cache.call cache);
   test_client uri
 
+(* A call that fails, here because its request body cannot be read, fails
+ * through its promise only. It used to be raised again outside of any
+ * promise, which stopped the program (#1153). *)
+let test_no_cache_failure uri =
+  let module No_cache = Cohttp_lwt.Connection_cache.Make_no_cache (Connection)
+  in
+  let handler = No_cache.call (No_cache.create ()) in
+  let body = `Stream (Lwt_stream.from (fun () -> Lwt.fail Exit)) in
+  Lwt.try_bind
+    (fun () -> handler ~body `PUT (Uri.with_path uri "failure"))
+    (fun (_, body) ->
+      Body.drain_body body >|= fun () -> assert_failure "the call succeeded")
+    (function Exit -> Lwt.return_unit | e -> Lwt.reraise e)
+  >>= fun () ->
+  (* Let the other callbacks of the failed call run. *)
+  Lwt.pause ()
+
 let tests uri =
   [
+    ("failure without cache", fun () -> test_no_cache_failure uri);
     ("high-level interface", fun () -> test_persistent uri);
     ("persistent connection", fun () -> test_persistent uri);
     ("non-persistent connection", fun () -> test_non_persistent uri);
