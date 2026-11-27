@@ -21,14 +21,18 @@ module Make_no_cache (Connection : S.Connection) = struct
     (* this can be simplified when https://github.com/mirage/ocaml-conduit/pull/319 is released. *)
     Lwt.dont_wait
       (fun () ->
-        res >>= fun (_, body) ->
-        (match body with
-          | `Empty | `String _ | `Strings _ -> Lwt.return_unit
-          | `Stream stream -> Lwt_stream.closed stream)
-        >>= fun () ->
-        Connection.close connection;
-        Lwt.return_unit)
-      (function Retry -> () | e -> raise e);
+        Lwt.finalize
+          (fun () ->
+            res >>= fun (_, body) ->
+            match body with
+            | `Empty | `String _ | `Strings _ -> Lwt.return_unit
+            | `Stream stream -> Lwt_stream.closed stream)
+          (fun () ->
+            Connection.close connection;
+            Lwt.return_unit))
+      (* The caller gets the failure of the call through [res]. Raising it
+         here would raise it outside of any promise, and stop the program. *)
+      (fun _ -> ());
     res
 end
 
